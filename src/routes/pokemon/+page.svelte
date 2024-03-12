@@ -3,13 +3,13 @@
     import {Command} from "@tauri-apps/api/shell";
     let tabSet: number = 0
 
-    let message = "Hello"
+    let message = ""
     async function executeCommand() {
         const command = Command.sidecar('bin/python/test')
         const output = await command.execute()
         const {stdout, stderr} = output
 
-        message = "Hello" + stdout
+        message = stdout
     }
 </script>
 
