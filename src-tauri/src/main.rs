@@ -3,6 +3,12 @@
 
 fn main() {
   tauri::Builder::default()
+    .invoke_handler(tauri::generate_handler![greet])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
+}
+
+#[tauri::command]
+fn greet(pokemon_name: &str) -> String {
+  format!("{}'s Information!", pokemon_name)
 }

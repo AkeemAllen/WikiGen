@@ -1,15 +1,14 @@
 <script lang="ts">
     import { TabGroup, Tab } from "@skeletonlabs/skeleton";
     import {Command} from "@tauri-apps/api/shell";
+    import {invoke} from "@tauri-apps/api/tauri";
+
     let tabSet: number = 0
 
+    let pokemonName = ""
     let message = ""
-    async function executeCommand() {
-        const command = Command.sidecar('bin/python/test')
-        const output = await command.execute()
-        const {stdout, stderr} = output
-
-        message = stdout
+    async function greet() { 
+        message = await invoke("greet", {pokemonName})
     }
 </script>
 
@@ -19,9 +18,9 @@
     <svelte:fragment slot="panel">
         {#if tabSet === 0} 
             <div>
-                <input type="text" placeholder="Pokemon Name" />
-                <button on:click={executeCommand} class="btn">Search</button>
-                <div>{message}</div>
+                <input id="greet-input" type="text" placeholder="Pokemon Name" bind:value="{pokemonName}" class="ml-2"/>
+                <button on:click="{greet}" class="btn">Search</button>
+                <p>{message}</p>
             </div>
         {/if}
     </svelte:fragment>
