@@ -1,12 +1,11 @@
 <script lang="ts">
-    import {wikis, selectedWiki} from "../store" 
+  import { selectedWiki } from "../store";
 </script>
 
-<div class="mt-4">Select A Wiki</div>
-<div class="gird grid-cols-4">
-    {#each Object.entries($wikis) as [_, value]}
-        <button on:click={() => $selectedWiki = value} class="btn btn-primary">
-            {value.name}</button>
-    {/each}
-</div>
+{#if $selectedWiki.name === ""}
+  <p class="mt-4">Select or Create a Wiki using the Select Wiki Button</p>
+{/if}
 
+<!-- Improve Page design (Just stick with original design for now) -->
+<!-- Add ability to create wiki -->
+<!-- Read wiki information from json files -->

@@ -33,6 +33,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@floating-ui/dom": "^1.6.3",
     "@tabler/icons-svelte": "^3.0.0",
     "@tauri-apps/api": "^1.5.3"
   }
