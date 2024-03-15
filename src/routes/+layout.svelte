@@ -46,15 +46,15 @@
           <NavButton name="Pokemon" route="/pokemon" />
         </div>
       {/if}
-      <a
+      <button
         id="sidebar-left"
         use:popup={wikiSelectPopup}
         class="btn border-0 hover:cursor-pointer rounded-md p-2 bg-blue-200 w-40"
       >
         {$selectedWiki.name ? $selectedWiki.name : "Select Wiki"}
-      </a>
+      </button>
+      <WikiSelectMenu />
     </div>
-    <WikiSelectMenu />
   </svelte:fragment>
   <slot />
 </AppShell>
