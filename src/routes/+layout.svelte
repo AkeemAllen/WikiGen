@@ -13,6 +13,7 @@
   import {
     AppBar,
     AppShell,
+    Toast,
     initializeStores,
     popup,
     storePopup,
@@ -31,6 +32,7 @@
   };
 </script>
 
+<Toast />
 <AppShell class="h-screen bg-white">
   <svelte:fragment slot="header">
     <AppBar>
