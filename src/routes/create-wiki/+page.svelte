@@ -1,6 +1,8 @@
 <script lang="ts">
   import { getToastStore, type ToastSettings } from "@skeletonlabs/skeleton";
-  import { BaseDirectory, createDir, writeTextFile } from "@tauri-apps/api/fs";
+  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+  import { appDataDir, resourceDir } from "@tauri-apps/api/path";
+  import { invoke } from "@tauri-apps/api/tauri";
   import { wikis } from "../../store";
 
   const toastStore = getToastStore();
@@ -16,31 +18,28 @@
   };
 
   async function createWiki() {
-    if (wikiName === "" || wikiDescription === "") {
-      return;
-    }
-    if ($wikis[wikiName] !== undefined) {
-      return;
-    }
-    wikis.update((w) => {
-      w[wikiName] = {
-        name: wikiName,
-        description: wikiDescription,
-      };
-      return w;
+    const directory = await appDataDir();
+    const resourceDirectory = await resourceDir();
+    $wikis[wikiName] = {
+      name: wikiName,
+      description: wikiDescription,
+      author: "author",
+      site_name: "site_name",
+      repo_url: "repo_url",
+      site_url: "site_url",
+    };
+    await writeTextFile("wikis.json", JSON.stringify($wikis), {
+      dir: BaseDirectory.AppData,
     });
-    await createDir(`data/${wikiName}`, {
-      dir: BaseDirectory.AppData,
-      recursive: true,
-    })
-      .then(() => {
-        toastStore.trigger(dirCreatedToast);
-      })
-      .catch((e) => {
-        console.error(e);
-      });
-    await writeTextFile(`data/wikis.json`, JSON.stringify($wikis), {
-      dir: BaseDirectory.AppData,
+    await invoke("create_wiki", {
+      wikiName,
+      wikiDescription,
+      wikiAuthor: "author",
+      siteName: "site_name",
+      dir: directory,
+      resourceDir: resourceDirectory,
+    }).then(() => {
+      toastStore.trigger(dirCreatedToast);
     });
   }
 </script>

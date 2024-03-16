@@ -34,7 +34,7 @@
         "renameFile": true,
         "writeFile": true,
         "scope": [
-          "$APPDATA/data/**"
+          "$APPDATA/**"
         ]
       }
     },
