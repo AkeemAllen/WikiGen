@@ -13,15 +13,6 @@
   "tauri": {
     "allowlist": {
       "all": true,
-      "shell": {
-        "scope": [
-          {
-            "name": "bin/python/test",
-            "sidecar": true
-          }
-        ],
-        "sidecar": true
-      },
       "fs": {
         "all": true,
         "copyFile": true,
@@ -45,9 +36,7 @@
       "deb": {
         "depends": []
       },
-      "externalBin": [
-        "bin/python/test"
-      ],
+      "externalBin": [],
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",

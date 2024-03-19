@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build_py": "pyinstaller -F python/test.py --distpath src-tauri/bin/python --clean -n test-aarch64-apple-darwin",
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
