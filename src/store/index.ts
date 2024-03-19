@@ -11,10 +11,10 @@ type Wiki = {
     site_name: string;
     repo_url: string;
     site_url: string;
-    settings?: WikiSettings;
+    settings: WikiSettings;
 }
 
-type WikiSettings = {
+export type WikiSettings = {
     version_group: string;
     deployment_url: string;
     matchup_generation: "current" | "gen1" | "gen2";
