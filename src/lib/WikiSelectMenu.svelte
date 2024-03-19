@@ -3,7 +3,9 @@
 </script>
 
 <div class="card p-4 w-40 shadow-xl flex flex-col" data-popup="wikiSelectPopup">
-  <p class="text-xs text-slate-400 mb-1">Wikis</p>
+  {#if Object.keys($wikis).length !== 0}
+    <p class="text-xs text-slate-400 mb-1">Wikis</p>
+  {/if}
   {#each Object.entries($wikis) as [wiki, value]}
     <button
       on:click={() => ($selectedWiki = $wikis[wiki])}
