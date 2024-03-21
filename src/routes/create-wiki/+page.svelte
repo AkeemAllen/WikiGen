@@ -13,7 +13,7 @@
   let wikiDescription = "";
   let wikiAuthor = "";
   let settings: WikiSettings = {
-    version_group: "",
+    version_group: "red-blue",
     matchup_generation: "current",
     deployment_url: "",
   };
@@ -66,7 +66,7 @@
     </p>
   </div>
   <div
-    class="flex flex-col col-span-2 gap-y-5 card border rounded-lg p-5 w-[50rem]"
+    class="flex flex-col col-span-2 gap-y-5 card border rounded-lg p-5 w-[45rem]"
   >
     <div class="grid grid-cols-2 gap-16">
       <TextInput
@@ -104,20 +104,24 @@
         bind:value={wikiAuthor}
       />
       <div>
-        <label for="matchup-generation" class="text-sm"
+        <label
+          for="matchup-generation"
+          class="block text-sm font-medium leading-6 text-gray-900"
           >Matchup Generation</label
         >
         <select
           id="matchup-generation"
-          class="block w-full rounded-md border-0 mt-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+          style={"-webkit-appearance: none;"}
+          class="block w-full rounded-md border-0 pl-2 py-1.5 mt-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
           bind:value={settings.matchup_generation}
         >
           <option value="current">Current</option>
-          <option value="gen-1">Gen 1</option>
-          <option value="gen-2">Gen 2</option>
+          <option value="gen-1">Generation 1</option>
+          <option value="gen-2">Generation 2</option>
         </select>
       </div>
     </div>
+
     <TextInput
       id="deployment-url"
       label="Deployment URL"
@@ -140,13 +144,23 @@
         bind:value={siteUrl}
       />
     </div>
-
-    <TextInput
-      id="version-group"
-      label="Version Group"
-      placeholder="Version Group"
-      bind:value={settings.version_group}
-    />
+    <div>
+      <label
+        for="version-group"
+        class="block text-sm font-medium leading-6 text-gray-900"
+        >Version Group</label
+      >
+      <select
+        id="version-group"
+        style={"-webkit-appearance: none;"}
+        class="block w-full rounded-md border-0 pl-2 py-1.5 mt-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+        bind:value={settings.version_group}
+      >
+        <option value="red-blue">Red - Blue</option>
+        <option value="gen-1">Generation 1</option>
+        <option value="gen-2">Generation 2</option>
+      </select>
+    </div>
 
     <button
       disabled={wikiDescription === "" ||
