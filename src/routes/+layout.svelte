@@ -18,6 +18,7 @@
     popup,
     storePopup,
   } from "@skeletonlabs/skeleton";
+  import { IconDotsVertical } from "@tabler/icons-svelte";
   import "../app.pcss";
   import { selectedWiki } from "../store";
 
@@ -35,7 +36,7 @@
 <Toast />
 <AppShell class="h-screen bg-white">
   <svelte:fragment slot="header">
-    <AppBar>
+    <AppBar class="bg-white">
       <a href="/">WikiGen</a>
     </AppBar>
   </svelte:fragment>
@@ -46,13 +47,14 @@
           <NavButton name="Pokemon" route="/pokemon" />
         </div>
       {/if}
-      <button
-        id="sidebar-left"
-        use:popup={wikiSelectPopup}
-        class="btn border-0 hover:cursor-pointer rounded-md p-2 bg-blue-200 w-40"
-      >
-        {$selectedWiki.name ? $selectedWiki.name : "Select Wiki"}
-      </button>
+      <div class="flex flex-row w-40 justify-between items-center">
+        <p>
+          {$selectedWiki.name ? $selectedWiki.site_name : "Select Wiki"}
+        </p>
+        <span use:popup={wikiSelectPopup} class="hover:cursor-pointer">
+          <IconDotsVertical size={"20"} />
+        </span>
+      </div>
       <WikiSelectMenu />
     </div>
   </svelte:fragment>
