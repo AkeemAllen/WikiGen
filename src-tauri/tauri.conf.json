@@ -13,14 +13,20 @@
   "tauri": {
     "allowlist": {
       "all": true,
-      "shell": {
+      "fs": {
+        "all": true,
+        "copyFile": true,
+        "createDir": true,
+        "exists": true,
+        "readDir": true,
+        "readFile": true,
+        "removeDir": true,
+        "removeFile": true,
+        "renameFile": true,
+        "writeFile": true,
         "scope": [
-          {
-            "name": "bin/python/test",
-            "sidecar": true
-          }
-        ],
-        "sidecar": true
+          "$APPDATA/**"
+        ]
       }
     },
     "bundle": {
@@ -30,9 +36,7 @@
       "deb": {
         "depends": []
       },
-      "externalBin": [
-        "bin/python/test"
-      ],
+      "externalBin": [],
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",

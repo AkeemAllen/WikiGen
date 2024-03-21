@@ -1,20 +1,69 @@
-<script>
-import { AppBar, AppShell } from "@skeletonlabs/skeleton";
-import "../app.pcss";
+<script lang="ts">
+  import { page } from "$app/stores";
+  import { NavButton, WikiSelectMenu } from "$lib";
+  import {
+    arrow,
+    autoUpdate,
+    computePosition,
+    flip,
+    offset,
+    shift,
+  } from "@floating-ui/dom";
+  import type { PopupSettings } from "@skeletonlabs/skeleton";
+
+  import {
+    AppBar,
+    AppShell,
+    Toast,
+    initializeStores,
+    popup,
+    storePopup,
+  } from "@skeletonlabs/skeleton";
+  import { IconBallBasketball, IconDotsVertical } from "@tabler/icons-svelte";
+  import "../app.pcss";
+  import { selectedWiki } from "../store";
+
+  initializeStores();
+
+  storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
+
+  const wikiSelectPopup: PopupSettings = {
+    event: "click",
+    target: "wikiSelectPopup",
+    placement: "top",
+  };
 </script>
 
-<AppShell>
-    <svelte:fragment slot="header">
-        <AppBar>
-           <a href="/">WikiGen</a>
-        </AppBar>
-    </svelte:fragment>
-    <svelte:fragment slot="sidebarLeft">
-        <div class="container mx-auto p-4 grid gap-3">
-            <a href="/pokemon" id="sidebar-left" class="hidden lg:block btn border-0 hover:cursor-pointer rounded-md p-2 bg-blue-200 w-40 items-center">
-                Pokemon
-            </a>
+<Toast />
+<AppShell class="h-screen bg-white">
+  <svelte:fragment slot="header">
+    <AppBar class="bg-white">
+      <a href="/">WikiGen</a>
+    </AppBar>
+  </svelte:fragment>
+  <svelte:fragment slot="sidebarLeft">
+    <div class="p-4 flex flex-col h-full gap-4 bg-white">
+      {#if $selectedWiki.name !== ""}
+        <div class="flex flex-col grow">
+          <NavButton
+            name="Pokemon"
+            route="/pokemon"
+            active={$page.url.pathname.includes("pokemon")}
+          >
+            <IconBallBasketball slot="icon" size={16} color="indigo" />
+          </NavButton>
         </div>
-    </svelte:fragment>
-    <slot/>
+      {/if}
+      <div class="flex flex-row w-40 justify-between items-center">
+        <p>
+          {$selectedWiki.name ? $selectedWiki.site_name : "Select Wiki"}
+        </p>
+        <span use:popup={wikiSelectPopup} class="hover:cursor-pointer">
+          <IconDotsVertical size={"20"} />
+        </span>
+      </div>
+      <WikiSelectMenu />
+    </div>
+  </svelte:fragment>
+  <slot />
 </AppShell>

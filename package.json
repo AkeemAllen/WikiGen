@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build_py": "pyinstaller -F python/test.py --distpath src-tauri/bin/python --clean -n test-aarch64-apple-darwin",
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
@@ -33,6 +32,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@floating-ui/dom": "^1.6.3",
     "@tabler/icons-svelte": "^3.0.0",
     "@tauri-apps/api": "^1.5.3"
   }
