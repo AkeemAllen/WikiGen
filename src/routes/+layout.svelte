@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { page } from "$app/stores";
   import { NavButton, WikiSelectMenu } from "$lib";
   import {
     arrow,
@@ -18,7 +19,7 @@
     popup,
     storePopup,
   } from "@skeletonlabs/skeleton";
-  import { IconDotsVertical } from "@tabler/icons-svelte";
+  import { IconBallBasketball, IconDotsVertical } from "@tabler/icons-svelte";
   import "../app.pcss";
   import { selectedWiki } from "../store";
 
@@ -43,8 +44,14 @@
   <svelte:fragment slot="sidebarLeft">
     <div class="p-4 flex flex-col h-full gap-4 bg-white">
       {#if $selectedWiki.name !== ""}
-        <div class="flex flex-col gap-3 grow">
-          <NavButton name="Pokemon" route="/pokemon" />
+        <div class="flex flex-col grow">
+          <NavButton
+            name="Pokemon"
+            route="/pokemon"
+            active={$page.url.pathname.includes("pokemon")}
+          >
+            <IconBallBasketball slot="icon" size={16} color="indigo" />
+          </NavButton>
         </div>
       {/if}
       <div class="flex flex-row w-40 justify-between items-center">
