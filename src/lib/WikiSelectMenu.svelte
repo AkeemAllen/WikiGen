@@ -10,13 +10,13 @@
     <button
       on:click={() => ($selectedWiki = $wikis[wiki])}
       class="w-30 text-sm text-left p-2 hover:bg-slate-300 rounded-md"
-      >{value.name}</button
+      >{value.site_name}</button
     >
   {/each}
-  <p class="text-xs text-slate-400 mb-1 mt-1">Actions</p>
+  <p class="text-xs text-slate-400 mb-1">Actions</p>
   <a
     href="/create-wiki"
     class="w-30 text-sm text-left p-2 hover:bg-slate-300 rounded-md"
-    >Create Wiki</a
+    >Create New Wiki</a
   >
 </div>
