@@ -1,6 +1,9 @@
 <script lang="ts">
   import NumberInput from "$lib/NumberInput.svelte";
   import { Tab, TabGroup } from "@skeletonlabs/skeleton";
+  import { appDataDir } from "@tauri-apps/api/path";
+  import { invoke } from "@tauri-apps/api/tauri";
+  import { selectedWiki } from "../../store";
 
   let tabSet: number = 1;
 
@@ -8,6 +11,16 @@
   let message: string = "";
   let rangeStart: number = 0;
   let rangeEnd: number = 0;
+
+  async function downloadPokemonData() {
+    const directory = await appDataDir();
+    await invoke("download_pokemon_data", {
+      wikiName: $selectedWiki.name,
+      rangeStart,
+      rangeEnd,
+      dir: directory,
+    });
+  }
 </script>
 
 <TabGroup class="mt-4">
@@ -46,7 +59,7 @@
       shadow-sm hover:bg-indigo-500 focus-visible:outline
       focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
       disabled:bg-indigo-400"
-        on:click={() => console.log("sf")}>Prepare Data</button
+        on:click={downloadPokemonData}>Prepare Data</button
       >
     {/if}
   </svelte:fragment>

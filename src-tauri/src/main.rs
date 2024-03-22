@@ -1,13 +1,15 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+mod prepare_data;
+mod yaml_declaration;
+
+use prepare_data::download_pokemon_data;
 use serde::{Deserialize, Serialize};
 use std::{fs, io, path::Path};
 
-mod yaml_declaration;
-
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![create_wiki])
+        .invoke_handler(tauri::generate_handler![create_wiki, download_pokemon_data])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
