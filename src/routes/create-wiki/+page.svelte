@@ -46,7 +46,7 @@
       dir: BaseDirectory.AppData,
     });
     await invoke("create_wiki", {
-      wikiName,
+      wikiName: wikiCodeName,
       wikiDescription,
       wikiAuthor,
       siteName,
