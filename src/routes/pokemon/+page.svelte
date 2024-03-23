@@ -6,9 +6,11 @@
     getToastStore,
     type ToastSettings,
   } from "@skeletonlabs/skeleton";
+  import { readTextFile } from "@tauri-apps/api/fs";
   import { appDataDir } from "@tauri-apps/api/path";
   import { invoke } from "@tauri-apps/api/tauri";
   import { selectedWiki } from "../../store";
+  import { pokemon, pokemonList } from "../../store/pokemon";
 
   const toastStore = getToastStore();
 
@@ -26,6 +28,10 @@
     background: "variant-filled-success",
   };
 
+  $: $pokemonList = Object.entries($pokemon.pokemon).map(
+    ([key, value]) => value.name,
+  );
+
   async function downloadAndPrepPokemonData() {
     const directory = await appDataDir();
     await invoke("download_and_prep_pokemon_data", {
@@ -33,7 +39,11 @@
       rangeStart,
       rangeEnd,
       dir: directory,
-    }).then(() => {
+    }).then(async () => {
+      const pokemonFromFile = await readTextFile(
+        `${directory}${$selectedWiki.name}/data/pokemon.json`,
+      );
+      pokemon.set(JSON.parse(pokemonFromFile));
       toastStore.trigger(dataPreparedToast);
     });
   }
@@ -46,16 +56,11 @@
   >
   <svelte:fragment slot="panel">
     {#if tabSet === 0}
-      <div>
-        <input
-          id="greet-input"
-          type="text"
-          placeholder="Pokemon Name"
-          bind:value={pokemonName}
-          class="ml-2"
-        />
-        <p>{message}</p>
-      </div>
+      {#each Object.entries($pokemon.pokemon) as [key, value]}
+        <div>
+          {value.types}
+        </div>
+      {/each}
     {/if}
     {#if tabSet === 1}
       <div class="flex gap-16">
