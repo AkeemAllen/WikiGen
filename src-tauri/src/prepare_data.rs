@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct Pokemon {
-    pokemon: IndexMap<String, PokemonData>,
+    pokemon: IndexMap<u32, PokemonData>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -53,7 +53,7 @@ pub fn download_and_prep_pokemon_data(
     range_start: u32,
     range_end: u32,
     dir: &str,
-) {
+) -> String {
     let base_path: String = format!("{}{}", dir, wiki_name);
     let pokemon_path = format!("{}/data/pokemon.json", base_path);
 
@@ -140,8 +140,10 @@ pub fn download_and_prep_pokemon_data(
         };
         pokemon
             .pokemon
-            .insert(pokemon_data.name.clone(), pokemon_data.clone());
+            .insert(pokemon_data.id.clone(), pokemon_data.clone());
     }
     let string_pokemon_data = serde_json::to_string(&pokemon).unwrap();
     fs::write(pokemon_path.clone(), string_pokemon_data).unwrap();
+
+    return "Pokemon Saved".to_string();
 }

@@ -1,8 +1,8 @@
 import { writable } from "svelte/store";
 
 export type Pokemon = {
-    [key: string]: PokemonData;
-}
+  pokemon: { [key: number]: PokemonData };
+};
 
 export type PokemonData = {
   id: number;
@@ -25,19 +25,20 @@ export type Stats = {
 };
 
 export type Evolution = {
-    level?: number;
-    item?: string;
-    other?: string;
-    evolves_to: string;
+  level?: number;
+  item?: string;
+  other?: string;
+  evolves_to: string;
 };
 
 export type Moves = {
-    [key: string]: Move;
-}
+  [key: string]: Move;
+};
 
 export type Move = {
-    level_learned: number;
-    learn_method: string;
-}
+  level_learned: number;
+  learn_method: string;
+};
 
 export let pokemon = writable<Pokemon>();
+export let pokemonList = writable<string[]>([]);
