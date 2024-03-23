@@ -18,7 +18,7 @@ struct PokemonData {
     types: Vec<String>,
     abilities: Vec<String>,
     stats: Stats,
-    moves: Moves,
+    moves: HashMap<String, Move>,
     sprite: String,
     evolution: Option<Evolution>,
 }
@@ -31,11 +31,6 @@ struct Stats {
     sp_attack: u32,
     sp_defense: u32,
     speed: u32,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct Moves {
-    moves: HashMap<String, Move>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -107,9 +102,7 @@ pub fn download_and_prep_pokemon_data(
         // TODO: Figure out a way to set moves based on the version group of the hack
         // May need to create my own repository of pokemon move data to accomplish this
         // It's too difficult to parse with pokeapis current API
-        let mut moves = Moves {
-            moves: HashMap::new(),
-        };
+        let mut moves = HashMap::new();
         for m in pokemon_response_body["moves"].as_array().unwrap() {
             let move_name = m["move"]["name"].as_str().unwrap().to_string();
             let level_learned = m["version_group_details"][0]["level_learned_at"]
@@ -120,7 +113,7 @@ pub fn download_and_prep_pokemon_data(
                 .unwrap()
                 .to_string();
 
-            moves.moves.insert(
+            moves.insert(
                 move_name,
                 Move {
                     level_learned,
