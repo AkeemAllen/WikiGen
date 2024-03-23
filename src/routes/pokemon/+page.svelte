@@ -1,9 +1,16 @@
 <script lang="ts">
   import NumberInput from "$lib/NumberInput.svelte";
-  import { Tab, TabGroup } from "@skeletonlabs/skeleton";
+  import {
+    Tab,
+    TabGroup,
+    getToastStore,
+    type ToastSettings,
+  } from "@skeletonlabs/skeleton";
   import { appDataDir } from "@tauri-apps/api/path";
   import { invoke } from "@tauri-apps/api/tauri";
   import { selectedWiki } from "../../store";
+
+  const toastStore = getToastStore();
 
   let tabSet: number = 1;
 
@@ -12,13 +19,22 @@
   let rangeStart: number = 0;
   let rangeEnd: number = 0;
 
-  async function downloadPokemonData() {
+  const dataPreparedToast: ToastSettings = {
+    message: "Data Prepared",
+    timeout: 5000,
+    hoverable: true,
+    background: "variant-filled-success",
+  };
+
+  async function downloadAndPrepPokemonData() {
     const directory = await appDataDir();
     await invoke("download_and_prep_pokemon_data", {
       wikiName: $selectedWiki.name,
       rangeStart,
       rangeEnd,
       dir: directory,
+    }).then(() => {
+      toastStore.trigger(dataPreparedToast);
     });
   }
 </script>
@@ -55,11 +71,13 @@
           rangeEnd === 0 ||
           rangeStart > rangeEnd ||
           rangeStart === rangeEnd}
-        class="rounded-md bg-indigo-600 w-32 px-3 py-2 mt-5 text-sm font-semibold text-white
+        class=" rounded-md bg-indigo-600 w-32 px-3 py-2 mt-5 text-sm font-semibold text-white
       shadow-sm hover:bg-indigo-500 focus-visible:outline
       focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
       disabled:bg-indigo-400"
-        on:click={downloadPokemonData}>Prepare Data</button
+        on:click|preventDefault={downloadAndPrepPokemonData}
+      >
+        Prepare Data</button
       >
     {/if}
   </svelte:fragment>
