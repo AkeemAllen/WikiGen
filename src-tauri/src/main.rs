@@ -3,13 +3,16 @@
 mod prepare_data;
 mod yaml_declaration;
 
-use prepare_data::download_pokemon_data;
+use prepare_data::download_and_prep_pokemon_data;
 use serde::{Deserialize, Serialize};
 use std::{fs, io, path::Path};
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![create_wiki, download_pokemon_data])
+        .invoke_handler(tauri::generate_handler![
+            create_wiki,
+            download_and_prep_pokemon_data
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

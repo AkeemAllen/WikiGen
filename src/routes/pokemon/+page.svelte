@@ -14,7 +14,7 @@
 
   async function downloadPokemonData() {
     const directory = await appDataDir();
-    await invoke("download_pokemon_data", {
+    await invoke("download_and_prep_pokemon_data", {
       wikiName: $selectedWiki.name,
       rangeStart,
       rangeEnd,
