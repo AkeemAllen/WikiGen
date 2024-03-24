@@ -11,7 +11,10 @@
     );
     pokemon.set(JSON.parse(pokemonFromFile));
     pokemonList.set(
-      Object.entries($pokemon.pokemon).map(([_, value]) => value.name),
+      Object.entries($pokemon.pokemon).map(([key, value]) => [
+        value.name,
+        parseInt(key),
+      ]),
     );
   }
 </script>

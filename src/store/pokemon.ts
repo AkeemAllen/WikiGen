@@ -41,4 +41,4 @@ export type Move = {
 };
 
 export let pokemon = writable<Pokemon>();
-export let pokemonList = writable<string[]>([]);
+export let pokemonList = writable<[string, number][]>([]);
