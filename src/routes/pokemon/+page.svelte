@@ -1,5 +1,6 @@
 <script lang="ts">
   import NumberInput from "$lib/NumberInput.svelte";
+  import PokemonPanel from "$lib/PokemonPanel.svelte";
   import {
     Tab,
     TabGroup,
@@ -14,10 +15,8 @@
 
   const toastStore = getToastStore();
 
-  let tabSet: number = 1;
+  let tabSet: number = 0;
 
-  let pokemonName: string = "";
-  let message: string = "";
   let rangeStart: number = 0;
   let rangeEnd: number = 0;
 
@@ -27,10 +26,6 @@
     hoverable: true,
     background: "variant-filled-success",
   };
-
-  $: $pokemonList = Object.entries($pokemon.pokemon).map(
-    ([key, value]) => value.name,
-  );
 
   async function downloadAndPrepPokemonData() {
     const directory = await appDataDir();
@@ -44,6 +39,12 @@
         `${directory}${$selectedWiki.name}/data/pokemon.json`,
       );
       pokemon.set(JSON.parse(pokemonFromFile));
+      pokemonList.set(
+        Object.entries($pokemon.pokemon).map(([key, value]) => [
+          value.name,
+          parseInt(key),
+        ]),
+      );
       toastStore.trigger(dataPreparedToast);
     });
   }
@@ -56,11 +57,7 @@
   >
   <svelte:fragment slot="panel">
     {#if tabSet === 0}
-      {#each Object.entries($pokemon.pokemon) as [key, value]}
-        <div>
-          {value.types}
-        </div>
-      {/each}
+      <PokemonPanel />
     {/if}
     {#if tabSet === 1}
       <div class="flex gap-16">
