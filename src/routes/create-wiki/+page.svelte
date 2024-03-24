@@ -1,7 +1,7 @@
 <script lang="ts">
+  import SelectInput from "$lib/SelectInput.svelte";
   import TextInput from "$lib/TextInput.svelte";
   import { getToastStore, type ToastSettings } from "@skeletonlabs/skeleton";
-  import { IconChevronDown } from "@tabler/icons-svelte";
   import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
   import { appDataDir, resourceDir } from "@tauri-apps/api/path";
   import { invoke } from "@tauri-apps/api/tauri";
@@ -104,28 +104,17 @@
         placeholder="Recommended: Your Github Username"
         bind:value={wikiAuthor}
       />
-      <div>
-        <label
-          for="matchup-generation"
-          class=" block text-sm font-medium leading-6 text-gray-900"
-          >Matchup Generation</label
-        >
-        <div class="relative">
-          <select
-            id="matchup-generation"
-            style={"-webkit-appearance: none;"}
-            class=" block w-full rounded-md border-0 pl-2 py-1.5 mt-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-            bind:value={settings.matchup_generation}
-          >
-            <option value="current">Current</option>
-            <option value="gen-1">Generation 1</option>
-            <option value="gen-2">Generation 2</option>
-          </select>
-          <div class="absolute block z-10 right-5 top-[10px]">
-            <IconChevronDown size={18} class="text-gray-400" />
-          </div>
-        </div>
-      </div>
+
+      <SelectInput
+        id="matchup-generation"
+        label="Matchup Generation"
+        value={settings.matchup_generation}
+        options={[
+          { label: "Current", value: "current" },
+          { label: "Generation 1", value: "gen-1" },
+          { label: "Generation 2", value: "gen-2" },
+        ]}
+      />
     </div>
 
     <TextInput
@@ -150,28 +139,16 @@
         bind:value={siteUrl}
       />
     </div>
-    <div>
-      <label
-        for="version-group"
-        class="block text-sm font-medium leading-6 text-gray-900"
-        >Version Group</label
-      >
-      <div class="relative">
-        <select
-          id="version-group"
-          style={"-webkit-appearance: none;"}
-          class="block w-full rounded-md border-0 pl-2 py-1.5 mt-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          bind:value={settings.version_group}
-        >
-          <option value="red-blue">Red - Blue</option>
-          <option value="gen-1">Generation 1</option>
-          <option value="gen-2">Generation 2</option>
-        </select>
-        <div class="absolute block z-10 right-5 top-[10px]">
-          <IconChevronDown size={18} class="text-gray-400" />
-        </div>
-      </div>
-    </div>
+    <SelectInput
+      id="version-group"
+      label="Version Group"
+      value={settings.version_group}
+      options={[
+        { label: "Red - Blue", value: "red-blue" },
+        { label: "Generation 1", value: "gen-1" },
+        { label: "Generation 2", value: "gen-2" },
+      ]}
+    />
 
     <button
       disabled={wikiDescription === "" ||
