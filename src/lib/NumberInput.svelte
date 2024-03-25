@@ -1,8 +1,8 @@
-<script>
+<script lang="ts">
   export let id = "";
   export let label = "";
   export let placeholder = "";
-  export let value = 0;
+  export let value: number | null = 0;
   export let disabled = false;
 </script>
 

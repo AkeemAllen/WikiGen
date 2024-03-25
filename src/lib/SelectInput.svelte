@@ -7,7 +7,7 @@
   };
   export let id = "";
   export let label = "";
-  export let value = "";
+  export let value: string | undefined | null = "";
   export let options: Option[] = [];
 </script>
 
