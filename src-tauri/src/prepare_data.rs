@@ -20,7 +20,7 @@ struct PokemonData {
     stats: Stats,
     moves: HashMap<String, Move>,
     sprite: String,
-    evolution: Option<Evolution>,
+    evolution: Evolution,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -44,7 +44,17 @@ struct Evolution {
     level: Option<u32>,
     item: Option<String>,
     other: Option<String>,
-    evolves_to: String,
+    evolves_to: Option<String>,
+    method: EvolutionMethod,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "snake_case")]
+enum EvolutionMethod {
+    LevelUp,
+    Item,
+    Other,
+    NoChange,
 }
 
 #[tauri::command]
@@ -136,7 +146,13 @@ pub fn download_and_prep_pokemon_data(
                 .as_str()
                 .unwrap()
                 .to_string(),
-            evolution: None,
+            evolution: Evolution {
+                level: None,
+                item: None,
+                other: None,
+                evolves_to: None,
+                method: EvolutionMethod::NoChange,
+            },
         };
         pokemon
             .pokemon
