@@ -108,7 +108,7 @@
       <SelectInput
         id="matchup-generation"
         label="Matchup Generation"
-        value={settings.matchup_generation}
+        bind:value={settings.matchup_generation}
         options={[
           { label: "Current", value: "current" },
           { label: "Generation 1", value: "gen-1" },
@@ -142,7 +142,7 @@
     <SelectInput
       id="version-group"
       label="Version Group"
-      value={settings.version_group}
+      bind:value={settings.version_group}
       options={[
         { label: "Red - Blue", value: "red-blue" },
         { label: "Generation 1", value: "gen-1" },
