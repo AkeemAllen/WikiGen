@@ -12,7 +12,7 @@ export type PokemonData = {
   stats: Stats;
   moves: Moves;
   sprite: string;
-  evolution?: Evolution;
+  evolution: Evolution;
 };
 
 export type Stats = {
@@ -25,10 +25,11 @@ export type Stats = {
 };
 
 export type Evolution = {
-  level?: number;
-  item?: string;
-  other?: string;
-  evolves_to: string;
+  level: number | null;
+  item: string | null;
+  other: string | null;
+  evolves_to: string | null;
+  method: string;
 };
 
 export type Moves = {
@@ -39,6 +40,28 @@ export type Move = {
   level_learned: number;
   learn_method: string;
 };
+
+export const PokemonTypes = [
+  "none",
+  "normal",
+  "fire",
+  "water",
+  "electric",
+  "grass",
+  "ice",
+  "fighting",
+  "poison",
+  "ground",
+  "flying",
+  "psychic",
+  "bug",
+  "rock",
+  "ghost",
+  "dragon",
+  "dark",
+  "steel",
+  "fairy", 
+]
 
 export let pokemon = writable<Pokemon>();
 export let pokemonList = writable<[string, number][]>([]);
