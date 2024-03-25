@@ -29,7 +29,7 @@ export type Evolution = {
   item: string | null;
   other: string | null;
   evolves_to: string | null;
-  method: string;
+  method: "no_change" | "level_up" | "item" | "other";
 };
 
 export type Moves = {
