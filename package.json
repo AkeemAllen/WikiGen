@@ -17,6 +17,7 @@
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^3.0.0",
     "@tauri-apps/cli": "^1.5.11",
+    "@types/lodash": "^4.17.0",
     "@types/node": "^20.11.25",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
@@ -34,6 +35,7 @@
   "dependencies": {
     "@floating-ui/dom": "^1.6.3",
     "@tabler/icons-svelte": "^3.0.0",
-    "@tauri-apps/api": "^1.5.3"
+    "@tauri-apps/api": "^1.5.3",
+    "lodash": "^4.17.21"
   }
 }
