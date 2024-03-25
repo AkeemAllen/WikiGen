@@ -3,10 +3,15 @@
     Autocomplete,
     Tab,
     TabGroup,
+    getToastStore,
     popup,
     type AutocompleteOption,
     type PopupSettings,
+    type ToastSettings,
   } from "@skeletonlabs/skeleton";
+  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+  import _ from "lodash";
+  import { selectedWiki } from "../store";
   import {
     PokemonTypes,
     pokemon,
@@ -18,9 +23,12 @@
   import TextInput from "./TextInput.svelte";
   import { capitalize } from "./utils";
 
+  const toastTrigger = getToastStore();
+
   let pokemonName: string = "";
   let pokemonId: number = 0;
   let pokemonData: PokemonData = {} as PokemonData;
+  let originalPokemonData: PokemonData = {} as PokemonData;
 
   let tabSet: number = 0;
 
@@ -33,6 +41,12 @@
     placement: "bottom",
   };
 
+  const pokemonDataSavedToast: ToastSettings = {
+    message: "Data saved",
+    timeout: 3000,
+    background: "variant-filled-success",
+  };
+
   function onPokemonNameSelected(
     event: CustomEvent<AutocompleteOption<string | number>>,
   ): void {
@@ -41,10 +55,25 @@
   }
 
   function getPokemonData(): void {
-    pokemonData = $pokemon.pokemon[pokemonId];
+    pokemonData = _.cloneDeep($pokemon.pokemon[pokemonId]);
+    originalPokemonData = _.cloneDeep(pokemonData);
   }
 
-  $: console.log(pokemonData);
+  async function savePokemonChanges() {
+    pokemon.update((p) => {
+      p.pokemon[pokemonId] = pokemonData;
+      return p;
+    });
+    console.log($pokemon);
+    await writeTextFile(
+      `${$selectedWiki.name}/data/pokemon.json`,
+      JSON.stringify($pokemon),
+      { dir: BaseDirectory.AppData },
+    ).then(() => {
+      originalPokemonData = _.cloneDeep(pokemonData);
+      toastTrigger.trigger(pokemonDataSavedToast);
+    });
+  }
 </script>
 
 <div class="flex flex-row gap-7">
@@ -82,7 +111,8 @@
     Search
   </button>
   <button
-    disabled={true}
+    disabled={_.isEqual(pokemonData, originalPokemonData)}
+    on:click={savePokemonChanges}
     class="mt-2 rounded-md bg-indigo-600 w-32 text-sm font-semibold text-white
       shadow-sm hover:bg-indigo-500 focus-visible:outline
       focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
