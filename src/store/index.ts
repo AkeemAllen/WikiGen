@@ -4,7 +4,7 @@ type Wikis = {
     [key: string]: Wiki;
 }
 
-type Wiki = {
+export type Wiki = {
     name: string;
     description: string;
     author: string;
