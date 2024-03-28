@@ -27,8 +27,8 @@
 
   let pokemonName: string = "";
   let pokemonId: number = 0;
-  let pokemonData: PokemonDetails = {} as PokemonDetails;
-  let originalPokemonData: PokemonDetails = {} as PokemonDetails;
+  let pokemonDetails: PokemonDetails = {} as PokemonDetails;
+  let originalPokemonDetails: PokemonDetails = {} as PokemonDetails;
 
   let tabSet: number = 0;
 
@@ -41,7 +41,7 @@
     placement: "bottom",
   };
 
-  const pokemonDataSavedToast: ToastSettings = {
+  const pokemonDetailsSavedToast: ToastSettings = {
     message: "Data saved",
     timeout: 3000,
     background: "variant-filled-success",
@@ -54,14 +54,14 @@
     pokemonId = event.detail.value as number;
   }
 
-  function getPokemonData(): void {
-    pokemonData = _.cloneDeep($pokemon.pokemon[pokemonId]);
-    originalPokemonData = _.cloneDeep(pokemonData);
+  function getPokemonDetails(): void {
+    pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
+    originalPokemonDetails = _.cloneDeep(pokemonDetails);
   }
 
   async function savePokemonChanges() {
     pokemon.update((p) => {
-      p.pokemon[pokemonId] = pokemonData;
+      p.pokemon[pokemonId] = pokemonDetails;
       return p;
     });
     console.log($pokemon);
@@ -70,8 +70,8 @@
       JSON.stringify($pokemon),
       { dir: BaseDirectory.AppData },
     ).then(() => {
-      originalPokemonData = _.cloneDeep(pokemonData);
-      toastStore.trigger(pokemonDataSavedToast);
+      originalPokemonDetails = _.cloneDeep(pokemonDetails);
+      toastStore.trigger(pokemonDetailsSavedToast);
     });
   }
 </script>
@@ -102,7 +102,7 @@
   </div>
   <button
     disabled={pokemonName === ""}
-    on:click={getPokemonData}
+    on:click={getPokemonDetails}
     class="mt-2 rounded-md bg-indigo-600 w-32 text-sm font-semibold text-white
       shadow-sm hover:bg-indigo-500 focus-visible:outline
       focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
@@ -111,7 +111,7 @@
     Search
   </button>
   <button
-    disabled={_.isEqual(pokemonData, originalPokemonData)}
+    disabled={_.isEqual(pokemonDetails, originalPokemonDetails)}
     on:click={savePokemonChanges}
     class="mt-2 rounded-md bg-indigo-600 w-32 text-sm font-semibold text-white
       shadow-sm hover:bg-indigo-500 focus-visible:outline
@@ -122,8 +122,8 @@
   </button>
 </div>
 
-{#if pokemonData.id !== undefined}
-  <img src={pokemonData.sprite} alt={pokemonData.name} width="100" />
+{#if pokemonDetails.id !== undefined}
+  <img src={pokemonDetails.sprite} alt={pokemonDetails.name} width="100" />
   <TabGroup class="px-4">
     <Tab bind:group={tabSet} name="pokemon-details" value={0} class="text-sm"
       >Pokemon Details</Tab
@@ -137,7 +137,7 @@
           <div class="grid grid-cols-2 gap-x-10 gap-y-5 mt-10">
             <SelectInput
               id="pokemon-type-1"
-              bind:value={pokemonData.types[0]}
+              bind:value={pokemonDetails.types[0]}
               label="Type 1"
               options={PokemonTypes.map((type) => ({
                 label: capitalize(type),
@@ -146,7 +146,7 @@
             />
             <SelectInput
               id="pokemon-type-2"
-              bind:value={pokemonData.types[1]}
+              bind:value={pokemonDetails.types[1]}
               label="Type 2"
               options={PokemonTypes.map((type) => ({
                 label: capitalize(type),
@@ -155,18 +155,18 @@
             />
             <SelectInput
               id="pokemon-ability-1"
-              bind:value={pokemonData.abilities[0]}
+              bind:value={pokemonDetails.abilities[0]}
               label="Ability 1"
-              options={pokemonData.abilities.map((ability) => ({
+              options={pokemonDetails.abilities.map((ability) => ({
                 label: capitalize(ability),
                 value: ability,
               }))}
             />
             <SelectInput
               id="pokemon-ability-2"
-              bind:value={pokemonData.abilities[1]}
+              bind:value={pokemonDetails.abilities[1]}
               label="Ability 2"
-              options={pokemonData.abilities.map((ability) => ({
+              options={pokemonDetails.abilities.map((ability) => ({
                 label: capitalize(ability),
                 value: ability,
               }))}
@@ -177,7 +177,7 @@
               <SelectInput
                 id="evolution-method"
                 label="Evolution Method"
-                bind:value={pokemonData.evolution.method}
+                bind:value={pokemonDetails.evolution.method}
                 options={[
                   { label: "No Change", value: "no_change" },
                   { label: "Level Up", value: "level_up" },
@@ -186,33 +186,33 @@
                 ]}
               />
             </div>
-            {#if pokemonData.evolution.method === "item"}
+            {#if pokemonDetails.evolution.method === "item"}
               <TextInput
                 id="evolution-item"
-                value={pokemonData.evolution?.item ?? ""}
+                value={pokemonDetails.evolution?.item ?? ""}
                 label="Evolution Item"
               />
             {/if}
-            {#if pokemonData.evolution.method === "level_up"}
+            {#if pokemonDetails.evolution.method === "level_up"}
               <NumberInput
                 id="evolution-level"
-                bind:value={pokemonData.evolution.level}
+                bind:value={pokemonDetails.evolution.level}
                 label="Evolution Level"
               />
             {/if}
-            {#if pokemonData.evolution.method === "other"}
+            {#if pokemonDetails.evolution.method === "other"}
               <TextInput
                 id="evolution-other"
-                bind:value={pokemonData.evolution.other}
+                bind:value={pokemonDetails.evolution.other}
                 label="Evolution Other"
               />
             {/if}
-            {#if pokemonData.evolution.method !== "no_change"}
+            {#if pokemonDetails.evolution.method !== "no_change"}
               <div class="w-44">
                 <SelectInput
                   id="evolution-to"
                   label="Evoles To"
-                  bind:value={pokemonData.evolution.evolves_to}
+                  bind:value={pokemonDetails.evolution.evolves_to}
                   options={pokemonListOptions}
                 />
               </div>
@@ -222,32 +222,32 @@
           <div class="grid grid-cols-2 gap-x-10 gap-y-5 mt-2 mb-2">
             <NumberInput
               id="pokemon-hp"
-              bind:value={pokemonData.stats.hp}
+              bind:value={pokemonDetails.stats.hp}
               label="HP"
             />
             <NumberInput
               id="pokemon-attack"
-              bind:value={pokemonData.stats.attack}
+              bind:value={pokemonDetails.stats.attack}
               label="Attack"
             />
             <NumberInput
               id="pokemon-defense"
-              bind:value={pokemonData.stats.defense}
+              bind:value={pokemonDetails.stats.defense}
               label="Defense"
             />
             <NumberInput
               id="pokemon-special-attack"
-              bind:value={pokemonData.stats.sp_attack}
+              bind:value={pokemonDetails.stats.sp_attack}
               label="Special Attack"
             />
             <NumberInput
               id="pokemon-special-defense"
-              bind:value={pokemonData.stats.sp_defense}
+              bind:value={pokemonDetails.stats.sp_defense}
               label="Special Defense"
             />
             <NumberInput
               id="pokemon-speed"
-              bind:value={pokemonData.stats.speed}
+              bind:value={pokemonDetails.stats.speed}
               label="Speed"
             />
           </div>
