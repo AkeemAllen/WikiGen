@@ -10,7 +10,7 @@ export type PokemonData = {
   types: string[];
   abilities: string[];
   stats: Stats;
-  moves: Moves;
+  moves: PokemonMoveSet;
   sprite: string;
   evolution: Evolution;
 };
@@ -32,11 +32,11 @@ export type Evolution = {
   method: "no_change" | "level_up" | "item" | "other";
 };
 
-export type Moves = {
-  [key: string]: Move;
+export type PokemonMoveSet = {
+  [key: string]: PokemonMove;
 };
 
-export type Move = {
+export type PokemonMove = {
   level_learned: number;
   learn_method: string;
 };
