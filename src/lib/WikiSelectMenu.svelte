@@ -1,6 +1,7 @@
 <script lang="ts">
   import { BaseDirectory, readTextFile } from "@tauri-apps/api/fs";
   import { selectedWiki, wikis, type Wiki } from "../store";
+  import { moveList, moves } from "../store/moves";
   import { pokemon, pokemonList } from "../store/pokemon";
 
   async function loadWikiData(wiki: Wiki) {
@@ -16,6 +17,13 @@
         parseInt(key),
       ]),
     );
+
+    const movesFromFile = await readTextFile(
+      `${$selectedWiki.name}/data/moves.json`,
+      { dir: BaseDirectory.AppData },
+    );
+    moves.set(JSON.parse(movesFromFile));
+    moveList.set(Object.keys($moves.moves));
   }
 </script>
 
