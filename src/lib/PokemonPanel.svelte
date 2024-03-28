@@ -23,7 +23,7 @@
   import TextInput from "./TextInput.svelte";
   import { capitalize } from "./utils";
 
-  const toastTrigger = getToastStore();
+  const toastStore = getToastStore();
 
   let pokemonName: string = "";
   let pokemonId: number = 0;
@@ -71,7 +71,7 @@
       { dir: BaseDirectory.AppData },
     ).then(() => {
       originalPokemonData = _.cloneDeep(pokemonData);
-      toastTrigger.trigger(pokemonDataSavedToast);
+      toastStore.trigger(pokemonDataSavedToast);
     });
   }
 </script>
