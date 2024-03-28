@@ -19,7 +19,11 @@
     popup,
     storePopup,
   } from "@skeletonlabs/skeleton";
-  import { IconBallBasketball, IconDotsVertical } from "@tabler/icons-svelte";
+  import {
+    IconBallBasketball,
+    IconDisc,
+    IconDotsVertical,
+  } from "@tabler/icons-svelte";
   import "../app.pcss";
   import { selectedWiki } from "../store";
 
@@ -44,13 +48,20 @@
   <svelte:fragment slot="sidebarLeft">
     <div class="p-4 flex flex-col h-full gap-4 bg-white">
       {#if $selectedWiki.name !== ""}
-        <div class="flex flex-col grow">
+        <div class="flex flex-col grow gap-y-3">
           <NavButton
             name="Pokemon"
             route="/pokemon"
             active={$page.url.pathname.includes("pokemon")}
           >
             <IconBallBasketball slot="icon" size={16} color="indigo" />
+          </NavButton>
+          <NavButton
+            name="Moves"
+            route="/moves"
+            active={$page.url.pathname.includes("moves")}
+          >
+            <IconDisc slot="icon" size={16} color="indigo" />
           </NavButton>
         </div>
       {/if}
