@@ -16,7 +16,7 @@ type MachineVersion = {
 };
 
 type Moves = {
-    moves: { [key: number]: MoveDetails };
+    moves: { [key: string]: MoveDetails };
 }
 
 export let moves = writable<Moves>();
