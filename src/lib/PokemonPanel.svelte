@@ -16,7 +16,7 @@
     PokemonTypes,
     pokemon,
     pokemonList,
-    type PokemonData,
+    type PokemonDetails,
   } from "../store/pokemon";
   import NumberInput from "./NumberInput.svelte";
   import SelectInput from "./SelectInput.svelte";
@@ -27,8 +27,8 @@
 
   let pokemonName: string = "";
   let pokemonId: number = 0;
-  let pokemonData: PokemonData = {} as PokemonData;
-  let originalPokemonData: PokemonData = {} as PokemonData;
+  let pokemonData: PokemonDetails = {} as PokemonDetails;
+  let originalPokemonData: PokemonDetails = {} as PokemonDetails;
 
   let tabSet: number = 0;
 

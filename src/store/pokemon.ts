@@ -1,10 +1,10 @@
 import { writable } from "svelte/store";
 
 export type Pokemon = {
-  pokemon: { [key: number]: PokemonData };
+  pokemon: { [key: number]: PokemonDetails };
 };
 
-export type PokemonData = {
+export type PokemonDetails = {
   id: number;
   name: string;
   types: string[];
