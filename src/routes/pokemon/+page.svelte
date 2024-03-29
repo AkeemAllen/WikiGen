@@ -1,6 +1,6 @@
 <script lang="ts">
-  import NumberInput from "$lib/NumberInput.svelte";
-  import PokemonPanel from "$lib/PokemonPanel.svelte";
+  import NumberInput from "$lib/components/NumberInput.svelte";
+  import PokemonPanel from "$lib/components/PokemonPanel.svelte";
   import {
     Tab,
     TabGroup,

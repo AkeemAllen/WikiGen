@@ -7,11 +7,11 @@
   };
   export let id = "";
   export let label = "";
-  export let value: string | undefined | null = "";
+  export let value: string | undefined | null | number = "";
   export let options: Option[] = [];
 </script>
 
-<div>
+<div class="min-w-20">
   <label for={id} class=" block text-sm font-medium leading-6 text-gray-900"
     >{label}</label
   >

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { BaseDirectory, readTextFile } from "@tauri-apps/api/fs";
-  import { selectedWiki, wikis, type Wiki } from "../store";
-  import { moveList, moves } from "../store/moves";
-  import { pokemon, pokemonList } from "../store/pokemon";
+  import { selectedWiki, wikis, type Wiki } from "../../store";
+  import { moveList, moves } from "../../store/moves";
+  import { pokemon, pokemonList } from "../../store/pokemon";
 
   async function loadWikiData(wiki: Wiki) {
     $selectedWiki = wiki;

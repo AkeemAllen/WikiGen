@@ -1,6 +1,6 @@
 <script lang="ts">
-  import NumberInput from "$lib/NumberInput.svelte";
-  import SelectInput from "$lib/SelectInput.svelte";
+  import NumberInput from "$lib/components/NumberInput.svelte";
+  import SelectInput from "$lib/components/SelectInput.svelte";
   import {
     Autocomplete,
     getToastStore,

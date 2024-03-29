@@ -11,9 +11,14 @@
   } from "@skeletonlabs/skeleton";
   import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
   import _ from "lodash";
-  import { selectedWiki } from "../store";
-  import { pokemon, pokemonList, type PokemonDetails } from "../store/pokemon";
+  import { selectedWiki } from "../../store";
+  import {
+    pokemon,
+    pokemonList,
+    type PokemonDetails,
+  } from "../../store/pokemon";
   import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
+  import PokemonMovesTab from "./PokemonMovesTab.svelte";
 
   const toastStore = getToastStore();
 
@@ -24,7 +29,7 @@
 
   let tabSet: number = 0;
 
-  const pokemonListOptions: AutocompleteOption<string | number>[] =
+  let pokemonListOptions: AutocompleteOption<string | number>[] =
     $pokemonList.map(([name, id]) => ({ label: name, value: id }));
 
   const autoCompletePopup: PopupSettings = {
@@ -124,9 +129,11 @@
       >Pokemon Moves</Tab
     >
     <svelte:fragment slot="panel">
-      <PokemonDetailsTab {pokemonDetails} {tabSet} {pokemonListOptions} />
+      {#if tabSet === 0}
+        <PokemonDetailsTab bind:pokemonDetails bind:pokemonListOptions />
+      {/if}
       {#if tabSet === 1}
-        <p>Moves</p>
+        <PokemonMovesTab bind:pokemonDetails />
       {/if}
     </svelte:fragment>
   </TabGroup>
