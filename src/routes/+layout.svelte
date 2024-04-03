@@ -9,11 +9,12 @@
     offset,
     shift,
   } from "@floating-ui/dom";
-  import type { PopupSettings } from "@skeletonlabs/skeleton";
+  import type { ModalComponent, PopupSettings } from "@skeletonlabs/skeleton";
 
   import {
     AppBar,
     AppShell,
+    Modal,
     Toast,
     initializeStores,
     popup,
@@ -36,9 +37,12 @@
     target: "wikiSelectPopup",
     placement: "top",
   };
+
+  const modalRegistry: Record<string, ModalComponent> = {};
 </script>
 
 <Toast />
+<Modal components={modalRegistry} />
 <AppShell class="h-screen bg-white">
   <svelte:fragment slot="header">
     <AppBar class="bg-white">

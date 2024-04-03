@@ -2,20 +2,24 @@
   import { SelectInput } from "$lib";
   import Pagination from "$lib/components/Pagination.svelte";
   import ThSort from "$lib/components/ThSort.svelte";
+  import { getModalStore, type ModalSettings } from "@skeletonlabs/skeleton";
   import { IconTrash } from "@tabler/icons-svelte";
   import { DataHandler } from "@vincjo/datatables";
   import _ from "lodash";
   import type { PokemonDetails, PokemonMoveSet } from "../../store/pokemon";
+  import ModifyMoveset from "./modals/ModifyMoveset.svelte";
   import TextInput from "./TextInput.svelte";
+
+  const modalStore = getModalStore();
 
   export let pokemonDetails: PokemonDetails;
   let searchValue: string = "";
 
-  $: handler = new DataHandler(Object.entries(pokemonDetails.moves), {
-    rowsPerPage: 5,
-  });
-  $: rows = handler.getRows();
-  $: rowsPerPage = handler.getRowsPerPage();
+  const modifyMovesetModal: ModalSettings = {
+    type: "component",
+    component: { ref: ModifyMoveset },
+  };
+
   const rowsPerPageOptions = [
     { label: "5", value: 5 },
     { label: "10", value: 10 },
@@ -23,6 +27,12 @@
     { label: "50", value: 50 },
     { label: "100", value: 100 },
   ];
+
+  $: handler = new DataHandler(Object.entries(pokemonDetails.moves), {
+    rowsPerPage: 5,
+  });
+  $: rows = handler.getRows();
+  $: rowsPerPage = handler.getRowsPerPage();
 
   function deleteMove(moveName: string) {
     const updatedMoves: PokemonMoveSet = Object.fromEntries(
@@ -43,6 +53,7 @@
           placeholder="Search move name..."
         />
         <button
+          on:click={() => modalStore.trigger(modifyMovesetModal)}
           class=" rounded-md bg-indigo-600 w-40 px-3 py-2 mt-2 text-sm font-semibold text-white
         shadow-sm hover:bg-indigo-500 focus-visible:outline
         focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
