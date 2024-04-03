@@ -10,8 +10,8 @@
   export let pokemonListOptions: AutocompleteOption<string | number>[];
 </script>
 
-<div class="scroll-smooth">
-  <div class="grid grid-cols-2 gap-x-10 gap-y-5 mt-10">
+<div class="scroll-smooth px-4">
+  <div class="grid grid-cols-2 gap-x-10 gap-y-5 mt-4">
     <SelectInput
       id="pokemon-type-1"
       bind:value={pokemonDetails.types[0]}
