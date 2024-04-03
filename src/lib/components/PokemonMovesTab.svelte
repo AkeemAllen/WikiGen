@@ -11,11 +11,11 @@
   export let pokemonDetails: PokemonDetails;
   let searchValue: string = "";
 
-  let handler = new DataHandler(Object.entries(pokemonDetails.moves), {
+  $: handler = new DataHandler(Object.entries(pokemonDetails.moves), {
     rowsPerPage: 5,
   });
-  let rows = handler.getRows();
-  const rowsPerPage = handler.getRowsPerPage();
+  $: rows = handler.getRows();
+  $: rowsPerPage = handler.getRowsPerPage();
   const rowsPerPageOptions = [
     { label: "5", value: 5 },
     { label: "10", value: 10 },
@@ -29,13 +29,6 @@
       Object.entries(pokemonDetails.moves).filter(([key]) => key !== moveName),
     );
     pokemonDetails.moves = updatedMoves;
-
-    // Need to reinitialize the handlers to get immediate row updates
-    // when move is deleted. This is a workaround for now.
-    handler = new DataHandler(Object.entries(pokemonDetails.moves), {
-      rowsPerPage: 5,
-    });
-    rows = handler.getRows();
   }
 </script>
 
