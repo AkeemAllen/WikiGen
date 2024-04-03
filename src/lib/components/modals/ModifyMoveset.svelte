@@ -6,21 +6,21 @@
     type PopupSettings,
   } from "@skeletonlabs/skeleton";
   import { IconTrash } from "@tabler/icons-svelte";
+  import _ from "lodash";
   import { moveList } from "../../../store/moves";
+  import { Operation } from "../../../types";
   import NumberInput from "../NumberInput.svelte";
   import SelectInput from "../SelectInput.svelte";
 
   const moveListOptions: AutocompleteOption<string>[] = $moveList.map(
     (name) => ({ label: name, value: name }),
   );
-  export let moveSet = [
-    {
-      operation: "add",
-      move: "Tackle",
-      level: 1,
-      secondaryMove: "Growl",
-    },
-  ];
+  let moveSetChangeList: {
+    operation: string;
+    move: string;
+    level: number;
+    secondaryMove: string;
+  }[] = [];
 
   const moveAutoCompletePopup: PopupSettings = {
     event: "focus-click",
@@ -40,14 +40,14 @@
     index: number,
   ): void {
     if (field === "move") {
-      moveSet[index].move = event.detail.value;
+      moveSetChangeList[index].move = event.detail.value;
     } else {
-      moveSet[index].secondaryMove = event.detail.value;
+      moveSetChangeList[index].secondaryMove = event.detail.value;
     }
   }
   function addMoveSetChange() {
-    moveSet = [
-      ...moveSet,
+    moveSetChangeList = [
+      ...moveSetChangeList,
       {
         operation: "add",
         move: "",
@@ -58,8 +58,9 @@
   }
 
   function removeMoveSetChange(index: number) {
-    moveSet = moveSet.filter((_, i) => i !== index);
+    moveSetChangeList = moveSetChangeList.filter((_, i) => i !== index);
   }
+  $: console.log(moveSetChangeList);
 </script>
 
 <div class="flex flex-col gap-y-4 bg-white p-4 rounded-md">
@@ -84,15 +85,15 @@
         </tr>
       </thead>
       <tbody>
-        {#each moveSet as row, index}
+        {#each moveSetChangeList as row, index}
           <tr>
-            <td>
+            <td class="w-48">
               <SelectInput
-                value={row.operation}
-                options={[
-                  { label: "Add", value: "add" },
-                  { label: "Delete", value: "delete" },
-                ]}
+                bind:value={row.operation}
+                options={Object.values(Operation).map((value) => ({
+                  label: _.capitalize(value),
+                  value,
+                }))}
               />
             </td>
             <td>
@@ -120,13 +121,21 @@
               </div>
             </td>
             <td>
-              <NumberInput bind:value={row.level} />
+              <NumberInput
+                bind:value={row.level}
+                disabled={row.operation === Operation.DELETE ||
+                  row.operation === Operation.SWAP_MOVES}
+              />
             </td>
             <td>
               <input
                 id="secondary_move"
                 type="text"
                 placeholder="Secondary Move"
+                disabled={row.operation === Operation.DELETE ||
+                  row.operation === Operation.ADD ||
+                  row.operation === Operation.SHIFT ||
+                  row.operation === Operation.REPLACE_BY_LEVEL}
                 class="block w-full pl-2 mt-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 disabled:bg-gray-100 disabled:text-gray-400"
                 bind:value={row.secondaryMove}
                 use:popup={secondaryMoveAutoCompletePopup}
