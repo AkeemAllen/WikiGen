@@ -2,23 +2,16 @@
   import { SelectInput } from "$lib";
   import Pagination from "$lib/components/Pagination.svelte";
   import ThSort from "$lib/components/ThSort.svelte";
-  import { getModalStore, type ModalSettings } from "@skeletonlabs/skeleton";
   import { IconTrash } from "@tabler/icons-svelte";
   import { DataHandler } from "@vincjo/datatables";
   import _ from "lodash";
   import type { PokemonDetails, PokemonMoveSet } from "../../store/pokemon";
-  import ModifyMoveset from "./modals/ModifyMoveset.svelte";
   import TextInput from "./TextInput.svelte";
-
-  const modalStore = getModalStore();
+  import ModifyMoveset from "./modals/ModifyMoveset.svelte";
 
   export let pokemonDetails: PokemonDetails;
   let searchValue: string = "";
-
-  const modifyMovesetModal: ModalSettings = {
-    type: "component",
-    component: { ref: ModifyMoveset },
-  };
+  let modifyMovesetModalOpen: boolean = false;
 
   const rowsPerPageOptions = [
     { label: "5", value: 5 },
@@ -43,6 +36,10 @@
 </script>
 
 <div>
+  <ModifyMoveset
+    bind:open={modifyMovesetModalOpen}
+    pokemonId={pokemonDetails.id}
+  />
   <div class="overflow-x-auto space-y-4 mt-4 px-4">
     <header class="flex justify-between items-center gap-4">
       <div class="flex gap-x-3">
@@ -53,7 +50,7 @@
           placeholder="Search move name..."
         />
         <button
-          on:click={() => modalStore.trigger(modifyMovesetModal)}
+          on:click={() => (modifyMovesetModalOpen = true)}
           class=" rounded-md bg-indigo-600 w-40 px-3 py-2 mt-2 text-sm font-semibold text-white
         shadow-sm hover:bg-indigo-500 focus-visible:outline
         focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
