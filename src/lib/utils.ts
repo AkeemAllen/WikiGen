@@ -70,6 +70,11 @@ export function modifyLevelUpMoveSet(moveSetChangeList: MoveSetChange[], moveSet
             swapMoves(moveSet, moveSetChange, previous_learn_method)
             continue;
         }
+
+        if (moveSetChange.operation === Operation.DELETE) {
+            delete moveSet[moveSetChange.move]
+            continue;
+        }
     }
 
     return moveSet;
