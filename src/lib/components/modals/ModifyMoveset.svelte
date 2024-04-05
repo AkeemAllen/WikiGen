@@ -1,11 +1,10 @@
 <script lang="ts">
+  import { modifyLevelUpMoveSet } from "$lib/utils";
   import {
     Autocomplete,
-    getToastStore,
     popup,
     type AutocompleteOption,
     type PopupSettings,
-    type ToastSettings,
   } from "@skeletonlabs/skeleton";
   import { IconTrash } from "@tabler/icons-svelte";
   import _ from "lodash";
@@ -24,8 +23,6 @@
     (name) => ({ label: name, value: name }),
   );
 
-  const toastStore = getToastStore();
-
   let moveSetChangeList: MoveSetChange[] = [];
 
   const moveAutoCompletePopup: PopupSettings = {
@@ -38,12 +35,6 @@
     event: "focus-click",
     target: "secondaryMovePopupAutoComplete",
     placement: "bottom",
-  };
-
-  const changesSavedToast: ToastSettings = {
-    message: "Changes saved successfully",
-    timeout: 3000,
-    background: "variant-filled-success",
   };
 
   function onMoveNameSelected(
@@ -85,7 +76,6 @@
 
 {#if open}
   <div
-    transition:fade={{ duration: 150, easing: sineIn }}
     class="absolute top-0 bottom-0 left-0 right-0 h-screen grid justify-center items-center"
   >
     <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -122,11 +112,11 @@
           <tbody>
             {#each moveSetChangeList as row, index}
               <tr class="bg-white border-b">
-                <td class="px-6 py-0 pb-1">
+                <td class="px-6 py-0 pb-1 w-52">
                   <SelectInput
                     bind:value={row.operation}
                     options={Object.values(Operation).map((value) => ({
-                      label: _.capitalize(value),
+                      label: _.capitalize(value.replaceAll("_", " ")),
                       value,
                     }))}
                   />
@@ -142,7 +132,7 @@
                   />
                   <div
                     data-popup="movePopupAutoComplete"
-                    class="card w-60 mt-2 overflow-y-auto bg-white rounded-sm"
+                    class="fixed card w-60 mt-2 overflow-y-auto bg-white rounded-sm"
                     tabindex="-1"
                   >
                     <Autocomplete
@@ -151,7 +141,7 @@
                         onMoveNameSelected(event, "move", index)}
                       options={moveListOptions}
                       limit={5}
-                      class="bg-white w-full text-sm border rounded-md p-2"
+                      class="bg-white w-full text-sm border rounded-md p-2 z-[100000]"
                     />
                   </div>
                 </td>
@@ -177,7 +167,7 @@
                   />
                   <div
                     data-popup="secondaryMovePopupAutoComplete"
-                    class="card w-60 mt-2 overflow-y-auto bg-white rounded-sm"
+                    class="fixed card w-60 mt-2 overflow-y-auto bg-white rounded-sm"
                     tabindex="-1"
                   >
                     <Autocomplete
