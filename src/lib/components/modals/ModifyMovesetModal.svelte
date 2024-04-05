@@ -29,12 +29,6 @@
 
   let moveSetChangeList: MoveSetChange[] = [];
 
-  const moveAutoCompletePopup: PopupSettings = {
-    event: "focus-click",
-    target: "movePopupAutoComplete",
-    placement: "bottom",
-  };
-
   const secondaryMoveAutoCompletePopup: PopupSettings = {
     event: "focus-click",
     target: "secondaryMovePopupAutoComplete",
@@ -132,10 +126,14 @@
                     placeholder="Move"
                     class="block w-full pl-2 mt-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 disabled:bg-gray-100 disabled:text-gray-400"
                     bind:value={row.move}
-                    use:popup={moveAutoCompletePopup}
+                    use:popup={{
+                      event: "focus-click",
+                      target: "movePopupAutoComplete" + index,
+                      placement: "bottom",
+                    }}
                   />
                   <div
-                    data-popup="movePopupAutoComplete"
+                    data-popup="movePopupAutoComplete{index}"
                     class="fixed card w-60 mt-2 overflow-y-auto bg-white rounded-sm"
                     tabindex="-1"
                   >
@@ -183,10 +181,14 @@
                       row.operation === Operation.REPLACE_BY_LEVEL}
                     class="block w-full pl-2 mt-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 disabled:bg-gray-100 disabled:text-gray-400"
                     bind:value={row.secondaryMove}
-                    use:popup={secondaryMoveAutoCompletePopup}
+                    use:popup={{
+                      event: "focus-click",
+                      target: "secondaryMovePopupAutoComplete" + index,
+                      placement: "bottom",
+                    }}
                   />
                   <div
-                    data-popup="secondaryMovePopupAutoComplete"
+                    data-popup="secondaryMovePopupAutoComplete{index}"
                     class="fixed card w-60 mt-2 overflow-y-auto bg-white rounded-sm"
                     tabindex="-1"
                   >
