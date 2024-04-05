@@ -7,7 +7,7 @@
   import _ from "lodash";
   import type { PokemonDetails, PokemonMoveSet } from "../../store/pokemon";
   import TextInput from "./TextInput.svelte";
-  import ModifyMoveset from "./modals/ModifyMoveset.svelte";
+  import ModifyMovesetModal from "./modals/ModifyMovesetModal.svelte";
 
   export let pokemonDetails: PokemonDetails;
   export let savePokemonChanges: Function;
@@ -37,7 +37,7 @@
 </script>
 
 <div>
-  <ModifyMoveset
+  <ModifyMovesetModal
     bind:open={modifyMovesetModalOpen}
     bind:pokemonDetails
     {savePokemonChanges}
