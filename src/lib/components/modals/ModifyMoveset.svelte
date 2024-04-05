@@ -11,7 +11,7 @@
   import _ from "lodash";
   import { moveList } from "../../../store/moves";
   import { type PokemonDetails } from "../../../store/pokemon";
-  import { Operation } from "../../../types";
+  import { Operation, type MoveSetChange } from "../../../types";
   import NumberInput from "../NumberInput.svelte";
   import SelectInput from "../SelectInput.svelte";
 
@@ -38,6 +38,12 @@
     event: "focus-click",
     target: "secondaryMovePopupAutoComplete",
     placement: "bottom",
+  };
+
+  const changesSavedToast: ToastSettings = {
+    message: "Changes saved successfully",
+    timeout: 3000,
+    background: "variant-filled-success",
   };
 
   function onMoveNameSelected(
