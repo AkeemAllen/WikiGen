@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { SelectInput } from "$lib";
   import Pagination from "$lib/components/Pagination.svelte";
+  import SelectInput from "$lib/components/SelectInput.svelte";
   import ThSort from "$lib/components/ThSort.svelte";
   import { IconTrash } from "@tabler/icons-svelte";
   import { DataHandler } from "@vincjo/datatables";
