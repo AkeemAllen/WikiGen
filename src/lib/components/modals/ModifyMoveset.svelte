@@ -115,9 +115,6 @@
                 <td class="px-6 py-0 pb-1 w-52">
                   <SelectInput
                     bind:value={row.operation}
-                    onChange={(event) => {
-                      console.log("Logging", event.currentTarget.value);
-                    }}
                     options={Object.values(Operation).map((value) => ({
                       label: _.capitalize(value.replaceAll("_", " ")),
                       value,
@@ -140,8 +137,18 @@
                   >
                     <Autocomplete
                       bind:input={row.move}
-                      on:selection={(event) =>
-                        onMoveNameSelected(event, "move", index)}
+                      on:selection={(event) => {
+                        onMoveNameSelected(event, "move", index);
+                        if (
+                          row.move in pokemonDetails.moves &&
+                          pokemonDetails.moves[row.move].learn_method.includes(
+                            "level-up",
+                          )
+                        ) {
+                          row.level =
+                            pokemonDetails.moves[row.move].level_learned;
+                        }
+                      }}
                       options={moveListOptions}
                       limit={5}
                       class="bg-white w-full text-sm border rounded-md p-2 z-[100000]"
