@@ -78,7 +78,7 @@
         {#each $rows as row}
           <tr>
             <td>{_.capitalize(row[0].replace("-", " "))}</td>
-            <td>{_.capitalize(row[1].learn_method.replace("-", " "))}</td>
+            <td>{row[1].learn_method.join(", ")}</td>
             <td>{row[1].level_learned}</td>
             <td
               class="hover:cursor-pointer hover:bg-gray-300 w-5 rounded-sm"
