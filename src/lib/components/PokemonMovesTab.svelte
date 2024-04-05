@@ -10,6 +10,7 @@
   import ModifyMoveset from "./modals/ModifyMoveset.svelte";
 
   export let pokemonDetails: PokemonDetails;
+  export let savePokemonChanges: Function;
   let searchValue: string = "";
   let modifyMovesetModalOpen: boolean = false;
 
@@ -38,7 +39,8 @@
 <div>
   <ModifyMoveset
     bind:open={modifyMovesetModalOpen}
-    pokemonId={pokemonDetails.id}
+    bind:pokemonDetails
+    {savePokemonChanges}
   />
   <div class="overflow-x-auto space-y-4 mt-4 px-4">
     <header class="flex justify-between items-center gap-4">

@@ -133,7 +133,7 @@
         <PokemonDetailsTab bind:pokemonDetails bind:pokemonListOptions />
       {/if}
       {#if tabSet === 1}
-        <PokemonMovesTab bind:pokemonDetails />
+        <PokemonMovesTab bind:pokemonDetails {savePokemonChanges} />
       {/if}
     </svelte:fragment>
   </TabGroup>

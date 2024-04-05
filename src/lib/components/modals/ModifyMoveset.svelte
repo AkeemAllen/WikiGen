@@ -1,26 +1,30 @@
 <script lang="ts">
   import {
     Autocomplete,
+    getToastStore,
     popup,
     type AutocompleteOption,
     type PopupSettings,
+    type ToastSettings,
   } from "@skeletonlabs/skeleton";
   import { IconTrash } from "@tabler/icons-svelte";
   import _ from "lodash";
-  import { sineIn } from "svelte/easing";
-  import { fade } from "svelte/transition";
   import { moveList } from "../../../store/moves";
+  import { type PokemonDetails } from "../../../store/pokemon";
   import { Operation } from "../../../types";
   import NumberInput from "../NumberInput.svelte";
   import SelectInput from "../SelectInput.svelte";
 
   export let open: boolean = false;
   export let onClose: Function = () => (open = false);
-  export let pokemonId: number;
+  export let pokemonDetails: PokemonDetails;
+  export let savePokemonChanges: Function;
 
   const moveListOptions: AutocompleteOption<string>[] = $moveList.map(
     (name) => ({ label: name, value: name }),
   );
+
+  const toastStore = getToastStore();
 
   let moveSetChangeList: {
     operation: string;
@@ -66,6 +70,15 @@
 
   function removeMoveSetChange(index: number) {
     moveSetChangeList = moveSetChangeList.filter((_, i) => i !== index);
+  }
+
+  function saveChanges() {
+    pokemonDetails.moves = modifyLevelUpMoveSet(
+      moveSetChangeList,
+      pokemonDetails.moves,
+    );
+    savePokemonChanges();
+    onClose();
   }
 </script>
 
@@ -188,6 +201,7 @@
         </table>
       </div>
       <button
+        on:click={saveChanges}
         class=" rounded-md bg-indigo-600 w-40 px-3 py-2 mt-2 text-sm font-semibold text-white
                shadow-sm hover:bg-indigo-500 focus-visible:outline
                focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
