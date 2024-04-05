@@ -38,7 +38,7 @@ export type PokemonMoveSet = {
 
 export type PokemonMove = {
   level_learned: number;
-  learn_method: string;
+  learn_method: string[];
 };
 
 export const PokemonTypes = [
