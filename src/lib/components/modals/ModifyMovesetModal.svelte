@@ -4,7 +4,6 @@
     Autocomplete,
     popup,
     type AutocompleteOption,
-    type PopupSettings,
   } from "@skeletonlabs/skeleton";
   import { IconTrash } from "@tabler/icons-svelte";
   import _ from "lodash";
@@ -28,12 +27,6 @@
   ).map((name) => ({ label: name, value: name }));
 
   let moveSetChangeList: MoveSetChange[] = [];
-
-  const secondaryMoveAutoCompletePopup: PopupSettings = {
-    event: "focus-click",
-    target: "secondaryMovePopupAutoComplete",
-    placement: "bottom",
-  };
 
   function onMoveNameSelected(
     event: CustomEvent<AutocompleteOption<string>>,
