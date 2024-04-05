@@ -23,6 +23,10 @@
     (name) => ({ label: name, value: name }),
   );
 
+  const pokemonMoveListOptions: AutocompleteOption<string>[] = Object.keys(
+    pokemonDetails.moves,
+  ).map((name) => ({ label: name, value: name }));
+
   let moveSetChangeList: MoveSetChange[] = [];
 
   const moveAutoCompletePopup: PopupSettings = {
@@ -149,7 +153,12 @@
                             pokemonDetails.moves[row.move].level_learned;
                         }
                       }}
-                      options={moveListOptions}
+                      options={row.operation === Operation.SWAP_MOVES ||
+                      row.operation === Operation.SHIFT ||
+                      row.operation === Operation.DELETE ||
+                      row.operation === Operation.REPLACE_MOVE
+                        ? pokemonMoveListOptions
+                        : moveListOptions}
                       limit={5}
                       class="bg-white w-full text-sm border rounded-md p-2 z-[100000]"
                     />
@@ -185,7 +194,9 @@
                       bind:input={row.secondaryMove}
                       on:selection={(event) =>
                         onMoveNameSelected(event, "secondaryMove", index)}
-                      options={moveListOptions}
+                      options={row.operation === Operation.SWAP_MOVES
+                        ? pokemonMoveListOptions
+                        : moveListOptions}
                       limit={5}
                       class="bg-white w-full text-sm border rounded-md p-2"
                     />
