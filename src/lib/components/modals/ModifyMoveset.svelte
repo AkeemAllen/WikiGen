@@ -115,6 +115,9 @@
                 <td class="px-6 py-0 pb-1 w-52">
                   <SelectInput
                     bind:value={row.operation}
+                    onChange={(event) => {
+                      console.log("Logging", event.currentTarget.value);
+                    }}
                     options={Object.values(Operation).map((value) => ({
                       label: _.capitalize(value.replaceAll("_", " ")),
                       value,
