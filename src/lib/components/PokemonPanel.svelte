@@ -61,7 +61,6 @@
       p.pokemon[pokemonId] = pokemonDetails;
       return p;
     });
-    console.log($pokemon);
     await writeTextFile(
       `${$selectedWiki.name}/data/pokemon.json`,
       JSON.stringify($pokemon),
