@@ -15,9 +15,20 @@ function addOrShiftMove(moveSet: PokemonMoveSet, moveSetChange: MoveSetChange, p
     }
 }
 
-function replaceMove(moveSet: PokemonMoveSet, moveSetChange: MoveSetChange, previous_learn_method: string[]) {
+function replaceMove(moveSet: PokemonMoveSet, moveSetChange: MoveSetChange) {
     moveSet[moveSetChange.secondaryMove] = moveSet[moveSetChange.move];
     delete moveSet[moveSetChange.move];
+}
+
+function replaceByLevel(moveSet: PokemonMoveSet, moveSetChange: MoveSetChange, previous_learn_method: string[]) {
+    for (const move of Object.entries(moveSet)) {
+        if (move[1].level_learned === moveSetChange.level){
+            delete moveSet[move[0]];
+            addOrShiftMove(moveSet, moveSetChange, previous_learn_method);
+            break;
+        }
+    }
+
 }
 
 export function modifyLevelUpMoveSet(moveSetChangeList: MoveSetChange[], moveSet: PokemonMoveSet ): PokemonMoveSet {
@@ -29,12 +40,17 @@ export function modifyLevelUpMoveSet(moveSetChangeList: MoveSetChange[], moveSet
         
         if (moveSetChange.operation === Operation.ADD || moveSetChange.operation === Operation.SHIFT) {
             addOrShiftMove(moveSet, moveSetChange, previous_learn_method) 
-            break;
+            continue;
         } 
 
         if (moveSetChange.operation === Operation.REPLACE_MOVE) {
-            replaceMove(moveSet, moveSetChange, previous_learn_method)
-            break;
+            replaceMove(moveSet, moveSetChange)
+            continue;
+        }
+
+        if (moveSetChange.operation === Operation.REPLACE_BY_LEVEL) {
+            replaceByLevel(moveSet, moveSetChange, previous_learn_method)
+            continue;
         }
     }
 
