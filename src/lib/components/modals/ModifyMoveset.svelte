@@ -26,12 +26,7 @@
 
   const toastStore = getToastStore();
 
-  let moveSetChangeList: {
-    operation: string;
-    move: string;
-    level: number;
-    secondaryMove: string;
-  }[] = [];
+  let moveSetChangeList: MoveSetChange[] = [];
 
   const moveAutoCompletePopup: PopupSettings = {
     event: "focus-click",
