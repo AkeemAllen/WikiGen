@@ -57,6 +57,7 @@
       JSON.stringify($moves),
       { dir: BaseDirectory.AppData },
     ).then(() => {
+      originalMoveDetails = _.cloneDeep(moveDetails);
       toastStore.trigger(moveDataSavedToast);
     });
   }
