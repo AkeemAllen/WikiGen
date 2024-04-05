@@ -13,9 +13,11 @@ function addOrShiftMove(moveSet: PokemonMoveSet, moveSetChange: MoveSetChange, p
             learn_method: ["level-up"],
         }
     }
+}
 
-    console.log(moveSetChange.move)
-    console.log(moveSet[moveSetChange.move])
+function replaceMove(moveSet: PokemonMoveSet, moveSetChange: MoveSetChange, previous_learn_method: string[]) {
+    moveSet[moveSetChange.secondaryMove] = moveSet[moveSetChange.move];
+    delete moveSet[moveSetChange.move];
 }
 
 export function modifyLevelUpMoveSet(moveSetChangeList: MoveSetChange[], moveSet: PokemonMoveSet ): PokemonMoveSet {
@@ -29,7 +31,11 @@ export function modifyLevelUpMoveSet(moveSetChangeList: MoveSetChange[], moveSet
             addOrShiftMove(moveSet, moveSetChange, previous_learn_method) 
             break;
         } 
-        // if (moveSetChange.operation === Operation.REPLACE_MOVE)
+
+        if (moveSetChange.operation === Operation.REPLACE_MOVE) {
+            replaceMove(moveSet, moveSetChange, previous_learn_method)
+            break;
+        }
     }
 
     return moveSet;

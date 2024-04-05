@@ -149,6 +149,7 @@
                   <NumberInput
                     bind:value={row.level}
                     disabled={row.operation === Operation.DELETE ||
+                      row.operation === Operation.REPLACE_MOVE ||
                       row.operation === Operation.SWAP_MOVES}
                   />
                 </td>
