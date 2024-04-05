@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from "$app/stores";
-  import { NavButton, WikiSelectMenu } from "$lib";
+  import NavButton from "$lib/components/NavButton.svelte";
+  import WikiSelectMenu from "$lib/components/WikiSelectMenu.svelte";
   import {
     arrow,
     autoUpdate,
