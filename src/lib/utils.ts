@@ -28,7 +28,20 @@ function replaceByLevel(moveSet: PokemonMoveSet, moveSetChange: MoveSetChange, p
             break;
         }
     }
+}
 
+function swapMoves(moveSet: PokemonMoveSet, moveSetChange: MoveSetChange, previous_learn_method: string[]) {
+    const temp = moveSet[moveSetChange.move];
+    moveSet[moveSetChange.move] = moveSet[moveSetChange.secondaryMove];
+    moveSet[moveSetChange.secondaryMove] = temp;
+
+    if (previous_learn_method.includes("machine")) {
+        moveSet[moveSetChange.move].learn_method = ["level-up", "machine"];
+        moveSet[moveSetChange.secondaryMove].learn_method = ["level-up", "machine"];
+    } else {
+        moveSet[moveSetChange.move].learn_method = ["level-up"];
+        moveSet[moveSetChange.secondaryMove].learn_method = ["level-up"];
+    }
 }
 
 export function modifyLevelUpMoveSet(moveSetChangeList: MoveSetChange[], moveSet: PokemonMoveSet ): PokemonMoveSet {
@@ -50,6 +63,11 @@ export function modifyLevelUpMoveSet(moveSetChangeList: MoveSetChange[], moveSet
 
         if (moveSetChange.operation === Operation.REPLACE_BY_LEVEL) {
             replaceByLevel(moveSet, moveSetChange, previous_learn_method)
+            continue;
+        }
+
+        if (moveSetChange.operation === Operation.SWAP_MOVES) {
+            swapMoves(moveSet, moveSetChange, previous_learn_method)
             continue;
         }
     }
