@@ -34,6 +34,7 @@
   async function createWiki() {
     const directory = await appDataDir();
     const resourceDirectory = await resourceDir();
+
     $wikis[wikiCodeName] = {
       name: wikiCodeName,
       description: wikiDescription,
@@ -52,7 +53,7 @@
       wikiAuthor,
       siteName,
       dir: directory,
-      resourceDir: resourceDirectory,
+      resourceDir: `${resourceDirectory}/resources/`,
     }).then(() => {
       toastStore.trigger(wikiCreatedToast);
     });
