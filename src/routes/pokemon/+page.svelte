@@ -1,6 +1,6 @@
 <script lang="ts">
-  import NumberInput from "$lib/NumberInput.svelte";
-  import PokemonPanel from "$lib/PokemonPanel.svelte";
+  import NumberInput from "$lib/components/NumberInput.svelte";
+  import PokemonPanel from "$lib/components/PokemonPanel.svelte";
   import {
     Tab,
     TabGroup,
@@ -50,7 +50,7 @@
   }
 </script>
 
-<TabGroup class="mt-4">
+<TabGroup class="mt-4 ml-2">
   <Tab bind:group={tabSet} name="pokemon" value={0}>Pokemon</Tab>
   <Tab bind:group={tabSet} name="prepare-pokemon-data" value={1}
     >Prepare Data</Tab

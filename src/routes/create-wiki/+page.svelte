@@ -1,6 +1,6 @@
 <script lang="ts">
-  import SelectInput from "$lib/SelectInput.svelte";
-  import TextInput from "$lib/TextInput.svelte";
+  import SelectInput from "$lib/components/SelectInput.svelte";
+  import TextInput from "$lib/components/TextInput.svelte";
   import { getToastStore, type ToastSettings } from "@skeletonlabs/skeleton";
   import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
   import { appDataDir, resourceDir } from "@tauri-apps/api/path";

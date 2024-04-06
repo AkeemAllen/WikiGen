@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from "$app/stores";
-  import { NavButton, WikiSelectMenu } from "$lib";
+  import NavButton from "$lib/components/NavButton.svelte";
+  import WikiSelectMenu from "$lib/components/WikiSelectMenu.svelte";
   import {
     arrow,
     autoUpdate,
@@ -9,17 +10,22 @@
     offset,
     shift,
   } from "@floating-ui/dom";
-  import type { PopupSettings } from "@skeletonlabs/skeleton";
+  import type { ModalComponent, PopupSettings } from "@skeletonlabs/skeleton";
 
   import {
     AppBar,
     AppShell,
+    Modal,
     Toast,
     initializeStores,
     popup,
     storePopup,
   } from "@skeletonlabs/skeleton";
-  import { IconBallBasketball, IconDotsVertical } from "@tabler/icons-svelte";
+  import {
+    IconBallBasketball,
+    IconDisc,
+    IconDotsVertical,
+  } from "@tabler/icons-svelte";
   import "../app.pcss";
   import { selectedWiki } from "../store";
 
@@ -32,9 +38,12 @@
     target: "wikiSelectPopup",
     placement: "top",
   };
+
+  const modalRegistry: Record<string, ModalComponent> = {};
 </script>
 
 <Toast />
+<Modal components={modalRegistry} />
 <AppShell class="h-screen bg-white">
   <svelte:fragment slot="header">
     <AppBar class="bg-white">
@@ -44,13 +53,20 @@
   <svelte:fragment slot="sidebarLeft">
     <div class="p-4 flex flex-col h-full gap-4 bg-white">
       {#if $selectedWiki.name !== ""}
-        <div class="flex flex-col grow">
+        <div class="flex flex-col grow gap-y-3">
           <NavButton
             name="Pokemon"
             route="/pokemon"
             active={$page.url.pathname.includes("pokemon")}
           >
             <IconBallBasketball slot="icon" size={16} color="indigo" />
+          </NavButton>
+          <NavButton
+            name="Moves"
+            route="/moves"
+            active={$page.url.pathname.includes("moves")}
+          >
+            <IconDisc slot="icon" size={16} color="indigo" />
           </NavButton>
         </div>
       {/if}

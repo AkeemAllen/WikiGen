@@ -36,7 +36,7 @@ struct Stats {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct Move {
     level_learned: u32,
-    learn_method: String,
+    learn_method: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -118,10 +118,10 @@ pub fn download_and_prep_pokemon_data(
             let level_learned = m["version_group_details"][0]["level_learned_at"]
                 .as_u64()
                 .unwrap() as u32;
-            let learn_method = m["version_group_details"][0]["move_learn_method"]["name"]
+            let learn_method = vec![m["version_group_details"][0]["move_learn_method"]["name"]
                 .as_str()
                 .unwrap()
-                .to_string();
+                .to_string()];
 
             moves.insert(
                 move_name,

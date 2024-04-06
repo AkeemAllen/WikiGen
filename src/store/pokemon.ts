@@ -1,16 +1,16 @@
 import { writable } from "svelte/store";
 
 export type Pokemon = {
-  pokemon: { [key: number]: PokemonData };
+  pokemon: { [key: number]: PokemonDetails };
 };
 
-export type PokemonData = {
+export type PokemonDetails = {
   id: number;
   name: string;
   types: string[];
   abilities: string[];
   stats: Stats;
-  moves: Moves;
+  moves: PokemonMoveSet;
   sprite: string;
   evolution: Evolution;
 };
@@ -32,13 +32,13 @@ export type Evolution = {
   method: "no_change" | "level_up" | "item" | "other";
 };
 
-export type Moves = {
-  [key: string]: Move;
+export type PokemonMoveSet = {
+  [key: string]: PokemonMove;
 };
 
-export type Move = {
+export type PokemonMove = {
   level_learned: number;
-  learn_method: string;
+  learn_method: string[];
 };
 
 export const PokemonTypes = [
