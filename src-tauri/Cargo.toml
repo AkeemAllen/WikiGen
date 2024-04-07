@@ -1,8 +1,8 @@
 [package]
-name = "app"
-version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+name = "WikiGen"
+version = "0.3.0"
+description = "A Desktop Application to generate wikis for Pokemon Rom Hacks"
+authors = ["Akeem Allen"]
 license = ""
 repository = ""
 default-run = "app"
