@@ -28,6 +28,9 @@
           "$APPDATA/**",
           "$RESOURCE/**"
         ]
+      },
+      "os": {
+        "all": true
       }
     },
     "bundle": {
