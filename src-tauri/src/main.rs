@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod create_wiki;
 mod prepare_data;
+mod utils;
 mod yaml_declaration;
 
 use create_wiki::create_wiki;

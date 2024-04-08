@@ -1,7 +1,7 @@
+use crate::utils::{copy_recursively, get_os_specific_path};
 use crate::yaml_declaration;
 use serde::{Deserialize, Serialize};
-use std::env;
-use std::{fs, io, path::Path};
+use std::{fs, path::Path};
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -120,26 +120,4 @@ pub fn create_wiki(
     .unwrap();
 
     return format!("{} Wiki created and initialized", wiki_name);
-}
-
-/// Copy files from source to destination recursively.
-pub fn copy_recursively(source: impl AsRef<Path>, destination: impl AsRef<Path>) -> io::Result<()> {
-    fs::create_dir_all(&destination)?;
-    for entry in fs::read_dir(source)? {
-        let entry = entry?;
-        let filetype = entry.file_type()?;
-        if filetype.is_dir() {
-            copy_recursively(entry.path(), destination.as_ref().join(entry.file_name()))?;
-        } else {
-            fs::copy(entry.path(), destination.as_ref().join(entry.file_name()))?;
-        }
-    }
-    Ok(())
-}
-
-fn get_os_specific_path(path: String) -> String {
-    if env::consts::OS == "windows" {
-        return path.replace("/", "\\");
-    }
-    return path;
 }
