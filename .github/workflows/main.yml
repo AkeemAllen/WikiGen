@@ -71,3 +71,8 @@ jobs:
           repo: ${{ vars.GITHUB_REPOSITORY }}
           releaseCommitish: ${{ vars.GITHUB_SHA }}
           args: ${{ matrix.settings.args }}
+        
+      - uses: actions/upload-artifact@v3
+        with:
+          name: wikigen-artifacts
+          path: target/release/bundle
