@@ -55,7 +55,7 @@ pub fn create_wiki(
         get_os_specific_path(types_folder),
         get_os_specific_path(dist_types_folder),
     );
-    let pokemon_images_folder = format!("{}docs/img/pokemon", wiki_dist_folder);
+    let pokemon_images_folder = format!("{}/docs/img/pokemon", wiki_dist_folder);
     fs::create_dir_all(get_os_specific_path(pokemon_images_folder)).unwrap();
 
     let pokemon_data_folder = format!("{}/docs/pokemon", wiki_dist_folder);
