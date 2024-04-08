@@ -75,4 +75,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: wikigen-artifacts
-          path: target/release/bundle
+          path: |
+            src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/WikiGen_0.3.0_aarch64.dmg
+            src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/WikiGen_0.3.0_x64.dmg
+            src-tauri/target/release/bundle/deb/wiki-gen_0.3.0_amd64.deb
