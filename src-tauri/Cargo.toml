@@ -1,11 +1,11 @@
 [package]
-name = "WikiGen"
+name = "wiki_gen"
 version = "0.3.0"
 description = "A Desktop Application to generate wikis for Pokemon Rom Hacks"
 authors = ["Akeem Allen"]
 license = ""
 repository = ""
-default-run = "app"
+default-run = "wiki_gen"
 edition = "2021"
 rust-version = "1.60"
 

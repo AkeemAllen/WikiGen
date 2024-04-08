@@ -63,19 +63,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5ad32ce52e4161730f7098c077cd2ed6229b5804ccf99e5366be1ab72a98b4e1"
 
 [[package]]
-name = "app"
-version = "0.3.0"
-dependencies = [
- "indexmap 2.2.6",
- "reqwest 0.12.1",
- "serde",
- "serde_json",
- "serde_yaml",
- "tauri",
- "tauri-build",
-]
-
-[[package]]
 name = "arboard"
 version = "3.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4873,6 +4860,19 @@ name = "weezl"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "53a85b86a771b1c87058196170769dd264f66c0782acf1ae6cc51bfd64b39082"
+
+[[package]]
+name = "wiki_gen"
+version = "0.3.0"
+dependencies = [
+ "indexmap 2.2.6",
+ "reqwest 0.12.1",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "tauri",
+ "tauri-build",
+]
 
 [[package]]
 name = "winapi"
