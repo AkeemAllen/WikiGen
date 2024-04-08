@@ -78,4 +78,5 @@ jobs:
           path: |
             src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/WikiGen_0.3.0_aarch64.dmg
             src-tauri/target/aarch64-apple-darwin/release/bundle/macos/WikiGen.app
+            src-tauri\target\release\bundle\nsis\WikiGen_0.3.0_x64-setup.exe
             latest.json
