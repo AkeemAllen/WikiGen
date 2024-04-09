@@ -4,9 +4,7 @@ on:
   push:
     branches:
       - release
-      - feature/issue-6-ci-cd-pipelines
-
-# This workflow will trigger on each push to the `release` branch to create or update a GitHub release, build your app, and upload the artifacts to the release.
+      - main
 
 jobs:
   publish-tauri:
@@ -17,16 +15,12 @@ jobs:
       matrix:
         settings:
           - platform: 'macos-latest' # for Arm based macs (M1 and above).
-            name: 'macos-arm64'
             args: '--target aarch64-apple-darwin'
           - platform: 'macos-latest' # for Intel based macs.
-            name: 'macos-x86_64'
             args: '--target x86_64-apple-darwin'
           - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
-            name: 'linux'
             args: ''
           - platform: 'windows-latest'
-            name: 'windows'
             args: ''
 
     runs-on: ${{ matrix.settings.platform }}
@@ -42,7 +36,6 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ matrix.settings.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: install dependencies (ubuntu only)
@@ -50,8 +43,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-        # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
-        # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
       
       - name: install pnpm
         uses: pnpm/action-setup@v3
@@ -59,7 +50,7 @@ jobs:
           version: 8
 
       - name: install frontend dependencies
-        run: pnpm install # change this to npm, pnpm or bun depending on which one you use.
+        run: pnpm install 
 
       - uses: tauri-apps/tauri-action@v0
         env:
@@ -67,21 +58,9 @@ jobs:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
         with:
-          tagName: wikigen-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
+          tagName: wikigen-v__VERSION__
           releaseName: 'WikiGen v__VERSION__'
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: false
           prerelease: true
-          # repo: ${{ vars.GITHUB_REPOSITORY }}
-          # releaseCommitish: ${{ vars.GITHUB_SHA }}
           args: ${{ matrix.settings.args }}
-        
-      # - uses: actions/upload-artifact@v4
-      #   with:
-      #     name: wikigen-artifacts-${{ matrix.settings.name }}
-      #     path: |
-      #       src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/WikiGen_0.3.0_aarch64.dmg
-      #       src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/WikiGen_0.3.0_x64.dmg
-      #       src-tauri/target/release/bundle/deb/wiki-gen_0.3.0_amd64.deb
-      #       src-tauri\target\release\bundle\nsis\WikiGen_0.3.0_x64-setup.exe
-      #       latest.json
