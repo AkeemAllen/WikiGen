@@ -76,25 +76,12 @@ jobs:
           releaseCommitish: ${{ vars.GITHUB_SHA }}
           args: ${{ matrix.settings.args }}
         
-      - uses: actions/upload-artifact@v4
-        with:
-          name: wikigen-artifacts-${{ matrix.settings.name }}
-          path: |
-            src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/WikiGen_0.3.0_aarch64.dmg
-            src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/WikiGen_0.3.0_x64.dmg
-            src-tauri/target/release/bundle/deb/wiki-gen_0.3.0_amd64.deb
-            src-tauri\target\release\bundle\nsis\WikiGen_0.3.0_x64-setup.exe
-            latest.json
-      
-      - uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          automatic_release_tag: app-v__VERSION__
-          prerelease: true
-          title: 'App v__VERSION__'
-          files: |
-            src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/WikiGen_0.3.0_aarch64.dmg
-            src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/WikiGen_0.3.0_x64.dmg
-            src-tauri/target/release/bundle/deb/wiki-gen_0.3.0_amd64.deb
-            src-tauri\target\release\bundle\nsis\WikiGen_0.3.0_x64-setup.exe
-            latest.json
+      # - uses: actions/upload-artifact@v4
+      #   with:
+      #     name: wikigen-artifacts-${{ matrix.settings.name }}
+      #     path: |
+      #       src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/WikiGen_0.3.0_aarch64.dmg
+      #       src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/WikiGen_0.3.0_x64.dmg
+      #       src-tauri/target/release/bundle/deb/wiki-gen_0.3.0_amd64.deb
+      #       src-tauri\target\release\bundle\nsis\WikiGen_0.3.0_x64-setup.exe
+      #       latest.json
