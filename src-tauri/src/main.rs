@@ -7,12 +7,14 @@ mod yaml_declaration;
 
 use create_wiki::create_wiki;
 use prepare_data::download_and_prep_pokemon_data;
+use utils::spawn_mkdocs_process;
 
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             create_wiki,
-            download_and_prep_pokemon_data
+            download_and_prep_pokemon_data,
+            spawn_mkdocs_process
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

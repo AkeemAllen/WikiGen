@@ -1,6 +1,7 @@
 // Unsure if this is the best way to handle/organize "helper" functions
 // in rust. It might not be idiomatic, but it's a start.
 use std::env;
+use std::process::{Command, Stdio};
 use std::{fs, io, path::Path};
 
 /// Copy files from source to destination recursively.
@@ -23,4 +24,18 @@ pub fn get_os_specific_path(path: String) -> String {
         return path.replace("/", "\\");
     }
     return path;
+}
+
+#[tauri::command]
+pub fn spawn_mkdocs_process(mkdocs_file_path: &str) {
+    let path = Path::new(mkdocs_file_path);
+    // println!("{}", mkdocs_file_path.to_string());
+    let command = Command::new("mkdocs")
+        .arg("serve")
+        .arg("-f")
+        .arg(path)
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    command.stdout.unwrap();
 }
