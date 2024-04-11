@@ -23,7 +23,6 @@ pub fn copy_recursively(source: impl AsRef<Path>, destination: impl AsRef<Path>)
 #[tauri::command]
 pub fn spawn_mkdocs_process(mkdocs_file_path: &str) {
     let path = Path::new(mkdocs_file_path);
-    // println!("{}", mkdocs_file_path.to_string());
     let command = Command::new("mkdocs")
         .arg("serve")
         .arg("-f")
