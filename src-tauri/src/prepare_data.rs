@@ -2,11 +2,10 @@ use indexmap::IndexMap;
 use reqwest;
 use serde_json::Value;
 use std::fs;
+use std::path::Path;
 use std::{collections::HashMap, fs::File};
 
 use serde::{Deserialize, Serialize};
-
-use crate::utils::get_os_specific_path;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct Pokemon {
@@ -67,9 +66,10 @@ pub fn download_and_prep_pokemon_data(
     dir: &str,
 ) -> String {
     let base_path: String = format!("{}{}", dir, wiki_name);
-    let pokemon_path = get_os_specific_path(format!("{}/data/pokemon.json", base_path));
+    let pokemon_path = format!("{}/data/pokemon.json", base_path).to_string();
+    let formatted_pokemon_path = Path::new(&pokemon_path);
 
-    let pokemon_file = File::open(pokemon_path.clone()).unwrap();
+    let pokemon_file = File::open(formatted_pokemon_path).unwrap();
     let mut pokemon: Pokemon = serde_json::from_reader(pokemon_file).unwrap();
 
     for i in range_start..=range_end {
