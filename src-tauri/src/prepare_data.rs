@@ -59,12 +59,12 @@ enum EvolutionMethod {
 }
 
 #[tauri::command]
-pub fn download_and_prep_pokemon_data(
+pub async fn download_and_prep_pokemon_data(
     wiki_name: &str,
     range_start: u32,
     range_end: u32,
     dir: &str,
-) -> String {
+) -> Result<String, String> {
     let base_path = Path::new(dir).join(wiki_name);
     let pokemon_path = base_path.join("data").join("pokemon.json");
 
@@ -73,9 +73,11 @@ pub fn download_and_prep_pokemon_data(
     let mut pokemon: Pokemon = serde_json::from_reader(pokemon_file).unwrap();
 
     for i in range_start..=range_end {
-        let response = reqwest::blocking::get(format!("https://pokeapi.co/api/v2/pokemon/{}", i))
+        let response = reqwest::get(format!("https://pokeapi.co/api/v2/pokemon/{}", i))
+            .await
             .unwrap()
-            .json::<Value>();
+            .json::<Value>()
+            .await;
         let mut pokemon_response_body = response.ok().unwrap();
 
         let mut types = Vec::new();
@@ -163,5 +165,5 @@ pub fn download_and_prep_pokemon_data(
     let string_pokemon_data = serde_json::to_string(&pokemon).unwrap();
     fs::write(pokemon_path.clone(), string_pokemon_data).unwrap();
 
-    return "Pokemon Saved".to_string();
+    return Ok("Pokemon Saved".to_string());
 }
