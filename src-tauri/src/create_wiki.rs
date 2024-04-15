@@ -13,19 +13,19 @@ struct WikiConfig {
 }
 
 #[tauri::command]
-pub fn create_wiki(
+pub async fn create_wiki(
     wiki_name: &str,
     wiki_description: &str,
     wiki_author: &str,
     site_name: &str,
     dir: &str,
     resource_dir: &str,
-) -> String {
+) -> Result<String, String> {
     let base_path = Path::new(dir).join(wiki_name);
     let resource_path = Path::new(resource_dir);
 
     if base_path.exists() {
-        return format!("{} already exists", wiki_name);
+        return Err(format!("{} already exists", wiki_name));
     }
 
     fs::create_dir_all(&base_path).unwrap();
@@ -107,5 +107,5 @@ pub fn create_wiki(
     )
     .unwrap();
 
-    return format!("{} Wiki created and initialized", wiki_name);
+    return Ok(format!("{} Wiki created and initialized", wiki_name));
 }
