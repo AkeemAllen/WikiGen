@@ -1,7 +1,9 @@
 // Unsure if this is the best way to handle/organize "helper" functions
 // in rust. It might not be idiomatic, but it's a start.
+use serde::Serialize;
 use std::process::{Command, Stdio};
 use std::{fs, io, path::Path};
+use sysinfo::{Pid, System};
 
 /// Copy files from source to destination recursively.
 pub fn copy_recursively(source: impl AsRef<Path>, destination: impl AsRef<Path>) -> io::Result<()> {
@@ -18,18 +20,78 @@ pub fn copy_recursively(source: impl AsRef<Path>, destination: impl AsRef<Path>)
     Ok(())
 }
 
+#[derive(Debug, Serialize, Clone)]
+enum MkdocsServerStatus {
+    Started,
+    Running,
+    Stopped,
+}
+
+#[derive(Debug, Serialize, Clone)]
+enum MkdocsProcessId {
+    Id(usize),
+    String(String),
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct Payload {
+    message: String,
+    status: MkdocsServerStatus,
+    process_id: MkdocsProcessId,
+}
+
 // User will need to have python3 or mkdocs installed.
 // Either inform the user to install it or install it for them.
 #[tauri::command]
-pub fn spawn_mkdocs_process(mkdocs_file_path: &str) {
-    let path = Path::new(mkdocs_file_path);
-    let command = Command::new("mkdocs")
+pub async fn spawn_mkdocs_process(
+    mkdocs_file_path: String,
+    wiki_server_address: String,
+) -> Result<Payload, String> {
+    let mut mkdocs_command = Command::new("mkdocs");
+    let mkdocs_serve = mkdocs_command
         .arg("serve")
+        .arg("-a")
+        .arg(&wiki_server_address)
         .arg("-f")
-        .arg(path)
-        .stdout(Stdio::piped())
-        .spawn()
-        .unwrap();
+        .arg(Path::new(&mkdocs_file_path));
 
-    command.stdout.unwrap();
+    let child_stdout = mkdocs_serve.stdout(Stdio::piped()).spawn().unwrap();
+
+    Ok(Payload {
+        message: format!("Mkdocs Server started at {}", &wiki_server_address),
+        status: MkdocsServerStatus::Started,
+        process_id: MkdocsProcessId::Id(child_stdout.id() as usize),
+    })
+}
+
+#[tauri::command]
+pub async fn kill_mkdocs_process(process_id: usize) -> Result<Payload, String> {
+    let system = System::new_all();
+    if let Some(process) = system.process(Pid::from(process_id)) {
+        process.kill();
+    }
+
+    Ok(Payload {
+        message: format!("Killed Mkdocs Server"),
+        status: MkdocsServerStatus::Stopped,
+        process_id: MkdocsProcessId::String("None".to_string()),
+    })
+}
+
+#[tauri::command]
+pub async fn check_process_status(process_id: usize) -> Result<Payload, String> {
+    let system = System::new_all();
+    if system.process(Pid::from(process_id)).is_some() {
+        Ok(Payload {
+            message: format!("Process {} is running", process_id),
+            status: MkdocsServerStatus::Running,
+            process_id: MkdocsProcessId::Id(process_id),
+        })
+    } else {
+        Ok(Payload {
+            message: format!("Process {} is not running", process_id),
+            status: MkdocsServerStatus::Stopped,
+            process_id: MkdocsProcessId::String("None".to_string()),
+        })
+    }
 }
