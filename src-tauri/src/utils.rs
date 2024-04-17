@@ -28,16 +28,10 @@ enum MkdocsServerStatus {
 }
 
 #[derive(Debug, Serialize, Clone)]
-enum MkdocsProcessId {
-    Id(usize),
-    String(String),
-}
-
-#[derive(Debug, Serialize, Clone)]
 pub struct Payload {
     message: String,
     status: MkdocsServerStatus,
-    process_id: MkdocsProcessId,
+    process_id: usize,
 }
 
 // User will need to have python3 or mkdocs installed.
@@ -60,7 +54,7 @@ pub async fn spawn_mkdocs_process(
     Ok(Payload {
         message: format!("Mkdocs Server started at {}", &wiki_server_address),
         status: MkdocsServerStatus::Started,
-        process_id: MkdocsProcessId::Id(child_stdout.id() as usize),
+        process_id: child_stdout.id() as usize,
     })
 }
 
@@ -74,7 +68,7 @@ pub async fn kill_mkdocs_process(process_id: usize) -> Result<Payload, String> {
     Ok(Payload {
         message: format!("Killed Mkdocs Server"),
         status: MkdocsServerStatus::Stopped,
-        process_id: MkdocsProcessId::String("None".to_string()),
+        process_id: 0,
     })
 }
 
@@ -85,13 +79,13 @@ pub async fn check_process_status(process_id: usize) -> Result<Payload, String> 
         Ok(Payload {
             message: format!("Process {} is running", process_id),
             status: MkdocsServerStatus::Running,
-            process_id: MkdocsProcessId::Id(process_id),
+            process_id: process_id,
         })
     } else {
         Ok(Payload {
             message: format!("Process {} is not running", process_id),
             status: MkdocsServerStatus::Stopped,
-            process_id: MkdocsProcessId::String("None".to_string()),
+            process_id: 0,
         })
     }
 }
