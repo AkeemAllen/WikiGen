@@ -2,7 +2,7 @@
 // in rust. It might not be idiomatic, but it's a start.
 use serde::Serialize;
 use std::net::TcpStream;
-use std::process::{Command, Stdio};
+use std::process::{id, Command};
 use std::{fs, io, path::Path};
 use sysinfo::{Pid, System};
 
@@ -48,11 +48,23 @@ pub async fn spawn_mkdocs_process(mkdocs_file_path: String, port: u16) -> Result
     }
 
     if is_port_in_use {
-        return Err(Payload {
-            message: format!("Port {} is already in use", &port),
-            status: MkdocsServerStatus::Occupied,
-            process_id: 0,
-        });
+        let system = System::new_all();
+        let mut killed_process = false;
+        for (_, process) in system.processes() {
+            if process.parent() == Some(Pid::from_u32(id())) {
+                killed_process = true;
+                process.kill();
+                break;
+            }
+        }
+
+        if !killed_process {
+            return Err(Payload {
+                message: format!("Port {} is already in use", &port),
+                status: MkdocsServerStatus::Occupied,
+                process_id: 0,
+            });
+        }
     }
 
     let mut mkdocs_command = Command::new("mkdocs");
@@ -63,7 +75,7 @@ pub async fn spawn_mkdocs_process(mkdocs_file_path: String, port: u16) -> Result
         .arg("-f")
         .arg(Path::new(&mkdocs_file_path));
 
-    let child_stdout = mkdocs_serve.stdout(Stdio::piped()).spawn().unwrap();
+    let child_stdout = mkdocs_serve.spawn().expect("Failed to start Mkdocs Server");
 
     Ok(Payload {
         message: format!("Mkdocs Server started at localhost:{}", &port),
