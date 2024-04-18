@@ -1,6 +1,7 @@
 // Unsure if this is the best way to handle/organize "helper" functions
 // in rust. It might not be idiomatic, but it's a start.
 use serde::Serialize;
+use std::net::TcpStream;
 use std::process::{Command, Stdio};
 use std::{fs, io, path::Path};
 use sysinfo::{Pid, System};
@@ -25,6 +26,7 @@ enum MkdocsServerStatus {
     Started,
     Running,
     Stopped,
+    Occupied,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -37,22 +39,34 @@ pub struct Payload {
 // User will need to have python3 or mkdocs installed.
 // Either inform the user to install it or install it for them.
 #[tauri::command]
-pub async fn spawn_mkdocs_process(
-    mkdocs_file_path: String,
-    wiki_server_address: String,
-) -> Result<Payload, String> {
+pub async fn spawn_mkdocs_process(mkdocs_file_path: String, port: u16) -> Result<Payload, Payload> {
+    let mut is_port_in_use = false;
+
+    match TcpStream::connect(("0.0.0.0", port)) {
+        Ok(_) => is_port_in_use = true,
+        Err(_) => {}
+    }
+
+    if is_port_in_use {
+        return Err(Payload {
+            message: format!("Port {} is already in use", &port),
+            status: MkdocsServerStatus::Occupied,
+            process_id: 0,
+        });
+    }
+
     let mut mkdocs_command = Command::new("mkdocs");
     let mkdocs_serve = mkdocs_command
         .arg("serve")
         .arg("-a")
-        .arg(&wiki_server_address)
+        .arg(format!("0.0.0.0:{}", &port))
         .arg("-f")
         .arg(Path::new(&mkdocs_file_path));
 
     let child_stdout = mkdocs_serve.stdout(Stdio::piped()).spawn().unwrap();
 
     Ok(Payload {
-        message: format!("Mkdocs Server started at {}", &wiki_server_address),
+        message: format!("Mkdocs Server started at localhost:{}", &port),
         status: MkdocsServerStatus::Started,
         process_id: child_stdout.id() as usize,
     })
