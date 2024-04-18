@@ -66,7 +66,7 @@
   // }
   async function getMkdocsDirectory(): Promise<string> {
     const appData = await appDataDir();
-    let mkdocsFilePath = `${appData}${$selectedWiki.name}/dist/mkdocs.yml`;
+    let mkdocsFilePath = `${appData}${$selectedWiki.name}/dist`;
     const osType = await type();
     if (osType === "Windows_NT") {
       mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
