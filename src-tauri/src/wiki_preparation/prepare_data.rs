@@ -1,62 +1,12 @@
-use indexmap::IndexMap;
 use reqwest;
 use serde_json::Value;
 use std::fs;
 use std::path::Path;
 use std::{collections::HashMap, fs::File};
 
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct Pokemon {
-    pokemon: IndexMap<u32, PokemonData>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct PokemonData {
-    id: u32,
-    name: String,
-    types: Vec<String>,
-    abilities: Vec<String>,
-    stats: Stats,
-    moves: HashMap<String, Move>,
-    sprite: String,
-    evolution: Evolution,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct Stats {
-    hp: u32,
-    attack: u32,
-    defense: u32,
-    sp_attack: u32,
-    sp_defense: u32,
-    speed: u32,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct Move {
-    level_learned: u32,
-    learn_method: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct Evolution {
-    level: Option<u32>,
-    item: Option<String>,
-    other: Option<String>,
-    evolves_to: Option<String>,
-    method: EvolutionMethod,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "snake_case")]
-enum EvolutionMethod {
-    LevelUp,
-    Item,
-    Other,
-    NoChange,
-}
+use crate::structs::pokemon_structs::{
+    Evolution, EvolutionMethod, Move, Pokemon, PokemonData, Stats,
+};
 
 #[tauri::command]
 pub async fn download_and_prep_pokemon_data(
