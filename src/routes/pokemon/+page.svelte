@@ -35,7 +35,6 @@
       wikiName: $selectedWiki.name,
       rangeStart,
       rangeEnd,
-      dir: directory,
     }).then(async () => {
       const pokemonFromFile = await readTextFile(
         `${directory}${$selectedWiki.name}/data/pokemon.json`,
@@ -49,6 +48,14 @@
       );
       loading = false;
       toastStore.trigger(dataPreparedToast);
+    });
+
+    await invoke("download_pokemon_sprites", {
+      wikiName: $selectedWiki.name,
+      rangeStart,
+      rangeEnd,
+    }).then((response) => {
+      console.log(response);
     });
   }
 </script>
