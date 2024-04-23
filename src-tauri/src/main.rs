@@ -8,7 +8,7 @@ mod wiki_preparation;
 use helpers::mkdocs_process::{check_process_status, kill_mkdocs_process, spawn_mkdocs_process};
 use page_generators::pokemon_pages::generate_pokemon_pages_in_range;
 use wiki_preparation::create_wiki::create_wiki;
-use wiki_preparation::prepare_data::download_and_prep_pokemon_data;
+use wiki_preparation::prepare_data::{download_and_prep_pokemon_data, download_pokemon_sprites};
 
 fn main() {
     tauri::Builder::default()
@@ -18,7 +18,8 @@ fn main() {
             spawn_mkdocs_process,
             kill_mkdocs_process,
             check_process_status,
-            generate_pokemon_pages_in_range
+            generate_pokemon_pages_in_range,
+            download_pokemon_sprites
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
