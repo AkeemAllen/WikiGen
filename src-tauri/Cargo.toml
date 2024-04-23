@@ -22,6 +22,7 @@ tauri = { version = "1.6.1", features = [ "updater", "api-all"] }
 reqwest = { version = "0.12.1", features = ["blocking", "json"] }
 indexmap = { version = "2.2.6", features = ["serde"] }
 sysinfo = "0.30.10"
+image = "0.25.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
