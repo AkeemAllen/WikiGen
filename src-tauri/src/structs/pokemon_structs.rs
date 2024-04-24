@@ -12,6 +12,7 @@ pub struct PokemonData {
     pub id: u32,
     pub name: String,
     pub types: Vec<String>,
+    // TODO: Update field to be Vec<Ability> where Ability contains name and effect
     pub abilities: Vec<String>,
     pub stats: Stats,
     pub moves: HashMap<String, Move>,
