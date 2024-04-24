@@ -2,12 +2,18 @@
   import SelectInput from "$lib/components/SelectInput.svelte";
   import type { AutocompleteOption } from "@skeletonlabs/skeleton";
   import _ from "lodash";
-  import { PokemonTypes, type PokemonDetails } from "../../store/pokemon";
+  import {
+    PokemonTypes,
+    pokemonList,
+    type PokemonDetails,
+  } from "../../store/pokemon";
   import NumberInput from "./NumberInput.svelte";
   import TextInput from "./TextInput.svelte";
 
   export let pokemonDetails: PokemonDetails = {} as PokemonDetails;
-  export let pokemonListOptions: AutocompleteOption<string | number>[];
+  let pokemonListOptions: AutocompleteOption<string>[] = $pokemonList.map(
+    ([name]) => ({ label: _.capitalize(name), value: _.capitalize(name) }),
+  );
 </script>
 
 <div class="scroll-smooth px-4">
