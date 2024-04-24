@@ -45,7 +45,7 @@ pub struct Evolution {
     pub method: EvolutionMethod,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum EvolutionMethod {
     LevelUp,

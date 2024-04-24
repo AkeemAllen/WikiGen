@@ -10,7 +10,7 @@ use crate::{
     helpers::capitalize,
     structs::{
         mkdocs_structs::{MKDocsConfig, Navigation},
-        pokemon_structs::{Pokemon, Stats},
+        pokemon_structs::{Evolution, EvolutionMethod, Pokemon, Stats},
     },
 };
 
@@ -114,6 +114,17 @@ pub async fn generate_pokemon_pages_in_range(
         markdown_file
             .write_all(create_stats_table(&data.stats).as_bytes())
             .unwrap();
+
+        // Add Evolution Table
+        if &data.evolution.method != &EvolutionMethod::NoChange {
+            // Add Stats Table
+            markdown_file
+                .write_all(b"\n\n## Evolution Change\n\n")
+                .unwrap();
+            markdown_file
+                .write_all(create_evolution_table(data.evolution.clone()).as_bytes())
+                .unwrap();
+        }
 
         let mut specific_change_entry = HashMap::new();
         let entry_key = format!(
@@ -229,5 +240,26 @@ fn create_stats_table(stats: &Stats) -> String {
         stats.sp_defense,
         stats.speed,
         base_stat_total
+    );
+}
+
+fn create_evolution_table(evolution: Evolution) -> String {
+    let no_change = "".to_string();
+
+    let item_level_note = match evolution.method {
+        EvolutionMethod::Item => evolution.item.unwrap(),
+        EvolutionMethod::LevelUp => evolution.level.unwrap().to_string(),
+        EvolutionMethod::Other => evolution.other.unwrap(),
+        EvolutionMethod::NoChange => no_change,
+    };
+
+    return format!(
+        "| Method | Item/Level/Note | Evolved Pokemon |
+        | :--: | :--: | :--: |
+        | {:?} | {} | {} |
+        ",
+        evolution.method,
+        item_level_note,
+        &evolution.evolves_to.unwrap()
     );
 }
