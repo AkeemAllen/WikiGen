@@ -2,7 +2,6 @@ use reqwest;
 use serde_json::Value;
 use std::fs;
 use std::io::Cursor;
-use std::path::Path;
 use std::{collections::HashMap, fs::File};
 use tauri::AppHandle;
 
@@ -134,7 +133,7 @@ pub async fn download_pokemon_sprites(
 
     let pokemon_file = File::open(&pokemon_path).unwrap();
 
-    let mut pokemon: Pokemon = serde_json::from_reader(pokemon_file).unwrap();
+    let pokemon: Pokemon = serde_json::from_reader(pokemon_file).unwrap();
 
     for dex_number in range_start..=range_end {
         println!("{}", dex_number);
@@ -172,7 +171,7 @@ pub async fn download_pokemon_sprites(
             .bytes()
             .await;
 
-        let mut response_body = response.ok();
+        let response_body = response.ok();
 
         let sprite_data = match response_body {
             Some(response_body) => response_body,
