@@ -92,6 +92,12 @@ pub async fn generate_pokemon_pages_in_range(
             )
             .unwrap();
 
+        markdown_file.write_all(b"## Types\n\n").unwrap();
+
+        markdown_file
+            .write_all(create_type_table(&data.types).as_bytes())
+            .unwrap();
+
         let mut specific_change_entry = HashMap::new();
         let entry_key = format!(
             "{} - {}",
@@ -137,5 +143,20 @@ pub async fn generate_pokemon_pages_in_range(
         serde_yaml::to_string(&mkdocs_config).unwrap(),
     )
     .unwrap();
+
     return Ok("Pokemon Pages Generated".to_string());
+}
+
+fn create_type_table(types: &Vec<String>) -> String {
+    let type_images: Vec<String> = types
+        .iter()
+        .map(|_type| format!("![{}](../img/types/{}.png)", _type, _type))
+        .collect();
+    return format!(
+        "| Version | Type |
+            | :--: | ----: |
+            | Classic | {} |
+        ",
+        type_images.join(" ")
+    );
 }
