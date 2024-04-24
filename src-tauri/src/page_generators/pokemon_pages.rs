@@ -82,6 +82,8 @@ pub async fn generate_pokemon_pages_in_range(
                 continue;
             }
         };
+
+        // Adding sprite
         markdown_file
             .write_all(
                 format!(
@@ -92,10 +94,19 @@ pub async fn generate_pokemon_pages_in_range(
             )
             .unwrap();
 
+        // Add Type Table
         markdown_file.write_all(b"## Types\n\n").unwrap();
-
         markdown_file
             .write_all(create_type_table(&data.types).as_bytes())
+            .unwrap();
+
+        // Add Defensive Matchups Table
+        markdown_file.write_all(b"\n\n##Defenses\n\n").unwrap();
+
+        // Add Abilities Table
+        markdown_file.write_all(b"## Abilities\n\n").unwrap();
+        markdown_file
+            .write_all(create_ability_table(&data.abilities).as_bytes())
             .unwrap();
 
         let mut specific_change_entry = HashMap::new();
@@ -152,11 +163,38 @@ fn create_type_table(types: &Vec<String>) -> String {
         .iter()
         .map(|_type| format!("![{}](../img/types/{}.png)", _type, _type))
         .collect();
+
     return format!(
         "| Version | Type |
             | :--: | ----: |
             | Classic | {} |
         ",
         type_images.join(" ")
+    );
+}
+
+fn create_defenses_table(types: &Vec<String>) -> String {
+    return format!("");
+}
+
+fn create_ability_table(abilities: &Vec<String>) -> String {
+    let placeholder_effect = "Effect";
+    let ability_entries: Vec<String> = abilities
+        .iter()
+        .map(|ability| {
+            format!(
+                "[{}](\" {} \")",
+                capitalize::capitalize(ability),
+                placeholder_effect
+            )
+        })
+        .collect();
+
+    return format!(
+        "| Version | Ability |
+        | :--: | ---: |
+        | All | {} |
+        ",
+        ability_entries.join("/")
     );
 }
