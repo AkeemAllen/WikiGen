@@ -10,7 +10,7 @@ use crate::{
     helpers::capitalize,
     structs::{
         mkdocs_structs::{MKDocsConfig, Navigation},
-        pokemon_structs::Pokemon,
+        pokemon_structs::{Pokemon, Stats},
     },
 };
 
@@ -109,6 +109,12 @@ pub async fn generate_pokemon_pages_in_range(
             .write_all(create_ability_table(&data.abilities).as_bytes())
             .unwrap();
 
+        // Add Stats Table
+        markdown_file.write_all(b"\n\n## Stats\n\n").unwrap();
+        markdown_file
+            .write_all(create_stats_table(&data.stats).as_bytes())
+            .unwrap();
+
         let mut specific_change_entry = HashMap::new();
         let entry_key = format!(
             "{} - {}",
@@ -196,5 +202,32 @@ fn create_ability_table(abilities: &Vec<String>) -> String {
         | All | {} |
         ",
         ability_entries.join("/")
+    );
+}
+
+fn create_stats_table(stats: &Stats) -> String {
+    let base_stat_total: u32 = [
+        stats.hp,
+        stats.attack,
+        stats.defense,
+        stats.sp_attack,
+        stats.sp_defense,
+        stats.speed,
+    ]
+    .iter()
+    .sum();
+
+    return format!(
+        "| Version | HP | Atk | Def | SAtk | SDef | Spd | BST |
+        | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
+        | All | {} | {} | {} | {} | {} | {} | {} |
+        ",
+        stats.hp,
+        stats.attack,
+        stats.defense,
+        stats.sp_attack,
+        stats.sp_defense,
+        stats.speed,
+        base_stat_total
     );
 }
