@@ -3,6 +3,7 @@
 
   import NumberInput from "$lib/components/NumberInput.svelte";
   import { invoke } from "@tauri-apps/api/tauri";
+  import { selectedWiki } from "../../store";
 
   let rangeStart: number = 1;
   let rangeEnd: number = 3;
@@ -13,6 +14,7 @@
     await invoke("generate_pokemon_pages_in_range", {
       rangeStart,
       rangeEnd,
+      wikiName: $selectedWiki.name,
     }).then(() => {
       console.log("Pokemon generated");
     });
