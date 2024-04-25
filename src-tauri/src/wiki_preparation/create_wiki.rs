@@ -1,7 +1,7 @@
-use crate::helpers::copy_recursively::copy_recursively;
+use crate::helpers::{copy_recursively::copy_recursively, matchups::generate_matchup_map};
 use crate::wiki_preparation::yaml_declaration;
 use serde::{Deserialize, Serialize};
-use std::{fs, path::Path};
+use std::fs;
 use tauri::AppHandle;
 
 #[derive(Serialize, Deserialize)]
@@ -19,6 +19,7 @@ pub async fn create_wiki(
     wiki_description: &str,
     wiki_author: &str,
     site_name: &str,
+    matchup_generation: &str,
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let data_dir = app_handle.path_resolver().app_data_dir().unwrap();
@@ -108,6 +109,9 @@ pub async fn create_wiki(
         serde_yaml::to_string(&mkdocs_config).unwrap(),
     )
     .unwrap();
+
+    let map_generated = generate_matchup_map(wiki_name, matchup_generation, app_handle).unwrap();
+    println!("{}", map_generated);
 
     return Ok(format!("{} Wiki created and initialized", wiki_name));
 }

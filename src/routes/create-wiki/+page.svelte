@@ -53,6 +53,7 @@
       wikiDescription,
       wikiAuthor,
       siteName,
+      matchupGeneration: settings.matchup_generation,
     }).then(() => {
       loading = false;
       toastStore.trigger(wikiCreatedToast);
