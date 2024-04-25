@@ -2,6 +2,7 @@ use crate::helpers::copy_recursively::copy_recursively;
 use crate::wiki_preparation::yaml_declaration;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::Path};
+use tauri::AppHandle;
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -18,11 +19,12 @@ pub async fn create_wiki(
     wiki_description: &str,
     wiki_author: &str,
     site_name: &str,
-    dir: &str,
-    resource_dir: &str,
+    app_handle: AppHandle,
 ) -> Result<String, String> {
-    let base_path = Path::new(dir).join(wiki_name);
-    let resource_path = Path::new(resource_dir);
+    let data_dir = app_handle.path_resolver().app_data_dir().unwrap();
+    let base_path = data_dir.join(wiki_name);
+    let resource_dir = app_handle.path_resolver().resource_dir().unwrap();
+    let resource_path = resource_dir.join("resources");
 
     if base_path.exists() {
         return Err(format!("{} already exists", wiki_name));

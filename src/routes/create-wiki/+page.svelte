@@ -4,8 +4,6 @@
   import TextInput from "$lib/components/TextInput.svelte";
   import { getToastStore, type ToastSettings } from "@skeletonlabs/skeleton";
   import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
-  import { type } from "@tauri-apps/api/os";
-  import { appDataDir, resourceDir } from "@tauri-apps/api/path";
   import { invoke } from "@tauri-apps/api/tauri";
   import { wikis, type WikiSettings } from "../../store";
 
@@ -36,17 +34,6 @@
   };
 
   async function createWiki() {
-    const directory = await appDataDir();
-    const resourceDirectory = await resourceDir();
-    let completeResourceDirectory = `${resourceDirectory}/resources/`;
-
-    const osType = await type();
-
-    // Check if platform is windows and change the directory path
-    if (osType === "Windows_NT") {
-      completeResourceDirectory = `${resourceDirectory}\\resources\\`;
-    }
-
     loading = true;
 
     $wikis[wikiCodeName] = {
@@ -66,8 +53,6 @@
       wikiDescription,
       wikiAuthor,
       siteName,
-      dir: directory,
-      resourceDir: completeResourceDirectory,
     }).then(() => {
       loading = false;
       toastStore.trigger(wikiCreatedToast);
