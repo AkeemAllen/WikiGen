@@ -1,6 +1,6 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt, str::FromStr};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Pokemon {
@@ -53,3 +53,82 @@ pub enum EvolutionMethod {
     Other,
     NoChange,
 }
+
+#[derive(Debug, Deserialize, Serialize, Clone, Copy)]
+pub enum PokemonTypesEnum {
+    Normal,
+    Fire,
+    Water,
+    Electric,
+    Grass,
+    Ice,
+    Fighting,
+    Poison,
+    Ground,
+    Flying,
+    Psychic,
+    Bug,
+    Rock,
+    Ghost,
+    Dragon,
+    Dark,
+    Steel,
+    Fairy,
+    None,
+}
+
+impl fmt::Display for PokemonTypesEnum {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl FromStr for PokemonTypesEnum {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "normal" => Ok(PokemonTypesEnum::Normal),
+            "fire" => Ok(PokemonTypesEnum::Fire),
+            "water" => Ok(PokemonTypesEnum::Water),
+            "electric" => Ok(PokemonTypesEnum::Electric),
+            "grass" => Ok(PokemonTypesEnum::Grass),
+            "ice" => Ok(PokemonTypesEnum::Ice),
+            "fighting" => Ok(PokemonTypesEnum::Fighting),
+            "poison" => Ok(PokemonTypesEnum::Poison),
+            "ground" => Ok(PokemonTypesEnum::Ground),
+            "flying" => Ok(PokemonTypesEnum::Flying),
+            "psychic" => Ok(PokemonTypesEnum::Psychic),
+            "bug" => Ok(PokemonTypesEnum::Bug),
+            "rock" => Ok(PokemonTypesEnum::Rock),
+            "ghost" => Ok(PokemonTypesEnum::Ghost),
+            "dragon" => Ok(PokemonTypesEnum::Dragon),
+            "dark" => Ok(PokemonTypesEnum::Dark),
+            "steel" => Ok(PokemonTypesEnum::Steel),
+            "fairy" => Ok(PokemonTypesEnum::Fairy),
+            "none" => Ok(PokemonTypesEnum::None),
+            &_ => todo!(),
+        }
+    }
+}
+
+pub const POKEMON_TYPES_ARRAY: [PokemonTypesEnum; 18] = [
+    PokemonTypesEnum::Normal,
+    PokemonTypesEnum::Fire,
+    PokemonTypesEnum::Water,
+    PokemonTypesEnum::Electric,
+    PokemonTypesEnum::Grass,
+    PokemonTypesEnum::Ice,
+    PokemonTypesEnum::Fighting,
+    PokemonTypesEnum::Poison,
+    PokemonTypesEnum::Ground,
+    PokemonTypesEnum::Flying,
+    PokemonTypesEnum::Psychic,
+    PokemonTypesEnum::Bug,
+    PokemonTypesEnum::Rock,
+    PokemonTypesEnum::Ghost,
+    PokemonTypesEnum::Dragon,
+    PokemonTypesEnum::Dark,
+    PokemonTypesEnum::Steel,
+    PokemonTypesEnum::Fairy,
+];

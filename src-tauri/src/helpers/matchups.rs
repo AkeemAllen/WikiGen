@@ -2,8 +2,9 @@ use std::{collections::HashMap, fs::File};
 
 use tauri::AppHandle;
 
-use crate::structs::matchup_models::{
-    PokemonTypesEnum, GENERATION_ONE, GENERATION_TWO, GEN_DEFAULT, POKEMON_TYPES_ARRAY,
+use crate::structs::{
+    matchup_models::{GENERATION_ONE, GENERATION_TWO, GEN_DEFAULT},
+    pokemon_structs::{PokemonTypesEnum, POKEMON_TYPES_ARRAY},
 };
 
 pub fn generate_matchup_map(
