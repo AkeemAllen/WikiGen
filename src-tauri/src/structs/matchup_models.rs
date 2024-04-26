@@ -1,5 +1,8 @@
+use std::fmt;
+
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Copy)]
 pub enum PokemonTypesEnum {
     Normal,
     Fire,
@@ -22,26 +25,48 @@ pub enum PokemonTypesEnum {
     None,
 }
 
-pub const POKEMON_TYPES_ARRAY: [&str; 18] = [
-    "normal", "fire", "water", "electric", "grass", "ice", "fighting", "poison", "ground",
-    "flying", "psychic", "bug", "rock", "ghost", "dragon", "dark", "steel", "fairy",
+impl fmt::Display for PokemonTypesEnum {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+pub const POKEMON_TYPES_ARRAY: [PokemonTypesEnum; 18] = [
+    PokemonTypesEnum::Normal,
+    PokemonTypesEnum::Fire,
+    PokemonTypesEnum::Water,
+    PokemonTypesEnum::Electric,
+    PokemonTypesEnum::Grass,
+    PokemonTypesEnum::Ice,
+    PokemonTypesEnum::Fighting,
+    PokemonTypesEnum::Poison,
+    PokemonTypesEnum::Ground,
+    PokemonTypesEnum::Flying,
+    PokemonTypesEnum::Psychic,
+    PokemonTypesEnum::Bug,
+    PokemonTypesEnum::Rock,
+    PokemonTypesEnum::Ghost,
+    PokemonTypesEnum::Dragon,
+    PokemonTypesEnum::Dark,
+    PokemonTypesEnum::Steel,
+    PokemonTypesEnum::Fairy,
 ];
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum NumberTypes {
-    I32(i32),
-    F32(f32),
-}
+// #[derive(Debug, Serialize, Deserialize, Clone)]
+// pub enum NumberTypes {
+//     I32(i32),
+//     F32(f32),
+// }
 // const N: i32 = 1;
 // const H: i32 = 1 / 2;
 // const X: f32 = f32::NAN;
-const N: NumberTypes = NumberTypes::I32(1);
-const H: NumberTypes = NumberTypes::I32(1 / 2);
-const X: NumberTypes = NumberTypes::F32(f32::NAN);
-const D: NumberTypes = NumberTypes::I32(2);
-const Z: NumberTypes = NumberTypes::I32(0);
+const N: f32 = 1.0;
+const H: f32 = 0.5;
+const X: f32 = f32::NAN;
+const D: f32 = 2.0;
+const Z: f32 = 0.0;
 
-pub const GEN_DEFAULT: [[NumberTypes; 18]; 18] = [
+pub const GEN_DEFAULT: [[f32; 18]; 18] = [
     [N, N, N, N, N, N, N, N, N, N, N, N, H, Z, N, N, H, N],
     [N, H, H, N, D, D, N, N, N, N, N, D, H, N, H, N, D, N],
     [N, D, H, N, H, N, N, N, D, N, N, N, D, N, H, N, N, N],
@@ -62,7 +87,7 @@ pub const GEN_DEFAULT: [[NumberTypes; 18]; 18] = [
     [N, H, N, N, N, N, D, H, N, N, N, N, N, N, D, D, H, N],
 ];
 
-pub const GENERATION_ONE: [[NumberTypes; 18]; 18] = [
+pub const GENERATION_ONE: [[f32; 18]; 18] = [
     [N, N, N, N, N, N, N, N, N, N, N, N, H, Z, N, X, X, X],
     [N, H, H, N, D, D, N, N, N, N, N, D, H, N, H, X, X, X],
     [N, D, H, N, H, N, N, N, D, N, N, N, D, N, H, X, X, X],
@@ -83,7 +108,7 @@ pub const GENERATION_ONE: [[NumberTypes; 18]; 18] = [
     [X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X],
 ];
 
-pub const GENERATION_TWO: [[NumberTypes; 18]; 18] = [
+pub const GENERATION_TWO: [[f32; 18]; 18] = [
     [N, N, N, N, N, N, N, N, N, N, N, N, H, Z, N, N, H, X],
     [N, H, H, N, D, D, N, N, N, N, N, D, H, N, H, N, D, X],
     [N, D, H, N, H, N, N, N, D, N, N, N, D, N, H, N, N, X],
