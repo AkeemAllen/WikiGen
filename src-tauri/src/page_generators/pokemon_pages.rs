@@ -2,15 +2,16 @@ use std::{
     collections::HashMap,
     fs::{self, File},
     io::Write,
+    str::FromStr,
 };
 
 use tauri::AppHandle;
 
 use crate::{
-    helpers::capitalize,
+    helpers::{capitalize, matchups::get_defensive_matchups},
     structs::{
         mkdocs_structs::{MKDocsConfig, Navigation},
-        pokemon_structs::{Evolution, EvolutionMethod, Pokemon, Stats},
+        pokemon_structs::{Evolution, EvolutionMethod, Pokemon, PokemonTypesEnum, Stats},
     },
 };
 
@@ -102,6 +103,9 @@ pub async fn generate_pokemon_pages_in_range(
 
         // Add Defensive Matchups Table
         markdown_file.write_all(b"\n\n##Defenses\n\n").unwrap();
+        markdown_file
+            .write_all(create_defenses_table(&data.types, wiki_name, app_handle.clone()).as_bytes())
+            .unwrap();
 
         // Add Abilities Table
         markdown_file.write_all(b"## Abilities\n\n").unwrap();
@@ -190,8 +194,80 @@ fn create_type_table(types: &Vec<String>) -> String {
     );
 }
 
-fn create_defenses_table(types: &Vec<String>) -> String {
-    return format!("");
+// Find better way to implement this function
+fn create_defenses_table(types: &Vec<String>, wiki_name: &str, app_handle: AppHandle) -> String {
+    let defense_types = types
+        .iter()
+        .map(|_type| PokemonTypesEnum::from_str(&_type).unwrap())
+        .collect();
+    let defensive_matchups = get_defensive_matchups(defense_types, wiki_name, app_handle);
+
+    let mut immunity_markdown = "".to_string();
+    if let Some(immunities) = defensive_matchups.get("0") {
+        let markdown_immunity: Vec<String> = immunities
+            .iter()
+            .map(|immunity| get_markdown_image_for_type(immunity))
+            .collect();
+        immunity_markdown = markdown_immunity.join("<br/>").to_string();
+    }
+
+    let mut normal_resists_markdown = "".to_string();
+    if let Some(normal_resists) = defensive_matchups.get("1") {
+        let markdown_normal: Vec<String> = normal_resists
+            .iter()
+            .map(|normal_resist| get_markdown_image_for_type(normal_resist))
+            .collect();
+        normal_resists_markdown = markdown_normal.join("<br/>").to_string();
+    }
+
+    let mut double_weak_resists_markdown = "".to_string();
+    if let Some(double_resists) = defensive_matchups.get("2") {
+        let markdown_double: Vec<String> = double_resists
+            .iter()
+            .map(|double_resist| get_markdown_image_for_type(double_resist))
+            .collect();
+        double_weak_resists_markdown = markdown_double.join("<br/>").to_string();
+    }
+
+    let mut quad_weak_resists_markdown = "".to_string();
+    if let Some(quad_weak_resists) = defensive_matchups.get("4") {
+        let markdown_quad: Vec<String> = quad_weak_resists
+            .iter()
+            .map(|quad_weak_resist| get_markdown_image_for_type(quad_weak_resist))
+            .collect();
+        quad_weak_resists_markdown = markdown_quad.join("<br/>").to_string();
+    }
+
+    let mut half_weak_resists_markdown = "".to_string();
+    if let Some(half_weak_resists) = defensive_matchups.get("0.5") {
+        let markdown_half_weak: Vec<String> = half_weak_resists
+            .iter()
+            .map(|half_weak_resist| get_markdown_image_for_type(half_weak_resist))
+            .collect();
+        half_weak_resists_markdown = markdown_half_weak.join("<br/>").to_string();
+    }
+
+    let mut quarter_weak_resists_markdown = "".to_string();
+    if let Some(quarter_resists) = defensive_matchups.get("0.25") {
+        let markdown_quarter_weak: Vec<String> = quarter_resists
+            .iter()
+            .map(|quarter_weak_resist| get_markdown_image_for_type(quarter_weak_resist))
+            .collect();
+        quarter_weak_resists_markdown = markdown_quarter_weak.join("<br/>").to_string();
+    }
+
+    return format!(
+        "| Immune x0 | Resistant ×¼ | Resistant ×½ | Normal x1 | Weak x2 | Weak x4 |
+        | :--: | :--: | :--: | :--: | :--: | :--: |
+        | {} | {} | {} | {} | {} | {} |
+        ",
+        immunity_markdown,
+        quarter_weak_resists_markdown,
+        half_weak_resists_markdown,
+        normal_resists_markdown,
+        double_weak_resists_markdown,
+        quad_weak_resists_markdown
+    );
 }
 
 fn create_ability_table(abilities: &Vec<String>) -> String {
@@ -261,5 +337,13 @@ fn create_evolution_table(evolution: Evolution) -> String {
         evolution.method,
         item_level_note,
         &evolution.evolves_to.unwrap()
+    );
+}
+
+fn get_markdown_image_for_type(_type: &String) -> String {
+    return format!(
+        "![{}](../img/types/{}.png)",
+        _type.to_lowercase(),
+        _type.to_lowercase()
     );
 }
