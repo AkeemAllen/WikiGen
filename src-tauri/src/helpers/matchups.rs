@@ -100,7 +100,6 @@ fn matchup_for(
 
 #[derive(Debug)]
 struct DefensiveMatchups {
-    wiki_name: String,
     pokemon_type: String,
     effectiveness: f32,
 }
@@ -114,7 +113,6 @@ fn generate_defensive_matchups(
     let effectiveness = matchup_for(wiki_name, defense_types, pokemon_type, app_handle);
 
     return DefensiveMatchups {
-        wiki_name: wiki_name.to_string(),
         pokemon_type: pokemon_type.to_string(),
         effectiveness: effectiveness,
     };
