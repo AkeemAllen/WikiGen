@@ -5,13 +5,15 @@ use std::{
     str::FromStr,
 };
 
+use indexmap::IndexMap;
 use tauri::AppHandle;
 
 use crate::{
     helpers::{capitalize, matchups::get_defensive_matchups},
     structs::{
         mkdocs_structs::{MKDocsConfig, Navigation},
-        pokemon_structs::{Evolution, EvolutionMethod, Pokemon, PokemonTypesEnum, Stats},
+        move_structs::{LearnMethodDetail, MoveSetMove, Moves},
+        pokemon_structs::{Evolution, EvolutionMethod, Move, Pokemon, PokemonTypesEnum, Stats},
     },
 };
 
@@ -28,6 +30,10 @@ pub async fn generate_pokemon_pages_in_range(
     let pokemon_json_file_path = base_path.join(wiki_name).join("data").join("pokemon.json");
     let pokemon_file = File::open(&pokemon_json_file_path).unwrap();
     let pokemon: Pokemon = serde_json::from_reader(pokemon_file).unwrap();
+
+    let moves_json_file_path = base_path.join(wiki_name).join("data").join("moves.json");
+    let moves_file = File::open(&moves_json_file_path).unwrap();
+    let moves: Moves = serde_json::from_reader(moves_file).unwrap();
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
     let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
@@ -108,7 +114,7 @@ pub async fn generate_pokemon_pages_in_range(
             .unwrap();
 
         // Add Abilities Table
-        markdown_file.write_all(b"## Abilities\n\n").unwrap();
+        markdown_file.write_all(b"\n\n## Abilities\n\n").unwrap();
         markdown_file
             .write_all(create_ability_table(&data.abilities).as_bytes())
             .unwrap();
@@ -129,6 +135,14 @@ pub async fn generate_pokemon_pages_in_range(
                 .write_all(create_evolution_table(data.evolution.clone()).as_bytes())
                 .unwrap();
         }
+
+        // Add Level Up Moves
+        markdown_file
+            .write_all(b"\n\n## Level Up Moves\n\n")
+            .unwrap();
+        markdown_file
+            .write_all(create_level_up_moves_table(data.moves.clone(), moves.clone()).as_bytes())
+            .unwrap();
 
         let mut specific_change_entry = HashMap::new();
         let entry_key = format!(
@@ -316,6 +330,83 @@ fn create_stats_table(stats: &Stats) -> String {
         stats.sp_defense,
         stats.speed,
         base_stat_total
+    );
+}
+
+fn create_level_up_moves_table(moves: HashMap<String, Move>, moves_from_file: Moves) -> String {
+    let mut _moves_data: IndexMap<String, MoveSetMove> = IndexMap::new();
+
+    for (move_name, details) in moves {
+        if !details.learn_method.contains(&"level-up".to_string()) {
+            continue;
+        }
+        match moves_from_file.moves.get(&move_name) {
+            Some(file_move) => _moves_data.insert(
+                move_name,
+                MoveSetMove {
+                    learn_method_detail: LearnMethodDetail::LevelLearned(details.level_learned),
+                    power: file_move.power,
+                    pp: file_move.pp,
+                    accuracy: file_move.accuracy,
+                    _type: file_move._type.clone(),
+                    damage_class: file_move.damage_class.clone(),
+                },
+            ),
+            None => {
+                println!("Issue getting move from file");
+                continue;
+            }
+        };
+    }
+
+    _moves_data.sort_by(|_, value1, _, value2| {
+        let level = match value1.learn_method_detail {
+            LearnMethodDetail::LevelLearned(level) => level,
+            LearnMethodDetail::MachineName(_) => 0,
+        };
+
+        let level2 = match value2.learn_method_detail {
+            LearnMethodDetail::LevelLearned(level) => level,
+            LearnMethodDetail::MachineName(_) => 0,
+        };
+        level.cmp(&level2)
+    });
+
+    let mut markdown_moves = String::new();
+    for (move_name, movesetmove) in _moves_data {
+        let power = match movesetmove.power {
+            Some(power) => power.to_string(),
+            None => "-".to_string(),
+        };
+        let accuracy = match movesetmove.accuracy {
+            Some(accuracy) => accuracy.to_string(),
+            None => "-".to_string(),
+        };
+
+        let mut level_learned = 0;
+        if let LearnMethodDetail::LevelLearned(level) = movesetmove.learn_method_detail {
+            level_learned = level;
+        }
+
+        let table_entry = format!(
+            "| {} | {} | {} | {} | {} | {} | {} |\n",
+            level_learned,
+            capitalize::capitalize(&move_name),
+            power,
+            accuracy,
+            movesetmove.pp,
+            get_markdown_image_for_type(&movesetmove._type),
+            get_markdown_image_for_type(&movesetmove.damage_class)
+        );
+        markdown_moves.push_str(&table_entry); // markdown_moves.
+    }
+
+    return format!(
+        "| Level | Name | Power | Accuracy | PP | Type | Damage Class |
+        | -- | -- | -- | -- | -- | -- | -- |
+        {}
+        ",
+        markdown_moves
     );
 }
 
