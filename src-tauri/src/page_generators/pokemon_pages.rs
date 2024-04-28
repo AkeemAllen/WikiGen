@@ -145,6 +145,16 @@ pub async fn generate_pokemon_pages_in_range(
             )
             .unwrap();
 
+        // Add Learnable Moves
+        markdown_file
+            .write_all(b"\n\n## Learnable Moves\n\n")
+            .unwrap();
+        markdown_file
+            .write_all(
+                create_learnable_moves_table(pokemon_data.moves.clone(), moves.clone()).as_bytes(),
+            )
+            .unwrap();
+
         let mut specific_change_entry = HashMap::new();
         let entry_key = format!(
             "{} - {}",
@@ -404,6 +414,105 @@ fn create_level_up_moves_table(moves: HashMap<String, Move>, moves_from_file: Mo
 
     return format!(
         "| Level | Name | Power | Accuracy | PP | Type | Damage Class |
+        | -- | -- | -- | -- | -- | -- | -- |
+        {}
+        ",
+        markdown_moves
+    );
+}
+
+fn create_learnable_moves_table(moves: HashMap<String, Move>, moves_from_file: Moves) -> String {
+    let mut _moves_data: IndexMap<String, MoveSetMove> = IndexMap::new();
+
+    for (move_name, details) in moves {
+        if !details.learn_method.contains(&"machine".to_string()) {
+            continue;
+        }
+        match moves_from_file.moves.get(&move_name) {
+            Some(file_move) => {
+                let mut machine_name = String::new();
+                if let Some(machine_details) = &file_move.machine_details {
+                    if !machine_details.is_empty() {
+                        machine_name = machine_details[0]
+                            .technical_name
+                            .as_ref()
+                            .unwrap()
+                            .to_string();
+                    }
+                }
+                _moves_data.insert(
+                    move_name,
+                    MoveSetMove {
+                        learn_method_detail: LearnMethodDetail::MachineName(machine_name),
+                        power: file_move.power,
+                        pp: file_move.pp,
+                        accuracy: file_move.accuracy,
+                        _type: file_move._type.clone(),
+                        damage_class: file_move.damage_class.clone(),
+                    },
+                );
+            }
+            None => {
+                println!("Issue getting move from file");
+                continue;
+            }
+        };
+    }
+
+    _moves_data.sort_by(|_, value1, _, value2| {
+        let new_string = String::new();
+        let machine_name1 = match &value1.learn_method_detail {
+            LearnMethodDetail::MachineName(name) => name,
+            LearnMethodDetail::LevelLearned(_) => &new_string,
+        };
+
+        let machine_name2 = match &value2.learn_method_detail {
+            LearnMethodDetail::MachineName(name) => name,
+            LearnMethodDetail::LevelLearned(_) => &new_string,
+        };
+        machine_name1.cmp(&machine_name2)
+    });
+
+    let mut markdown_moves = String::new();
+    for (move_name, movesetmove) in _moves_data {
+        let power = match movesetmove.power {
+            Some(power) => power.to_string(),
+            None => "-".to_string(),
+        };
+        let accuracy = match movesetmove.accuracy {
+            Some(accuracy) => accuracy.to_string(),
+            None => "-".to_string(),
+        };
+
+        let mut machine_name = String::new();
+        if let LearnMethodDetail::MachineName(name) = movesetmove.learn_method_detail {
+            machine_name = name;
+        }
+
+        if machine_name.is_empty() {
+            continue;
+        }
+
+        // Capitalizing the first two characters of the machine name
+        if let Some(chars) = machine_name.get_mut(0..2) {
+            chars.make_ascii_uppercase();
+        }
+
+        let table_entry = format!(
+            "| {} | {} | {} | {} | {} | {} | {} |\n",
+            machine_name,
+            capitalize::capitalize(&move_name),
+            power,
+            accuracy,
+            movesetmove.pp,
+            get_markdown_image_for_type(&movesetmove._type),
+            get_markdown_image_for_type(&movesetmove.damage_class)
+        );
+        markdown_moves.push_str(&table_entry); // markdown_moves.
+    }
+
+    return format!(
+        "| Machine | Name | Power | Accuracy | PP | Type | Damage Class |
         | -- | -- | -- | -- | -- | -- | -- |
         {}
         ",
