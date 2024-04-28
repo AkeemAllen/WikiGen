@@ -3,22 +3,15 @@ use std::{collections::HashMap, fs::File};
 use tauri::AppHandle;
 
 use crate::structs::{
-    matchup_models::{GENERATION_ONE, GENERATION_TWO, GEN_DEFAULT},
+    matchup_models::GEN_DEFAULT,
     pokemon_structs::{PokemonTypesEnum, POKEMON_TYPES_ARRAY},
 };
 
-pub fn generate_matchup_map(
-    wiki_name: &str,
-    generation: &str,
-    app_handle: AppHandle,
-) -> Result<String, String> {
-    let mut data = GEN_DEFAULT;
-
-    if generation == "gen1" {
-        data = GENERATION_ONE;
-    } else if generation == "gen2" {
-        data = GENERATION_TWO
-    }
+// May need this code in the function in the future to generate other matchup maps
+// For now it is unused because what it generates is already stored in the
+// matchup_map.json file in the wiki's data folder
+pub fn generate_matchup_map(wiki_name: &str, app_handle: AppHandle) -> Result<String, String> {
+    let data = GEN_DEFAULT;
 
     let mut matchup_map: HashMap<String, f32> = HashMap::new();
 

@@ -17,7 +17,6 @@ export type Wiki = {
 export type WikiSettings = {
     version_group: string;
     deployment_url: string;
-    matchup_generation: "current" | "gen1" | "gen2";
 };
 
 export let wikis = writable<Wikis>({} as Wikis);

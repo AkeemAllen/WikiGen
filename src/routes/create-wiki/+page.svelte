@@ -15,7 +15,6 @@
   let wikiAuthor = "";
   let settings: WikiSettings = {
     version_group: "red-blue",
-    matchup_generation: "current",
     deployment_url: "",
   };
 
@@ -53,7 +52,6 @@
       wikiDescription,
       wikiAuthor,
       siteName,
-      matchupGeneration: settings.matchup_generation,
     }).then(() => {
       loading = false;
       toastStore.trigger(wikiCreatedToast);
@@ -99,25 +97,12 @@
         bind:value={wikiDescription}
       />
     </div>
-    <div class="grid grid-cols-2 gap-16">
-      <TextInput
-        id="wiki-author"
-        label="Wiki Author"
-        placeholder="Recommended: Your Github Username"
-        bind:value={wikiAuthor}
-      />
-
-      <SelectInput
-        id="matchup-generation"
-        label="Matchup Generation"
-        bind:value={settings.matchup_generation}
-        options={[
-          { label: "Current", value: "current" },
-          { label: "Generation 1", value: "gen-1" },
-          { label: "Generation 2", value: "gen-2" },
-        ]}
-      />
-    </div>
+    <TextInput
+      id="wiki-author"
+      label="Wiki Author"
+      placeholder="Recommended: Your Github Username"
+      bind:value={wikiAuthor}
+    />
 
     <TextInput
       id="deployment-url"
