@@ -430,20 +430,12 @@ fn create_learnable_moves_table(moves: HashMap<String, Move>, moves_from_file: M
         }
         match moves_from_file.moves.get(&move_name) {
             Some(file_move) => {
-                let mut machine_name = String::new();
-                if let Some(machine_details) = &file_move.machine_details {
-                    if !machine_details.is_empty() {
-                        machine_name = machine_details[0]
-                            .technical_name
-                            .as_ref()
-                            .unwrap()
-                            .to_string();
-                    }
-                }
                 _moves_data.insert(
                     move_name,
                     MoveSetMove {
-                        learn_method_detail: LearnMethodDetail::MachineName(machine_name),
+                        learn_method_detail: LearnMethodDetail::MachineName(
+                            file_move.machine_name.clone(),
+                        ),
                         power: file_move.power,
                         pp: file_move.pp,
                         accuracy: file_move.accuracy,
