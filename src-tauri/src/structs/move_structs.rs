@@ -17,13 +17,7 @@ pub struct MoveDetails {
     pub _type: String,
     pub damage_class: String,
     pub past_values: Vec<Value>,
-    pub machine_details: Option<Vec<MachineVersion>>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct MachineVersion {
-    pub game_version: Option<String>,
-    pub technical_name: Option<String>,
+    pub machine_name: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
