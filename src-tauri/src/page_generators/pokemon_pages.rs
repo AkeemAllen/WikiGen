@@ -344,6 +344,27 @@ fn create_stats_table(stats: &Stats) -> String {
     );
 }
 
+fn create_evolution_table(evolution: Evolution) -> String {
+    let no_change = "".to_string();
+
+    let item_level_note = match evolution.method {
+        EvolutionMethod::Item => evolution.item.unwrap(),
+        EvolutionMethod::LevelUp => evolution.level.unwrap().to_string(),
+        EvolutionMethod::Other => evolution.other.unwrap(),
+        EvolutionMethod::NoChange => no_change,
+    };
+
+    return format!(
+        "| Method | Item/Level/Note | Evolved Pokemon |
+        | :--: | :--: | :--: |
+        | {:?} | {} | {} |
+        ",
+        evolution.method,
+        item_level_note,
+        &evolution.evolves_to.unwrap()
+    );
+}
+
 fn create_level_up_moves_table(moves: HashMap<String, Move>, moves_from_file: Moves) -> String {
     let mut _moves_data: IndexMap<String, MoveSetMove> = IndexMap::new();
 
@@ -509,27 +530,6 @@ fn create_learnable_moves_table(moves: HashMap<String, Move>, moves_from_file: M
         {}
         ",
         markdown_moves
-    );
-}
-
-fn create_evolution_table(evolution: Evolution) -> String {
-    let no_change = "".to_string();
-
-    let item_level_note = match evolution.method {
-        EvolutionMethod::Item => evolution.item.unwrap(),
-        EvolutionMethod::LevelUp => evolution.level.unwrap().to_string(),
-        EvolutionMethod::Other => evolution.other.unwrap(),
-        EvolutionMethod::NoChange => no_change,
-    };
-
-    return format!(
-        "| Method | Item/Level/Note | Evolved Pokemon |
-        | :--: | :--: | :--: |
-        | {:?} | {} | {} |
-        ",
-        evolution.method,
-        item_level_note,
-        &evolution.evolves_to.unwrap()
     );
 }
 
