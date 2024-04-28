@@ -58,9 +58,7 @@ pub async fn generate_pokemon_pages_in_range(
     }
 
     for dex_number in range_start..=range_end {
-        let pokemon_data = pokemon.pokemon.get(&(dex_number as u32));
-
-        let data = match pokemon_data {
+        let pokemon_data = match pokemon.pokemon.get(&(dex_number as u32)) {
             Some(pokemon_data) => pokemon_data,
             None => {
                 println!("Pokemon Data not found for dex number: {:?}", dex_number);
@@ -76,13 +74,11 @@ pub async fn generate_pokemon_pages_in_range(
             pokedex_markdown_file_name = format!("{}", dex_number);
         }
 
-        let pokemon_markdown_file = File::create(
+        let mut markdown_file = match File::create(
             docs_path
                 .join("pokemon")
                 .join(format!("{}.md", pokedex_markdown_file_name)),
-        );
-
-        let mut markdown_file = match pokemon_markdown_file {
+        ) {
             Ok(file) => file,
             Err(e) => {
                 println!("Error creating file: {:?}", e);
@@ -95,7 +91,7 @@ pub async fn generate_pokemon_pages_in_range(
             .write_all(
                 format!(
                     "![{}](../img/pokemon/{}.png)\n\n",
-                    data.name, pokedex_markdown_file_name
+                    pokemon_data.name, pokedex_markdown_file_name
                 )
                 .as_bytes(),
             )
@@ -104,35 +100,38 @@ pub async fn generate_pokemon_pages_in_range(
         // Add Type Table
         markdown_file.write_all(b"## Types\n\n").unwrap();
         markdown_file
-            .write_all(create_type_table(&data.types).as_bytes())
+            .write_all(create_type_table(&pokemon_data.types).as_bytes())
             .unwrap();
 
         // Add Defensive Matchups Table
         markdown_file.write_all(b"\n\n##Defenses\n\n").unwrap();
         markdown_file
-            .write_all(create_defenses_table(&data.types, wiki_name, app_handle.clone()).as_bytes())
+            .write_all(
+                create_defenses_table(&pokemon_data.types, wiki_name, app_handle.clone())
+                    .as_bytes(),
+            )
             .unwrap();
 
         // Add Abilities Table
         markdown_file.write_all(b"\n\n## Abilities\n\n").unwrap();
         markdown_file
-            .write_all(create_ability_table(&data.abilities).as_bytes())
+            .write_all(create_ability_table(&pokemon_data.abilities).as_bytes())
             .unwrap();
 
         // Add Stats Table
         markdown_file.write_all(b"\n\n## Stats\n\n").unwrap();
         markdown_file
-            .write_all(create_stats_table(&data.stats).as_bytes())
+            .write_all(create_stats_table(&pokemon_data.stats).as_bytes())
             .unwrap();
 
         // Add Evolution Table
-        if &data.evolution.method != &EvolutionMethod::NoChange {
+        if &pokemon_data.evolution.method != &EvolutionMethod::NoChange {
             // Add Stats Table
             markdown_file
                 .write_all(b"\n\n## Evolution Change\n\n")
                 .unwrap();
             markdown_file
-                .write_all(create_evolution_table(data.evolution.clone()).as_bytes())
+                .write_all(create_evolution_table(pokemon_data.evolution.clone()).as_bytes())
                 .unwrap();
         }
 
@@ -141,14 +140,16 @@ pub async fn generate_pokemon_pages_in_range(
             .write_all(b"\n\n## Level Up Moves\n\n")
             .unwrap();
         markdown_file
-            .write_all(create_level_up_moves_table(data.moves.clone(), moves.clone()).as_bytes())
+            .write_all(
+                create_level_up_moves_table(pokemon_data.moves.clone(), moves.clone()).as_bytes(),
+            )
             .unwrap();
 
         let mut specific_change_entry = HashMap::new();
         let entry_key = format!(
             "{} - {}",
             pokedex_markdown_file_name,
-            capitalize::capitalize(&data.name)
+            capitalize::capitalize(&pokemon_data.name)
         );
         specific_change_entry.insert(
             entry_key.clone(),
