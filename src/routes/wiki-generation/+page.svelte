@@ -6,7 +6,7 @@
   import { selectedWiki } from "../../store";
 
   let rangeStart: number = 1;
-  let rangeEnd: number = 3;
+  let rangeEnd: number = 1;
   let loading: boolean = false;
 
   async function generatePokemonPagesInRange() {
@@ -32,7 +32,6 @@
       disabled={rangeStart === 0 ||
         rangeEnd === 0 ||
         rangeStart > rangeEnd ||
-        rangeStart === rangeEnd ||
         loading === true}
       title="Generate Pokemon between range"
       onClick={generatePokemonPagesInRange}
