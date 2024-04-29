@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Button from "$lib/components/Button.svelte";
   import NumberInput from "$lib/components/NumberInput.svelte";
   import PokemonPanel from "$lib/components/PokemonPanel.svelte";
   import {
@@ -16,9 +17,9 @@
   const toastStore = getToastStore();
 
   let tabSet: number = 0;
-
   let rangeStart: number = 0;
   let rangeEnd: number = 0;
+  let loading: boolean = false;
 
   const dataPreparedToast: ToastSettings = {
     message: "Data Prepared",
@@ -29,11 +30,11 @@
 
   async function downloadAndPrepPokemonData() {
     const directory = await appDataDir();
+    loading = true;
     await invoke("download_and_prep_pokemon_data", {
       wikiName: $selectedWiki.name,
       rangeStart,
       rangeEnd,
-      dir: directory,
     }).then(async () => {
       const pokemonFromFile = await readTextFile(
         `${directory}${$selectedWiki.name}/data/pokemon.json`,
@@ -45,7 +46,21 @@
           parseInt(key),
         ]),
       );
+      loading = false;
       toastStore.trigger(dataPreparedToast);
+    });
+
+    await invoke("download_pokemon_sprites", {
+      wikiName: $selectedWiki.name,
+      rangeStart,
+      rangeEnd,
+    }).then(() => {
+      toastStore.trigger({
+        message: "Sprites prepared",
+        timeout: 5000,
+        hoverable: true,
+        background: "variant-filled-success",
+      });
     });
   }
 </script>
@@ -68,19 +83,18 @@
         />
         <NumberInput id="range-end" label="Range End" bind:value={rangeEnd} />
       </div>
-      <button
-        disabled={rangeStart === 0 ||
-          rangeEnd === 0 ||
-          rangeStart > rangeEnd ||
-          rangeStart === rangeEnd}
-        class=" rounded-md bg-indigo-600 w-32 px-3 py-2 mt-5 text-sm font-semibold text-white
-      shadow-sm hover:bg-indigo-500 focus-visible:outline
-      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
-      disabled:bg-indigo-400"
-        on:click|preventDefault={downloadAndPrepPokemonData}
-      >
-        Prepare Data</button
-      >
+      <div class="w-40 mt-4">
+        <Button
+          disabled={rangeStart === 0 ||
+            rangeEnd === 0 ||
+            rangeStart > rangeEnd ||
+            rangeStart === rangeEnd ||
+            loading === true}
+          title="Prepare Data"
+          onClick={downloadAndPrepPokemonData}
+          {loading}
+        />
+      </div>
     {/if}
   </svelte:fragment>
 </TabGroup>

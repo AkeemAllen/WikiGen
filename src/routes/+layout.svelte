@@ -23,8 +23,10 @@
   } from "@skeletonlabs/skeleton";
   import {
     IconBallBasketball,
+    IconBinaryTree,
     IconDisc,
     IconDotsVertical,
+    IconTestPipe,
   } from "@tabler/icons-svelte";
   import "../app.pcss";
   import { selectedWiki } from "../store";
@@ -67,6 +69,20 @@
             active={$page.url.pathname.includes("moves")}
           >
             <IconDisc slot="icon" size={16} color="indigo" />
+          </NavButton>
+          <NavButton
+            name="Wiki Generation"
+            route="/wiki-generation"
+            active={$page.url.pathname.includes("wiki-generation")}
+          >
+            <IconBinaryTree slot="icon" size={16} color="indigo" />
+          </NavButton>
+          <NavButton
+            name="Wiki Testing"
+            route="/wiki-testing"
+            active={$page.url.pathname.includes("wiki-testing")}
+          >
+            <IconTestPipe slot="icon" size={16} color="indigo" />
           </NavButton>
         </div>
       {/if}

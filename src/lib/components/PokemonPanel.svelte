@@ -129,7 +129,7 @@
     >
     <svelte:fragment slot="panel">
       {#if tabSet === 0}
-        <PokemonDetailsTab bind:pokemonDetails bind:pokemonListOptions />
+        <PokemonDetailsTab bind:pokemonDetails />
       {/if}
       {#if tabSet === 1}
         <PokemonMovesTab bind:pokemonDetails {savePokemonChanges} />

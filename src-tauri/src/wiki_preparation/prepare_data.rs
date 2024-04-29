@@ -1,81 +1,34 @@
-use indexmap::IndexMap;
 use reqwest;
 use serde_json::Value;
 use std::fs;
+use std::io::Cursor;
 use std::{collections::HashMap, fs::File};
+use tauri::AppHandle;
 
-use serde::{Deserialize, Serialize};
-
-use crate::utils::get_os_specific_path;
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct Pokemon {
-    pokemon: IndexMap<u32, PokemonData>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct PokemonData {
-    id: u32,
-    name: String,
-    types: Vec<String>,
-    abilities: Vec<String>,
-    stats: Stats,
-    moves: HashMap<String, Move>,
-    sprite: String,
-    evolution: Evolution,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct Stats {
-    hp: u32,
-    attack: u32,
-    defense: u32,
-    sp_attack: u32,
-    sp_defense: u32,
-    speed: u32,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct Move {
-    level_learned: u32,
-    learn_method: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct Evolution {
-    level: Option<u32>,
-    item: Option<String>,
-    other: Option<String>,
-    evolves_to: Option<String>,
-    method: EvolutionMethod,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "snake_case")]
-enum EvolutionMethod {
-    LevelUp,
-    Item,
-    Other,
-    NoChange,
-}
+use crate::structs::pokemon_structs::{
+    Evolution, EvolutionMethod, Move, Pokemon, PokemonData, Stats,
+};
 
 #[tauri::command]
-pub fn download_and_prep_pokemon_data(
+pub async fn download_and_prep_pokemon_data(
     wiki_name: &str,
     range_start: u32,
     range_end: u32,
-    dir: &str,
-) -> String {
-    let base_path: String = format!("{}{}", dir, wiki_name);
-    let pokemon_path = get_os_specific_path(format!("{}/data/pokemon.json", base_path));
+    app_handle: AppHandle,
+) -> Result<String, String> {
+    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    let pokemon_path = base_path.join(wiki_name).join("data").join("pokemon.json");
 
-    let pokemon_file = File::open(pokemon_path.clone()).unwrap();
+    let pokemon_file = File::open(&pokemon_path).unwrap();
+
     let mut pokemon: Pokemon = serde_json::from_reader(pokemon_file).unwrap();
 
     for i in range_start..=range_end {
-        let response = reqwest::blocking::get(format!("https://pokeapi.co/api/v2/pokemon/{}", i))
+        let response = reqwest::get(format!("https://pokeapi.co/api/v2/pokemon/{}", i))
+            .await
             .unwrap()
-            .json::<Value>();
+            .json::<Value>()
+            .await;
         let mut pokemon_response_body = response.ok().unwrap();
 
         let mut types = Vec::new();
@@ -163,5 +116,82 @@ pub fn download_and_prep_pokemon_data(
     let string_pokemon_data = serde_json::to_string(&pokemon).unwrap();
     fs::write(pokemon_path.clone(), string_pokemon_data).unwrap();
 
-    return "Pokemon Saved".to_string();
+    return Ok("Pokemon Saved".to_string());
+}
+
+#[tauri::command]
+pub async fn download_pokemon_sprites(
+    wiki_name: &str,
+    range_start: u32,
+    range_end: u32,
+    app_handle: AppHandle,
+) -> Result<String, String> {
+    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    let docs_path = base_path.join(wiki_name).join("dist").join("docs");
+
+    let pokemon_path = base_path.join(wiki_name).join("data").join("pokemon.json");
+
+    let pokemon_file = File::open(&pokemon_path).unwrap();
+
+    let pokemon: Pokemon = serde_json::from_reader(pokemon_file).unwrap();
+
+    for dex_number in range_start..=range_end {
+        let mut pokedex_img_file_name = format!("00{}", dex_number);
+        if dex_number >= 10 {
+            pokedex_img_file_name = format!("0{}", dex_number);
+        }
+        if dex_number >= 100 {
+            pokedex_img_file_name = format!("{}", dex_number);
+        }
+
+        let file_path = docs_path
+            .join("img")
+            .join("pokemon")
+            .join(format!("{}.png", pokedex_img_file_name));
+
+        if file_path.try_exists().unwrap() {
+            continue;
+        }
+
+        let pokemon_data = match pokemon.pokemon.get(&(dex_number as u32)) {
+            Some(pokemon_data) => pokemon_data,
+            None => {
+                println!(
+                    "Error finding pokemon data for pokemon with dex number {}",
+                    dex_number
+                );
+                continue;
+            }
+        };
+
+        let response = reqwest::get(&pokemon_data.sprite)
+            .await
+            .unwrap()
+            .bytes()
+            .await;
+
+        let response_body = response.ok();
+
+        let sprite_data = match response_body {
+            Some(response_body) => response_body,
+            None => {
+                println!("Error retrieving sprite for {}", pokemon_data.name);
+                continue;
+            }
+        };
+
+        let sprite_image = image::io::Reader::new(Cursor::new(sprite_data))
+            .with_guessed_format()
+            .unwrap()
+            .decode()
+            .unwrap();
+        let mut image_file = File::create(file_path).unwrap();
+        sprite_image
+            .write_to(&mut image_file, image::ImageFormat::Png)
+            .unwrap();
+        // image::load_from_memory(&sprite_data).unwrap();
+        // image::save_buffer(file_path, &sprite_data, 200, 200, image::R);
+        // fs::write(file_path, sprite_image).unwrap();
+    }
+    Ok("Image Downloaded".to_string())
 }

@@ -1,10 +1,9 @@
 <script lang="ts">
+  import Button from "$lib/components/Button.svelte";
   import SelectInput from "$lib/components/SelectInput.svelte";
   import TextInput from "$lib/components/TextInput.svelte";
   import { getToastStore, type ToastSettings } from "@skeletonlabs/skeleton";
   import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
-  import { type } from "@tauri-apps/api/os";
-  import { appDataDir, resourceDir } from "@tauri-apps/api/path";
   import { invoke } from "@tauri-apps/api/tauri";
   import { wikis, type WikiSettings } from "../../store";
 
@@ -16,9 +15,10 @@
   let wikiAuthor = "";
   let settings: WikiSettings = {
     version_group: "red-blue",
-    matchup_generation: "current",
     deployment_url: "",
   };
+
+  let loading: boolean = false;
 
   $: wikiCodeName = wikiName.toLowerCase().replaceAll(" ", "-");
   $: siteUrl = `https://${wikiAuthor}.github.io/${wikiCodeName}`;
@@ -33,16 +33,7 @@
   };
 
   async function createWiki() {
-    const directory = await appDataDir();
-    const resourceDirectory = await resourceDir();
-    let completeResourceDirectory = `${resourceDirectory}/resources/`;
-
-    const osType = await type();
-
-    // Check if platform is windows and change the directory path
-    if (osType === "Windows_NT") {
-      completeResourceDirectory = `${resourceDirectory}\\resources\\`;
-    }
+    loading = true;
 
     $wikis[wikiCodeName] = {
       name: wikiCodeName,
@@ -61,9 +52,8 @@
       wikiDescription,
       wikiAuthor,
       siteName,
-      dir: directory,
-      resourceDir: completeResourceDirectory,
     }).then(() => {
+      loading = false;
       toastStore.trigger(wikiCreatedToast);
     });
   }
@@ -107,25 +97,12 @@
         bind:value={wikiDescription}
       />
     </div>
-    <div class="grid grid-cols-2 gap-16">
-      <TextInput
-        id="wiki-author"
-        label="Wiki Author"
-        placeholder="Recommended: Your Github Username"
-        bind:value={wikiAuthor}
-      />
-
-      <SelectInput
-        id="matchup-generation"
-        label="Matchup Generation"
-        bind:value={settings.matchup_generation}
-        options={[
-          { label: "Current", value: "current" },
-          { label: "Generation 1", value: "gen-1" },
-          { label: "Generation 2", value: "gen-2" },
-        ]}
-      />
-    </div>
+    <TextInput
+      id="wiki-author"
+      label="Wiki Author"
+      placeholder="Recommended: Your Github Username"
+      bind:value={wikiAuthor}
+    />
 
     <TextInput
       id="deployment-url"
@@ -160,16 +137,17 @@
       ]}
     />
 
-    <button
-      disabled={wikiDescription === "" ||
-        wikiName === "" ||
-        wikiAuthor === "" ||
-        settings.version_group === ""}
-      class="rounded-md bg-indigo-600 w-32 px-3 py-2 text-sm font-semibold text-white
-      shadow-sm hover:bg-indigo-500 focus-visible:outline
-      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
-      disabled:bg-indigo-400"
-      on:click={createWiki}>Create Wiki</button
-    >
+    <div class="w-32">
+      <Button
+        disabled={wikiDescription === "" ||
+          wikiName === "" ||
+          wikiAuthor === "" ||
+          settings.version_group === "" ||
+          loading === true}
+        onClick={createWiki}
+        title="Create Wiki"
+        {loading}
+      />
+    </div>
   </div>
 </div>
