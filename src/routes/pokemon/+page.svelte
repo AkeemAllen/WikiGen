@@ -54,8 +54,13 @@
       wikiName: $selectedWiki.name,
       rangeStart,
       rangeEnd,
-    }).then((response) => {
-      console.log(response);
+    }).then(() => {
+      toastStore.trigger({
+        message: "Sprites prepared",
+        timeout: 5000,
+        hoverable: true,
+        background: "variant-filled-success",
+      });
     });
   }
 </script>
