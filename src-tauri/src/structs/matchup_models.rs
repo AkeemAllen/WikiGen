@@ -1,3 +1,10 @@
+use std::collections::HashMap;
+
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct TypeEffectiveness(pub HashMap<String, Vec<String>>);
+
 const N: f32 = 1.0;
 const H: f32 = 0.5;
 // const X: f32 = f32::NAN;

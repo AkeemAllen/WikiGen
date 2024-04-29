@@ -136,7 +136,6 @@ pub async fn download_pokemon_sprites(
     let pokemon: Pokemon = serde_json::from_reader(pokemon_file).unwrap();
 
     for dex_number in range_start..=range_end {
-        println!("{}", dex_number);
         let mut pokedex_img_file_name = format!("00{}", dex_number);
         if dex_number >= 10 {
             pokedex_img_file_name = format!("0{}", dex_number);

@@ -11,6 +11,7 @@ use tauri::AppHandle;
 use crate::{
     helpers::{capitalize, matchups::get_defensive_matchups},
     structs::{
+        matchup_models::TypeEffectiveness,
         mkdocs_structs::{MKDocsConfig, Navigation},
         move_structs::{LearnMethodDetail, MoveSetMove, Moves},
         pokemon_structs::{Evolution, EvolutionMethod, Move, Pokemon, PokemonTypesEnum, Stats},
@@ -38,6 +39,14 @@ pub async fn generate_pokemon_pages_in_range(
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
     let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
     let mut mkdocs_config: MKDocsConfig = serde_yaml::from_reader(mkdocs_yaml_file).unwrap();
+
+    let calculated_defenses_path = base_path
+        .join(wiki_name)
+        .join("data")
+        .join("calculated_defenses.json");
+    let calculated_defenses_json_file = File::open(&calculated_defenses_path).unwrap();
+    let mut calculated_defenses: HashMap<String, TypeEffectiveness> =
+        serde_json::from_reader(calculated_defenses_json_file).unwrap();
 
     let mut specific_changes = HashMap::new();
 
@@ -107,8 +116,13 @@ pub async fn generate_pokemon_pages_in_range(
         markdown_file.write_all(b"\n\n##Defenses\n\n").unwrap();
         markdown_file
             .write_all(
-                create_defenses_table(&pokemon_data.types, wiki_name, app_handle.clone())
-                    .as_bytes(),
+                create_defenses_table(
+                    &pokemon_data.types,
+                    wiki_name,
+                    &mut calculated_defenses,
+                    app_handle.clone(),
+                )
+                .as_bytes(),
             )
             .unwrap();
 
@@ -201,6 +215,12 @@ pub async fn generate_pokemon_pages_in_range(
     )
     .unwrap();
 
+    fs::write(
+        calculated_defenses_path,
+        serde_json::to_string(&calculated_defenses).unwrap(),
+    )
+    .unwrap();
+
     return Ok("Pokemon Pages Generated".to_string());
 }
 
@@ -220,12 +240,25 @@ fn create_type_table(types: &Vec<String>) -> String {
 }
 
 // Find better way to implement this function
-fn create_defenses_table(types: &Vec<String>, wiki_name: &str, app_handle: AppHandle) -> String {
+fn create_defenses_table(
+    types: &Vec<String>,
+    wiki_name: &str,
+    calculated_defenses: &mut HashMap<String, TypeEffectiveness>,
+    app_handle: AppHandle,
+) -> String {
     let defense_types = types
         .iter()
         .map(|_type| PokemonTypesEnum::from_str(&_type).unwrap())
         .collect();
-    let defensive_matchups = get_defensive_matchups(defense_types, wiki_name, app_handle);
+
+    let defensive_matchups = match calculated_defenses.get(&types.join("-").to_string()) {
+        Some(matchup) => matchup.0.clone(),
+        None => get_defensive_matchups(defense_types, wiki_name, app_handle),
+    };
+    calculated_defenses.insert(
+        types.join("-").to_string(),
+        TypeEffectiveness(defensive_matchups.clone()),
+    );
 
     let mut immunity_markdown = "".to_string();
     if let Some(immunities) = defensive_matchups.get("0") {
