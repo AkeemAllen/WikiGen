@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs::File};
+use std::{collections::HashMap, fs::File, str::FromStr};
 
 use tauri::AppHandle;
 
@@ -150,14 +150,18 @@ fn group_matchups_by_effectiveness(
 }
 
 pub fn get_defensive_matchups(
-    types: Vec<PokemonTypesEnum>,
+    types: &Vec<String>,
     wiki_name: &str,
     app_handle: AppHandle,
 ) -> HashMap<String, Vec<String>> {
+    let defense_types = types
+        .iter()
+        .map(|_type| PokemonTypesEnum::from_str(&_type).unwrap())
+        .collect();
     // Consdier removing some of the effectiveness levels since they may never be used
     let effectiveness_levels = [8.0, 4.0, 2.0, 1.0, 0.5, 0.25, 0.125, 0.0];
 
-    let matchups = defensive_matchups(wiki_name, types, app_handle);
+    let matchups = defensive_matchups(wiki_name, defense_types, app_handle);
 
     let mut matchups_by_effectiveness = HashMap::new();
 
