@@ -10,6 +10,7 @@ use crate::structs::{
 // May need this code in the function in the future to generate other matchup maps
 // For now it is unused because what it generates is already stored in the
 // matchup_map.json file in the wiki's data folder
+#[allow(dead_code)]
 pub fn generate_matchup_map(wiki_name: &str, app_handle: AppHandle) -> Result<String, String> {
     let data = GEN_DEFAULT;
 

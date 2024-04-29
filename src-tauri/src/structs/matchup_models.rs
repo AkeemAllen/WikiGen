@@ -5,12 +5,17 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TypeEffectiveness(pub HashMap<String, Vec<String>>);
 
+#[allow(dead_code)]
 const N: f32 = 1.0;
+#[allow(dead_code)]
 const H: f32 = 0.5;
 // const X: f32 = f32::NAN;
+#[allow(dead_code)]
 const D: f32 = 2.0;
+#[allow(dead_code)]
 const Z: f32 = 0.0;
 
+#[allow(dead_code)]
 pub const GEN_DEFAULT: [[f32; 18]; 18] = [
     [N, N, N, N, N, N, N, N, N, N, N, N, H, Z, N, N, H, N],
     [N, H, H, N, D, D, N, N, N, N, N, D, H, N, H, N, D, N],
