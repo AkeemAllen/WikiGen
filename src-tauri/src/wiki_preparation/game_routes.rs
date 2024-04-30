@@ -49,7 +49,7 @@ pub async fn create_new_route(
     wiki_name: &str,
     route_name: &str,
     app_handle: AppHandle,
-) -> Result<(), String> {
+) -> Result<Routes, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
     let routes_path = base_path.join(wiki_name).join("data").join("routes.json");
     let routes_file = File::open(&routes_path).unwrap();
@@ -68,5 +68,5 @@ pub async fn create_new_route(
 
     fs::write(routes_path, serde_json::to_string(&routes).unwrap()).unwrap();
 
-    Ok(())
+    Ok(routes)
 }

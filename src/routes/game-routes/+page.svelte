@@ -5,6 +5,7 @@
   import { getToastStore } from "@skeletonlabs/skeleton";
   import { invoke } from "@tauri-apps/api";
   import { selectedWiki } from "../../store";
+  import { routes, type Routes } from "../../store/gameRoutes";
 
   const toastStore = getToastStore();
 
@@ -17,11 +18,13 @@
     await invoke("create_new_route", {
       wikiName: $selectedWiki.name,
       routeName,
-    }).then(() => {
+    }).then((response) => {
       loading = false;
       toastStore.trigger({
         message: "New Route Added",
       });
+      routes.set(response as Routes);
+      console.log($routes);
     });
   }
 </script>
