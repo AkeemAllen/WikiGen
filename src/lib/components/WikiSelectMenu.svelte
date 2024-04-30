@@ -1,6 +1,7 @@
 <script lang="ts">
   import { BaseDirectory, readTextFile } from "@tauri-apps/api/fs";
   import { selectedWiki, wikis, type Wiki } from "../../store";
+  import { routes } from "../../store/gameRoutes";
   import { moveList, moves } from "../../store/moves";
   import { pokemon, pokemonList } from "../../store/pokemon";
 
@@ -24,6 +25,12 @@
     );
     moves.set(JSON.parse(movesFromFile));
     moveList.set(Object.keys($moves.moves));
+
+    const routesFromFile = await readTextFile(
+      `${$selectedWiki.name}/data/routes.json`,
+      { dir: BaseDirectory.AppData },
+    );
+    routes.set(JSON.parse(routesFromFile));
   }
 </script>
 
