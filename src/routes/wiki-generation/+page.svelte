@@ -31,7 +31,7 @@
   }
 </script>
 
-<TabGroup class="mt-4 ml-2">
+<TabGroup>
   <Tab bind:group={tabSet} name="pokemon" value={0}>Pokemon</Tab>
   <svelte:fragment slot="panel">
     {#if tabSet === 0}

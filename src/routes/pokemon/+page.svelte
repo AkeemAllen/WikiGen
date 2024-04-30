@@ -65,7 +65,7 @@
   }
 </script>
 
-<TabGroup class="mt-4 ml-2">
+<TabGroup>
   <Tab bind:group={tabSet} name="pokemon" value={0}>Pokemon</Tab>
   <Tab bind:group={tabSet} name="prepare-pokemon-data" value={1}
     >Prepare Data</Tab

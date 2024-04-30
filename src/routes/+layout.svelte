@@ -105,5 +105,7 @@
       <WikiSelectMenu />
     </div>
   </svelte:fragment>
-  <slot />
+  <div class="mt-6 ml-2">
+    <slot />
+  </div>
 </AppShell>

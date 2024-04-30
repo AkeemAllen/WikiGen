@@ -63,7 +63,7 @@
   }
 </script>
 
-<div class="flex flex-row gap-7 mt-6 ml-2">
+<div class="flex flex-row gap-7">
   <div class="w-60 mt-2">
     <input
       id="pokemon-name"
