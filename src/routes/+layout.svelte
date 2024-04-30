@@ -26,6 +26,7 @@
     IconBinaryTree,
     IconDisc,
     IconDotsVertical,
+    IconRoute2,
     IconTestPipe,
   } from "@tabler/icons-svelte";
   import "../app.pcss";
@@ -69,6 +70,13 @@
             active={$page.url.pathname.includes("moves")}
           >
             <IconDisc slot="icon" size={16} color="indigo" />
+          </NavButton>
+          <NavButton
+            name="Game Routes"
+            route="/game-routes"
+            active={$page.url.pathname.includes("game-routes")}
+          >
+            <IconRoute2 slot="icon" size={16} color="indigo" />
           </NavButton>
           <NavButton
             name="Wiki Generation"
