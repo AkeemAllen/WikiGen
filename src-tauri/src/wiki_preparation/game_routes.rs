@@ -14,13 +14,13 @@ pub struct Routes {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RouteProperties {
     pub position: usize,
-    pub trainers: Option<HashMap<String, Trainer>>,
-    pub wild_encounters: Option<HashMap<String, WildEncounter>>,
+    pub trainers: Option<HashMap<String, TrainerInfo>>,
+    pub wild_encounters: Option<HashMap<String, Vec<WildEncounter>>>,
     pub wild_encouter_area_levels: Option<HashMap<String, String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Trainer {
+pub struct TrainerInfo {
     pub pokemon_team: Vec<TrainerPokemon>,
 }
 

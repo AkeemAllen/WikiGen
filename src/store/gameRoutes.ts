@@ -4,24 +4,24 @@ export type Routes = {
     routes: {[key: string]: RouteProperties}
 }
 
-type RouteProperties = {
+export type RouteProperties = {
     position: number,
     trainers?: {
-        [key: string]: Trainer
+        [key: string]: TrainerInfo
     },
     wild_encounters?: {
-        [key: string]: WildEncounter
+        [key: string]: WildEncounter[]
     },
     wild_encounter_area_levels?: {
         [key: string]: string
     }
 }
 
-type Trainer = {
+export type TrainerInfo = {
     pokemon_team: TrainerPokemon[];
 }
 
-type TrainerPokemon = {
+export type TrainerPokemon = {
     id: number,
     unique_id: string,
     name: string,
@@ -33,7 +33,7 @@ type TrainerPokemon = {
     trainer_version?: string[]
 }
 
-type WildEncounter = {
+export type WildEncounter = {
     id: number,
     name: string,
     encounter_rate: number
