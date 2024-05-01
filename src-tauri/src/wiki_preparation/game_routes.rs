@@ -9,6 +9,7 @@ use tauri::AppHandle;
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Routes {
     pub routes: HashMap<String, RouteProperties>,
+    pub encounter_types: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

@@ -21,6 +21,11 @@
   let pokemonListOptions: AutocompleteOption<string | number>[] =
     $pokemonList.map(([name, id]) => ({ label: name, value: id }));
 
+  const encounterTypes = $routes.encounter_types.map((type) => ({
+    label: type,
+    value: type,
+  }));
+
   const toastStore = getToastStore();
   function onPokemonNameSelected(
     event: CustomEvent<AutocompleteOption<string | number>>,
@@ -69,10 +74,7 @@
       id="encounter-type"
       label="Encounter Type"
       bind:value={encounterType}
-      options={[
-        { label: "grass-normal", value: "grass-normal" },
-        { label: "grass-special", value: "grass-special" },
-      ]}
+      options={encounterTypes}
     />
   </div>
   <div class="w-60">

@@ -1,7 +1,8 @@
 import { writable } from "svelte/store"
 
 export type Routes = {
-    routes: {[key: string]: RouteProperties}
+    routes: {[key: string]: RouteProperties},
+    encounter_types: string[]
 }
 
 export type RouteProperties = {

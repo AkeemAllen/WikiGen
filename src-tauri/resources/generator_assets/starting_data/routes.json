@@ -1,3 +1,4 @@
 {
-    "routes": {}
+    "routes": {},
+    "encounter_types": ["grass-normal"]
 }
