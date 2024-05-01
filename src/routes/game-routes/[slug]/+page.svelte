@@ -4,7 +4,6 @@
 
   export let data;
   let tabSet: number = 0;
-  $: console.log(data.routeDetails);
 </script>
 
 <strong class="text-lg">{data.title}</strong>
@@ -17,7 +16,7 @@
   >
   <svelte:fragment slot="panel">
     {#if tabSet === 0}
-      <WildEncounters />
+      <WildEncounters routeName={data.title} routeDetails={data.routeDetails} />
     {/if}
   </svelte:fragment>
 </TabGroup>

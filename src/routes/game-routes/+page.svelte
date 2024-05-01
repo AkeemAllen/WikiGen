@@ -25,7 +25,6 @@
         message: "New Route Added",
       });
       routes.set(response as Routes);
-      console.log($routes);
     });
   }
 </script>
