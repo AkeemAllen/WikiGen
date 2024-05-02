@@ -60,8 +60,8 @@ export const PokemonTypes = [
   "dragon",
   "dark",
   "steel",
-  "fairy", 
-]
+  "fairy",
+];
 
 export let pokemon = writable<Pokemon>();
 export let pokemonList = writable<[string, number][]>([]);

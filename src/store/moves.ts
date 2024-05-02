@@ -11,8 +11,8 @@ export type MoveDetails = {
 };
 
 type Moves = {
-    moves: { [key: string]: MoveDetails };
-}
+  moves: { [key: string]: MoveDetails };
+};
 
 export let moves = writable<Moves>();
 export let moveList = writable<string[]>([]);
