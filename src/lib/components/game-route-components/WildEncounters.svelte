@@ -13,6 +13,7 @@ import { pokemonList, pokemon } from "../../../store/pokemon";
 import Button from "../Button.svelte";
 import NumberInput from "../NumberInput.svelte";
 import SelectInput from "../SelectInput.svelte";
+import { IconTrash } from "@tabler/icons-svelte";
 
 export let routeName: string = "";
 let pokemonName: string = "";
@@ -58,6 +59,31 @@ async function addEncounter() {
   ).then(() => {
     toastStore.trigger({
       message: "Encounter Added",
+      background: "variant-filled-success",
+    });
+  });
+}
+
+async function deleteEncounter(pokemonName: string, encounterType: string) {
+  let updatedEncounters = {
+    ...$routes.routes[routeName].wild_encounters,
+  };
+  updatedEncounters[encounterType] = updatedEncounters[encounterType].filter(
+    (encounter) => encounter.name !== pokemonName,
+  );
+  if (updatedEncounters[encounterType].length === 0) {
+    delete updatedEncounters[encounterType];
+  }
+
+  $routes.routes[routeName].wild_encounters = updatedEncounters;
+
+  await writeTextFile(
+    `${$selectedWiki.name}/data/routes.json`,
+    JSON.stringify($routes),
+    { dir: BaseDirectory.AppData },
+  ).then(() => {
+    toastStore.trigger({
+      message: "Encounter Deleted",
       background: "variant-filled-success",
     });
   });
@@ -124,7 +150,9 @@ async function addEncounter() {
       </strong>
       <div class="mt-2 grid grid-cols-6 gap-5">
         {#each encounters as encounter}
-          <div class="card grid !bg-transparent p-2 shadow-md">
+          <div
+            class="group card relative grid !bg-transparent p-2 shadow-md hover:cursor-pointer"
+          >
             <img
               src={$pokemon.pokemon[encounter.id].sprite}
               alt={encounter.name}
@@ -137,6 +165,12 @@ async function addEncounter() {
               <p class="text-center">
                 {encounter.encounter_rate}%
               </p>
+            </div>
+            <div
+              class="invisible absolute right-2 top-2 group-hover:visible"
+              on:click={() => deleteEncounter(encounter.name, _encounterType)}
+            >
+              <IconTrash size={16} color="grey" />
             </div>
           </div>
         {/each}
