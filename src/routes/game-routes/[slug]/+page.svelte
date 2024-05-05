@@ -1,9 +1,9 @@
 <script lang="ts">
-  import WildEncounters from "$lib/components/game-route-components/WildEncounters.svelte";
-  import { Tab, TabGroup } from "@skeletonlabs/skeleton";
+import WildEncounters from "$lib/components/game-route-components/WildEncounters.svelte";
+import { Tab, TabGroup } from "@skeletonlabs/skeleton";
 
-  export let data;
-  let tabSet: number = 0;
+export let data;
+let tabSet: number = 0;
 </script>
 
 <strong class="text-lg">{data.title}</strong>
@@ -16,7 +16,7 @@
   >
   <svelte:fragment slot="panel">
     {#if tabSet === 0}
-      <WildEncounters routeName={data.title} routeDetails={data.routeDetails} />
+      <WildEncounters routeName={data.title} />
     {/if}
   </svelte:fragment>
 </TabGroup>
