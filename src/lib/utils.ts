@@ -1,3 +1,4 @@
+import type { Routes } from "../store/gameRoutes";
 import type { PokemonMoveSet } from "../store/pokemon";
 import { Operation, type MoveSetChange } from "../types";
 
@@ -96,4 +97,22 @@ export function modifyLevelUpMoveSet(
   }
 
   return moveSet;
+}
+
+export function sortRoutesByPosition(routes: Routes): Routes {
+  // Convert object into an array of key-value pairs
+  const routesArray = Object.entries(routes.routes);
+
+  // Sort the array based on the "position" property
+  routesArray.sort(
+    ([, route1], [, route2]) => route1.position - route2.position,
+  );
+
+  // Reconstruct the sorted object
+  const sortedRoutes: Routes = { routes: {}, encounter_types: [] };
+  routesArray.forEach(([routeName, route]) => {
+    sortedRoutes.routes[routeName] = route;
+  });
+
+  return sortedRoutes;
 }

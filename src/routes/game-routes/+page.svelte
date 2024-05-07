@@ -10,6 +10,7 @@ import { routes, type Routes } from "../../store/gameRoutes";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { goto } from "$app/navigation";
 import _ from "lodash";
+import { sortRoutesByPosition } from "$lib/utils";
 
 const toastStore = getToastStore();
 
@@ -22,7 +23,6 @@ let routeBeingEdited: string = "";
 let loading = false;
 
 async function createNewRoute() {
-  loading = true;
   $routes.routes[routeName] = {
     position: Object.keys($routes.routes).length,
   };
@@ -37,7 +37,7 @@ async function addNewEncounterType() {
   $routes.encounter_types = [...$routes.encounter_types, newEncounterType];
   await writeTextFile(
     `${$selectedWiki.name}/data/routes.json`,
-    JSON.stringify($routes),
+    JSON.stringify(sortRoutesByPosition($routes)),
     { dir: BaseDirectory.AppData },
   );
 }
@@ -46,7 +46,6 @@ async function deleteEncounterType(encounterType: string) {
   $routes.encounter_types = $routes.encounter_types.filter(
     (type) => type !== encounterType,
   );
-  console.log($routes);
   await writeTextFile(
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
@@ -56,9 +55,12 @@ async function deleteEncounterType(encounterType: string) {
 
 async function duplicateRoute(routeName: string) {
   $routes.routes[`${routeName} copy`] = _.cloneDeep($routes.routes[routeName]);
+  $routes.routes[`${routeName} copy`].position = Object.keys(
+    $routes.routes,
+  ).length;
   await writeTextFile(
     `${$selectedWiki.name}/data/routes.json`,
-    JSON.stringify($routes),
+    JSON.stringify(sortRoutesByPosition($routes)),
     { dir: BaseDirectory.AppData },
   );
 }
@@ -70,7 +72,7 @@ async function deleteRoute(routeName: string) {
 
   await writeTextFile(
     `${$selectedWiki.name}/data/routes.json`,
-    JSON.stringify($routes),
+    JSON.stringify(sortRoutesByPosition($routes)),
     { dir: BaseDirectory.AppData },
   );
 }
@@ -79,7 +81,7 @@ async function renameRoute(originalRouteName: string, newName: string) {
   let updatedRoutes = { ...$routes };
   updatedRoutes.routes[newName] = updatedRoutes.routes[originalRouteName];
   delete updatedRoutes.routes[originalRouteName];
-  $routes = { ...updatedRoutes };
+  $routes = { ...sortRoutesByPosition(updatedRoutes) };
   await writeTextFile(
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),

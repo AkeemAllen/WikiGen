@@ -4,6 +4,7 @@ import { selectedWiki, wikis, type Wiki } from "../../store";
 import { routes } from "../../store/gameRoutes";
 import { moveList, moves } from "../../store/moves";
 import { pokemon, pokemonList } from "../../store/pokemon";
+import { sortRoutesByPosition } from "$lib/utils";
 
 async function loadWikiData(wiki: Wiki) {
   $selectedWiki = wiki;
@@ -30,7 +31,7 @@ async function loadWikiData(wiki: Wiki) {
     `${$selectedWiki.name}/data/routes.json`,
     { dir: BaseDirectory.AppData },
   );
-  routes.set(JSON.parse(routesFromFile));
+  routes.set(sortRoutesByPosition(JSON.parse(routesFromFile)));
 }
 </script>
 
