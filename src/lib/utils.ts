@@ -1,4 +1,4 @@
-import type { Routes } from "../store/gameRoutes";
+import type { Routes, TrainerInfo } from "../store/gameRoutes";
 import type { PokemonMoveSet } from "../store/pokemon";
 import { Operation, type MoveSetChange } from "../types";
 
@@ -116,3 +116,32 @@ export function sortRoutesByPosition(routes: Routes): Routes {
 
   return sortedRoutes;
 }
+
+export const isNullEmptyOrUndefined = (value: any) => {
+  return value === null || value === "" || value === undefined;
+};
+
+export const setUniquePokemonId = (
+  trainers: { [key: string]: TrainerInfo },
+  trainerName: string,
+  pokemonName: string,
+  pokemonList: [string, number][],
+) => {
+  let teamLength = 0;
+
+  console.log(pokemonList.find(([name, _]) => name === pokemonName)?.[1]);
+  if (isNullEmptyOrUndefined(trainers)) {
+    return `${
+      pokemonList.find(([name, _]) => name === pokemonName)?.[1]
+    }_${teamLength}_${Math.floor(Math.random() * 9000 + 1000)}`;
+  }
+
+  if (trainerName in trainers) {
+    if (!isNullEmptyOrUndefined(trainers[trainerName].pokemon_team)) {
+      teamLength = trainers[trainerName].pokemon_team.length;
+    }
+  }
+  return `${
+    pokemonList?.find(([name, _]) => name === pokemonName)?.[1]
+  }_${teamLength}_${Math.floor(Math.random() * 9000 + 1000)}`;
+};
