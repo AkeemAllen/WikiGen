@@ -1,4 +1,6 @@
 <script lang="ts">
+import BaseModal from "$lib/components/BaseModal.svelte";
+
 import {
   Autocomplete,
   getToastStore,
@@ -14,7 +16,7 @@ import { routes, type TrainerInfo } from "../../../store/gameRoutes";
 import TextInput from "../TextInput.svelte";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { setUniquePokemonId } from "$lib/utils";
-import { IconTrash } from "@tabler/icons-svelte";
+import { IconDots, IconTrash } from "@tabler/icons-svelte";
 import _ from "lodash";
 
 const toastStore = getToastStore();
@@ -23,6 +25,9 @@ export let routeName: string;
 let trainerName: string = "";
 let pokemonName: string = "";
 let level: number = 0;
+
+let spriteModalOpen: boolean = false;
+let spriteName: string = "";
 
 $: trainers = $routes.routes[routeName].trainers;
 
@@ -90,6 +95,21 @@ async function deletePokemonFromTrainer(uniqueId: string, trainerName: string) {
     { dir: BaseDirectory.AppData },
   );
 }
+
+async function setTrainerSprite() {
+  let updatedTrainers = {
+    ...$routes.routes[routeName].trainers,
+  };
+  updatedTrainers[trainerName].sprite = spriteName.toLowerCase();
+
+  $routes.routes[routeName].trainers = updatedTrainers;
+
+  await writeTextFile(
+    `${$selectedWiki.name}/data/routes.json`,
+    JSON.stringify($routes),
+    { dir: BaseDirectory.AppData },
+  );
+}
 </script>
 
 <div class="flex flex-row gap-x-5">
@@ -121,7 +141,7 @@ async function deletePokemonFromTrainer(uniqueId: string, trainerName: string) {
     />
     <div
       data-popup="popupAutoComplete"
-      class="card mt-2 w-60 overflow-y-auto rounded-sm bg-white"
+      class="card z-10 mt-2 w-60 overflow-y-auto rounded-sm bg-white"
       tabindex="-1"
     >
       <Autocomplete
@@ -143,12 +163,54 @@ async function deletePokemonFromTrainer(uniqueId: string, trainerName: string) {
   </div>
 </div>
 
+<!-- Sprite Modal -->
+<BaseModal bind:open={spriteModalOpen}>
+  <TextInput
+    id="sprite-name"
+    label="Sprite Name"
+    placeholder="Sprites are loaded from pokemon https://play.pokemonshowdown.com/sprites/trainers/"
+    bind:value={spriteName}
+  />
+  <Button
+    title="Set Sprite"
+    disabled={spriteName === ""}
+    onClick={setTrainerSprite}
+  />
+</BaseModal>
+
 <div class="mt-5 flex flex-col gap-y-5">
   {#each Object.entries($routes.routes[routeName].trainers ?? {}) as [_trainerName, trainerInfo]}
     <div>
-      <strong>
+      <strong class="flex flex-row items-center gap-x-4">
         {_.capitalize(_trainerName)}
+        <button
+          class="hover:cursor-pointer"
+          use:popup={{
+            event: "click",
+            target: "popupTrainerMenu",
+            placement: "right",
+          }}
+        >
+          <IconDots size={20} color="gray" />
+        </button>
+        <div class="card z-10 bg-white p-2" data-popup="popupTrainerMenu">
+          <button
+            class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+            on:click={() => {
+                    spriteModalOpen = true;
+                    trainerName = _trainerName;
+                }}
+            >Add Sprite</button
+          >
+        </div>
       </strong>
+      {#if trainerInfo.sprite}
+        <img
+          src={`https://play.pokemonshowdown.com/sprites/trainers/${trainerInfo.sprite}.png`}
+          alt={_trainerName}
+          class="m-0 justify-self-center"
+        />
+      {/if}
       <div class="mt-2 grid grid-cols-6 gap-5">
         {#each trainerInfo.pokemon_team as pokemon}
           <div
@@ -167,12 +229,12 @@ async function deletePokemonFromTrainer(uniqueId: string, trainerName: string) {
                 {pokemon.level}
               </p>
             </div>
-            <div
+            <button
               class="invisible absolute right-2 top-2 group-hover:visible"
               on:click={() => deletePokemonFromTrainer(pokemon.unique_id, _trainerName)}
             >
               <IconTrash size={16} color="grey" />
-            </div>
+            </button>
           </div>
         {/each}
       </div>
