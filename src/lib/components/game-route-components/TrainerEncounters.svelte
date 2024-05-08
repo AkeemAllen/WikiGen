@@ -2,12 +2,10 @@
 import BaseModal from "$lib/components/BaseModal.svelte";
 
 import {
-  Autocomplete,
   getToastStore,
   popup,
   type AutocompleteOption,
 } from "@skeletonlabs/skeleton";
-import SelectInput from "../SelectInput.svelte";
 import NumberInput from "../NumberInput.svelte";
 import Button from "../Button.svelte";
 import { pokemonList, pokemon as storePokemon } from "../../../store/pokemon";

@@ -1,6 +1,5 @@
 <script lang="ts">
 import {
-  Autocomplete,
   getToastStore,
   popup,
   type AutocompleteOption,
