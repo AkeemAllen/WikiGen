@@ -16,8 +16,9 @@ import { routes, type TrainerInfo } from "../../../store/gameRoutes";
 import TextInput from "../TextInput.svelte";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { setUniquePokemonId } from "$lib/utils";
-import { IconDots, IconTrash } from "@tabler/icons-svelte";
+import { IconDots, IconEdit, IconTrash } from "@tabler/icons-svelte";
 import _ from "lodash";
+import AutoComplete from "../AutoComplete.svelte";
 
 const toastStore = getToastStore();
 
@@ -120,44 +121,21 @@ async function setTrainerSprite() {
       bind:value={trainerName}
     />
   </div>
-  <div class="w-60">
-    <label
-      for="pokemon-name"
-      class="block text-sm font-medium leading-6 text-gray-900"
-    >
-      Pokemon for current encounter type
-    </label>
-    <input
-      id="pokemon-name"
-      type="text"
-      placeholder="Pokemon Name"
-      class="mt-2 block w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-      bind:value={pokemonName}
-      use:popup={{
-        event: "focus-click",
-        target: "popupAutoComplete",
-        placement: "bottom",
-      }}
-    />
-    <div
-      data-popup="popupAutoComplete"
-      class="card z-10 mt-2 w-60 overflow-y-auto rounded-sm bg-white"
-      tabindex="-1"
-    >
-      <Autocomplete
-        bind:input={pokemonName}
-        options={pokemonListOptions}
-        limit={5}
-        on:selection={onPokemonNameSelected}
-        class="w-full rounded-md border bg-white p-2 text-sm"
-      />
-    </div>
-  </div>
+
+  <AutoComplete
+    label="Pokemon for current encounter type"
+    placeholder="Pokemon Name"
+    bind:value={pokemonName}
+    options={pokemonListOptions}
+    popupId="popupAutoComplete"
+    onSelection={onPokemonNameSelected}
+  />
+
   <NumberInput label="Level" bind:value={level} />
   <div class="mt-8 w-32">
     <Button
       title="Add Encounter"
-      disabled={pokemonName === "" || level === 0}
+      disabled={pokemonName === "" || level === 0 || trainerName === ""}
       onClick={addPokemonToTrainer}
     />
   </div>
@@ -229,6 +207,11 @@ async function setTrainerSprite() {
                 {pokemon.level}
               </p>
             </div>
+            <button
+              class="invisible absolute right-8 top-2 group-hover:visible"
+            >
+              <IconEdit size={16} color="grey" />
+            </button>
             <button
               class="invisible absolute right-2 top-2 group-hover:visible"
               on:click={() => deletePokemonFromTrainer(pokemon.unique_id, _trainerName)}
