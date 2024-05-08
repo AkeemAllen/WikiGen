@@ -88,12 +88,7 @@ async function deletePokemonFromTrainer(uniqueId: string, trainerName: string) {
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
     { dir: BaseDirectory.AppData },
-  ).then(() => {
-    toastStore.trigger({
-      message: "Encounter Deleted",
-      background: "variant-filled-success",
-    });
-  });
+  );
 }
 </script>
 

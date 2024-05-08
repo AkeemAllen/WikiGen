@@ -56,12 +56,7 @@ async function addEncounter() {
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
     { dir: BaseDirectory.AppData },
-  ).then(() => {
-    toastStore.trigger({
-      message: "Encounter Added",
-      background: "variant-filled-success",
-    });
-  });
+  );
 }
 
 async function deleteEncounter(pokemonName: string, encounterType: string) {
@@ -81,12 +76,7 @@ async function deleteEncounter(pokemonName: string, encounterType: string) {
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
     { dir: BaseDirectory.AppData },
-  ).then(() => {
-    toastStore.trigger({
-      message: "Encounter Deleted",
-      background: "variant-filled-success",
-    });
-  });
+  );
 }
 </script>
 
