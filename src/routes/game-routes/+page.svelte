@@ -103,13 +103,12 @@ async function renameRoute(originalRouteName: string, newName: string) {
 </BaseModal>
 <BaseModal bind:open={encounterTypeModalOpen}>
   <div class="flex flex-row gap-3">
-    <div class="mt-2 w-44">
-      <Button
-        title="Add New Encounter"
-        onClick={addNewEncounterType}
-        disabled={newEncounterType === ""}
-      />
-    </div>
+    <Button
+      class="mt-2 w-44"
+      title="Add New Encounter"
+      onClick={addNewEncounterType}
+      disabled={newEncounterType === ""}
+    />
     <TextInput bind:value={newEncounterType} placeholder="New Encounter Type" />
   </div>
   <div class="grid grid-cols-2 gap-3">
@@ -128,18 +127,16 @@ async function renameRoute(originalRouteName: string, newName: string) {
 </BaseModal>
 
 <div class="flex flex-row gap-3">
-  <div class="w-40">
-    <Button
-      title="Create New Route"
-      onClick={() => (newRouteModalOpen = true)}
-    />
-  </div>
-  <div class="w-48">
-    <Button
-      title="Modify Encounter Types"
-      onClick={() => (encounterTypeModalOpen = true)}
-    />
-  </div>
+  <Button
+    class="w-40"
+    title="Create New Route"
+    onClick={() => (newRouteModalOpen = true)}
+  />
+  <Button
+    class="w-48"
+    title="Modify Encounter Types"
+    onClick={() => (encounterTypeModalOpen = true)}
+  />
 </div>
 
 <div class="mt-6 grid grid-cols-5 gap-x-4 gap-y-1">

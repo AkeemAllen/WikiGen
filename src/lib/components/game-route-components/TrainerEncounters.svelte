@@ -130,13 +130,12 @@ async function setTrainerSprite() {
   />
 
   <NumberInput label="Level" bind:value={level} />
-  <div class="mt-8 w-32">
-    <Button
-      title="Add Encounter"
-      disabled={pokemonName === "" || level === 0 || trainerName === ""}
-      onClick={addPokemonToTrainer}
-    />
-  </div>
+  <Button
+    title="Add Encounter"
+    class="mt-8 w-32"
+    disabled={pokemonName === "" || level === 0 || trainerName === ""}
+    onClick={addPokemonToTrainer}
+  />
 </div>
 
 <!-- Sprite Modal -->

@@ -99,13 +99,12 @@ async function deleteEncounter(pokemonName: string, encounterType: string) {
     onSelection={onPokemonNameSelected}
   />
   <NumberInput label="Encounter Rate" bind:value={encounterRate} />
-  <div class="mt-8 w-32">
-    <Button
-      title="Add Encounter"
-      disabled={pokemonName === "" || encounterRate === 0}
-      onClick={addEncounter}
-    />
-  </div>
+  <Button
+    class="mt-8 w-32"
+    title="Add Encounter"
+    disabled={pokemonName === "" || encounterRate === 0}
+    onClick={addEncounter}
+  />
 </div>
 
 <div class="mt-5 flex flex-col gap-y-5">
