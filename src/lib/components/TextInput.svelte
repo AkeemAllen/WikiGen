@@ -8,9 +8,11 @@ export let value: string | null = "";
 export let disabled = false;
 export let inputHandler = () => {};
 export let onKeyDownHandler: KeyboardEventHandler<HTMLInputElement> = () => {};
+let className = "";
+export { className as class };
 </script>
 
-<div>
+<div class={className}>
   {#if label !== ""}
     <label for={id} class="block text-sm font-medium leading-6 text-gray-900"
       >{label}</label

@@ -112,13 +112,12 @@ async function setTrainerSprite() {
 </script>
 
 <div class="flex flex-row gap-x-5">
-  <div class="w-40">
-    <TextInput
-      id="trainer-name"
-      label="Trainer Name"
-      bind:value={trainerName}
-    />
-  </div>
+  <TextInput
+    class="w-40"
+    id="trainer-name"
+    label="Trainer Name"
+    bind:value={trainerName}
+  />
 
   <AutoComplete
     label="Pokemon for current encounter type"
