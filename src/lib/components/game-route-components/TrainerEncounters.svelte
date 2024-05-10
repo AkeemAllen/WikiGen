@@ -26,6 +26,8 @@ let trainerName: string = "";
 let pokemonName: string = "";
 let level: number = 0;
 
+let trainerToUpdate: string = "";
+
 let spriteModalOpen: boolean = false;
 let spriteName: string = "";
 
@@ -98,7 +100,7 @@ async function setTrainerSprite() {
   let updatedTrainers = {
     ...$routes.routes[routeName].trainers,
   };
-  updatedTrainers[trainerName].sprite = spriteName.toLowerCase();
+  updatedTrainers[trainerToUpdate].sprite = spriteName.toLowerCase();
 
   $routes.routes[routeName].trainers = updatedTrainers;
 
@@ -107,6 +109,9 @@ async function setTrainerSprite() {
     JSON.stringify($routes),
     { dir: BaseDirectory.AppData },
   );
+
+  trainerToUpdate = "";
+  spriteName = "";
 }
 </script>
 
@@ -151,27 +156,30 @@ async function setTrainerSprite() {
   />
 </BaseModal>
 
+<!-- Trainer Versions Modal -->
+<BaseModal></BaseModal>
+
 <div class="mt-5 flex flex-col gap-y-5">
-  {#each Object.entries($routes.routes[routeName].trainers ?? {}) as [_trainerName, trainerInfo]}
+  {#each Object.entries($routes.routes[routeName].trainers ?? {}) as [name, trainerInfo], index}
     <div>
       <strong class="flex flex-row items-center gap-x-4">
-        {_.capitalize(_trainerName)}
+        {_.capitalize(name)}
         <button
           class="hover:cursor-pointer"
           use:popup={{
             event: "click",
-            target: "popupTrainerMenu",
+            target: "trainerMenu" + index,
             placement: "right",
           }}
         >
           <IconDots size={20} color="gray" />
         </button>
-        <div class="card z-10 bg-white p-2" data-popup="popupTrainerMenu">
+        <div class="card z-10 bg-white p-2" data-popup="trainerMenu{index}">
           <button
             class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
             on:click={() => {
                     spriteModalOpen = true;
-                    trainerName = _trainerName;
+                    trainerToUpdate = name;
                 }}
             >Add Sprite</button
           >
@@ -180,7 +188,7 @@ async function setTrainerSprite() {
       {#if trainerInfo.sprite}
         <img
           src={`https://play.pokemonshowdown.com/sprites/trainers/${trainerInfo.sprite}.png`}
-          alt={_trainerName}
+          alt={name}
           class="m-0 justify-self-center"
         />
       {/if}
@@ -188,7 +196,7 @@ async function setTrainerSprite() {
         {#each trainerInfo.pokemon_team as pokemon}
           <TrainerPokemonCard
             pokemon={pokemon}
-            trainerName={_trainerName}
+            trainerName={name}
             deletePokemon={deletePokemonFromTrainer}
           />
         {/each}
