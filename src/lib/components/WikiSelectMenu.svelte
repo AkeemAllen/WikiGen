@@ -5,9 +5,34 @@ import { routes } from "../../store/gameRoutes";
 import { moveList, moves } from "../../store/moves";
 import { pokemon, pokemonList } from "../../store/pokemon";
 import { sortRoutesByPosition } from "$lib/utils";
+import { abilities, abilitiesList } from "../../store/abilities";
+import { natures, naturesList } from "../../store/natures";
+import { items, itemsList } from "../../store/items";
 
 async function loadWikiData(wiki: Wiki) {
   $selectedWiki = wiki;
+
+  const abilitiesFromFile = await readTextFile(
+    `${$selectedWiki.name}/data/abilities.json`,
+    { dir: BaseDirectory.AppData },
+  );
+  abilities.set(JSON.parse(abilitiesFromFile));
+  abilitiesList.set(Object.keys($abilities));
+
+  const naturesFromFile = await readTextFile(
+    `${$selectedWiki.name}/data/natures.json`,
+    { dir: BaseDirectory.AppData },
+  );
+  natures.set(JSON.parse(naturesFromFile));
+  naturesList.set(Object.keys($natures));
+
+  const itemsFromFile = await readTextFile(
+    `${$selectedWiki.name}/data/items.json`,
+    { dir: BaseDirectory.AppData },
+  );
+  items.set(JSON.parse(itemsFromFile));
+  itemsList.set(Object.keys($items));
+
   const pokemonFromFile = await readTextFile(
     `${$selectedWiki.name}/data/pokemon.json`,
     { dir: BaseDirectory.AppData },
