@@ -18,6 +18,7 @@ import { IconDots, IconEdit, IconTrash } from "@tabler/icons-svelte";
 import _ from "lodash";
 import AutoComplete from "../AutoComplete.svelte";
 import TrainerPokemonCard from "../TrainerPokemonCard.svelte";
+import MultiSelect from "svelte-multiselect";
 
 const toastStore = getToastStore();
 
@@ -29,7 +30,10 @@ let level: number = 0;
 let trainerToUpdate: string = "";
 
 let spriteModalOpen: boolean = false;
+let trainerVersionsModalOpen: boolean = false;
 let spriteName: string = "";
+
+$: trainers = $routes.routes[routeName].trainers ?? {};
 
 let pokemonListOptions: AutocompleteOption<string | number>[] =
   $pokemonList.map(([name, id]) => ({ label: name, value: id }));
@@ -157,7 +161,18 @@ async function setTrainerSprite() {
 </BaseModal>
 
 <!-- Trainer Versions Modal -->
-<BaseModal></BaseModal>
+<BaseModal bind:open={trainerVersionsModalOpen}>
+  <MultiSelect
+    bind:selected={trainers[trainerToUpdate].versions}
+    allowUserOptions={true}
+    options={trainers[trainerToUpdate].versions ?? []}
+    on:change={async (e) => {await writeTextFile(
+      `${$selectedWiki.name}/data/routes.json`,
+      JSON.stringify($routes),
+      { dir: BaseDirectory.AppData },
+    )}}
+  />
+</BaseModal>
 
 <div class="mt-5 flex flex-col gap-y-5">
   {#each Object.entries($routes.routes[routeName].trainers ?? {}) as [name, trainerInfo], index}
@@ -183,6 +198,14 @@ async function setTrainerSprite() {
                 }}
             >Add Sprite</button
           >
+          <button
+            class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+            on:click={() => {
+                    trainerVersionsModalOpen = true;
+                    trainerToUpdate = name;
+                }}
+            >Modify Trainer Versions</button
+          >
         </div>
       </strong>
       {#if trainerInfo.sprite}
@@ -197,6 +220,7 @@ async function setTrainerSprite() {
           <TrainerPokemonCard
             pokemon={pokemon}
             trainerName={name}
+            trainerVersions={trainerInfo.versions ?? []}
             deletePokemon={deletePokemonFromTrainer}
           />
         {/each}

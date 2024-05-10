@@ -21,6 +21,7 @@ export type RouteProperties = {
 export type TrainerInfo = {
   pokemon_team: TrainerPokemon[];
   sprite?: string;
+  versions?: string[];
 };
 
 export type TrainerPokemon = {
@@ -32,7 +33,7 @@ export type TrainerPokemon = {
   item?: string;
   nature?: string;
   ability?: string;
-  trainer_version?: string[];
+  trainer_versions?: string[];
 };
 
 export type WildEncounter = {

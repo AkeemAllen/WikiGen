@@ -6,6 +6,7 @@ import _ from "lodash";
 import BaseModal from "./BaseModal.svelte";
 import TextInput from "./TextInput.svelte";
 import AutoComplete from "./AutoComplete.svelte";
+import MultiSelect from "svelte-multiselect";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { selectedWiki } from "../../store";
 import { routes } from "../../store/gameRoutes";
@@ -14,6 +15,7 @@ import { naturesList } from "../../store/natures";
 import { itemsList } from "../../store/items";
 
 export let pokemon: TrainerPokemon;
+export let trainerVersions: string[];
 export let trainerName: string;
 
 export let editModalOpen: boolean = false;
@@ -67,6 +69,15 @@ async function writeRouteToFile() {
     options={itemListOptions}
     popupId="item-popup"
     onSelection={async (e) => {pokemon.item = e.detail.value; writeRouteToFile()}}
+  />
+  <MultiSelect
+    bind:selected={pokemon.trainer_versions}
+    options={trainerVersions}
+    on:change={async (e) => {await writeTextFile(
+      `${$selectedWiki.name}/data/routes.json`,
+      JSON.stringify($routes),
+      { dir: BaseDirectory.AppData },
+    )}}
   />
 </BaseModal>
 <div
