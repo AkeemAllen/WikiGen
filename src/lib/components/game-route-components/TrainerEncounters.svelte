@@ -17,6 +17,7 @@ import { setUniquePokemonId } from "$lib/utils";
 import { IconDots, IconEdit, IconTrash } from "@tabler/icons-svelte";
 import _ from "lodash";
 import AutoComplete from "../AutoComplete.svelte";
+import TrainerPokemonCard from "../TrainerPokemonCard.svelte";
 
 const toastStore = getToastStore();
 
@@ -27,8 +28,6 @@ let level: number = 0;
 
 let spriteModalOpen: boolean = false;
 let spriteName: string = "";
-
-$: trainers = $routes.routes[routeName].trainers;
 
 let pokemonListOptions: AutocompleteOption<string | number>[] =
   $pokemonList.map(([name, id]) => ({ label: name, value: id }));
@@ -187,34 +186,11 @@ async function setTrainerSprite() {
       {/if}
       <div class="mt-2 grid grid-cols-6 gap-5">
         {#each trainerInfo.pokemon_team as pokemon}
-          <div
-            class="group card relative grid !bg-transparent p-2 shadow-md hover:cursor-pointer"
-          >
-            <img
-              src={$storePokemon.pokemon[pokemon.id].sprite}
-              alt={pokemon.name}
-              class="m-0 justify-self-center"
-            />
-            <div class="w-full rounded-md border-2">
-              <p class="text-center">
-                {_.capitalize(pokemon.name)}
-              </p>
-              <p class="text-center">
-                {pokemon.level}
-              </p>
-            </div>
-            <button
-              class="invisible absolute right-8 top-2 group-hover:visible"
-            >
-              <IconEdit size={16} color="grey" />
-            </button>
-            <button
-              class="invisible absolute right-2 top-2 group-hover:visible"
-              on:click={() => deletePokemonFromTrainer(pokemon.unique_id, _trainerName)}
-            >
-              <IconTrash size={16} color="grey" />
-            </button>
-          </div>
+          <TrainerPokemonCard
+            pokemon={pokemon}
+            trainerName={_trainerName}
+            deletePokemon={deletePokemonFromTrainer}
+          />
         {/each}
       </div>
       <div></div>
