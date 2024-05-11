@@ -6,7 +6,10 @@ use std::{
 use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 
-use crate::{helpers::capitalize::capitalize, structs::mkdocs_structs::Navigation};
+use crate::{
+    helpers::capitalize::capitalize,
+    structs::mkdocs_structs::{MKDocsConfig, Navigation},
+};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Routes {
@@ -58,6 +61,11 @@ pub async fn generate_route_pages(
     let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
     let routes_file = File::open(&routes_json_file_path).unwrap();
     let routes: Routes = serde_json::from_reader(routes_file).unwrap();
+    let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
+    let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
+    let mut mkdocs_config: MKDocsConfig = serde_yaml::from_reader(mkdocs_yaml_file).unwrap();
+
+    let mut mkdoc_routes = Vec::new();
 
     for (route_name, route_properties) in routes.routes.iter() {
         let routes_directory = docs_path.join("routes").join(route_name);
@@ -80,6 +88,8 @@ pub async fn generate_route_pages(
             formatted_route_name,
             Navigation::Array(vec![Navigation::Map(wild_encounters_entry)]),
         );
+
+        mkdoc_routes.push(Navigation::Map(route_entry));
     }
 
     let paths = fs::read_dir(&docs_path.join("routes")).unwrap();
@@ -98,5 +108,16 @@ pub async fn generate_route_pages(
             fs::remove_dir_all(&path.unwrap().path()).unwrap();
         }
     }
+
+    if let Some(nav_routes) = mkdocs_config.nav[2].get_mut("Routes") {
+        *nav_routes = Navigation::Array(mkdoc_routes);
+    }
+
+    fs::write(
+        mkdocs_yaml_file_path,
+        serde_yaml::to_string(&mkdocs_config).unwrap(),
+    )
+    .unwrap();
+
     Ok("Generating Routes".to_string())
 }
