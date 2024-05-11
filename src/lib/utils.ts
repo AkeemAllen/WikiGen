@@ -114,6 +114,8 @@ export function sortRoutesByPosition(routes: Routes): Routes {
     sortedRoutes.routes[routeName] = route;
   });
 
+  sortedRoutes.encounter_types = routes.encounter_types;
+
   return sortedRoutes;
 }
 
