@@ -23,8 +23,11 @@ let routeBeingEdited: string = "";
 let loading = false;
 
 async function createNewRoute() {
-  $routes.routes[routeName] = {
+  $routes.routes[routeName.trim()] = {
     position: Object.keys($routes.routes).length,
+    trainers: {},
+    wild_encounters: {},
+    wild_encounter_area_levels: {},
   };
   await writeTextFile(
     `${$selectedWiki.name}/data/routes.json`,
