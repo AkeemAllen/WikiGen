@@ -4,7 +4,6 @@ import { type TrainerPokemon } from "../../store/gameRoutes";
 import { pokemon as storePokemon } from "../../store/pokemon";
 import _ from "lodash";
 import BaseModal from "./BaseModal.svelte";
-import TextInput from "./TextInput.svelte";
 import AutoComplete from "./AutoComplete.svelte";
 import MultiSelect from "svelte-multiselect";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
@@ -13,6 +12,7 @@ import { routes } from "../../store/gameRoutes";
 import { abilitiesList } from "../../store/abilities";
 import { naturesList } from "../../store/natures";
 import { itemsList } from "../../store/items";
+import { moveList } from "../../store/moves";
 
 export let pokemon: TrainerPokemon;
 export let trainerVersions: string[];
@@ -45,7 +45,10 @@ async function writeRouteToFile() {
 }
 </script>
 
-<BaseModal bind:open={editModalOpen} class="grid grid-cols-2 gap-5">
+<BaseModal
+  bind:open={editModalOpen}
+  class="grid max-w-[40rem] grid-cols-2 gap-5"
+>
   <AutoComplete
     label="Ability"
     bind:value={pokemon.ability}
@@ -70,15 +73,41 @@ async function writeRouteToFile() {
     popupId="item-popup"
     onSelection={async (e) => {pokemon.item = e.detail.value; writeRouteToFile()}}
   />
-  <MultiSelect
-    bind:selected={pokemon.trainer_versions}
-    options={trainerVersions}
-    on:change={async (e) => {await writeTextFile(
+  <div>
+    <label
+      for="versions"
+      class="mb-2 block text-sm font-medium leading-6 text-gray-900"
+      >Trainer Versions</label
+    >
+    <MultiSelect
+      id="versions"
+      bind:selected={pokemon.trainer_versions}
+      options={trainerVersions}
+      on:change={async (e) => {await writeTextFile(
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
     )}}
-  />
+    />
+  </div>
+  <div class="col-span-2">
+    <label
+      for="moveSet"
+      class="mb-2 block text-sm font-medium leading-6 text-gray-900"
+      >Moves</label
+    >
+    <MultiSelect
+      id="moveSet"
+      bind:selected={pokemon.moves}
+      options={$moveList}
+      maxSelect={4}
+      on:change={async (e) => {await writeTextFile(
+      `${$selectedWiki.name}/data/routes.json`,
+      JSON.stringify($routes),
+      { dir: BaseDirectory.AppData },
+    )}}
+    />
+  </div>
 </BaseModal>
 <div
   class="group card relative grid !bg-transparent p-2 shadow-md hover:cursor-pointer"
