@@ -161,17 +161,25 @@ async function setTrainerSprite() {
 </BaseModal>
 
 <!-- Trainer Versions Modal -->
-<BaseModal bind:open={trainerVersionsModalOpen}>
-  <MultiSelect
-    bind:selected={trainers[trainerToUpdate].versions}
-    allowUserOptions={true}
-    options={trainers[trainerToUpdate].versions ?? []}
-    on:change={async (e) => {await writeTextFile(
+<BaseModal bind:open={trainerVersionsModalOpen} class="gap-y-1">
+  <div>
+    <label
+      for="versions"
+      class="block text-sm font-medium leading-6 text-gray-900"
+      >Trainer Versions</label
+    >
+    <MultiSelect
+      id="versions"
+      bind:selected={trainers[trainerToUpdate].versions}
+      allowUserOptions={true}
+      options={trainers[trainerToUpdate].versions ?? []}
+      on:change={async (e) => {await writeTextFile(
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
     )}}
-  />
+    />
+  </div>
 </BaseModal>
 
 <div class="mt-5 flex flex-col gap-y-5">
