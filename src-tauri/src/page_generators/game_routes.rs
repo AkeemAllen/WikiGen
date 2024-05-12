@@ -73,27 +73,22 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
         let mut route_entry = HashMap::new();
         let mut entries = Vec::new();
 
-        println!("{:?}", route_properties);
-        // if let Some(wild_encounters) = &route_properties.wild_encounters {
-        //     println!("{:?}", wild_encounters);
-        //     let mut wild_encounters_entry = HashMap::new();
-        //     wild_encounters_entry.insert(
-        //         "Wild Encounters".to_string(),
-        //         Navigation::String(format!("routes/{}/wild_encounters.md", route_name)),
-        //     );
-
-        //     entries.push(Navigation::Map(wild_encounters_entry))
-        // }
-
-        // if let Some(trainer) = &route_properties.trainers {
-        //     println!("{:?}", trainer);
-        //     let mut trainer_entry = HashMap::new();
-        //     trainer_entry.insert(
-        //         "Trainers".to_string(),
-        //         Navigation::String(format!("routes/{}/trainers.md", route_name)),
-        //     );
-        //     entries.push(Navigation::Map(trainer_entry))
-        // }
+        if !route_properties.wild_encounters.is_empty() {
+            let mut wild_encounters_entry = HashMap::new();
+            wild_encounters_entry.insert(
+                "Wild Encounter".to_string(),
+                Navigation::String(format!("routes/{}/wild_encounters.md", route_name)),
+            );
+            entries.push(Navigation::Map(wild_encounters_entry));
+        }
+        if !route_properties.trainers.is_empty() {
+            let mut trainers_entry = HashMap::new();
+            trainers_entry.insert(
+                "Trainers".to_string(),
+                Navigation::String(format!("routes/{}/trainers.md", route_name)),
+            );
+            entries.push(Navigation::Map(trainers_entry));
+        }
 
         route_entry.insert(formatted_route_name, Navigation::Array(entries));
 
