@@ -90,6 +90,10 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
             entries.push(Navigation::Map(trainers_entry));
         }
 
+        if entries.is_empty() {
+            continue;
+        }
+
         route_entry.insert(formatted_route_name, Navigation::Array(entries));
 
         mkdoc_routes.push(Navigation::Map(route_entry));
