@@ -1,6 +1,7 @@
 use std::{
     collections::HashMap,
     fs::{self, File},
+    path::PathBuf,
 };
 
 use serde::{Deserialize, Serialize};
@@ -20,9 +21,9 @@ pub struct Routes {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RouteProperties {
     pub position: usize,
-    pub trainers: Option<HashMap<String, TrainerInfo>>,
-    pub wild_encounters: Option<HashMap<String, Vec<WildEncounter>>>,
-    pub wild_encouter_area_levels: Option<HashMap<String, String>>,
+    pub trainers: HashMap<String, TrainerInfo>,
+    pub wild_encounters: HashMap<String, Vec<WildEncounter>>,
+    pub wild_encounter_area_levels: HashMap<String, String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -50,17 +51,13 @@ pub struct WildEncounter {
     pub encounter_rate: usize,
 }
 
-#[tauri::command]
-pub async fn generate_route_pages(
-    wiki_name: &str,
-    app_handle: AppHandle,
-) -> Result<String, String> {
-    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<String, String> {
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
     let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
     let routes_file = File::open(&routes_json_file_path).unwrap();
     let routes: Routes = serde_json::from_reader(routes_file).unwrap();
+
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
     let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
     let mut mkdocs_config: MKDocsConfig = serde_yaml::from_reader(mkdocs_yaml_file).unwrap();
@@ -74,20 +71,31 @@ pub async fn generate_route_pages(
         let formatted_route_name = capitalize(&route_name);
 
         let mut route_entry = HashMap::new();
+        let mut entries = Vec::new();
 
-        let mut wild_encounters_entry = HashMap::new();
-        if let Some(wild_encounters) = &route_properties.wild_encounters {
-            println!("{:?}", wild_encounters);
-            wild_encounters_entry.insert(
-                "Wild Encounters".to_string(),
-                Navigation::String(format!("routes/{}/wild_encounters.md", route_name)),
-            );
-        }
+        println!("{:?}", route_properties);
+        // if let Some(wild_encounters) = &route_properties.wild_encounters {
+        //     println!("{:?}", wild_encounters);
+        //     let mut wild_encounters_entry = HashMap::new();
+        //     wild_encounters_entry.insert(
+        //         "Wild Encounters".to_string(),
+        //         Navigation::String(format!("routes/{}/wild_encounters.md", route_name)),
+        //     );
 
-        route_entry.insert(
-            formatted_route_name,
-            Navigation::Array(vec![Navigation::Map(wild_encounters_entry)]),
-        );
+        //     entries.push(Navigation::Map(wild_encounters_entry))
+        // }
+
+        // if let Some(trainer) = &route_properties.trainers {
+        //     println!("{:?}", trainer);
+        //     let mut trainer_entry = HashMap::new();
+        //     trainer_entry.insert(
+        //         "Trainers".to_string(),
+        //         Navigation::String(format!("routes/{}/trainers.md", route_name)),
+        //     );
+        //     entries.push(Navigation::Map(trainer_entry))
+        // }
+
+        route_entry.insert(formatted_route_name, Navigation::Array(entries));
 
         mkdoc_routes.push(Navigation::Map(route_entry));
     }
@@ -120,4 +128,13 @@ pub async fn generate_route_pages(
     .unwrap();
 
     Ok("Generating Routes".to_string())
+}
+
+#[tauri::command]
+pub async fn generate_route_page_with_handle(
+    wiki_name: &str,
+    app_handle: AppHandle,
+) -> Result<String, String> {
+    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    return generate_route_pages(wiki_name, base_path);
 }
