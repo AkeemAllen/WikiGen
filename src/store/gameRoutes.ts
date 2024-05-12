@@ -7,13 +7,13 @@ export type Routes = {
 
 export type RouteProperties = {
   position: number;
-  trainers?: {
+  trainers: {
     [key: string]: TrainerInfo;
   };
-  wild_encounters?: {
+  wild_encounters: {
     [key: string]: WildEncounter[];
   };
-  wild_encounter_area_levels?: {
+  wild_encounter_area_levels: {
     [key: string]: string;
   };
 };

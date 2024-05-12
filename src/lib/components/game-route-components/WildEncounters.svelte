@@ -35,14 +35,10 @@ function onPokemonNameSelected(
 }
 
 async function addEncounter() {
-  let encounterTypesObjects = {
-    ...$routes.routes[routeName].wild_encounters,
-  };
-
   $routes.routes[routeName].wild_encounters = {
     ...$routes.routes[routeName].wild_encounters,
     [encounterType]: [
-      ...(encounterTypesObjects[encounterType] ?? []),
+      ...($routes.routes[routeName].wild_encounters[encounterType] ?? []),
       {
         id: $pokemonList.find(
           ([name, _]) => name === pokemonName,
@@ -108,7 +104,7 @@ async function deleteEncounter(pokemonName: string, encounterType: string) {
 </div>
 
 <div class="mt-5 flex flex-col gap-y-5">
-  {#each Object.entries($routes.routes[routeName].wild_encounters ?? {}) as [_encounterType, encounters]}
+  {#each Object.entries($routes.routes[routeName].wild_encounters) as [_encounterType, encounters]}
     <div>
       <strong>
         {_.capitalize(_encounterType)} Encounters
