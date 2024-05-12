@@ -29,10 +29,26 @@ async function generatePokemonPagesInRange() {
     });
   });
 }
+
+async function generateRoutePages() {
+  loading = true;
+  await invoke("generate_route_page_with_handle", {
+    wikiName: $selectedWiki.name,
+  }).then((response: any) => {
+    loading = false;
+    toastStore.trigger({
+      message: response || "Route Pages generated",
+      timeout: 5000,
+      hoverable: true,
+      background: "variant-filled-success",
+    });
+  });
+}
 </script>
 
 <TabGroup>
   <Tab bind:group={tabSet} name="pokemon" value={0}>Pokemon</Tab>
+  <Tab bind:group={tabSet} name="routes" value={1}>Routes</Tab>
   <svelte:fragment slot="panel">
     {#if tabSet === 0}
       <div class="flex gap-16">
@@ -51,6 +67,14 @@ async function generatePokemonPagesInRange() {
             loading === true}
         title="Generate Pages"
         onClick={generatePokemonPagesInRange}
+        loading={loading}
+      />
+    {/if}
+    {#if tabSet === 1}
+      <Button
+        class=" mt-4 w-40"
+        title="Generate Pages"
+        onClick={generateRoutePages}
         loading={loading}
       />
     {/if}
