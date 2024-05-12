@@ -118,12 +118,12 @@ async function renameRoute(originalRouteName: string, newName: string) {
     {#each $routes.encounter_types as encounterType}
       <div class="card flex flex-row items-center justify-between px-2 py-1">
         {encounterType}
-        <div
+        <button
           class="btn rounded-sm p-2 hover:cursor-pointer hover:bg-gray-300"
           on:click={() => deleteEncounterType(encounterType)}
         >
           <IconTrash size={16} />
-        </div>
+        </button>
       </div>
     {/each}
   </div>

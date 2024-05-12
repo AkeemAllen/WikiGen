@@ -127,12 +127,12 @@ async function deleteEncounter(pokemonName: string, encounterType: string) {
                 {encounter.encounter_rate}%
               </p>
             </div>
-            <div
+            <button
               class="invisible absolute right-2 top-2 group-hover:visible"
               on:click={() => deleteEncounter(encounter.name, _encounterType)}
             >
               <IconTrash size={16} color="grey" />
-            </div>
+            </button>
           </div>
         {/each}
       </div>
