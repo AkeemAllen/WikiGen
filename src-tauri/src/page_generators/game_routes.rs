@@ -1,6 +1,7 @@
 use std::{
     collections::HashMap,
     fs::{self, File},
+    io::Write,
     path::PathBuf,
 };
 
@@ -51,6 +52,26 @@ pub struct WildEncounter {
     pub encounter_rate: usize,
 }
 
+#[tauri::command]
+pub async fn generate_route_page_with_handle(
+    wiki_name: &str,
+    app_handle: AppHandle,
+) -> Result<String, String> {
+    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    return generate_route_pages(&wiki_name, base_path);
+}
+
+fn create_encounter_table(route_name: &str, routes_directory: &PathBuf) -> Result<String, String> {
+    let mut encounters_markdown_file =
+        File::create(routes_directory.join("wild_encounters.md")).unwrap();
+
+    encounters_markdown_file
+        .write_all(format!("{}", route_name).as_bytes())
+        .unwrap();
+
+    Ok("Encounter Table Created".to_string())
+}
+
 pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<String, String> {
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
@@ -75,6 +96,8 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
 
         if !route_properties.wild_encounters.is_empty() {
             let mut wild_encounters_entry = HashMap::new();
+            let encounter_table = create_encounter_table(route_name, &routes_directory).unwrap();
+            println!("{}", encounter_table);
             wild_encounters_entry.insert(
                 "Wild Encounter".to_string(),
                 Navigation::String(format!("routes/{}/wild_encounters.md", route_name)),
@@ -101,15 +124,13 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
 
     let paths = fs::read_dir(&docs_path.join("routes")).unwrap();
     for path in paths {
-        let path_name = capitalize(
-            &path
-                .as_ref()
-                .ok()
-                .unwrap()
-                .file_name()
-                .into_string()
-                .unwrap(),
-        );
+        let path_name = path
+            .as_ref()
+            .ok()
+            .unwrap()
+            .file_name()
+            .into_string()
+            .unwrap();
 
         if !routes.routes.contains_key(&path_name) {
             fs::remove_dir_all(&path.unwrap().path()).unwrap();
@@ -127,13 +148,4 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
     .unwrap();
 
     Ok("Generating Routes".to_string())
-}
-
-#[tauri::command]
-pub async fn generate_route_page_with_handle(
-    wiki_name: &str,
-    app_handle: AppHandle,
-) -> Result<String, String> {
-    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    return generate_route_pages(wiki_name, base_path);
 }
