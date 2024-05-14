@@ -9,8 +9,11 @@ use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 
 use crate::{
-    helpers::capitalize::capitalize,
-    structs::mkdocs_structs::{MKDocsConfig, Navigation},
+    helpers::{capitalize::capitalize, get_pokemon_dex_formatted_name},
+    structs::{
+        mkdocs_structs::{MKDocsConfig, Navigation},
+        pokemon_structs::Pokemon,
+    },
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -61,17 +64,6 @@ pub async fn generate_route_page_with_handle(
     return generate_route_pages(&wiki_name, base_path);
 }
 
-fn create_encounter_table(route_name: &str, routes_directory: &PathBuf) -> Result<String, String> {
-    let mut encounters_markdown_file =
-        File::create(routes_directory.join("wild_encounters.md")).unwrap();
-
-    encounters_markdown_file
-        .write_all(format!("{}", route_name).as_bytes())
-        .unwrap();
-
-    Ok("Encounter Table Created".to_string())
-}
-
 pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<String, String> {
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
@@ -96,7 +88,14 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
 
         if !route_properties.wild_encounters.is_empty() {
             let mut wild_encounters_entry = HashMap::new();
-            let encounter_table = create_encounter_table(route_name, &routes_directory).unwrap();
+            let encounter_table = create_encounter_table(
+                wiki_name,
+                route_name,
+                &routes_directory,
+                &route_properties.wild_encounters,
+                &route_properties.wild_encounter_area_levels,
+            )
+            .unwrap();
             println!("{}", encounter_table);
             wild_encounters_entry.insert(
                 "Wild Encounter".to_string(),
@@ -148,4 +147,72 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
     .unwrap();
 
     Ok("Generating Routes".to_string())
+}
+
+fn create_encounter_table(
+    wiki_name: &str,
+    route_name: &str,
+    routes_directory: &PathBuf,
+    encounters: &HashMap<String, Vec<WildEncounter>>,
+    encounter_areas_levels: &HashMap<String, String>,
+) -> Result<String, String> {
+    let mut encounters_markdown_file =
+        File::create(routes_directory.join("wild_encounters.md")).unwrap();
+
+    encounters_markdown_file
+        .write_all(format!("# {}\n\n", capitalize(route_name)).as_bytes())
+        .unwrap();
+
+    let mut markdown_encounters = String::new();
+    for (encounter_type, pokemon_encounter_list) in encounters {
+        let mut pokemon_entries = String::new();
+        for (index, pokemon) in pokemon_encounter_list.iter().enumerate() {
+            let mut entry = format!("| {} ", get_markdown_entry_for_pokemon(wiki_name, &pokemon));
+            // It's possible for a single route to have more than 6 pokemon
+            // We want break the entries into a new line at that 6th position.
+            if index != 0 && index % 6 == 0 {
+                entry = format!(
+                    "\n| | {} ",
+                    get_markdown_entry_for_pokemon(wiki_name, &pokemon)
+                );
+            }
+            pokemon_entries.push_str(&entry);
+        }
+        pokemon_entries.push_str("|");
+
+        let encounter_type_entry = match encounter_areas_levels.get(&encounter_type.clone()) {
+            Some(area_level) => format!("{}<br/> lv {}", &encounter_type, area_level),
+            None => encounter_type.to_string(),
+        };
+        let encounter_entry = format!("| {} {}\n", encounter_type_entry, pokemon_entries);
+        markdown_encounters.push_str(&encounter_entry);
+    }
+
+    encounters_markdown_file
+        .write_all(
+            format!(
+                "| Area | Pokemon | | | | | |
+        | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
+        {}
+        ",
+                markdown_encounters
+            )
+            .as_bytes(),
+        )
+        .unwrap();
+
+    Ok("Encounter Table Created".to_string())
+}
+
+fn get_markdown_entry_for_pokemon(wiki_name: &str, pokemon: &WildEncounter) -> String {
+    let dex_number_file_name = get_pokemon_dex_formatted_name(pokemon.id);
+    return format!(
+        "![{}](../../img/pokemon/{}.png)<br/> [{}](/{}/pokemon/{})<br/> {}%",
+        pokemon.name,
+        dex_number_file_name,
+        capitalize(&pokemon.name),
+        wiki_name,
+        dex_number_file_name,
+        pokemon.encounter_rate
+    );
 }
