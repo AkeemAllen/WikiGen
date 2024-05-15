@@ -44,6 +44,16 @@ function onPokemonNameSelected(
   pokemonName = event.detail.label;
 }
 
+function setTrainerDefaults(trainer: TrainerInfo) {
+  if (trainer.sprite === undefined) {
+    trainer.sprite = "";
+  }
+
+  if (trainer.versions === undefined) {
+    trainer.versions = [];
+  }
+}
+
 async function addPokemonToTrainer() {
   let trainers = {
     ...$routes.routes[routeName].trainers,
@@ -73,6 +83,7 @@ async function addPokemonToTrainer() {
       ],
     },
   };
+  setTrainerDefaults($routes.routes[routeName].trainers[trainerName]);
   await writeTextFile(
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),

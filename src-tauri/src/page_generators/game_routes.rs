@@ -33,6 +33,8 @@ pub struct RouteProperties {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TrainerInfo {
     pub pokemon_team: Vec<TrainerPokemon>,
+    pub sprite: String,
+    pub versions: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -222,14 +224,17 @@ fn create_trainer_table(
         .unwrap();
 
     let mut markdown_trainers = String::new();
-    for (name, trainerInfo) in trainers {
-        let mut header_divider = format!("| :--: ");
-        let mut pokemon_team = format!("\n| Pokemon");
-        let mut levels = format!("| <strong>Level</stong> ");
-        let mut ids = format!("| <strong>Id</stong> ");
-        let mut items = format!("| <strong>Items</stong> ");
+    for (name, trainer_info) in trainers {
+        let mut pokemon_team = format!(
+            "\n| {} | Pokemon",
+            get_trainer_sprite(name, &trainer_info.sprite)
+        );
+        let mut header_divider = format!("| :--: | :--: ");
+        let mut levels = format!("| | <strong>Level</stong> ");
+        let mut ids = format!("| | <strong>Id</stong> ");
+        let mut items = format!("| | <strong>Items</stong> ");
 
-        for pokemon in &trainerInfo.pokemon_team {
+        for pokemon in &trainer_info.pokemon_team {
             let item = match pokemon.item.clone() {
                 Some(item) => {
                     if item == "" {
@@ -307,5 +312,15 @@ fn get_markdown_entry_for_trainer_pokemon(wiki_name: &str, pokemon: &TrainerPoke
         wiki_name,
         dex_number_file_name,
         pokemon.level
+    );
+}
+
+fn get_trainer_sprite(name: &str, sprite: &str) -> String {
+    if sprite == "".to_string() {
+        return name.to_string();
+    }
+    return format!(
+        "{}<br/> ![{}](https://play.pokemonshowdown.com/sprites/trainers/{}.png)",
+        name, name, sprite
     );
 }
