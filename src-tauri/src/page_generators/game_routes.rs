@@ -103,6 +103,13 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
             entries.push(Navigation::Map(wild_encounters_entry));
         }
         if !route_properties.trainers.is_empty() {
+            create_trainer_table(
+                wiki_name,
+                route_name,
+                &routes_directory,
+                &route_properties.trainers,
+            )
+            .unwrap();
             let mut trainers_entry = HashMap::new();
             trainers_entry.insert(
                 "Trainers".to_string(),
@@ -199,8 +206,82 @@ fn create_encounter_table(
             .as_bytes(),
         )
         .unwrap();
+    Ok(())
+}
 
-    Ok("Encounter Table Created".to_string())
+fn create_trainer_table(
+    wiki_name: &str,
+    route_name: &str,
+    routes_directory: &PathBuf,
+    trainers: &HashMap<String, TrainerInfo>,
+) -> Result<(), String> {
+    let mut trainers_markdown_file = File::create(routes_directory.join("trainers.md")).unwrap();
+
+    trainers_markdown_file
+        .write_all(format!("# {}\n\n", capitalize(route_name)).as_bytes())
+        .unwrap();
+
+    let mut markdown_trainers = String::new();
+    for (name, trainerInfo) in trainers {
+        let mut header_divider = format!("| :--: ");
+        let mut pokemon_team = format!("\n| Pokemon");
+        let mut levels = format!("| <strong>Level</stong> ");
+        let mut ids = format!("| <strong>Id</stong> ");
+        let mut items = format!("| <strong>Items</stong> ");
+
+        for pokemon in &trainerInfo.pokemon_team {
+            let item = match pokemon.item.clone() {
+                Some(item) => {
+                    if item == "" {
+                        "-".to_string()
+                    } else {
+                        item
+                    }
+                }
+                None => "-".to_string(),
+            };
+            let pokemon_entry = format!(
+                "| {} ",
+                get_markdown_entry_for_trainer_pokemon(wiki_name, pokemon)
+            );
+            let level_entry = format!("| {} ", pokemon.level);
+            let id_entry = format!("| {} ", pokemon.id);
+            let item_entry = format!("| {} ", item);
+
+            pokemon_team.push_str(&pokemon_entry);
+            levels.push_str(&level_entry);
+            ids.push_str(&id_entry);
+            items.push_str(&item_entry);
+            header_divider.push_str("| :--: ");
+        }
+        pokemon_team.push_str("|");
+        levels.push_str("|");
+        ids.push_str("|");
+        header_divider.push_str("|");
+        println!("{}", pokemon_team);
+
+        let trainer_entry = format!(
+            "{}
+            {}
+            {}
+            {}
+            {}
+            ",
+            &pokemon_team, &header_divider, &levels, &ids, &items
+        );
+        markdown_trainers.push_str(&trainer_entry);
+    }
+    trainers_markdown_file
+        .write_all(
+            format!(
+                "{}
+                ",
+                markdown_trainers
+            )
+            .as_bytes(),
+        )
+        .unwrap();
+    Ok(())
 }
 
 fn get_markdown_entry_for_pokemon(wiki_name: &str, pokemon: &WildEncounter) -> String {
@@ -213,5 +294,18 @@ fn get_markdown_entry_for_pokemon(wiki_name: &str, pokemon: &WildEncounter) -> S
         wiki_name,
         dex_number_file_name,
         pokemon.encounter_rate
+    );
+}
+
+fn get_markdown_entry_for_trainer_pokemon(wiki_name: &str, pokemon: &TrainerPokemon) -> String {
+    let dex_number_file_name = get_pokemon_dex_formatted_name(pokemon.id);
+    return format!(
+        "![{}](../../img/pokemon/{}.png)<br/> [{}](/{}/pokemon/{})<br/> Lv. {}",
+        pokemon.name,
+        dex_number_file_name,
+        capitalize(&pokemon.name),
+        wiki_name,
+        dex_number_file_name,
+        pokemon.level
     );
 }
