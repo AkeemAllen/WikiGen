@@ -87,8 +87,7 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
         let mut entries = Vec::new();
 
         if !route_properties.wild_encounters.is_empty() {
-            let mut wild_encounters_entry = HashMap::new();
-            let encounter_table = create_encounter_table(
+            create_encounter_table(
                 wiki_name,
                 route_name,
                 &routes_directory,
@@ -96,7 +95,7 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
                 &route_properties.wild_encounter_area_levels,
             )
             .unwrap();
-            println!("{}", encounter_table);
+            let mut wild_encounters_entry = HashMap::new();
             wild_encounters_entry.insert(
                 "Wild Encounter".to_string(),
                 Navigation::String(format!("routes/{}/wild_encounters.md", route_name)),
