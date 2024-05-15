@@ -10,10 +10,7 @@ use tauri::AppHandle;
 
 use crate::{
     helpers::{capitalize::capitalize, get_pokemon_dex_formatted_name},
-    structs::{
-        mkdocs_structs::{MKDocsConfig, Navigation},
-        pokemon_structs::Pokemon,
-    },
+    structs::mkdocs_structs::{MKDocsConfig, Navigation},
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -43,11 +40,11 @@ pub struct TrainerPokemon {
     pub unique_id: String,
     pub name: String,
     pub level: usize,
-    pub moves: Option<[String; 4]>,
-    pub item: Option<String>,
-    pub nature: Option<String>,
-    pub ability: Option<String>,
-    pub tainer_version: Option<Vec<String>>,
+    pub moves: Vec<String>,
+    pub item: String,
+    pub nature: String,
+    pub ability: String,
+    pub trainer_versions: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -238,9 +235,9 @@ fn create_trainer_table(
                 get_markdown_entry_for_trainer_pokemon(wiki_name, pokemon)
             );
             let level_entry = format!("| {} ", pokemon.level);
-            let item_entry = format!("| {} ", extract_pokemon_attribute(&pokemon.item));
-            let nature_entry = format!("| {} ", extract_pokemon_attribute(&pokemon.nature));
-            let ability_entry = format!("| {} ", extract_pokemon_attribute(&pokemon.ability));
+            let item_entry = format!("| {} ", pokemon.item);
+            let nature_entry = format!("| {} ", pokemon.nature);
+            let ability_entry = format!("| {} ", pokemon.ability);
 
             pokemon_team.push_str(&pokemon_entry);
             header_divider.push_str("| :--: ");

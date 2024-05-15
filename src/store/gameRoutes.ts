@@ -29,11 +29,11 @@ export type TrainerPokemon = {
   unique_id: string;
   name: string;
   level: number;
-  moves?: string[];
-  item?: string;
-  nature?: string;
-  ability?: string;
-  trainer_versions?: string[];
+  moves: string[];
+  item: string;
+  nature: string;
+  ability: string;
+  trainer_versions: string[];
 };
 
 export type WildEncounter = {
