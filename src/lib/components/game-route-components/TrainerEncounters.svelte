@@ -44,27 +44,25 @@ function onPokemonNameSelected(
   pokemonName = event.detail.label;
 }
 
-function setTrainerDefaults(trainer: TrainerInfo) {
-  if (trainer.sprite === undefined) {
-    trainer.sprite = "";
-  }
-
-  if (trainer.versions === undefined) {
-    trainer.versions = [];
-  }
-}
-
 async function addPokemonToTrainer() {
   let trainers = {
     ...$routes.routes[routeName].trainers,
   };
+
+  if (trainers[trainerName] === undefined) {
+    trainers[trainerName] = {
+      sprite: "",
+      versions: [],
+      pokemon_team: [],
+    };
+  }
 
   $routes.routes[routeName].trainers = {
     ...$routes.routes[routeName].trainers,
     [trainerName]: {
       ...trainers[trainerName],
       pokemon_team: [
-        ...(trainers[trainerName]?.pokemon_team ?? []),
+        ...trainers[trainerName].pokemon_team,
         {
           id: $pokemonList.find(
             ([name, _]) => name === pokemonName,
@@ -83,7 +81,6 @@ async function addPokemonToTrainer() {
       ],
     },
   };
-  setTrainerDefaults($routes.routes[routeName].trainers[trainerName]);
   await writeTextFile(
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
