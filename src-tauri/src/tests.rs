@@ -9,7 +9,7 @@ pub mod tests {
         let base_path =
             PathBuf::from("/Users/akeemallen/Library/Application Support/com.wikigen.dev/");
 
-        let result = generate_route_pages("volt-white", base_path).unwrap();
+        let result = generate_route_pages("aspertia", base_path).unwrap();
         println!("{}", result);
         assert_eq!(3, 3)
     }

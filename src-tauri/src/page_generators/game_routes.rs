@@ -161,7 +161,7 @@ fn create_encounter_table(
     routes_directory: &PathBuf,
     encounters: &HashMap<String, Vec<WildEncounter>>,
     encounter_areas_levels: &HashMap<String, String>,
-) -> Result<String, String> {
+) -> Result<(), String> {
     let mut encounters_markdown_file =
         File::create(routes_directory.join("wild_encounters.md")).unwrap();
 
