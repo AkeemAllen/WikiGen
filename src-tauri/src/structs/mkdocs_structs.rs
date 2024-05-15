@@ -14,6 +14,7 @@ pub struct MKDocsConfig {
     pub nav: Vec<HashMap<String, Navigation>>,
     pub plugins: Vec<Plugin>,
     pub markdown_extensions: Vec<MarkdownExtension>,
+    pub extra_css: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
