@@ -224,15 +224,13 @@ fn create_trainer_table(
 
     let mut markdown_trainers = String::new();
     for (name, trainer_info) in trainers {
-        let mut trainer_entry = String::new();
-
         if trainer_info.versions.is_empty() {
-            trainer_entry = generate_trainer_entry(wiki_name, name, trainer_info, "");
+            let trainer_entry = generate_trainer_entry(wiki_name, name, trainer_info, "");
             markdown_trainers.push_str(&format!("\n{}", trainer_entry));
         } else {
             for version in &trainer_info.versions {
                 markdown_trainers.push_str(&format!("\n=== \"{}\"", version));
-                trainer_entry = generate_trainer_entry(wiki_name, name, trainer_info, version);
+                let trainer_entry = generate_trainer_entry(wiki_name, name, trainer_info, version);
                 markdown_trainers.push_str(&format!("\t{}", trainer_entry));
             }
         }
