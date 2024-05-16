@@ -224,77 +224,19 @@ fn create_trainer_table(
 
     let mut markdown_trainers = String::new();
     for (name, trainer_info) in trainers {
-        let mut pokemon_team = format!("\n| {}", get_trainer_sprite(name, &trainer_info.sprite));
-        let mut header_divider = format!("| :-- ");
-        let mut levels = format!("| <strong>Level</stong> ");
-        let mut items = format!("| <strong>Item</stong> ");
-        let mut natures = format!("| <strong>Nature</stong> ");
-        let mut abilities = format!("| <strong>Ability</stong> ");
-        let mut move1 = format!("| <strong>Move 1</stong> ");
-        let mut move2 = format!("| <strong>Move 2</stong> ");
-        let mut move3 = format!("| <strong>Move 3</stong> ");
-        let mut move4 = format!("| <strong>Move 4</stong> ");
+        let mut trainer_entry = String::new();
 
-        for pokemon in &trainer_info.pokemon_team {
-            let pokemon_entry = format!(
-                "| {} ",
-                get_markdown_entry_for_trainer_pokemon(wiki_name, pokemon)
-            );
-            let level_entry = format!("| {} ", pokemon.level);
-            let item_entry = format!("| {} ", pokemon.item);
-            let nature_entry = format!("| {} ", pokemon.nature);
-            let ability_entry = format!("| {} ", pokemon.ability);
-            let move1_entry = format!("| {} ", extract_move(pokemon.moves.get(0)));
-            let move2_entry = format!("| {} ", extract_move(pokemon.moves.get(1)));
-            let move3_entry = format!("| {} ", extract_move(pokemon.moves.get(2)));
-            let move4_entry = format!("| {} ", extract_move(pokemon.moves.get(3)));
-
-            pokemon_team.push_str(&pokemon_entry);
-            header_divider.push_str("| :-- ");
-            levels.push_str(&level_entry);
-            items.push_str(&item_entry);
-            natures.push_str(&nature_entry);
-            abilities.push_str(&ability_entry);
-            move1.push_str(&move1_entry);
-            move2.push_str(&move2_entry);
-            move3.push_str(&move3_entry);
-            move4.push_str(&move4_entry);
+        if trainer_info.versions.is_empty() {
+            trainer_entry = generate_trainer_entry(wiki_name, name, trainer_info, "");
+            markdown_trainers.push_str(&format!("\n{}", trainer_entry));
+        } else {
+            for version in &trainer_info.versions {
+                markdown_trainers.push_str(&format!("\n=== \"{}\"", version));
+                trainer_entry = generate_trainer_entry(wiki_name, name, trainer_info, version);
+                markdown_trainers.push_str(&format!("\t{}", trainer_entry));
+            }
         }
-        pokemon_team.push_str("|");
-        header_divider.push_str("|");
-        levels.push_str("|");
-        items.push_str("|");
-        natures.push_str("|");
-        abilities.push_str("|");
-        move1.push_str("|");
-        move2.push_str("|");
-        move3.push_str("|");
-        move4.push_str("|");
-
-        let trainer_entry = format!(
-            "{}
-            {}
-            {}
-            {}
-            {}
-            {}
-            {}
-            {}
-            {}
-            {}
-            ",
-            &pokemon_team,
-            &header_divider,
-            &levels,
-            &items,
-            &natures,
-            &abilities,
-            &move1,
-            &move2,
-            &move3,
-            &move4
-        );
-        markdown_trainers.push_str(&trainer_entry);
+        markdown_trainers.push_str("<br/>");
     }
     trainers_markdown_file
         .write_all(
@@ -350,4 +292,88 @@ fn extract_move(_move: Option<&String>) -> String {
         Some(_move) => _move.to_string(),
         None => return "-".to_string(),
     }
+}
+
+fn generate_trainer_entry(
+    wiki_name: &str,
+    name: &str,
+    trainer_info: &TrainerInfo,
+    version: &str,
+) -> String {
+    let mut pokemon_team = format!("\n\t| {}", get_trainer_sprite(name, &trainer_info.sprite));
+    if version == "" {
+        pokemon_team = format!("\n| {}", get_trainer_sprite(name, &trainer_info.sprite))
+    }
+    let mut header_divider = format!("| :-- ");
+    let mut levels = format!("| <strong>Level</stong> ");
+    let mut items = format!("| <strong>Item</stong> ");
+    let mut natures = format!("| <strong>Nature</stong> ");
+    let mut abilities = format!("| <strong>Ability</stong> ");
+    let mut move1 = format!("| <strong>Move 1</stong> ");
+    let mut move2 = format!("| <strong>Move 2</stong> ");
+    let mut move3 = format!("| <strong>Move 3</stong> ");
+    let mut move4 = format!("| <strong>Move 4</stong> ");
+
+    for pokemon in &trainer_info.pokemon_team {
+        if !pokemon.trainer_versions.contains(&version.to_string()) && version != "" {
+            continue;
+        }
+        let pokemon_entry = format!(
+            "| {} ",
+            get_markdown_entry_for_trainer_pokemon(wiki_name, pokemon)
+        );
+        let level_entry = format!("| {} ", pokemon.level);
+        let item_entry = format!("| {} ", pokemon.item);
+        let nature_entry = format!("| {} ", pokemon.nature);
+        let ability_entry = format!("| {} ", pokemon.ability);
+        let move1_entry = format!("| {} ", extract_move(pokemon.moves.get(0)));
+        let move2_entry = format!("| {} ", extract_move(pokemon.moves.get(1)));
+        let move3_entry = format!("| {} ", extract_move(pokemon.moves.get(2)));
+        let move4_entry = format!("| {} ", extract_move(pokemon.moves.get(3)));
+
+        pokemon_team.push_str(&pokemon_entry);
+        header_divider.push_str("| :-- ");
+        levels.push_str(&level_entry);
+        items.push_str(&item_entry);
+        natures.push_str(&nature_entry);
+        abilities.push_str(&ability_entry);
+        move1.push_str(&move1_entry);
+        move2.push_str(&move2_entry);
+        move3.push_str(&move3_entry);
+        move4.push_str(&move4_entry);
+    }
+    pokemon_team.push_str("|");
+    header_divider.push_str("|");
+    levels.push_str("|");
+    items.push_str("|");
+    natures.push_str("|");
+    abilities.push_str("|");
+    move1.push_str("|");
+    move2.push_str("|");
+    move3.push_str("|");
+    move4.push_str("|");
+
+    return format!(
+        "{}
+        {}
+        {}
+        {}
+        {}
+        {}
+        {}
+        {}
+        {}
+        {}
+        ",
+        &pokemon_team,
+        &header_divider,
+        &levels,
+        &items,
+        &natures,
+        &abilities,
+        &move1,
+        &move2,
+        &move3,
+        &move4
+    );
 }
