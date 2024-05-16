@@ -223,11 +223,15 @@ fn create_trainer_table(
     let mut markdown_trainers = String::new();
     for (name, trainer_info) in trainers {
         let mut pokemon_team = format!("\n| {}", get_trainer_sprite(name, &trainer_info.sprite));
-        let mut header_divider = format!("| :--: ");
+        let mut header_divider = format!("| :-- ");
         let mut levels = format!("| <strong>Level</stong> ");
         let mut items = format!("| <strong>Item</stong> ");
         let mut natures = format!("| <strong>Nature</stong> ");
         let mut abilities = format!("| <strong>Ability</stong> ");
+        let mut move1 = format!("| <strong>Move 1</stong> ");
+        let mut move2 = format!("| <strong>Move 2</stong> ");
+        let mut move3 = format!("| <strong>Move 3</stong> ");
+        let mut move4 = format!("| <strong>Move 4</stong> ");
 
         for pokemon in &trainer_info.pokemon_team {
             let pokemon_entry = format!(
@@ -238,13 +242,21 @@ fn create_trainer_table(
             let item_entry = format!("| {} ", pokemon.item);
             let nature_entry = format!("| {} ", pokemon.nature);
             let ability_entry = format!("| {} ", pokemon.ability);
+            let move1_entry = format!("| {} ", extract_move(pokemon.moves.get(0)));
+            let move2_entry = format!("| {} ", extract_move(pokemon.moves.get(1)));
+            let move3_entry = format!("| {} ", extract_move(pokemon.moves.get(2)));
+            let move4_entry = format!("| {} ", extract_move(pokemon.moves.get(3)));
 
             pokemon_team.push_str(&pokemon_entry);
-            header_divider.push_str("| :--: ");
+            header_divider.push_str("| :-- ");
             levels.push_str(&level_entry);
             items.push_str(&item_entry);
             natures.push_str(&nature_entry);
             abilities.push_str(&ability_entry);
+            move1.push_str(&move1_entry);
+            move2.push_str(&move2_entry);
+            move3.push_str(&move3_entry);
+            move4.push_str(&move4_entry);
         }
         pokemon_team.push_str("|");
         header_divider.push_str("|");
@@ -252,6 +264,10 @@ fn create_trainer_table(
         items.push_str("|");
         natures.push_str("|");
         abilities.push_str("|");
+        move1.push_str("|");
+        move2.push_str("|");
+        move3.push_str("|");
+        move4.push_str("|");
 
         let trainer_entry = format!(
             "{}
@@ -260,8 +276,21 @@ fn create_trainer_table(
             {}
             {}
             {}
+            {}
+            {}
+            {}
+            {}
             ",
-            &pokemon_team, &header_divider, &levels, &items, &natures, &abilities
+            &pokemon_team,
+            &header_divider,
+            &levels,
+            &items,
+            &natures,
+            &abilities,
+            &move1,
+            &move2,
+            &move3,
+            &move4
         );
         markdown_trainers.push_str(&trainer_entry);
     }
@@ -314,15 +343,9 @@ fn get_trainer_sprite(name: &str, sprite: &str) -> String {
     );
 }
 
-fn extract_pokemon_attribute(attribute: &Option<String>) -> String {
-    match attribute.clone() {
-        Some(attribute) => {
-            if attribute == "" {
-                return "-".to_string();
-            } else {
-                return attribute;
-            }
-        }
+fn extract_move(_move: Option<&String>) -> String {
+    match _move.clone() {
+        Some(_move) => _move.to_string(),
         None => return "-".to_string(),
     }
 }
