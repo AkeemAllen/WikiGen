@@ -13,7 +13,7 @@ import { selectedWiki } from "../../../store";
 import { routes, type TrainerInfo } from "../../../store/gameRoutes";
 import TextInput from "../TextInput.svelte";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
-import { setUniquePokemonId } from "$lib/utils";
+import { setUniquePokemonId, sortTrainersByPosition } from "$lib/utils";
 import { IconDots, IconEdit, IconTrash } from "@tabler/icons-svelte";
 import _ from "lodash";
 import AutoComplete from "../AutoComplete.svelte";
@@ -31,6 +31,7 @@ let trainerToUpdate: string = "";
 
 let spriteModalOpen: boolean = false;
 let trainerVersionsModalOpen: boolean = false;
+let positionModalOpen: boolean = false;
 let spriteName: string = "";
 
 $: trainers = $routes.routes[routeName].trainers ?? {};
@@ -51,6 +52,7 @@ async function addPokemonToTrainer() {
 
   if (trainers[trainerName] === undefined) {
     trainers[trainerName] = {
+      position: Object.keys(trainers).length,
       sprite: "",
       versions: [],
       pokemon_team: [],
@@ -86,6 +88,10 @@ async function addPokemonToTrainer() {
       ],
     },
   };
+
+  let sortedTrainers = sortTrainersByPosition($routes, routeName);
+  $routes.routes[routeName].trainers = sortedTrainers;
+
   await writeTextFile(
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
@@ -129,6 +135,21 @@ async function setTrainerSprite() {
 
   trainerToUpdate = "";
   spriteName = "";
+}
+
+async function setPosition() {
+  $routes.routes[routeName].trainers = sortTrainersByPosition(
+    $routes,
+    routeName,
+  );
+
+  positionModalOpen = false;
+
+  await writeTextFile(
+    `${$selectedWiki.name}/data/routes.json`,
+    JSON.stringify($routes),
+    { dir: BaseDirectory.AppData },
+  );
 }
 </script>
 
@@ -195,6 +216,14 @@ async function setTrainerSprite() {
   </div>
 </BaseModal>
 
+<BaseModal bind:open={positionModalOpen}>
+  <NumberInput
+    label="Position"
+    bind:value={trainers[trainerToUpdate].position}
+  />
+  <Button title="Set Position" onClick={setPosition} />
+</BaseModal>
+
 <div class="mt-5 flex flex-col gap-y-5">
   {#each Object.entries($routes.routes[routeName].trainers ?? {}) as [name, trainerInfo], index}
     <div>
@@ -227,6 +256,14 @@ async function setTrainerSprite() {
                 }}
             >Modify Trainer Versions</button
           >
+          <button
+            class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+            on:click={() => {
+                    positionModalOpen = true;
+                    trainerToUpdate = name;
+                }}
+            >Change Position</button
+          >
         </div>
       </strong>
       {#if trainerInfo.sprite}
@@ -243,6 +280,7 @@ async function setTrainerSprite() {
             trainerName={name}
             trainerVersions={trainerInfo.versions ?? []}
             deletePokemon={deletePokemonFromTrainer}
+            routeName={routeName}
           />
         {/each}
       </div>

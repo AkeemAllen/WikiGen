@@ -119,6 +119,27 @@ export function sortRoutesByPosition(routes: Routes): Routes {
   return sortedRoutes;
 }
 
+export function sortTrainersByPosition(
+  routes: Routes,
+  routeName: string,
+): { [key: string]: TrainerInfo } {
+  // Convert object into an array of key-value pairs
+  const trainersArray = Object.entries(routes.routes[routeName].trainers);
+
+  // Sort the array based on the "position" property
+  trainersArray.sort(
+    ([, trainer1], [, trainer2]) => trainer1.position - trainer2.position,
+  );
+
+  // Reconstruct the sorted object
+  const sortedTrainers: { [key: string]: TrainerInfo } = {};
+  trainersArray.forEach(([trainerName, trainerInfo]) => {
+    sortedTrainers[trainerName] = trainerInfo;
+  });
+
+  return sortedTrainers;
+}
+
 export const isNullEmptyOrUndefined = (value: any) => {
   return value === null || value === "" || value === undefined;
 };

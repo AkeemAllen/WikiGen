@@ -19,6 +19,7 @@ export type RouteProperties = {
 };
 
 export type TrainerInfo = {
+  position: number;
   pokemon_team: TrainerPokemon[];
   sprite: string;
   versions: string[];

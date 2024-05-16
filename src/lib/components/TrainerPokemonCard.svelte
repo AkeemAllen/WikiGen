@@ -13,10 +13,12 @@ import { abilitiesList } from "../../store/abilities";
 import { naturesList } from "../../store/natures";
 import { itemsList } from "../../store/items";
 import { moveList } from "../../store/moves";
+import { sortTrainersByPosition } from "$lib/utils";
 
 export let pokemon: TrainerPokemon;
 export let trainerVersions: string[];
 export let trainerName: string;
+export let routeName: string;
 
 export let editModalOpen: boolean = false;
 export let deletePokemon = (id: string, name: string) => {};
@@ -37,6 +39,9 @@ let itemListOptions = $itemsList.map((item) => ({
 }));
 
 async function writeRouteToFile() {
+  let sortedTrainers = sortTrainersByPosition($routes, routeName);
+  $routes.routes[routeName].trainers = sortedTrainers;
+
   await writeTextFile(
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
@@ -83,11 +88,7 @@ async function writeRouteToFile() {
       id="versions"
       bind:selected={pokemon.trainer_versions}
       options={trainerVersions}
-      on:change={async (e) => {await writeTextFile(
-      `${$selectedWiki.name}/data/routes.json`,
-      JSON.stringify($routes),
-      { dir: BaseDirectory.AppData },
-    )}}
+      on:change={async (e) => {writeRouteToFile()}}
     />
   </div>
   <div class="col-span-2">
@@ -101,11 +102,7 @@ async function writeRouteToFile() {
       bind:selected={pokemon.moves}
       options={$moveList}
       maxSelect={4}
-      on:change={async (e) => {await writeTextFile(
-      `${$selectedWiki.name}/data/routes.json`,
-      JSON.stringify($routes),
-      { dir: BaseDirectory.AppData },
-    )}}
+      on:change={async (e) => {writeRouteToFile()}}
     />
   </div>
 </BaseModal>

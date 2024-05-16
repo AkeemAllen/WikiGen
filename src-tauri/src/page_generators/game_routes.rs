@@ -5,6 +5,7 @@ use std::{
     path::PathBuf,
 };
 
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 
@@ -22,13 +23,14 @@ pub struct Routes {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RouteProperties {
     pub position: usize,
-    pub trainers: HashMap<String, TrainerInfo>,
+    pub trainers: IndexMap<String, TrainerInfo>,
     pub wild_encounters: HashMap<String, Vec<WildEncounter>>,
     pub wild_encounter_area_levels: HashMap<String, String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TrainerInfo {
+    pub position: usize,
     pub pokemon_team: Vec<TrainerPokemon>,
     pub sprite: String,
     pub versions: Vec<String>,
@@ -212,7 +214,7 @@ fn create_trainer_table(
     wiki_name: &str,
     route_name: &str,
     routes_directory: &PathBuf,
-    trainers: &HashMap<String, TrainerInfo>,
+    trainers: &IndexMap<String, TrainerInfo>,
 ) -> Result<(), String> {
     let mut trainers_markdown_file = File::create(routes_directory.join("trainers.md")).unwrap();
 
