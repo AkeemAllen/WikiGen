@@ -19,19 +19,32 @@ use crate::{
 };
 
 #[tauri::command]
-pub async fn generate_pokemon_page_in_range_with_handle(
-    range_start: usize,
-    range_end: usize,
+pub fn generate_pokemon_pages_from_list(
     wiki_name: &str,
+    dex_numbers: Vec<usize>,
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    return generate_pokemon_pages_in_range(range_start, range_end, &wiki_name, base_path);
+    return generate_pokemon_pages(dex_numbers, wiki_name, base_path);
 }
 
-pub fn generate_pokemon_pages_in_range(
+#[tauri::command]
+pub fn generate_pokemon_pages_from_range(
+    wiki_name: &str,
     range_start: usize,
     range_end: usize,
+    app_handle: AppHandle,
+) -> Result<String, String> {
+    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    let mut dex_numbers = Vec::new();
+    for number in range_start..=range_end {
+        dex_numbers.push(number);
+    }
+    return generate_pokemon_pages(dex_numbers, wiki_name, base_path);
+}
+
+pub fn generate_pokemon_pages(
+    dex_numbers: Vec<usize>,
     wiki_name: &str,
     base_path: PathBuf,
 ) -> Result<String, String> {
@@ -75,7 +88,7 @@ pub fn generate_pokemon_pages_in_range(
         }
     }
 
-    for dex_number in range_start..=range_end {
+    for dex_number in dex_numbers {
         let pokemon_data = match pokemon.pokemon.get(&(dex_number as u32)) {
             Some(pokemon_data) => pokemon_data,
             None => {
