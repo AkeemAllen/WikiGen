@@ -1,90 +1,94 @@
 <script lang="ts">
-  import {
-    Autocomplete,
-    Tab,
-    TabGroup,
-    getToastStore,
-    popup,
-    type AutocompleteOption,
-    type PopupSettings,
-    type ToastSettings,
-  } from "@skeletonlabs/skeleton";
-  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
-  import _ from "lodash";
-  import { selectedWiki } from "../../store";
-  import {
-    pokemon,
-    pokemonList,
-    type PokemonDetails,
-  } from "../../store/pokemon";
-  import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
-  import PokemonMovesTab from "./PokemonMovesTab.svelte";
+import {
+  Autocomplete,
+  Tab,
+  TabGroup,
+  getToastStore,
+  popup,
+  type AutocompleteOption,
+  type PopupSettings,
+  type ToastSettings,
+} from "@skeletonlabs/skeleton";
+import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+import _ from "lodash";
+import { selectedWiki } from "../../store";
+import { pokemon, pokemonList, type PokemonDetails } from "../../store/pokemon";
+import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
+import PokemonMovesTab from "./PokemonMovesTab.svelte";
+import { invoke } from "@tauri-apps/api";
 
-  const toastStore = getToastStore();
+const toastStore = getToastStore();
 
-  let pokemonName: string = "";
-  let pokemonId: number = 0;
-  let pokemonDetails: PokemonDetails = {} as PokemonDetails;
-  let originalPokemonDetails: PokemonDetails = {} as PokemonDetails;
+let pokemonName: string = "";
+let pokemonId: number = 0;
+let pokemonDetails: PokemonDetails = {} as PokemonDetails;
+let originalPokemonDetails: PokemonDetails = {} as PokemonDetails;
 
-  let tabSet: number = 0;
+let tabSet: number = 0;
 
-  let pokemonListOptions: AutocompleteOption<string | number>[] =
-    $pokemonList.map(([name, id]) => ({ label: name, value: id }));
+let pokemonListOptions: AutocompleteOption<string | number>[] =
+  $pokemonList.map(([name, id]) => ({ label: name, value: id }));
 
-  const autoCompletePopup: PopupSettings = {
-    event: "focus-click",
-    target: "popupAutoComplete",
-    placement: "bottom",
-  };
+const autoCompletePopup: PopupSettings = {
+  event: "focus-click",
+  target: "popupAutoComplete",
+  placement: "bottom",
+};
 
-  const pokemonDetailsSavedToast: ToastSettings = {
-    message: "Data saved",
-    timeout: 3000,
-    background: "variant-filled-success",
-  };
+function onPokemonNameSelected(
+  event: CustomEvent<AutocompleteOption<string | number>>,
+): void {
+  pokemonName = event.detail.label;
+  pokemonId = event.detail.value as number;
+}
 
-  function onPokemonNameSelected(
-    event: CustomEvent<AutocompleteOption<string | number>>,
-  ): void {
-    pokemonName = event.detail.label;
-    pokemonId = event.detail.value as number;
-  }
+function getPokemonDetails(): void {
+  pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
+  originalPokemonDetails = _.cloneDeep(pokemonDetails);
+}
 
-  function getPokemonDetails(): void {
-    pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
+async function generatePokemonPage() {
+  await invoke("generate_pokemon_pages_from_list", {
+    wikiName: $selectedWiki.name,
+    dexNumbers: [pokemonId],
+  });
+}
+
+async function savePokemonChanges() {
+  pokemon.update((p) => {
+    p.pokemon[pokemonId] = pokemonDetails;
+    return p;
+  });
+  await writeTextFile(
+    `${$selectedWiki.name}/data/pokemon.json`,
+    JSON.stringify($pokemon),
+    { dir: BaseDirectory.AppData },
+  ).then(() => {
     originalPokemonDetails = _.cloneDeep(pokemonDetails);
-  }
-
-  async function savePokemonChanges() {
-    pokemon.update((p) => {
-      p.pokemon[pokemonId] = pokemonDetails;
-      return p;
+    toastStore.trigger({
+      message: "Pokemon Changes Saved",
+      timeout: 3000,
+      background: "variant-filled-success",
     });
-    await writeTextFile(
-      `${$selectedWiki.name}/data/pokemon.json`,
-      JSON.stringify($pokemon),
-      { dir: BaseDirectory.AppData },
-    ).then(() => {
-      originalPokemonDetails = _.cloneDeep(pokemonDetails);
-      toastStore.trigger(pokemonDetailsSavedToast);
-    });
-  }
+    generatePokemonPage();
+  });
+}
+$: console.log({ pokemonDetails, originalPokemonDetails });
 </script>
 
 <div class="flex flex-row gap-7">
-  <div class="w-60 mt-2">
+  <div class="mt-2 w-60">
     <input
       id="pokemon-name"
       type="text"
       placeholder="Pokemon Name"
-      class="block w-full pl-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 disabled:bg-gray-100 disabled:text-gray-400"
+      class="block w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
       bind:value={pokemonName}
       use:popup={autoCompletePopup}
     />
     <div
       data-popup="popupAutoComplete"
-      class="card w-60 mt-2 overflow-y-auto bg-white rounded-sm"
+      class="card mt-2 w-60 overflow-y-auto rounded-sm bg-white"
       tabindex="-1"
     >
       <Autocomplete
@@ -92,14 +96,14 @@
         options={pokemonListOptions}
         limit={5}
         on:selection={onPokemonNameSelected}
-        class="bg-white w-full text-sm border rounded-md p-2"
+        class="w-full rounded-md border bg-white p-2 text-sm"
       />
     </div>
   </div>
   <button
     disabled={pokemonName === ""}
     on:click={getPokemonDetails}
-    class="mt-2 rounded-md bg-indigo-600 w-32 text-sm font-semibold text-white
+    class="mt-2 w-32 rounded-md bg-indigo-600 text-sm font-semibold text-white
       shadow-sm hover:bg-indigo-500 focus-visible:outline
       focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
       disabled:bg-indigo-400"
@@ -109,7 +113,7 @@
   <button
     disabled={_.isEqual(pokemonDetails, originalPokemonDetails)}
     on:click={savePokemonChanges}
-    class="mt-2 rounded-md bg-indigo-600 w-32 text-sm font-semibold text-white
+    class="mt-2 w-32 rounded-md bg-indigo-600 text-sm font-semibold text-white
       shadow-sm hover:bg-indigo-500 focus-visible:outline
       focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
       disabled:bg-indigo-400"
@@ -129,10 +133,13 @@
     >
     <svelte:fragment slot="panel">
       {#if tabSet === 0}
-        <PokemonDetailsTab bind:pokemonDetails />
+        <PokemonDetailsTab bind:pokemonDetails={pokemonDetails} />
       {/if}
       {#if tabSet === 1}
-        <PokemonMovesTab bind:pokemonDetails {savePokemonChanges} />
+        <PokemonMovesTab
+          bind:pokemonDetails={pokemonDetails}
+          savePokemonChanges={savePokemonChanges}
+        />
       {/if}
     </svelte:fragment>
   </TabGroup>
