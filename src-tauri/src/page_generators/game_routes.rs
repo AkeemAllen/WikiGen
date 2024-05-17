@@ -229,6 +229,18 @@ fn create_trainer_table(
             markdown_trainers.push_str(&format!("\n{}", trainer_entry));
         } else {
             for version in &trainer_info.versions {
+                // This is to prevent rendering a trainer version that doesn't have a pokemon
+                // This is probably not the cleanest/most effecient way to do this.
+                // May revisit later...maybe
+                let mut version_has_one_pokemon = false;
+                for pokemon in &trainer_info.pokemon_team {
+                    if pokemon.trainer_versions.contains(version) {
+                        version_has_one_pokemon = true;
+                    }
+                }
+                if !version_has_one_pokemon {
+                    continue;
+                }
                 markdown_trainers.push_str(&format!("\n=== \"{}\"", version));
                 let trainer_entry = generate_trainer_entry(wiki_name, name, trainer_info, version);
                 markdown_trainers.push_str(&format!("\t{}", trainer_entry));
