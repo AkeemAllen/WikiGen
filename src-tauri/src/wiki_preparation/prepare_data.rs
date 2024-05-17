@@ -36,6 +36,10 @@ pub async fn download_and_prep_pokemon_data(
             types.push(t["type"]["name"].as_str().unwrap().to_string());
         }
 
+        if types.len() == 1 {
+            types.push("none".to_string());
+        }
+
         let mut abilities = Vec::new();
         for a in pokemon_response_body["abilities"].as_array().unwrap() {
             abilities.push(a["ability"]["name"].as_str().unwrap().to_string());

@@ -250,6 +250,7 @@ fn create_type_table(types: &Vec<String>) -> String {
     let type_images: Vec<String> = types
         .iter()
         .map(|_type| format!("![{}](../img/types/{}.png)", _type, _type))
+        .filter(|_type| !_type.contains("none"))
         .collect();
 
     return format!(
