@@ -2,6 +2,7 @@ use std::{
     collections::HashMap,
     fs::{self, File},
     io::Write,
+    path::PathBuf,
 };
 
 use indexmap::IndexMap;
@@ -18,13 +19,22 @@ use crate::{
 };
 
 #[tauri::command]
-pub async fn generate_pokemon_pages_in_range(
+pub async fn generate_pokemon_page_in_range_with_handle(
     range_start: usize,
     range_end: usize,
     wiki_name: &str,
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    return generate_pokemon_pages_in_range(range_start, range_end, &wiki_name, base_path);
+}
+
+pub fn generate_pokemon_pages_in_range(
+    range_start: usize,
+    range_end: usize,
+    wiki_name: &str,
+    base_path: PathBuf,
+) -> Result<String, String> {
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
     let pokemon_json_file_path = base_path.join(wiki_name).join("data").join("pokemon.json");
@@ -119,7 +129,7 @@ pub async fn generate_pokemon_pages_in_range(
                     &pokemon_data.types,
                     wiki_name,
                     &mut calculated_defenses,
-                    app_handle.clone(),
+                    &base_path,
                 )
                 .as_bytes(),
             )
@@ -243,12 +253,12 @@ fn create_defenses_table(
     types: &Vec<String>,
     wiki_name: &str,
     calculated_defenses: &mut HashMap<String, TypeEffectiveness>,
-    app_handle: AppHandle,
+    base_path: &PathBuf,
 ) -> String {
     // Get Defensive Matchups from file before calculating them
     let defensive_matchups = match calculated_defenses.get(&types.join("-").to_string()) {
         Some(matchup) => matchup.0.clone(),
-        None => get_defensive_matchups(&types, wiki_name, app_handle),
+        None => get_defensive_matchups(&types, wiki_name, base_path),
     };
     calculated_defenses.insert(
         types.join("-").to_string(),
