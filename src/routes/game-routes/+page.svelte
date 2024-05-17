@@ -11,13 +11,16 @@ import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { goto } from "$app/navigation";
 import _ from "lodash";
 import { sortRoutesByPosition } from "$lib/utils";
+import NumberInput from "$lib/components/NumberInput.svelte";
 
 const toastStore = getToastStore();
 
 let routeName: string = "";
+let routeToUpdate: string = "";
 let newRouteName: string = "";
 let newRouteModalOpen: boolean = false;
 let encounterTypeModalOpen: boolean = false;
+let positionModalOpen: boolean = false;
 let newEncounterType: string = "";
 let routeBeingEdited: string = "";
 let loading = false;
@@ -91,6 +94,15 @@ async function renameRoute(originalRouteName: string, newName: string) {
     { dir: BaseDirectory.AppData },
   );
 }
+
+async function updatePosition() {
+  $routes = sortRoutesByPosition($routes);
+  await writeTextFile(
+    `${$selectedWiki.name}/data/routes.json`,
+    JSON.stringify($routes),
+    { dir: BaseDirectory.AppData },
+  );
+}
 </script>
 
 <BaseModal bind:open={newRouteModalOpen}>
@@ -102,6 +114,16 @@ async function renameRoute(originalRouteName: string, newName: string) {
       newRouteModalOpen = false;
     }}
     disabled={routeName === ""}
+  />
+</BaseModal>
+<BaseModal bind:open={positionModalOpen}>
+  <NumberInput
+    bind:value={$routes.routes[routeToUpdate].position}
+    label="Route Position"
+  />
+  <Button
+    title="Update Route Position"
+    onClick={() => {updatePosition(); positionModalOpen = false;}}
   />
 </BaseModal>
 <BaseModal bind:open={encounterTypeModalOpen}>
@@ -173,7 +195,7 @@ async function renameRoute(originalRouteName: string, newName: string) {
         <IconDotsVertical size={16} />
       </button>
     </div>
-    <div class="card w-32 grid-cols-1 p-4" data-popup="routeMenu-{index}">
+    <div class="card w-44 grid-cols-1 p-4" data-popup="routeMenu-{index}">
       <button
         class="w-full rounded-md bg-gray-100 px-3 py-1 text-start text-sm hover:cursor-pointer hover:bg-gray-300"
         on:click={() => {routeBeingEdited = routeName; newRouteName = routeName;}}
@@ -186,6 +208,11 @@ async function renameRoute(originalRouteName: string, newName: string) {
       <button
         class="w-full rounded-md bg-gray-100 px-3 py-1 text-start text-sm hover:cursor-pointer hover:bg-gray-300"
         on:click={() => deleteRoute(routeName)}>Delete</button
+      >
+      <button
+        class="w-full rounded-md bg-gray-100 px-3 py-1 text-start text-sm hover:cursor-pointer hover:bg-gray-300"
+        on:click={() => {positionModalOpen = true;routeToUpdate=routeName}}
+        >Change Position</button
       >
     </div>
   {/each}

@@ -16,7 +16,7 @@ use crate::{
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Routes {
-    pub routes: HashMap<String, RouteProperties>,
+    pub routes: IndexMap<String, RouteProperties>,
     pub encounter_types: Vec<String>,
 }
 
