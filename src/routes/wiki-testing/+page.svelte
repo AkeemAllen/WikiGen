@@ -101,40 +101,36 @@
     </div>
   {/if}
 </div> -->
-<div class="mt-4 ml-2">
-  <p class=" text-xl font-bold">Under Developement</p>
-  <p class="text-sm">
-    Currently developing the ability to launch and manage the wiki server from
-    the app. However, due to complications, this feature is currenctly paused.
-    <br />
-    Below are instructions for launching the server manually
-  </p>
+<p class=" text-xl font-bold">Under Developement</p>
+<p class="text-sm">
+  Currently developing the ability to launch and manage the wiki server from the
+  app. However, due to complications, this feature is currenctly paused.
   <br />
+  Below are instructions for launching the server manually
+</p>
+<br />
 
-  <div class="flex flex-col gap-y-1">
-    <p class="text-sm">
-      1. Ensure <a
-        href="https://www.python.org"
-        target="_blank"
-        class="underline">Python</a
-      > is installed on your system
-    </p>
-    <p class="text-sm">
-      2. Run <code class="bg-gray-200 rounded-md px-1"
-        >pip install mkdocs mkdocs-material</code
-      > in a terminal to install mkdocs and its material theme
-    </p>
-    <p class="text-sm">
-      3. Navigate to the wiki dist directory <code
-        class="bg-gray-200 rounded-md px-1">{mkdocsFilePath}</code
-      >
-      and run <code class="bg-gray-200 rounded-md px-1">mkdocs serve</code>
-    </p>
-    <p class="text-sm">
-      4. You should now see the server running on
-      <a href="http://localhost:8000" target="_blank" class="underline"
-        >http://localhost:8000/_wiki_name_</a
-      >. From there you can monitor the changes you make to the wiki
-    </p>
-  </div>
+<div class="flex flex-col gap-y-1">
+  <p class="text-sm">
+    1. Ensure <a href="https://www.python.org" target="_blank" class="underline"
+      >Python</a
+    > is installed on your system
+  </p>
+  <p class="text-sm">
+    2. Run <code class="bg-gray-200 rounded-md px-1"
+      >pip install mkdocs mkdocs-material</code
+    > in a terminal to install mkdocs and its material theme
+  </p>
+  <p class="text-sm">
+    3. Navigate to the wiki dist directory <code
+      class="bg-gray-200 rounded-md px-1">{mkdocsFilePath}</code
+    >
+    and run <code class="bg-gray-200 rounded-md px-1">mkdocs serve</code>
+  </p>
+  <p class="text-sm">
+    4. You should now see the server running on
+    <a href="http://localhost:8000" target="_blank" class="underline"
+      >http://localhost:8000/_wiki_name_</a
+    >. From there you can monitor the changes you make to the wiki
+  </p>
 </div>

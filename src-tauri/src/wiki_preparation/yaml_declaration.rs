@@ -117,6 +117,7 @@ pub fn get_yaml(
             }),
         ]
         .to_vec(),
+        extra_css: vec!["stylesheets/extra.css".to_string()],
     };
 
     return mkdocs_config;

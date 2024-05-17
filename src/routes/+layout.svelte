@@ -26,6 +26,7 @@
     IconBinaryTree,
     IconDisc,
     IconDotsVertical,
+    IconRoute2,
     IconTestPipe,
   } from "@tabler/icons-svelte";
   import "../app.pcss";
@@ -71,6 +72,13 @@
             <IconDisc slot="icon" size={16} color="indigo" />
           </NavButton>
           <NavButton
+            name="Game Routes"
+            route="/game-routes"
+            active={$page.url.pathname.includes("game-routes")}
+          >
+            <IconRoute2 slot="icon" size={16} color="indigo" />
+          </NavButton>
+          <NavButton
             name="Wiki Generation"
             route="/wiki-generation"
             active={$page.url.pathname.includes("wiki-generation")}
@@ -97,5 +105,7 @@
       <WikiSelectMenu />
     </div>
   </svelte:fragment>
-  <slot />
+  <div class="mt-6 ml-2">
+    <slot />
+  </div>
 </AppShell>

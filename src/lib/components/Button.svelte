@@ -1,15 +1,17 @@
 <script lang="ts">
-  export let onClick = () => {};
-  export let title: string = "";
-  export let disabled: boolean = false;
-  export let loading: boolean = false;
+export let onClick = () => {};
+export let title: string = "";
+export let disabled: boolean = false;
+export let loading: boolean = false;
+let className: string = "";
+export { className as class };
 </script>
 
 <button
   on:click={onClick}
-  {disabled}
+  disabled={disabled}
   class="{loading &&
-    'flex justify-between'} rounded-md bg-indigo-600 w-full px-3 py-2 text-sm font-semibold text-white
+    'flex justify-between'} {className} rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white
       shadow-sm hover:bg-indigo-500 focus-visible:outline
       focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
         disabled:bg-indigo-400"
@@ -17,7 +19,7 @@
   {#if loading}
     <svg
       aria-hidden="true"
-      class="w-5 h-5 text-gray-200 animate-spin fill-indigo-600"
+      class="h-5 w-5 animate-spin fill-indigo-600 text-gray-200"
       viewBox="0 0 100 101"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
