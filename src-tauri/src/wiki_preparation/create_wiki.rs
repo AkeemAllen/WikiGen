@@ -1,4 +1,4 @@
-use crate::helpers::copy_recursively::copy_recursively;
+use crate::helpers::copy_recursively;
 use crate::wiki_preparation::yaml_declaration;
 use serde::{Deserialize, Serialize};
 use std::fs;

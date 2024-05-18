@@ -1,23 +1,23 @@
 <script lang="ts">
-  import SelectInput from "$lib/components/SelectInput.svelte";
-  import type { AutocompleteOption } from "@skeletonlabs/skeleton";
-  import _ from "lodash";
-  import {
-    PokemonTypes,
-    pokemonList,
-    type PokemonDetails,
-  } from "../../store/pokemon";
-  import NumberInput from "./NumberInput.svelte";
-  import TextInput from "./TextInput.svelte";
+import SelectInput from "$lib/components/SelectInput.svelte";
+import type { AutocompleteOption } from "@skeletonlabs/skeleton";
+import _ from "lodash";
+import {
+  PokemonTypes,
+  pokemonList,
+  type PokemonDetails,
+} from "../../store/pokemon";
+import NumberInput from "./NumberInput.svelte";
+import TextInput from "./TextInput.svelte";
 
-  export let pokemonDetails: PokemonDetails = {} as PokemonDetails;
-  let pokemonListOptions: AutocompleteOption<string>[] = $pokemonList.map(
-    ([name]) => ({ label: _.capitalize(name), value: _.capitalize(name) }),
-  );
+export let pokemonDetails: PokemonDetails = {} as PokemonDetails;
+let pokemonListOptions: AutocompleteOption<string>[] = $pokemonList.map(
+  ([name]) => ({ label: _.capitalize(name), value: _.capitalize(name) }),
+);
 </script>
 
 <div class="scroll-smooth px-4">
-  <div class="grid grid-cols-2 gap-x-10 gap-y-5 mt-4">
+  <div class="mt-4 grid grid-cols-2 gap-x-10 gap-y-5">
     <SelectInput
       id="pokemon-type-1"
       bind:value={pokemonDetails.types[0]}
@@ -55,7 +55,7 @@
       }))}
     />
   </div>
-  <div class="flex flex-row gap-x-10 mt-5">
+  <div class="mt-5 flex flex-row gap-x-10">
     <div class="w-44">
       <SelectInput
         id="evolution-method"
@@ -101,8 +101,8 @@
       </div>
     {/if}
   </div>
-  <p class="text-lg mt-10">Stats</p>
-  <div class="grid grid-cols-2 gap-x-10 gap-y-5 mt-2 mb-2">
+  <p class="mt-10 text-lg">Stats</p>
+  <div class="mb-2 mt-2 grid grid-cols-2 gap-x-10 gap-y-5">
     <NumberInput
       id="pokemon-hp"
       bind:value={pokemonDetails.stats.hp}

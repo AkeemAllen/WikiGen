@@ -1,6 +1,4 @@
-use std::{collections::HashMap, fs::File, str::FromStr};
-
-use tauri::AppHandle;
+use std::{collections::HashMap, fs::File, path::PathBuf, str::FromStr};
 
 use crate::structs::{
     matchup_models::GEN_DEFAULT,
@@ -11,7 +9,7 @@ use crate::structs::{
 // For now it is unused because what it generates is already stored in the
 // matchup_map.json file in the wiki's data folder
 #[allow(dead_code)]
-pub fn generate_matchup_map(wiki_name: &str, app_handle: AppHandle) -> Result<String, String> {
+pub fn generate_matchup_map(wiki_name: &str, base_path: PathBuf) -> Result<String, String> {
     let data = GEN_DEFAULT;
 
     let mut matchup_map: HashMap<String, f32> = HashMap::new();
@@ -27,7 +25,6 @@ pub fn generate_matchup_map(wiki_name: &str, app_handle: AppHandle) -> Result<St
         }
     }
 
-    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
     let matchup_map_path = base_path
         .join(wiki_name)
         .join("data")
@@ -39,8 +36,7 @@ pub fn generate_matchup_map(wiki_name: &str, app_handle: AppHandle) -> Result<St
     Ok("Matchup Map Generated".to_string())
 }
 
-fn get_matchup_map(wiki_name: &str, app_handle: AppHandle) -> HashMap<String, f32> {
-    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+fn get_matchup_map(wiki_name: &str, base_path: &PathBuf) -> HashMap<String, f32> {
     let matchup_map_path = base_path
         .join(wiki_name)
         .join("data")
@@ -62,9 +58,9 @@ fn matchup_for_pair(
     wiki_name: &str,
     defense_type: &str,
     offense_type: &str,
-    app_handle: AppHandle,
+    base_path: &PathBuf,
 ) -> f32 {
-    let matchup_map = get_matchup_map(wiki_name, app_handle);
+    let matchup_map = get_matchup_map(wiki_name, base_path);
     let key = format!("{} > {}", offense_type, defense_type);
     let value = matchup_map.get(&key).unwrap();
     return *value;
@@ -74,7 +70,7 @@ fn matchup_for(
     wiki_name: &str,
     defense_types: Vec<PokemonTypesEnum>,
     offense_type: &PokemonTypesEnum,
-    app_handle: AppHandle,
+    base_path: &PathBuf,
 ) -> f32 {
     let filtered_defense_types = defense_types
         .iter()
@@ -85,7 +81,7 @@ fn matchup_for(
             wiki_name,
             &defense_type.to_string(),
             &offense_type.to_string(),
-            app_handle.clone(),
+            base_path,
         )
     });
 
@@ -102,30 +98,25 @@ fn generate_defensive_matchups(
     wiki_name: &str,
     defense_types: Vec<PokemonTypesEnum>,
     pokemon_type: &PokemonTypesEnum,
-    app_handle: AppHandle,
+    base_path: &PathBuf,
 ) -> DefensiveMatchups {
-    let effectiveness = matchup_for(wiki_name, defense_types, pokemon_type, app_handle);
+    let effectiveness = matchup_for(wiki_name, defense_types, pokemon_type, base_path);
 
     return DefensiveMatchups {
         pokemon_type: pokemon_type.to_string(),
-        effectiveness: effectiveness,
+        effectiveness,
     };
 }
 
 fn defensive_matchups(
     wiki_name: &str,
     defense_types: Vec<PokemonTypesEnum>,
-    app_handle: AppHandle,
+    base_path: &PathBuf,
 ) -> Vec<DefensiveMatchups> {
     let matchups: Vec<DefensiveMatchups> = POKEMON_TYPES_ARRAY
         .iter()
         .map(|pokemon_type| {
-            generate_defensive_matchups(
-                wiki_name,
-                defense_types.clone(),
-                pokemon_type,
-                app_handle.clone(),
-            )
+            generate_defensive_matchups(wiki_name, defense_types.clone(), pokemon_type, base_path)
         })
         .collect();
 
@@ -152,7 +143,7 @@ fn group_matchups_by_effectiveness(
 pub fn get_defensive_matchups(
     types: &Vec<String>,
     wiki_name: &str,
-    app_handle: AppHandle,
+    base_path: &PathBuf,
 ) -> HashMap<String, Vec<String>> {
     let defense_types = types
         .iter()
@@ -161,7 +152,7 @@ pub fn get_defensive_matchups(
     // Consdier removing some of the effectiveness levels since they may never be used
     let effectiveness_levels = [8.0, 4.0, 2.0, 1.0, 0.5, 0.25, 0.125, 0.0];
 
-    let matchups = defensive_matchups(wiki_name, defense_types, app_handle);
+    let matchups = defensive_matchups(wiki_name, defense_types, base_path);
 
     let mut matchups_by_effectiveness = HashMap::new();
 

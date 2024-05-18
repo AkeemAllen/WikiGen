@@ -15,7 +15,7 @@ let tabSet: number = 0;
 
 async function generatePokemonPagesInRange() {
   loading = true;
-  await invoke("generate_pokemon_pages_in_range", {
+  await invoke("generate_pokemon_pages_from_range", {
     rangeStart,
     rangeEnd,
     wikiName: $selectedWiki.name,
@@ -32,7 +32,7 @@ async function generatePokemonPagesInRange() {
 
 async function generateRoutePages() {
   loading = true;
-  await invoke("generate_route_page_with_handle", {
+  await invoke("generate_route_pages_with_handle", {
     wikiName: $selectedWiki.name,
   }).then((response: any) => {
     loading = false;

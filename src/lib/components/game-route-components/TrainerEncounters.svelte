@@ -19,6 +19,7 @@ import _ from "lodash";
 import AutoComplete from "../AutoComplete.svelte";
 import TrainerPokemonCard from "../TrainerPokemonCard.svelte";
 import MultiSelect from "svelte-multiselect";
+import { invoke } from "@tauri-apps/api/tauri";
 
 const toastStore = getToastStore();
 
@@ -43,6 +44,15 @@ function onPokemonNameSelected(
   event: CustomEvent<AutocompleteOption<string | number>>,
 ): void {
   pokemonName = event.detail.label;
+}
+
+async function generateRoutePage() {
+  await invoke("generate_single_route_page_with_handle", {
+    wikiName: $selectedWiki.name,
+    routeName,
+  }).catch((e) => {
+    console.error(e);
+  });
 }
 
 async function addPokemonToTrainer() {
@@ -96,7 +106,9 @@ async function addPokemonToTrainer() {
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
     { dir: BaseDirectory.AppData },
-  );
+  ).then(() => {
+    generateRoutePage();
+  });
 }
 
 async function deletePokemonFromTrainer(uniqueId: string, trainerName: string) {
@@ -116,7 +128,9 @@ async function deletePokemonFromTrainer(uniqueId: string, trainerName: string) {
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
     { dir: BaseDirectory.AppData },
-  );
+  ).then(() => {
+    generateRoutePage();
+  });
 }
 
 async function setTrainerSprite() {
@@ -131,7 +145,9 @@ async function setTrainerSprite() {
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
     { dir: BaseDirectory.AppData },
-  );
+  ).then(() => {
+    generateRoutePage();
+  });
 
   trainerToUpdate = "";
   spriteName = "";
@@ -149,7 +165,9 @@ async function setPosition() {
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
     { dir: BaseDirectory.AppData },
-  );
+  ).then(() => {
+    generateRoutePage();
+  });
 }
 </script>
 

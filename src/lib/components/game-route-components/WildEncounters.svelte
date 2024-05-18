@@ -14,6 +14,7 @@ import NumberInput from "../NumberInput.svelte";
 import SelectInput from "../SelectInput.svelte";
 import { IconTrash } from "@tabler/icons-svelte";
 import AutoComplete from "../AutoComplete.svelte";
+import { invoke } from "@tauri-apps/api";
 
 export let routeName: string = "";
 let pokemonName: string = "";
@@ -34,6 +35,15 @@ function onPokemonNameSelected(
   pokemonName = event.detail.label;
 }
 
+async function generateRoutePage() {
+  await invoke("generate_single_route_page_with_handle", {
+    wikiName: $selectedWiki.name,
+    routeName,
+  }).catch((e) => {
+    console.error(e);
+  });
+}
+
 async function addEncounter() {
   $routes.routes[routeName].wild_encounters = {
     ...$routes.routes[routeName].wild_encounters,
@@ -52,7 +62,9 @@ async function addEncounter() {
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
     { dir: BaseDirectory.AppData },
-  );
+  ).then(() => {
+    generateRoutePage();
+  });
 }
 
 async function deleteEncounter(pokemonName: string, encounterType: string) {
@@ -72,7 +84,9 @@ async function deleteEncounter(pokemonName: string, encounterType: string) {
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
     { dir: BaseDirectory.AppData },
-  );
+  ).then(() => {
+    generateRoutePage();
+  });
 }
 </script>
 

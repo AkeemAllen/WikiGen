@@ -88,7 +88,6 @@ async function downloadAndPrepPokemonData() {
         disabled={rangeStart === 0 ||
             rangeEnd === 0 ||
             rangeStart > rangeEnd ||
-            rangeStart === rangeEnd ||
             loading === true}
         title="Prepare Data"
         onClick={downloadAndPrepPokemonData}

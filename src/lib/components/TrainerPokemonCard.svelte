@@ -14,6 +14,7 @@ import { naturesList } from "../../store/natures";
 import { itemsList } from "../../store/items";
 import { moveList } from "../../store/moves";
 import { sortTrainersByPosition } from "$lib/utils";
+import { invoke } from "@tauri-apps/api/tauri";
 
 export let pokemon: TrainerPokemon;
 export let trainerVersions: string[];
@@ -38,6 +39,15 @@ let itemListOptions = $itemsList.map((item) => ({
   value: item,
 }));
 
+async function generateRoutePage() {
+  await invoke("generate_single_route_page_with_handle", {
+    wikiName: $selectedWiki.name,
+    routeName,
+  }).catch((e) => {
+    console.error(e);
+  });
+}
+
 async function writeRouteToFile() {
   let sortedTrainers = sortTrainersByPosition($routes, routeName);
   $routes.routes[routeName].trainers = sortedTrainers;
@@ -46,7 +56,9 @@ async function writeRouteToFile() {
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
     { dir: BaseDirectory.AppData },
-  );
+  ).then(() => {
+    generateRoutePage();
+  });
 }
 </script>
 

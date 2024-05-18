@@ -2,6 +2,7 @@ use std::{
     collections::HashMap,
     fs::{self, File},
     io::Write,
+    path::PathBuf,
 };
 
 use indexmap::IndexMap;
@@ -18,13 +19,35 @@ use crate::{
 };
 
 #[tauri::command]
-pub async fn generate_pokemon_pages_in_range(
-    range_start: usize,
-    range_end: usize,
+pub async fn generate_pokemon_pages_from_list(
     wiki_name: &str,
+    dex_numbers: Vec<usize>,
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    return generate_pokemon_pages(dex_numbers, wiki_name, base_path);
+}
+
+#[tauri::command]
+pub async fn generate_pokemon_pages_from_range(
+    wiki_name: &str,
+    range_start: usize,
+    range_end: usize,
+    app_handle: AppHandle,
+) -> Result<String, String> {
+    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    let mut dex_numbers = Vec::new();
+    for number in range_start..=range_end {
+        dex_numbers.push(number);
+    }
+    return generate_pokemon_pages(dex_numbers, wiki_name, base_path);
+}
+
+pub fn generate_pokemon_pages(
+    dex_numbers: Vec<usize>,
+    wiki_name: &str,
+    base_path: PathBuf,
+) -> Result<String, String> {
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
     let pokemon_json_file_path = base_path.join(wiki_name).join("data").join("pokemon.json");
@@ -65,7 +88,7 @@ pub async fn generate_pokemon_pages_in_range(
         }
     }
 
-    for dex_number in range_start..=range_end {
+    for dex_number in dex_numbers {
         let pokemon_data = match pokemon.pokemon.get(&(dex_number as u32)) {
             Some(pokemon_data) => pokemon_data,
             None => {
@@ -119,7 +142,7 @@ pub async fn generate_pokemon_pages_in_range(
                     &pokemon_data.types,
                     wiki_name,
                     &mut calculated_defenses,
-                    app_handle.clone(),
+                    &base_path,
                 )
                 .as_bytes(),
             )
@@ -172,7 +195,7 @@ pub async fn generate_pokemon_pages_in_range(
         let entry_key = format!(
             "{} - {}",
             pokedex_markdown_file_name,
-            capitalize::capitalize(&pokemon_data.name)
+            capitalize(&pokemon_data.name)
         );
         specific_change_entry.insert(
             entry_key.clone(),
@@ -227,6 +250,7 @@ fn create_type_table(types: &Vec<String>) -> String {
     let type_images: Vec<String> = types
         .iter()
         .map(|_type| format!("![{}](../img/types/{}.png)", _type, _type))
+        .filter(|_type| !_type.contains("none"))
         .collect();
 
     return format!(
@@ -243,12 +267,12 @@ fn create_defenses_table(
     types: &Vec<String>,
     wiki_name: &str,
     calculated_defenses: &mut HashMap<String, TypeEffectiveness>,
-    app_handle: AppHandle,
+    base_path: &PathBuf,
 ) -> String {
     // Get Defensive Matchups from file before calculating them
     let defensive_matchups = match calculated_defenses.get(&types.join("-").to_string()) {
         Some(matchup) => matchup.0.clone(),
-        None => get_defensive_matchups(&types, wiki_name, app_handle),
+        None => get_defensive_matchups(&types, wiki_name, base_path),
     };
     calculated_defenses.insert(
         types.join("-").to_string(),
@@ -280,13 +304,7 @@ fn create_ability_table(abilities: &Vec<String>) -> String {
     let placeholder_effect = "Effect";
     let ability_entries: Vec<String> = abilities
         .iter()
-        .map(|ability| {
-            format!(
-                "[{}](\" {} \")",
-                capitalize::capitalize(ability),
-                placeholder_effect
-            )
-        })
+        .map(|ability| format!("[{}](\" {} \")", capitalize(ability), placeholder_effect))
         .collect();
 
     return format!(
@@ -404,7 +422,7 @@ fn create_level_up_moves_table(moves: HashMap<String, Move>, moves_from_file: Mo
         let table_entry = format!(
             "| {} | {} | {} | {} | {} | {} | {} |\n",
             level_learned,
-            capitalize::capitalize(&move_name),
+            capitalize(&move_name),
             power,
             accuracy,
             movesetmove.pp,
@@ -495,7 +513,7 @@ fn create_learnable_moves_table(moves: HashMap<String, Move>, moves_from_file: M
         let table_entry = format!(
             "| {} | {} | {} | {} | {} | {} | {} |\n",
             machine_name,
-            capitalize::capitalize(&move_name),
+            capitalize(&move_name),
             power,
             accuracy,
             movesetmove.pp,
