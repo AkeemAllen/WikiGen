@@ -19,7 +19,7 @@ use crate::{
 };
 
 #[tauri::command]
-pub fn generate_pokemon_pages_from_list(
+pub async fn generate_pokemon_pages_from_list(
     wiki_name: &str,
     dex_numbers: Vec<usize>,
     app_handle: AppHandle,
@@ -29,7 +29,7 @@ pub fn generate_pokemon_pages_from_list(
 }
 
 #[tauri::command]
-pub fn generate_pokemon_pages_from_range(
+pub async fn generate_pokemon_pages_from_range(
     wiki_name: &str,
     range_start: usize,
     range_end: usize,
