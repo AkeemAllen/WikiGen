@@ -32,7 +32,7 @@ async function generatePokemonPagesInRange() {
 
 async function generateRoutePages() {
   loading = true;
-  await invoke("generate_route_page_with_handle", {
+  await invoke("generate_route_pages_with_handle", {
     wikiName: $selectedWiki.name,
   }).then((response: any) => {
     loading = false;

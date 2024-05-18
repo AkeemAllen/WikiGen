@@ -57,12 +57,103 @@ pub struct WildEncounter {
 }
 
 #[tauri::command]
-pub async fn generate_route_page_with_handle(
+pub async fn generate_route_pages_with_handle(
     wiki_name: &str,
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
     return generate_route_pages(&wiki_name, base_path);
+}
+
+#[tauri::command]
+pub async fn generate_single_route_page_with_handle(
+    wiki_name: &str,
+    route_name: &str,
+    app_handle: AppHandle,
+) -> Result<String, String> {
+    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    return generate_single_route(route_name, wiki_name, base_path);
+}
+
+pub fn generate_single_route(
+    route_name: &str,
+    wiki_name: &str,
+    base_path: PathBuf,
+) -> Result<String, String> {
+    let docs_path = base_path.join(wiki_name).join("dist").join("docs");
+
+    let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
+    let routes_file = File::open(&routes_json_file_path).unwrap();
+    let routes: Routes = serde_json::from_reader(routes_file).unwrap();
+
+    let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
+    let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
+    let mut mkdocs_config: MKDocsConfig = serde_yaml::from_reader(mkdocs_yaml_file).unwrap();
+
+    let routes_directory = docs_path.join("routes").join(route_name);
+    fs::create_dir_all(&routes_directory).unwrap();
+
+    let route_properties = routes.routes.get(route_name).unwrap();
+
+    let route_entry =
+        generate_route_entry(wiki_name, route_name, &routes_directory, route_properties);
+
+    if route_entry.is_empty() {
+        fs::remove_dir_all(routes_directory).unwrap();
+        // This is code is way more unreadable and complex than I'd like
+        // but it's simply meant to remove a route entry from the mkdocs yaml
+        // file if it's empty.
+        if let Some(nav_routes) = mkdocs_config.nav[2].get_mut("Routes") {
+            if let Navigation::Array(routes_list) = nav_routes {
+                let mut new_list: Vec<Navigation> = Vec::new();
+
+                for route in &*routes_list {
+                    if let Navigation::Map(ref route_map) = route {
+                        if route_map.contains_key(route_name) {
+                            continue;
+                        }
+                    }
+                    new_list.push(route.clone());
+                }
+                *routes_list = new_list;
+            }
+        }
+        fs::write(
+            mkdocs_yaml_file_path,
+            serde_yaml::to_string(&mkdocs_config).unwrap(),
+        )
+        .unwrap();
+        return Err("No wild or trainer encounters in route".to_string());
+    }
+
+    if let Some(nav_routes) = mkdocs_config.nav[2].get_mut("Routes") {
+        if let Navigation::Array(routes_list) = nav_routes {
+            let mut route_exists = false;
+            for route in &mut *routes_list {
+                if let Navigation::Map(route_map) = route {
+                    if route_map.contains_key(route_name) {
+                        route_map.insert(
+                            (&route_name).to_string(),
+                            route_entry.get(route_name).unwrap().clone(),
+                        );
+                        route_exists = true;
+                        break;
+                    }
+                }
+            }
+            if !route_exists {
+                routes_list.insert(route_properties.position, Navigation::Map(route_entry));
+            }
+        }
+    }
+
+    fs::write(
+        mkdocs_yaml_file_path,
+        serde_yaml::to_string(&mkdocs_config).unwrap(),
+    )
+    .unwrap();
+
+    Ok("".to_string())
 }
 
 pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<String, String> {
@@ -82,48 +173,12 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
         let routes_directory = docs_path.join("routes").join(route_name);
         fs::create_dir_all(&routes_directory).unwrap();
 
-        let formatted_route_name = capitalize(&route_name);
+        let route_entry =
+            generate_route_entry(wiki_name, route_name, &routes_directory, route_properties);
 
-        let mut route_entry = HashMap::new();
-        let mut entries = Vec::new();
-
-        if !route_properties.wild_encounters.is_empty() {
-            create_encounter_table(
-                wiki_name,
-                route_name,
-                &routes_directory,
-                &route_properties.wild_encounters,
-                &route_properties.wild_encounter_area_levels,
-            )
-            .unwrap();
-            let mut wild_encounters_entry = HashMap::new();
-            wild_encounters_entry.insert(
-                "Wild Encounter".to_string(),
-                Navigation::String(format!("routes/{}/wild_encounters.md", route_name)),
-            );
-            entries.push(Navigation::Map(wild_encounters_entry));
-        }
-        if !route_properties.trainers.is_empty() {
-            create_trainer_table(
-                wiki_name,
-                route_name,
-                &routes_directory,
-                &route_properties.trainers,
-            )
-            .unwrap();
-            let mut trainers_entry = HashMap::new();
-            trainers_entry.insert(
-                "Trainers".to_string(),
-                Navigation::String(format!("routes/{}/trainers.md", route_name)),
-            );
-            entries.push(Navigation::Map(trainers_entry));
-        }
-
-        if entries.is_empty() {
+        if route_entry.is_empty() {
             continue;
         }
-
-        route_entry.insert(formatted_route_name, Navigation::Array(entries));
 
         mkdoc_routes.push(Navigation::Map(route_entry));
     }
@@ -154,6 +209,57 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
     .unwrap();
 
     Ok("Generating Routes".to_string())
+}
+
+fn generate_route_entry(
+    wiki_name: &str,
+    route_name: &str,
+    routes_directory: &PathBuf,
+    route_properties: &RouteProperties,
+) -> HashMap<String, Navigation> {
+    let formatted_route_name = capitalize(&route_name);
+    let mut entries = Vec::new();
+
+    if !route_properties.wild_encounters.is_empty() {
+        create_encounter_table(
+            wiki_name,
+            route_name,
+            &routes_directory,
+            &route_properties.wild_encounters,
+            &route_properties.wild_encounter_area_levels,
+        )
+        .unwrap();
+        let mut wild_encounters_entry = HashMap::new();
+        wild_encounters_entry.insert(
+            "Wild Encounter".to_string(),
+            Navigation::String(format!("routes/{}/wild_encounters.md", route_name)),
+        );
+        entries.push(Navigation::Map(wild_encounters_entry));
+    }
+    if !route_properties.trainers.is_empty() {
+        create_trainer_table(
+            wiki_name,
+            route_name,
+            &routes_directory,
+            &route_properties.trainers,
+        )
+        .unwrap();
+        let mut trainers_entry = HashMap::new();
+        trainers_entry.insert(
+            "Trainers".to_string(),
+            Navigation::String(format!("routes/{}/trainers.md", route_name)),
+        );
+        entries.push(Navigation::Map(trainers_entry));
+    }
+
+    let mut route_entry: HashMap<String, Navigation> = HashMap::new();
+
+    if entries.is_empty() {
+        return route_entry;
+    }
+
+    route_entry.insert(formatted_route_name, Navigation::Array(entries));
+    return route_entry;
 }
 
 fn create_encounter_table(
