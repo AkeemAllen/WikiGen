@@ -1,4 +1,3 @@
-pub mod capitalize;
 pub mod copy_recursively;
 pub mod matchups;
 pub mod mkdocs_process;
@@ -12,4 +11,12 @@ pub fn get_pokemon_dex_formatted_name(dex_number: usize) -> String {
         pokedex_markdown_file_name = format!("{}", dex_number);
     }
     return pokedex_markdown_file_name;
+}
+
+pub fn capitalize(s: &str) -> String {
+    let mut c = s.chars();
+    match c.next() {
+        None => String::new(),
+        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+    }
 }

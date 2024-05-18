@@ -195,7 +195,7 @@ pub fn generate_pokemon_pages(
         let entry_key = format!(
             "{} - {}",
             pokedex_markdown_file_name,
-            capitalize::capitalize(&pokemon_data.name)
+            capitalize(&pokemon_data.name)
         );
         specific_change_entry.insert(
             entry_key.clone(),
@@ -304,13 +304,7 @@ fn create_ability_table(abilities: &Vec<String>) -> String {
     let placeholder_effect = "Effect";
     let ability_entries: Vec<String> = abilities
         .iter()
-        .map(|ability| {
-            format!(
-                "[{}](\" {} \")",
-                capitalize::capitalize(ability),
-                placeholder_effect
-            )
-        })
+        .map(|ability| format!("[{}](\" {} \")", capitalize(ability), placeholder_effect))
         .collect();
 
     return format!(
@@ -428,7 +422,7 @@ fn create_level_up_moves_table(moves: HashMap<String, Move>, moves_from_file: Mo
         let table_entry = format!(
             "| {} | {} | {} | {} | {} | {} | {} |\n",
             level_learned,
-            capitalize::capitalize(&move_name),
+            capitalize(&move_name),
             power,
             accuracy,
             movesetmove.pp,
@@ -519,7 +513,7 @@ fn create_learnable_moves_table(moves: HashMap<String, Move>, moves_from_file: M
         let table_entry = format!(
             "| {} | {} | {} | {} | {} | {} | {} |\n",
             machine_name,
-            capitalize::capitalize(&move_name),
+            capitalize(&move_name),
             power,
             accuracy,
             movesetmove.pp,

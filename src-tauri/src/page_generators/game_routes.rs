@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 
 use crate::{
-    helpers::{capitalize::capitalize, get_pokemon_dex_formatted_name},
+    helpers::{capitalize, get_pokemon_dex_formatted_name},
     structs::mkdocs_structs::{MKDocsConfig, Navigation},
 };
 
