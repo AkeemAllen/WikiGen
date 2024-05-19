@@ -15,6 +15,16 @@ export type PokemonDetails = {
   evolution: Evolution;
 };
 
+export type ModifiedPokemon = {
+  [key: string]: {
+    evolution?: Evolution;
+    types: {
+      original: string[];
+      modified: string[];
+    };
+  };
+};
+
 export type Stats = {
   hp: number;
   attack: number;
@@ -65,3 +75,4 @@ export const PokemonTypes = [
 
 export let pokemon = writable<Pokemon>();
 export let pokemonList = writable<[string, number][]>([]);
+export let modifiedPokemon = writable<ModifiedPokemon>({});

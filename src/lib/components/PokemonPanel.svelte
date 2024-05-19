@@ -9,10 +9,15 @@ import {
   type PopupSettings,
   type ToastSettings,
 } from "@skeletonlabs/skeleton";
-import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+import { BaseDirectory, readTextFile, writeTextFile } from "@tauri-apps/api/fs";
 import _ from "lodash";
 import { selectedWiki } from "../../store";
-import { pokemon, pokemonList, type PokemonDetails } from "../../store/pokemon";
+import {
+  pokemon,
+  pokemonList,
+  modifiedPokemon,
+  type PokemonDetails,
+} from "../../store/pokemon";
 import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
 import PokemonMovesTab from "./PokemonMovesTab.svelte";
 import { invoke } from "@tauri-apps/api";
@@ -54,11 +59,45 @@ async function generatePokemonPage() {
   });
 }
 
+async function checkAndWriteModifiedTypes() {
+  if (!_.isEqual(originalPokemonDetails.types, pokemonDetails.types)) {
+    if (!$modifiedPokemon[pokemonName]) {
+      $modifiedPokemon[pokemonName] = {
+        types: {
+          original: [],
+          modified: [],
+        },
+      };
+    }
+    if ($modifiedPokemon[pokemonName].types.original.length === 0) {
+      $modifiedPokemon[pokemonName].types.original =
+        originalPokemonDetails.types;
+    }
+    $modifiedPokemon[pokemonName].types.modified = pokemonDetails.types;
+
+    if (
+      _.isEqual(
+        $modifiedPokemon[pokemonName].types.original.sort(),
+        $modifiedPokemon[pokemonName].types.modified.sort(),
+      )
+    ) {
+      delete $modifiedPokemon[pokemonName];
+    }
+
+    await writeTextFile(
+      `${$selectedWiki.name}/data/modifications/modified_pokemon.json`,
+      JSON.stringify($modifiedPokemon),
+      { dir: BaseDirectory.AppData },
+    );
+  }
+}
+
 async function savePokemonChanges() {
   pokemon.update((p) => {
     p.pokemon[pokemonId] = pokemonDetails;
     return p;
   });
+  checkAndWriteModifiedTypes();
   await writeTextFile(
     `${$selectedWiki.name}/data/pokemon.json`,
     JSON.stringify($pokemon),
