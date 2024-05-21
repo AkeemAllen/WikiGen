@@ -63,6 +63,7 @@ async function checkAndWriteModifiedTypes() {
   if (!_.isEqual(originalPokemonDetails.types, pokemonDetails.types)) {
     if (!$modifiedPokemon[pokemonName]) {
       $modifiedPokemon[pokemonName] = {
+        id: pokemonDetails.id,
         types: {
           original: [],
           modified: [],
@@ -112,7 +113,6 @@ async function savePokemonChanges() {
     generatePokemonPage();
   });
 }
-$: console.log({ pokemonDetails, originalPokemonDetails });
 </script>
 
 <div class="flex flex-row gap-7">

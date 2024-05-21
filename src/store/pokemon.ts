@@ -17,6 +17,7 @@ export type PokemonDetails = {
 
 export type ModifiedPokemon = {
   [key: string]: {
+    id: number;
     evolution?: Evolution;
     types: {
       original: string[];
