@@ -18,7 +18,7 @@ export type PokemonDetails = {
 export type ModifiedPokemon = {
   [key: string]: {
     id: number;
-    evolution: Evolution | null;
+    evolution: Evolution;
     types: {
       original: string[];
       modified: string[];
@@ -36,10 +36,13 @@ export type Stats = {
 };
 
 export type Evolution = {
-  level: number | null;
-  item: string | null;
-  other: string | null;
-  evolves_to: string | null;
+  level: number;
+  item: string;
+  other: string;
+  evolves_to: {
+    id: number;
+    pokemon_name: string;
+  };
   method: "no_change" | "level_up" | "item" | "other";
 };
 

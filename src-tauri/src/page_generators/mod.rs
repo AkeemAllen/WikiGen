@@ -10,7 +10,7 @@ type ModifiedPokemon = HashMap<String, ModifiedPokemonDetails>;
 pub struct ModifiedPokemonDetails {
     pub id: usize,
     pub types: Types,
-    pub evolution: Option<Evolution>,
+    pub evolution: Evolution,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
