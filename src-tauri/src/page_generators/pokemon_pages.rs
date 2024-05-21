@@ -88,16 +88,18 @@ pub fn generate_pokemon_pages(
     because the navigation object in the mkdocs_config is so complex, I may not have a choice
     here.
      */
-    if let Some(pokemon_nav) = mkdocs_config.nav[1].get("Pokemon") {
-        if let Navigation::Array(pokemon_nav) = pokemon_nav {
-            for nav_item_map in pokemon_nav.iter() {
-                if let Navigation::Map(nav_item) = nav_item_map {
-                    if nav_item.contains_key("Specific Changes") {
-                        specific_changes = nav_item.clone();
+    match mkdocs_config.nav[1].get("Pokemon").unwrap() {
+        Navigation::Array(pokemon_nav) => {
+            for nav_item in pokemon_nav {
+                if let Navigation::Map(item) = nav_item {
+                    if item.contains_key("Specific Changes") {
+                        specific_changes = item.clone();
+                        break;
                     }
                 }
             }
         }
+        _ => {}
     }
 
     for dex_number in dex_numbers {
@@ -221,8 +223,8 @@ pub fn generate_pokemon_pages(
         Note: Similar to gathering the specific changes above, the complexity
         of the nesting requires all of the steps here.
          */
-        if let Some(change) = specific_changes.get_mut("Specific Changes") {
-            if let Navigation::Array(entries) = change {
+        match specific_changes.get_mut("Specific Changes").unwrap() {
+            Navigation::Array(entries) => {
                 let mut entry_exists = false;
                 for entry in &mut *entries {
                     if let Navigation::Map(entry_map) = entry {
@@ -236,12 +238,23 @@ pub fn generate_pokemon_pages(
                     entries.push(Navigation::Map(specific_change_entry))
                 }
             }
+            _ => {}
         }
     }
 
-    if let Some(pokemon_nav) = mkdocs_config.nav[1].get_mut("Pokemon") {
-        *pokemon_nav = Navigation::Array(vec![Navigation::Map(specific_changes)]);
-    };
+    match mkdocs_config.nav[1].get_mut("Pokemon").unwrap() {
+        Navigation::Array(pokemon_nav) => {
+            for nav_item in pokemon_nav {
+                if let Navigation::Map(item) = nav_item {
+                    if item.contains_key("Specific Changes") {
+                        *item = specific_changes;
+                        break;
+                    }
+                }
+            }
+        }
+        _ => {}
+    }
 
     fs::write(
         mkdocs_yaml_file_path,
