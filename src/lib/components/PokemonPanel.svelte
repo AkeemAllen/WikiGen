@@ -64,6 +64,7 @@ async function checkAndWriteModifiedTypes() {
     if (!$modifiedPokemon[pokemonName]) {
       $modifiedPokemon[pokemonName] = {
         id: pokemonDetails.id,
+        evolution: null,
         types: {
           original: [],
           modified: [],
