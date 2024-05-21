@@ -72,7 +72,7 @@ let pokemonListOptions: AutocompleteOption<string>[] = $pokemonList.map(
     {#if pokemonDetails.evolution.method === "item"}
       <TextInput
         id="evolution-item"
-        value={pokemonDetails.evolution?.item ?? ""}
+        bind:value={pokemonDetails.evolution.item}
         label="Evolution Item"
       />
     {/if}
