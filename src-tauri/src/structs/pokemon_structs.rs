@@ -46,9 +46,9 @@ pub struct Evolution {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-struct EvolvedPokemon {
-    id: usize,
-    pokemon_name: String,
+pub struct EvolvedPokemon {
+    pub id: usize,
+    pub pokemon_name: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
