@@ -82,8 +82,12 @@ pub fn generate_pokemon_pages(
      */
     if let Some(pokemon_nav) = mkdocs_config.nav[1].get("Pokemon") {
         if let Navigation::Array(pokemon_nav) = pokemon_nav {
-            if let Navigation::Map(pokemon_nav) = &pokemon_nav[0] {
-                specific_changes = pokemon_nav.clone();
+            for nav_item_map in pokemon_nav.iter() {
+                if let Navigation::Map(nav_item) = nav_item_map {
+                    if nav_item.contains_key("Specific Changes") {
+                        specific_changes = nav_item.clone();
+                    }
+                }
             }
         }
     }
