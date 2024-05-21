@@ -18,7 +18,7 @@ use crate::{
     },
 };
 
-use super::type_page::generate_type_page;
+use super::{evolution_page::generate_evolution_page, type_page::generate_type_page};
 
 #[tauri::command]
 pub async fn generate_pokemon_pages_from_list(
@@ -28,7 +28,8 @@ pub async fn generate_pokemon_pages_from_list(
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
     let result = generate_pokemon_pages(dex_numbers, wiki_name, base_path.clone());
-    generate_type_page(wiki_name, base_path).unwrap();
+    generate_type_page(wiki_name, base_path.clone()).unwrap();
+    generate_evolution_page(wiki_name, base_path).unwrap();
     return result;
 }
 
@@ -45,7 +46,8 @@ pub async fn generate_pokemon_pages_from_range(
         dex_numbers.push(number);
     }
     let result = generate_pokemon_pages(dex_numbers, wiki_name, base_path.clone());
-    generate_type_page(wiki_name, base_path).unwrap();
+    generate_type_page(wiki_name, base_path.clone()).unwrap();
+    generate_evolution_page(wiki_name, base_path).unwrap();
     return result;
 }
 
@@ -357,9 +359,9 @@ fn create_evolution_table(evolution: Evolution) -> String {
     let no_change = "".to_string();
 
     let item_level_note = match evolution.method {
-        EvolutionMethod::Item => evolution.item.unwrap(),
-        EvolutionMethod::LevelUp => evolution.level.unwrap().to_string(),
-        EvolutionMethod::Other => evolution.other.unwrap(),
+        EvolutionMethod::Item => evolution.item,
+        EvolutionMethod::LevelUp => evolution.level.to_string(),
+        EvolutionMethod::Other => evolution.other,
         EvolutionMethod::NoChange => no_change,
     };
 
@@ -368,9 +370,7 @@ fn create_evolution_table(evolution: Evolution) -> String {
         | :--: | :--: | :--: |
         | {:?} | {} | {} |
         ",
-        evolution.method,
-        item_level_note,
-        &evolution.evolves_to.unwrap()
+        evolution.method, item_level_note, &evolution.evolves_to.pokemon_name
     );
 }
 

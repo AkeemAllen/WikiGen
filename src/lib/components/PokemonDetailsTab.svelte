@@ -1,5 +1,6 @@
 <script lang="ts">
 import SelectInput from "$lib/components/SelectInput.svelte";
+import AutoComplete from "$lib/components/AutoComplete.svelte";
 import type { AutocompleteOption } from "@skeletonlabs/skeleton";
 import _ from "lodash";
 import {
@@ -11,9 +12,10 @@ import NumberInput from "./NumberInput.svelte";
 import TextInput from "./TextInput.svelte";
 
 export let pokemonDetails: PokemonDetails = {} as PokemonDetails;
-let pokemonListOptions: AutocompleteOption<string>[] = $pokemonList.map(
-  ([name]) => ({ label: _.capitalize(name), value: _.capitalize(name) }),
-);
+let pokemonListOptions: AutocompleteOption<string | number>[] =
+  $pokemonList.map(([name, id]) => ({ label: _.capitalize(name), value: id }));
+
+$: console.log(pokemonDetails);
 </script>
 
 <div class="scroll-smooth px-4">
@@ -92,11 +94,16 @@ let pokemonListOptions: AutocompleteOption<string>[] = $pokemonList.map(
     {/if}
     {#if pokemonDetails.evolution.method !== "no_change"}
       <div class="w-44">
-        <SelectInput
-          id="evolution-to"
-          label="Evoles To"
-          bind:value={pokemonDetails.evolution.evolves_to}
+        <AutoComplete
+          label="Evolves To"
+          bind:value={pokemonDetails.evolution.evolves_to.pokemon_name}
+          placeholder="Evolves To"
           options={pokemonListOptions}
+          popupId="ability-popup"
+          onSelection={(e) => {
+            pokemonDetails.evolution.evolves_to.id = e.detail.value;
+            pokemonDetails.evolution.evolves_to.pokemon_name = e.detail.label;
+          }}
         />
       </div>
     {/if}

@@ -64,7 +64,13 @@ async function checkAndWriteModifiedTypes() {
     if (!$modifiedPokemon[pokemonName]) {
       $modifiedPokemon[pokemonName] = {
         id: pokemonDetails.id,
-        evolution: null,
+        evolution: {
+          method: "no_change",
+          level: 0,
+          item: "",
+          other: "",
+          evolves_to: { id: 0, pokemon_name: "" },
+        },
         types: {
           original: [],
           modified: [],
@@ -83,7 +89,48 @@ async function checkAndWriteModifiedTypes() {
         $modifiedPokemon[pokemonName].types.modified.sort(),
       )
     ) {
-      delete $modifiedPokemon[pokemonName];
+      $modifiedPokemon[pokemonName].types = {
+        original: [],
+        modified: [],
+      };
+    }
+
+    await writeTextFile(
+      `${$selectedWiki.name}/data/modifications/modified_pokemon.json`,
+      JSON.stringify($modifiedPokemon),
+      { dir: BaseDirectory.AppData },
+    );
+  }
+}
+
+async function checkAndWriteModifiedEvolutions() {
+  if (!_.isEqual(originalPokemonDetails.evolution, pokemonDetails.evolution)) {
+    if (!$modifiedPokemon[pokemonName]) {
+      $modifiedPokemon[pokemonName] = {
+        id: pokemonDetails.id,
+        evolution: {
+          method: "no_change",
+          level: 0,
+          item: "",
+          other: "",
+          evolves_to: { id: 0, pokemon_name: "" },
+        },
+        types: {
+          original: [],
+          modified: [],
+        },
+      };
+    }
+    if (pokemonDetails.evolution.method !== "no_change") {
+      $modifiedPokemon[pokemonName].evolution = pokemonDetails.evolution;
+    } else {
+      $modifiedPokemon[pokemonName].evolution = {
+        method: "no_change",
+        level: 0,
+        item: "",
+        other: "",
+        evolves_to: { id: 0, pokemon_name: "" },
+      };
     }
 
     await writeTextFile(
@@ -100,6 +147,15 @@ async function savePokemonChanges() {
     return p;
   });
   checkAndWriteModifiedTypes();
+  checkAndWriteModifiedEvolutions();
+
+  if (
+    $modifiedPokemon[pokemonName].evolution.method === "no_change" &&
+    $modifiedPokemon[pokemonName].types.original.length === 0
+  ) {
+    delete $modifiedPokemon[pokemonName];
+  }
+
   await writeTextFile(
     `${$selectedWiki.name}/data/pokemon.json`,
     JSON.stringify($pokemon),
