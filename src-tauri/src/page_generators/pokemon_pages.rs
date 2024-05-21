@@ -18,6 +18,8 @@ use crate::{
     },
 };
 
+use super::type_page::generate_type_page;
+
 #[tauri::command]
 pub async fn generate_pokemon_pages_from_list(
     wiki_name: &str,
@@ -25,7 +27,9 @@ pub async fn generate_pokemon_pages_from_list(
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    return generate_pokemon_pages(dex_numbers, wiki_name, base_path);
+    let result = generate_pokemon_pages(dex_numbers, wiki_name, base_path.clone());
+    generate_type_page(wiki_name, base_path).unwrap();
+    return result;
 }
 
 #[tauri::command]
@@ -40,7 +44,9 @@ pub async fn generate_pokemon_pages_from_range(
     for number in range_start..=range_end {
         dex_numbers.push(number);
     }
-    return generate_pokemon_pages(dex_numbers, wiki_name, base_path);
+    let result = generate_pokemon_pages(dex_numbers, wiki_name, base_path.clone());
+    generate_type_page(wiki_name, base_path).unwrap();
+    return result;
 }
 
 pub fn generate_pokemon_pages(
