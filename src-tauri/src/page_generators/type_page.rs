@@ -5,29 +5,10 @@ use std::{
     path::PathBuf,
 };
 
-use serde::{Deserialize, Serialize};
-
 use crate::{
     helpers::{capitalize, get_pokemon_dex_formatted_name},
-    structs::{
-        mkdocs_structs::{MKDocsConfig, Navigation},
-        pokemon_structs::Pokemon,
-    },
+    structs::mkdocs_structs::{MKDocsConfig, Navigation},
 };
-
-type ModifiedPokemon = HashMap<String, ModifiedPokemonDetails>;
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct ModifiedPokemonDetails {
-    id: usize,
-    types: Types,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct Types {
-    original: Vec<String>,
-    modified: Vec<String>,
-}
 
 pub fn generate_type_page(wiki_name: &str, base_path: PathBuf) -> Result<String, String> {
     let modified_pokemon_json_file_path = base_path
@@ -36,7 +17,8 @@ pub fn generate_type_page(wiki_name: &str, base_path: PathBuf) -> Result<String,
         .join("modifications")
         .join("modified_pokemon.json");
     let modified_pokemon_file = File::open(&modified_pokemon_json_file_path).unwrap();
-    let modified_pokemon: ModifiedPokemon = serde_json::from_reader(modified_pokemon_file).unwrap();
+    let modified_pokemon: super::ModifiedPokemon =
+        serde_json::from_reader(modified_pokemon_file).unwrap();
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
     let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
