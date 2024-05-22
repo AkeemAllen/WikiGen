@@ -6,13 +6,14 @@ use std::{
 };
 
 use indexmap::IndexMap;
+use serde_yaml::{Mapping, Value};
 use tauri::AppHandle;
 
 use crate::{
     helpers::{capitalize, matchups::get_defensive_matchups},
     structs::{
         matchup_models::TypeEffectiveness,
-        mkdocs_structs::{MKDocsConfig, Navigation},
+        mkdocs_structs::MKDocsConfig,
         move_structs::{LearnMethodDetail, MoveSetMove, Moves},
         pokemon_structs::{Evolution, EvolutionMethod, Move, Pokemon, Stats},
     },
@@ -78,28 +79,17 @@ pub fn generate_pokemon_pages(
     let mut calculated_defenses: HashMap<String, TypeEffectiveness> =
         serde_json::from_reader(calculated_defenses_json_file).unwrap();
 
-    let mut specific_changes = HashMap::new();
+    let mut mkdocs_pokemon: &mut Vec<Value> = &mut Vec::new();
 
-    /*
-    Collecting the hashmap with the Specific Changes key here so it's easier to
-    check for existing values further down.
-
-    Note: this is probably not the most elegant way of collecting this value. However,
-    because the navigation object in the mkdocs_config is so complex, I may not have a choice
-    here.
-     */
-    match mkdocs_config.nav[1].get("Pokemon").unwrap() {
-        Navigation::Array(pokemon_nav) => {
-            for nav_item in pokemon_nav {
-                if let Navigation::Map(item) = nav_item {
-                    if item.contains_key("Specific Changes") {
-                        specific_changes = item.clone();
-                        break;
-                    }
-                }
+    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
+    for entry in nav_entries {
+        let map_entries = entry.as_mapping_mut().unwrap();
+        match map_entries.get_mut(Value::String("Pokemon".to_string())) {
+            Some(map_entry) => {
+                mkdocs_pokemon = map_entry.as_sequence_mut().unwrap();
             }
+            None => {}
         }
-        _ => {}
     }
 
     for dex_number in dex_numbers {
@@ -205,55 +195,28 @@ pub fn generate_pokemon_pages(
             )
             .unwrap();
 
-        let mut specific_change_entry = HashMap::new();
+        let mut pokemon_page_entry = Mapping::new();
         let entry_key = format!(
             "{} - {}",
             pokedex_markdown_file_name,
             capitalize(&pokemon_data.name)
         );
-        specific_change_entry.insert(
-            entry_key.clone(),
-            Navigation::String(format!("pokemon/{}.md", pokedex_markdown_file_name)),
+        pokemon_page_entry.insert(
+            Value::String(entry_key.clone()),
+            Value::String(format!("pokemon/{}.md", pokedex_markdown_file_name)),
         );
 
-        /*
-        This block of code check if the specific_change_entry exists in
-        specific changes already. If not, then we push it to the array.
-
-        Note: Similar to gathering the specific changes above, the complexity
-        of the nesting requires all of the steps here.
-         */
-        match specific_changes.get_mut("Specific Changes").unwrap() {
-            Navigation::Array(entries) => {
-                let mut entry_exists = false;
-                for entry in &mut *entries {
-                    if let Navigation::Map(entry_map) = entry {
-                        if entry_map.contains_key(&entry_key.clone()) {
-                            entry_exists = true;
-                            break;
-                        }
-                    }
-                }
-                if !entry_exists {
-                    entries.push(Navigation::Map(specific_change_entry))
-                }
-            }
-            _ => {}
-        }
-    }
-
-    match mkdocs_config.nav[1].get_mut("Pokemon").unwrap() {
-        Navigation::Array(pokemon_nav) => {
-            for nav_item in pokemon_nav {
-                if let Navigation::Map(item) = nav_item {
-                    if item.contains_key("Specific Changes") {
-                        *item = specific_changes;
-                        break;
-                    }
-                }
+        let mut page_entry_exists = false;
+        for page_entry in mkdocs_pokemon.clone() {
+            if page_entry.as_mapping().unwrap().contains_key(&entry_key) {
+                page_entry_exists = true;
+                break;
             }
         }
-        _ => {}
+
+        if !page_entry_exists {
+            mkdocs_pokemon.push(Value::Mapping(pokemon_page_entry));
+        }
     }
 
     fs::write(
