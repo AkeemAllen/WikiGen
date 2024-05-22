@@ -1,9 +1,9 @@
 use serde::de::Visitor;
-use serde::ser::{SerializeMap, SerializeSeq};
+use serde::ser::SerializeMap;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::collections::HashMap;
+use serde_yaml::Value;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MKDocsConfig {
     pub site_name: String,
     pub site_url: String,
@@ -11,13 +11,13 @@ pub struct MKDocsConfig {
     pub site_author: String,
     pub repo_url: String,
     pub theme: Theme,
-    pub nav: Vec<HashMap<String, Navigation>>,
+    pub nav: Value,
     pub plugins: Vec<Plugin>,
     pub markdown_extensions: Vec<MarkdownExtension>,
     pub extra_css: Vec<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Theme {
     pub name: String,
     pub features: Vec<String>,
@@ -25,7 +25,7 @@ pub struct Theme {
     pub palette: [Palette; 2],
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Palette {
     pub media: String,
     pub primary: String,
@@ -33,75 +33,20 @@ pub struct Palette {
     pub toggle: Toggle,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Toggle {
     pub icon: String,
     pub name: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Plugin {
     pub search: Search,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Search {
     pub lang: String,
-}
-
-#[derive(Debug, Clone)]
-pub enum Navigation {
-    String(String),
-    Array(Vec<Navigation>),
-    Map(HashMap<String, Navigation>),
-}
-
-impl Serialize for Navigation {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            Navigation::String(s) => serializer.serialize_str(s),
-            Navigation::Array(a) => {
-                let mut seq = serializer.serialize_seq(Some(a.len()))?;
-                for e in a {
-                    seq.serialize_element(e)?;
-                }
-                seq.end()
-            }
-            Navigation::Map(m) => {
-                let mut map = serializer.serialize_map(Some(m.len()))?;
-                for (k, v) in m {
-                    map.serialize_entry(k, v)?;
-                }
-                map.end()
-            }
-        }
-    }
-}
-
-impl<'de> Deserialize<'de> for Navigation {
-    fn deserialize<D>(deserializer: D) -> Result<Navigation, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        #[derive(Deserialize)]
-        #[serde(untagged)]
-        enum NavHelper {
-            String(String),
-            Array(Vec<Navigation>),
-            Map(HashMap<String, Navigation>),
-        }
-
-        let nav_helper = NavHelper::deserialize(deserializer)?;
-
-        match nav_helper {
-            NavHelper::String(s) => Ok(Navigation::String(s)),
-            NavHelper::Array(a) => Ok(Navigation::Array(a)),
-            NavHelper::Map(m) => Ok(Navigation::Map(m)),
-        }
-    }
 }
 
 #[derive(Debug, Clone)]
