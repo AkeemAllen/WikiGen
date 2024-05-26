@@ -82,6 +82,7 @@ pub fn generate_type_page(wiki_name: &str, base_path: PathBuf) -> Result<String,
             serde_yaml::to_string(&mkdocs_config).unwrap(),
         )
         .unwrap();
+        return Ok("No Types to genereate. Type page removed".to_string());
     }
 
     type_changes_file
