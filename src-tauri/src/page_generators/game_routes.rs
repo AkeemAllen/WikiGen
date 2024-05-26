@@ -73,8 +73,7 @@ pub async fn generate_single_route_page_with_handle(
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    return Ok("".to_string());
-    // return generate_single_route(route_name, wiki_name, base_path);
+    return generate_single_route(route_name, wiki_name, base_path);
 }
 
 pub fn generate_single_route(
@@ -105,11 +104,11 @@ pub fn generate_single_route(
         }
     }
 
-    let mut page_entry_exists = false;
+    let mut page = &mut Mapping::new();
     let mut page_position = 0;
-    for (index, page_entry) in mkdocs_routes.clone().iter().enumerate() {
+    for (index, page_entry) in mkdocs_routes.iter_mut().enumerate() {
         if page_entry.as_mapping().unwrap().contains_key(&route_name) {
-            page_entry_exists = true;
+            page = page_entry.as_mapping_mut().unwrap();
             page_position = index;
             break;
         }
@@ -119,7 +118,7 @@ pub fn generate_single_route(
     let route_properties = routes.routes.get(route_name).unwrap();
 
     if route_properties.trainers.is_empty() && route_properties.wild_encounters.is_empty() {
-        if !page_entry_exists {
+        if page.is_empty() {
             return Ok("Route is empty".to_string());
         }
         mkdocs_routes.remove(page_position);
@@ -137,13 +136,13 @@ pub fn generate_single_route(
     let route_entry =
         generate_route_entry(wiki_name, route_name, &routes_directory, route_properties);
 
-    if page_entry_exists {
-        //modify existing route
-        mkdocs_routes.remove(page_position);
-        mkdocs_routes.insert(page_position, Value::Mapping(route_entry));
+    if page.is_empty() {
+        mkdocs_routes.push(Value::Mapping(route_entry.clone()))
     } else {
-        // push to list
-        mkdocs_routes.push(Value::Mapping(route_entry));
+        *page = Value::Mapping(route_entry.clone())
+            .as_mapping()
+            .unwrap()
+            .clone();
     }
 
     fs::write(
