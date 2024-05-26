@@ -178,51 +178,40 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
         }
     }
 
+    mkdocs_routes.clear();
     for (route_name, route_properties) in routes.routes.iter() {
-        let mut page_entry_exists = false;
-        let mut page_position = 0;
-        for (index, page_entry) in mkdocs_routes.clone().iter().enumerate() {
-            if page_entry.as_mapping().unwrap().contains_key(&route_name) {
-                page_entry_exists = true;
-                page_position = index;
-                break;
-            }
-        }
-
         let routes_directory = docs_path.join("routes").join(route_name);
-
-        if route_properties.trainers.is_empty() && route_properties.wild_encounters.is_empty() {
-            if !page_entry_exists {
-                return Ok("Route is empty".to_string());
-            }
-            mkdocs_routes.remove(page_position);
-            fs::remove_dir_all(&routes_directory).unwrap();
-            fs::write(
-                mkdocs_yaml_file_path,
-                serde_yaml::to_string(&mkdocs_config).unwrap(),
-            )
-            .unwrap();
-            return Ok("Route is empty. Removed empty route".to_string());
-        }
 
         fs::create_dir_all(&routes_directory).unwrap();
 
         let route_entry =
             generate_route_entry(wiki_name, route_name, &routes_directory, route_properties);
 
-        if page_entry_exists {
-            //modify existing route
-            mkdocs_routes.remove(page_position);
-            mkdocs_routes.insert(page_position, Value::Mapping(route_entry));
-        } else {
-            // push to list
-            mkdocs_routes.push(Value::Mapping(route_entry));
+        if route_entry.is_empty() {
+            continue;
+        }
+
+        mkdocs_routes.push(Value::Mapping(route_entry));
+    }
+
+    let paths = fs::read_dir(&docs_path.join("routes")).unwrap();
+    for path in paths {
+        let path_name = path
+            .as_ref()
+            .ok()
+            .unwrap()
+            .file_name()
+            .into_string()
+            .unwrap();
+
+        if !routes.routes.contains_key(&path_name) {
+            fs::remove_dir_all(&path.unwrap().path()).unwrap();
         }
     }
 
     fs::write(
         mkdocs_yaml_file_path,
-        serde_yaml::to_string(&mkdocs_config).unwrap(),
+        serde_yaml::to_string(&mkdocs_config.clone()).unwrap(),
     )
     .unwrap();
 
