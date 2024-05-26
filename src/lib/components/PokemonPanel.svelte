@@ -94,12 +94,6 @@ async function checkAndWriteModifiedTypes() {
         modified: [],
       };
     }
-
-    await writeTextFile(
-      `${$selectedWiki.name}/data/modifications/modified_pokemon.json`,
-      JSON.stringify($modifiedPokemon),
-      { dir: BaseDirectory.AppData },
-    );
   }
 }
 
@@ -132,12 +126,6 @@ async function checkAndWriteModifiedEvolutions() {
         evolves_to: { id: 0, pokemon_name: "" },
       };
     }
-
-    await writeTextFile(
-      `${$selectedWiki.name}/data/modifications/modified_pokemon.json`,
-      JSON.stringify($modifiedPokemon),
-      { dir: BaseDirectory.AppData },
-    );
   }
 }
 
@@ -157,6 +145,12 @@ async function savePokemonChanges() {
   }
 
   await writeTextFile(
+    `${$selectedWiki.name}/data/modifications/modified_pokemon.json`,
+    JSON.stringify($modifiedPokemon),
+    { dir: BaseDirectory.AppData },
+  );
+
+  await writeTextFile(
     `${$selectedWiki.name}/data/pokemon.json`,
     JSON.stringify($pokemon),
     { dir: BaseDirectory.AppData },
@@ -169,12 +163,6 @@ async function savePokemonChanges() {
     });
     generatePokemonPage();
   });
-
-  await writeTextFile(
-    `${$selectedWiki.name}/data/modifications/modified_pokemon.json`,
-    JSON.stringify($modifiedPokemon),
-    { dir: BaseDirectory.AppData },
-  );
 }
 </script>
 
