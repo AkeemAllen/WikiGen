@@ -88,8 +88,8 @@ pub fn generate_evolution_page(wiki_name: &str, base_path: PathBuf) -> Result<St
                     &evolution_details.other,
                     get_markdown_entry_for_pokemon(
                         wiki_name,
-                        pokemon_name,
-                        modification_details.id
+                        &evolution_details.evolves_to.pokemon_name,
+                        evolution_details.evolves_to.id
                     )
                 );
                 if evolution_other.is_empty() {
@@ -112,8 +112,8 @@ pub fn generate_evolution_page(wiki_name: &str, base_path: PathBuf) -> Result<St
                     evolution_details.item,
                     get_markdown_entry_for_pokemon(
                         wiki_name,
-                        pokemon_name,
-                        modification_details.id
+                        &evolution_details.evolves_to.pokemon_name,
+                        evolution_details.evolves_to.id
                     )
                 );
                 if evolution_item_iteraction.is_empty() {

@@ -14,8 +14,6 @@ import TextInput from "./TextInput.svelte";
 export let pokemonDetails: PokemonDetails = {} as PokemonDetails;
 let pokemonListOptions: AutocompleteOption<string | number>[] =
   $pokemonList.map(([name, id]) => ({ label: _.capitalize(name), value: id }));
-
-$: console.log(pokemonDetails);
 </script>
 
 <div class="scroll-smooth px-4">
