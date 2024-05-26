@@ -38,11 +38,17 @@ pub struct Move {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Evolution {
-    pub level: Option<u32>,
-    pub item: Option<String>,
-    pub other: Option<String>,
-    pub evolves_to: Option<String>,
+    pub level: u32,
+    pub item: String,
+    pub other: String,
+    pub evolves_to: EvolvedPokemon,
     pub method: EvolutionMethod,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct EvolvedPokemon {
+    pub id: usize,
+    pub pokemon_name: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]

@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
+use serde_yaml::{Mapping, Value};
+
 use crate::structs::mkdocs_structs::{
-    MKDocsConfig, MarkdownExtension, Navigation, Palette, Plugin, PymdownxTabbed, PymdownxTaskList,
-    Search, Theme, Toggle,
+    MKDocsConfig, MarkdownExtension, Palette, Plugin, PymdownxTabbed, PymdownxTaskList, Search,
+    Theme, Toggle,
 };
 
 // Since I'm new to rust, almost everything in here is likely poorly done, but it works for now.
@@ -18,6 +20,40 @@ pub fn get_yaml(
 
     let mut alternate_style = HashMap::new();
     alternate_style.insert("alternate_style".to_string(), true);
+
+    let mut home_map = Mapping::new();
+    home_map.insert(
+        Value::String("Home".to_string()),
+        Value::String("index.md".to_string()),
+    );
+
+    let mut test_pokemon = Mapping::new();
+    test_pokemon.insert(
+        Value::String("Test Pokemon".to_string()),
+        Value::String("pokemon/test_pokemon.md".to_string()),
+    );
+
+    let mut pokemon_map = Mapping::new();
+    pokemon_map.insert(
+        Value::String("Pokemon".to_string()),
+        Value::Sequence(vec![Value::Mapping(test_pokemon)]),
+    );
+
+    let mut wild_encounters = Mapping::new();
+    wild_encounters.insert(
+        Value::String("Wild Encounters".to_string()),
+        Value::String("routes/Test_route/wild_encounters.md".to_string()),
+    );
+    let mut test_route = Mapping::new();
+    test_route.insert(
+        Value::String("Test Route".to_string()),
+        Value::Sequence(vec![Value::Mapping(wild_encounters)]),
+    );
+    let mut routes_map = Mapping::new();
+    routes_map.insert(
+        Value::String("Routes".to_string()),
+        Value::Sequence(vec![Value::Mapping(test_route)]),
+    );
 
     let mkdocs_config = MKDocsConfig {
         site_name: site_name.to_string(),
@@ -53,51 +89,11 @@ pub fn get_yaml(
                 },
             ],
         },
-        nav: vec![
-            [(
-                "Home".to_string(),
-                Navigation::String("index.md".to_string()),
-            )]
-            .iter()
-            .cloned()
-            .collect(),
-            {
-                let mut pokemon_map = HashMap::new();
-                let mut specific_changes = HashMap::new();
-                let mut test_pokemon = HashMap::new();
-                test_pokemon.insert(
-                    "Test Pokemon".to_string(),
-                    Navigation::String("pokemon/test_pokemon.md".to_string()),
-                );
-                specific_changes.insert(
-                    "Specific Changes".to_string(),
-                    Navigation::Array(vec![Navigation::Map(test_pokemon)]),
-                );
-                pokemon_map.insert(
-                    "Pokemon".to_string(),
-                    Navigation::Array(vec![Navigation::Map(specific_changes)]), // Navigation::String("pokemon/test_pokemon.md".to_string()),
-                );
-                pokemon_map
-            },
-            {
-                let mut routes_map = HashMap::new();
-                let mut test_route = HashMap::new();
-                let mut wild_encounters = HashMap::new();
-                wild_encounters.insert(
-                    "Wild Encounters".to_string(),
-                    Navigation::String("routes/Test_route/wild_encounters.md".to_string()),
-                );
-                test_route.insert(
-                    "Test Route".to_string(),
-                    Navigation::Array(vec![Navigation::Map(wild_encounters)]),
-                );
-                routes_map.insert(
-                    "Routes".to_string(),
-                    Navigation::Array(vec![Navigation::Map(test_route)]),
-                );
-                routes_map
-            },
-        ],
+        nav: Value::Sequence(vec![
+            Value::Mapping(home_map),
+            Value::Mapping(pokemon_map),
+            Value::Mapping(routes_map),
+        ]),
         plugins: vec![Plugin {
             search: Search {
                 lang: "en".to_string(),

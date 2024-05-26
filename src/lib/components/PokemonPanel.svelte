@@ -9,10 +9,15 @@ import {
   type PopupSettings,
   type ToastSettings,
 } from "@skeletonlabs/skeleton";
-import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+import { BaseDirectory, readTextFile, writeTextFile } from "@tauri-apps/api/fs";
 import _ from "lodash";
 import { selectedWiki } from "../../store";
-import { pokemon, pokemonList, type PokemonDetails } from "../../store/pokemon";
+import {
+  pokemon,
+  pokemonList,
+  modifiedPokemon,
+  type PokemonDetails,
+} from "../../store/pokemon";
 import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
 import PokemonMovesTab from "./PokemonMovesTab.svelte";
 import { invoke } from "@tauri-apps/api";
@@ -54,11 +59,97 @@ async function generatePokemonPage() {
   });
 }
 
+async function checkAndWriteModifiedTypes() {
+  if (!_.isEqual(originalPokemonDetails.types, pokemonDetails.types)) {
+    if (!$modifiedPokemon[pokemonName]) {
+      $modifiedPokemon[pokemonName] = {
+        id: pokemonDetails.id,
+        evolution: {
+          method: "no_change",
+          level: 0,
+          item: "",
+          other: "",
+          evolves_to: { id: 0, pokemon_name: "" },
+        },
+        types: {
+          original: [],
+          modified: [],
+        },
+      };
+    }
+    if ($modifiedPokemon[pokemonName].types.original.length === 0) {
+      $modifiedPokemon[pokemonName].types.original =
+        originalPokemonDetails.types;
+    }
+    $modifiedPokemon[pokemonName].types.modified = pokemonDetails.types;
+
+    if (
+      _.isEqual(
+        $modifiedPokemon[pokemonName].types.original.sort(),
+        $modifiedPokemon[pokemonName].types.modified.sort(),
+      )
+    ) {
+      $modifiedPokemon[pokemonName].types = {
+        original: [],
+        modified: [],
+      };
+    }
+  }
+}
+
+async function checkAndWriteModifiedEvolutions() {
+  if (!_.isEqual(originalPokemonDetails.evolution, pokemonDetails.evolution)) {
+    if (!$modifiedPokemon[pokemonName]) {
+      $modifiedPokemon[pokemonName] = {
+        id: pokemonDetails.id,
+        evolution: {
+          method: "no_change",
+          level: 0,
+          item: "",
+          other: "",
+          evolves_to: { id: 0, pokemon_name: "" },
+        },
+        types: {
+          original: [],
+          modified: [],
+        },
+      };
+    }
+    if (pokemonDetails.evolution.method !== "no_change") {
+      $modifiedPokemon[pokemonName].evolution = pokemonDetails.evolution;
+    } else {
+      $modifiedPokemon[pokemonName].evolution = {
+        method: "no_change",
+        level: 0,
+        item: "",
+        other: "",
+        evolves_to: { id: 0, pokemon_name: "" },
+      };
+    }
+  }
+}
+
 async function savePokemonChanges() {
   pokemon.update((p) => {
     p.pokemon[pokemonId] = pokemonDetails;
     return p;
   });
+  checkAndWriteModifiedTypes();
+  checkAndWriteModifiedEvolutions();
+
+  if (
+    $modifiedPokemon[pokemonName].evolution.method === "no_change" &&
+    $modifiedPokemon[pokemonName].types.original.length === 0
+  ) {
+    delete $modifiedPokemon[pokemonName];
+  }
+
+  await writeTextFile(
+    `${$selectedWiki.name}/data/modifications/modified_pokemon.json`,
+    JSON.stringify($modifiedPokemon),
+    { dir: BaseDirectory.AppData },
+  );
+
   await writeTextFile(
     `${$selectedWiki.name}/data/pokemon.json`,
     JSON.stringify($pokemon),
@@ -73,7 +164,6 @@ async function savePokemonChanges() {
     generatePokemonPage();
   });
 }
-$: console.log({ pokemonDetails, originalPokemonDetails });
 </script>
 
 <div class="flex flex-row gap-7">

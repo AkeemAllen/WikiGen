@@ -3,7 +3,7 @@ import { BaseDirectory, readTextFile } from "@tauri-apps/api/fs";
 import { selectedWiki, wikis, type Wiki } from "../../store";
 import { routes } from "../../store/gameRoutes";
 import { moveList, moves } from "../../store/moves";
-import { pokemon, pokemonList } from "../../store/pokemon";
+import { modifiedPokemon, pokemon, pokemonList } from "../../store/pokemon";
 import { sortRoutesByPosition } from "$lib/utils";
 import { abilities, abilitiesList } from "../../store/abilities";
 import { natures, naturesList } from "../../store/natures";
@@ -44,6 +44,11 @@ async function loadWikiData(wiki: Wiki) {
       parseInt(key),
     ]),
   );
+  const modifiedPokemonFromFile = await readTextFile(
+    `${$selectedWiki.name}/data/modifications/modified_pokemon.json`,
+    { dir: BaseDirectory.AppData },
+  );
+  modifiedPokemon.set(JSON.parse(modifiedPokemonFromFile));
 
   const movesFromFile = await readTextFile(
     `${$selectedWiki.name}/data/moves.json`,

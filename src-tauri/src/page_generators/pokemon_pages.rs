@@ -6,17 +6,20 @@ use std::{
 };
 
 use indexmap::IndexMap;
+use serde_yaml::{Mapping, Value};
 use tauri::AppHandle;
 
 use crate::{
     helpers::{capitalize, matchups::get_defensive_matchups},
     structs::{
         matchup_models::TypeEffectiveness,
-        mkdocs_structs::{MKDocsConfig, Navigation},
+        mkdocs_structs::MKDocsConfig,
         move_structs::{LearnMethodDetail, MoveSetMove, Moves},
         pokemon_structs::{Evolution, EvolutionMethod, Move, Pokemon, Stats},
     },
 };
+
+use super::{evolution_page::generate_evolution_page, type_page::generate_type_page};
 
 #[tauri::command]
 pub async fn generate_pokemon_pages_from_list(
@@ -25,7 +28,10 @@ pub async fn generate_pokemon_pages_from_list(
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    return generate_pokemon_pages(dex_numbers, wiki_name, base_path);
+    let result = generate_pokemon_pages(dex_numbers, wiki_name, base_path.clone());
+    generate_type_page(wiki_name, base_path.clone()).unwrap();
+    generate_evolution_page(wiki_name, base_path).unwrap();
+    return result;
 }
 
 #[tauri::command]
@@ -40,7 +46,10 @@ pub async fn generate_pokemon_pages_from_range(
     for number in range_start..=range_end {
         dex_numbers.push(number);
     }
-    return generate_pokemon_pages(dex_numbers, wiki_name, base_path);
+    let result = generate_pokemon_pages(dex_numbers, wiki_name, base_path.clone());
+    generate_type_page(wiki_name, base_path.clone()).unwrap();
+    generate_evolution_page(wiki_name, base_path).unwrap();
+    return result;
 }
 
 pub fn generate_pokemon_pages(
@@ -70,21 +79,16 @@ pub fn generate_pokemon_pages(
     let mut calculated_defenses: HashMap<String, TypeEffectiveness> =
         serde_json::from_reader(calculated_defenses_json_file).unwrap();
 
-    let mut specific_changes = HashMap::new();
+    let mut mkdocs_pokemon: &mut Vec<Value> = &mut Vec::new();
 
-    /*
-    Collecting the hashmap with the Specific Changes key here so it's easier to
-    check for existing values further down.
-
-    Note: this is probably not the most elegant way of collecting this value. However,
-    because the navigation object in the mkdocs_config is so complex, I may not have a choice
-    here.
-     */
-    if let Some(pokemon_nav) = mkdocs_config.nav[1].get("Pokemon") {
-        if let Navigation::Array(pokemon_nav) = pokemon_nav {
-            if let Navigation::Map(pokemon_nav) = &pokemon_nav[0] {
-                specific_changes = pokemon_nav.clone();
+    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
+    for entry in nav_entries {
+        let map_entries = entry.as_mapping_mut().unwrap();
+        match map_entries.get_mut(Value::String("Pokemon".to_string())) {
+            Some(map_entry) => {
+                mkdocs_pokemon = map_entry.as_sequence_mut().unwrap();
             }
+            None => {}
         }
     }
 
@@ -191,45 +195,29 @@ pub fn generate_pokemon_pages(
             )
             .unwrap();
 
-        let mut specific_change_entry = HashMap::new();
+        let mut pokemon_page_entry = Mapping::new();
         let entry_key = format!(
             "{} - {}",
             pokedex_markdown_file_name,
             capitalize(&pokemon_data.name)
         );
-        specific_change_entry.insert(
-            entry_key.clone(),
-            Navigation::String(format!("pokemon/{}.md", pokedex_markdown_file_name)),
+        pokemon_page_entry.insert(
+            Value::String(entry_key.clone()),
+            Value::String(format!("pokemon/{}.md", pokedex_markdown_file_name)),
         );
 
-        /*
-        This block of code check if the specific_change_entry exists in
-        specific changes already. If not, then we push it to the array.
-
-        Note: Similar to gathering the specific changes above, the complexity
-        of the nesting requires all of the steps here.
-         */
-        if let Some(change) = specific_changes.get_mut("Specific Changes") {
-            if let Navigation::Array(entries) = change {
-                let mut entry_exists = false;
-                for entry in &mut *entries {
-                    if let Navigation::Map(entry_map) = entry {
-                        if entry_map.contains_key(&entry_key.clone()) {
-                            entry_exists = true;
-                            break;
-                        }
-                    }
-                }
-                if !entry_exists {
-                    entries.push(Navigation::Map(specific_change_entry))
-                }
+        let mut page_entry_exists = false;
+        for page_entry in mkdocs_pokemon.clone() {
+            if page_entry.as_mapping().unwrap().contains_key(&entry_key) {
+                page_entry_exists = true;
+                break;
             }
         }
-    }
 
-    if let Some(pokemon_nav) = mkdocs_config.nav[1].get_mut("Pokemon") {
-        *pokemon_nav = Navigation::Array(vec![Navigation::Map(specific_changes)]);
-    };
+        if !page_entry_exists {
+            mkdocs_pokemon.push(Value::Mapping(pokemon_page_entry));
+        }
+    }
 
     fs::write(
         mkdocs_yaml_file_path,
@@ -347,9 +335,9 @@ fn create_evolution_table(evolution: Evolution) -> String {
     let no_change = "".to_string();
 
     let item_level_note = match evolution.method {
-        EvolutionMethod::Item => evolution.item.unwrap(),
-        EvolutionMethod::LevelUp => evolution.level.unwrap().to_string(),
-        EvolutionMethod::Other => evolution.other.unwrap(),
+        EvolutionMethod::Item => evolution.item,
+        EvolutionMethod::LevelUp => evolution.level.to_string(),
+        EvolutionMethod::Other => evolution.other,
         EvolutionMethod::NoChange => no_change,
     };
 
@@ -358,9 +346,7 @@ fn create_evolution_table(evolution: Evolution) -> String {
         | :--: | :--: | :--: |
         | {:?} | {} | {} |
         ",
-        evolution.method,
-        item_level_note,
-        &evolution.evolves_to.unwrap()
+        evolution.method, item_level_note, &evolution.evolves_to.pokemon_name
     );
 }
 

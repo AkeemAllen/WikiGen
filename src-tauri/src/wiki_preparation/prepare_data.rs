@@ -6,7 +6,7 @@ use std::{collections::HashMap, fs::File};
 use tauri::AppHandle;
 
 use crate::structs::pokemon_structs::{
-    Evolution, EvolutionMethod, Move, Pokemon, PokemonData, Stats,
+    Evolution, EvolutionMethod, EvolvedPokemon, Move, Pokemon, PokemonData, Stats,
 };
 
 #[tauri::command]
@@ -106,10 +106,13 @@ pub async fn download_and_prep_pokemon_data(
                 .unwrap()
                 .to_string(),
             evolution: Evolution {
-                level: None,
-                item: None,
-                other: None,
-                evolves_to: None,
+                level: 0,
+                item: "".to_string(),
+                other: "".to_string(),
+                evolves_to: EvolvedPokemon {
+                    id: 0,
+                    pokemon_name: "".to_string(),
+                },
                 method: EvolutionMethod::NoChange,
             },
         };

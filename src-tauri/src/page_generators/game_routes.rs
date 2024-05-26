@@ -7,11 +7,12 @@ use std::{
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
+use serde_yaml::{Mapping, Value};
 use tauri::AppHandle;
 
 use crate::{
     helpers::{capitalize, get_pokemon_dex_formatted_name},
-    structs::mkdocs_structs::{MKDocsConfig, Navigation},
+    structs::mkdocs_structs::MKDocsConfig,
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -90,61 +91,58 @@ pub fn generate_single_route(
     let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
     let mut mkdocs_config: MKDocsConfig = serde_yaml::from_reader(mkdocs_yaml_file).unwrap();
 
-    let routes_directory = docs_path.join("routes").join(route_name);
-    fs::create_dir_all(&routes_directory).unwrap();
+    let mut mkdocs_routes: &mut Vec<Value> = &mut Vec::new();
 
+    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
+    for entry in nav_entries {
+        let map_entries = entry.as_mapping_mut().unwrap();
+        match map_entries.get_mut(Value::String("Routes".to_string())) {
+            Some(map_entry) => {
+                mkdocs_routes = map_entry.as_sequence_mut().unwrap();
+            }
+            None => {}
+        }
+    }
+
+    let mut page = &mut Mapping::new();
+    let mut page_position = 0;
+    for (index, page_entry) in mkdocs_routes.iter_mut().enumerate() {
+        if page_entry.as_mapping().unwrap().contains_key(&route_name) {
+            page = page_entry.as_mapping_mut().unwrap();
+            page_position = index;
+            break;
+        }
+    }
+
+    let routes_directory = docs_path.join("routes").join(route_name);
     let route_properties = routes.routes.get(route_name).unwrap();
 
-    let route_entry =
-        generate_route_entry(wiki_name, route_name, &routes_directory, route_properties);
-
-    if route_entry.is_empty() {
-        fs::remove_dir_all(routes_directory).unwrap();
-        // This is code is way more unreadable and complex than I'd like
-        // but it's simply meant to remove a route entry from the mkdocs yaml
-        // file if it's empty.
-        if let Some(nav_routes) = mkdocs_config.nav[2].get_mut("Routes") {
-            if let Navigation::Array(routes_list) = nav_routes {
-                let mut new_list: Vec<Navigation> = Vec::new();
-
-                for route in &*routes_list {
-                    if let Navigation::Map(ref route_map) = route {
-                        if route_map.contains_key(route_name) {
-                            continue;
-                        }
-                    }
-                    new_list.push(route.clone());
-                }
-                *routes_list = new_list;
-            }
+    if route_properties.trainers.is_empty() && route_properties.wild_encounters.is_empty() {
+        if page.is_empty() {
+            return Ok("Route is empty".to_string());
         }
+        mkdocs_routes.remove(page_position);
+        fs::remove_dir_all(&routes_directory).unwrap();
         fs::write(
             mkdocs_yaml_file_path,
             serde_yaml::to_string(&mkdocs_config).unwrap(),
         )
         .unwrap();
-        return Err("No wild or trainer encounters in route".to_string());
+        return Ok("Route is empty. Removed empty route".to_string());
     }
 
-    if let Some(nav_routes) = mkdocs_config.nav[2].get_mut("Routes") {
-        if let Navigation::Array(routes_list) = nav_routes {
-            let mut route_exists = false;
-            for route in &mut *routes_list {
-                if let Navigation::Map(route_map) = route {
-                    if route_map.contains_key(route_name) {
-                        route_map.insert(
-                            (&route_name).to_string(),
-                            route_entry.get(route_name).unwrap().clone(),
-                        );
-                        route_exists = true;
-                        break;
-                    }
-                }
-            }
-            if !route_exists {
-                routes_list.insert(route_properties.position, Navigation::Map(route_entry));
-            }
-        }
+    fs::create_dir_all(&routes_directory).unwrap();
+
+    let route_entry =
+        generate_route_entry(wiki_name, route_name, &routes_directory, route_properties);
+
+    if page.is_empty() {
+        mkdocs_routes.push(Value::Mapping(route_entry.clone()))
+    } else {
+        *page = Value::Mapping(route_entry.clone())
+            .as_mapping()
+            .unwrap()
+            .clone();
     }
 
     fs::write(
@@ -167,10 +165,23 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
     let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
     let mut mkdocs_config: MKDocsConfig = serde_yaml::from_reader(mkdocs_yaml_file).unwrap();
 
-    let mut mkdoc_routes = Vec::new();
+    let mut mkdocs_routes: &mut Vec<Value> = &mut Vec::new();
 
+    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
+    for entry in nav_entries {
+        let map_entries = entry.as_mapping_mut().unwrap();
+        match map_entries.get_mut(Value::String("Routes".to_string())) {
+            Some(map_entry) => {
+                mkdocs_routes = map_entry.as_sequence_mut().unwrap();
+            }
+            None => {}
+        }
+    }
+
+    mkdocs_routes.clear();
     for (route_name, route_properties) in routes.routes.iter() {
         let routes_directory = docs_path.join("routes").join(route_name);
+
         fs::create_dir_all(&routes_directory).unwrap();
 
         let route_entry =
@@ -180,7 +191,7 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
             continue;
         }
 
-        mkdoc_routes.push(Navigation::Map(route_entry));
+        mkdocs_routes.push(Value::Mapping(route_entry));
     }
 
     let paths = fs::read_dir(&docs_path.join("routes")).unwrap();
@@ -198,13 +209,9 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
         }
     }
 
-    if let Some(nav_routes) = mkdocs_config.nav[2].get_mut("Routes") {
-        *nav_routes = Navigation::Array(mkdoc_routes);
-    }
-
     fs::write(
         mkdocs_yaml_file_path,
-        serde_yaml::to_string(&mkdocs_config).unwrap(),
+        serde_yaml::to_string(&mkdocs_config.clone()).unwrap(),
     )
     .unwrap();
 
@@ -216,9 +223,9 @@ fn generate_route_entry(
     route_name: &str,
     routes_directory: &PathBuf,
     route_properties: &RouteProperties,
-) -> HashMap<String, Navigation> {
+) -> Mapping {
     let formatted_route_name = capitalize(&route_name);
-    let mut entries = Vec::new();
+    let mut entries: Vec<Value> = Vec::new();
 
     if !route_properties.wild_encounters.is_empty() {
         create_encounter_table(
@@ -229,12 +236,12 @@ fn generate_route_entry(
             &route_properties.wild_encounter_area_levels,
         )
         .unwrap();
-        let mut wild_encounters_entry = HashMap::new();
+        let mut wild_encounters_entry = Mapping::new();
         wild_encounters_entry.insert(
-            "Wild Encounter".to_string(),
-            Navigation::String(format!("routes/{}/wild_encounters.md", route_name)),
+            Value::String("Wild Encounter".to_string()),
+            Value::String(format!("routes/{}/wild_encounters.md", route_name)),
         );
-        entries.push(Navigation::Map(wild_encounters_entry));
+        entries.push(Value::Mapping(wild_encounters_entry));
     }
     if !route_properties.trainers.is_empty() {
         create_trainer_table(
@@ -244,21 +251,24 @@ fn generate_route_entry(
             &route_properties.trainers,
         )
         .unwrap();
-        let mut trainers_entry = HashMap::new();
+        let mut trainers_entry = Mapping::new();
         trainers_entry.insert(
-            "Trainers".to_string(),
-            Navigation::String(format!("routes/{}/trainers.md", route_name)),
+            Value::String("Trainers".to_string()),
+            Value::String(format!("routes/{}/trainers.md", route_name)),
         );
-        entries.push(Navigation::Map(trainers_entry));
+        entries.push(Value::Mapping(trainers_entry));
     }
 
-    let mut route_entry: HashMap<String, Navigation> = HashMap::new();
+    let mut route_entry = Mapping::new();
 
     if entries.is_empty() {
         return route_entry;
     }
 
-    route_entry.insert(formatted_route_name, Navigation::Array(entries));
+    route_entry.insert(
+        Value::String(formatted_route_name),
+        Value::Sequence(entries),
+    );
     return route_entry;
 }
 
