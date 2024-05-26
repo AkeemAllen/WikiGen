@@ -56,8 +56,9 @@ pub async fn create_wiki(
     let dist_stylesheets_folder = docs_folder.join("stylesheets");
     let _ = copy_recursively(stylesheets_folder, dist_stylesheets_folder);
 
+    let pokemon_sprites_folder = generator_assets_path.join("pokemon_sprites");
     let pokemon_images_folder = docs_folder.join("img").join("pokemon");
-    fs::create_dir_all(&pokemon_images_folder).unwrap();
+    let _ = copy_recursively(pokemon_sprites_folder, pokemon_images_folder);
 
     let pokemon_data_folder = docs_folder.join("pokemon");
     fs::create_dir_all(pokemon_data_folder).unwrap();
