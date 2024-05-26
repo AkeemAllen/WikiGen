@@ -3,7 +3,6 @@
 mod helpers;
 mod page_generators;
 mod structs;
-mod tests;
 mod wiki_preparation;
 
 use helpers::mkdocs_process::{check_process_status, kill_mkdocs_process, spawn_mkdocs_process};
