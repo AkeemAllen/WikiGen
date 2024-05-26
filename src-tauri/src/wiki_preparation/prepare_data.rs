@@ -24,11 +24,15 @@ pub async fn download_and_prep_pokemon_data(
     let mut pokemon: Pokemon = serde_json::from_reader(pokemon_file).unwrap();
 
     for i in range_start..=range_end {
-        let response = reqwest::get(format!("https://pokeapi.co/api/v2/pokemon/{}", i))
-            .await
-            .unwrap()
-            .json::<Value>()
-            .await;
+        println!("{}", i);
+        let response = match reqwest::get(format!("https://pokeapi.co/api/v2/pokemon/{}", i)).await
+        {
+            Ok(res) => res.json::<Value>().await,
+            Err(_) => {
+                println!("Trouble processing pokemon with dex_number {}", i);
+                continue;
+            }
+        };
         let mut pokemon_response_body = response.ok().unwrap();
 
         let mut types = Vec::new();
