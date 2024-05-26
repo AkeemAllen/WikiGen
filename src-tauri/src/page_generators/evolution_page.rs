@@ -1,14 +1,12 @@
 use std::{
-    collections::HashMap,
     fs::{self, File},
     io::Write,
     path::PathBuf,
 };
 
-use crate::structs::{
-    mkdocs_structs::{MKDocsConfig, Navigation},
-    pokemon_structs::EvolutionMethod,
-};
+use serde_yaml::{Mapping, Value};
+
+use crate::structs::{mkdocs_structs::MKDocsConfig, pokemon_structs::EvolutionMethod};
 
 use super::type_page::get_markdown_entry_for_pokemon;
 
@@ -34,6 +32,18 @@ pub fn generate_evolution_page(wiki_name: &str, base_path: PathBuf) -> Result<St
             .join("evolution_changes.md"),
     )
     .unwrap();
+
+    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
+    let mut evolution_page_exists = false;
+    let mut page_index = 0;
+    for (index, entry) in nav_entries.iter_mut().enumerate() {
+        let map_entries = entry.as_mapping_mut().unwrap();
+        if let Some(_) = map_entries.get_mut(Value::String("Evolution Changes".to_string())) {
+            evolution_page_exists = true;
+            page_index = index;
+            break;
+        }
+    }
 
     let mut evolution_changes_markdown = String::new();
     let mut evolution_level = String::new();
@@ -132,50 +142,51 @@ pub fn generate_evolution_page(wiki_name: &str, base_path: PathBuf) -> Result<St
         evolution_changes_markdown.push_str(&entry);
     }
 
+    if evolution_changes_markdown.is_empty() {
+        if !evolution_page_exists {
+            return Ok("No Types to generate".to_string());
+        }
+
+        fs::remove_file(
+            base_path
+                .join(wiki_name)
+                .join("dist")
+                .join("docs")
+                .join("evolution_changes.md"),
+        )
+        .unwrap();
+        mkdocs_config
+            .nav
+            .as_sequence_mut()
+            .unwrap()
+            .remove(page_index);
+        fs::write(
+            &mkdocs_yaml_file_path,
+            serde_yaml::to_string(&mkdocs_config).unwrap(),
+        )
+        .unwrap();
+        return Ok("No Evolution Changes to genereate. Evolution page removed".to_string());
+    }
+
     evolution_changes_file
         .write_all(format!("{}", evolution_changes_markdown).as_bytes())
         .unwrap();
 
-    let mut specific_changes: HashMap<String, Navigation> = HashMap::new();
-    let mut type_changes: HashMap<String, Navigation> = HashMap::new();
-
-    /*
-    Collecting the hashmap with the Specific Changes key here so it's easier to
-    check for existing values further down.
-
-    Note: this is probably not the most elegant way of collecting this value. However,
-    because the navigation object in the mkdocs_config is so complex, I may not have a choice
-    here.
-     */
-    if let Some(pokemon_nav) = mkdocs_config.nav[1].get("Pokemon") {
-        if let Navigation::Array(pokemon_nav) = pokemon_nav {
-            for nav_item_map in pokemon_nav.iter() {
-                if let Navigation::Map(nav_item) = nav_item_map {
-                    if nav_item.contains_key("Specific Changes") {
-                        specific_changes = nav_item.clone();
-                    }
-                    if nav_item.contains_key("Type Changes") {
-                        type_changes = nav_item.clone();
-                    }
-                }
-            }
-        }
+    if evolution_page_exists {
+        return Ok("Evolution Page Updated".to_string());
     }
 
-    let mut evolution_changes_entry = HashMap::new();
-
-    evolution_changes_entry.insert(
-        "Evolution Changes".to_string(),
-        Navigation::String("evolution_changes.md".to_string()),
+    let mut evolution_changes = Mapping::new();
+    evolution_changes.insert(
+        Value::String("Evolution Changes".to_string()),
+        Value::String("evolution_changes.md".to_string()),
     );
 
-    if let Some(pokemon_nav) = mkdocs_config.nav[1].get_mut("Pokemon") {
-        *pokemon_nav = Navigation::Array(vec![
-            Navigation::Map(type_changes),
-            Navigation::Map(evolution_changes_entry),
-            Navigation::Map(specific_changes),
-        ])
-    }
+    mkdocs_config
+        .nav
+        .as_sequence_mut()
+        .unwrap()
+        .insert(1, Value::Mapping(evolution_changes));
 
     fs::write(
         mkdocs_yaml_file_path,
@@ -183,5 +194,5 @@ pub fn generate_evolution_page(wiki_name: &str, base_path: PathBuf) -> Result<St
     )
     .unwrap();
 
-    Ok("Evolution Pages Generated".to_string())
+    Ok("Evolution Page Generated".to_string())
 }

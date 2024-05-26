@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     fs::{self, File},
     io::Write,
     path::PathBuf,
@@ -47,7 +46,20 @@ pub fn generate_type_page(wiki_name: &str, base_path: PathBuf) -> Result<String,
         }
     }
 
-    if modified_pokemon.is_empty() {
+    let mut type_changes_markdown = String::new();
+    for (pokemon_name, modification_details) in modified_pokemon.iter() {
+        if modification_details.types.modified.len() > 0 {
+            let type_change = format!(
+                "| {} | {} | {} |\n",
+                get_markdown_entry_for_pokemon(wiki_name, pokemon_name, modification_details.id),
+                get_type_images(modification_details.types.original.clone()),
+                get_type_images(modification_details.types.modified.clone())
+            );
+            type_changes_markdown.push_str(&type_change);
+        }
+    }
+
+    if type_changes_markdown.is_empty() {
         if !type_page_exists {
             return Ok("No Types to generate".to_string());
         }
@@ -72,19 +84,6 @@ pub fn generate_type_page(wiki_name: &str, base_path: PathBuf) -> Result<String,
         .unwrap();
     }
 
-    let mut type_changes_markdown = String::new();
-    for (pokemon_name, modification_details) in modified_pokemon.iter() {
-        if modification_details.types.modified.len() > 0 {
-            let type_change = format!(
-                "| {} | {} | {} |\n",
-                get_markdown_entry_for_pokemon(wiki_name, pokemon_name, modification_details.id),
-                get_type_images(modification_details.types.original.clone()),
-                get_type_images(modification_details.types.modified.clone())
-            );
-            type_changes_markdown.push_str(&type_change);
-        }
-    }
-
     type_changes_file
         .write_all(
             format!(
@@ -98,15 +97,15 @@ pub fn generate_type_page(wiki_name: &str, base_path: PathBuf) -> Result<String,
         )
         .unwrap();
 
+    if type_page_exists {
+        return Ok("Types Page Updated".to_string());
+    }
+
     let mut type_changes = Mapping::new();
     type_changes.insert(
         Value::String("Type Changes".to_string()),
         Value::String("type_changes.md".to_string()),
     );
-
-    if type_page_exists {
-        return Ok("Types Page Updated".to_string());
-    }
 
     mkdocs_config
         .nav
