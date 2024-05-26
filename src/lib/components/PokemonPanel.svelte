@@ -169,6 +169,12 @@ async function savePokemonChanges() {
     });
     generatePokemonPage();
   });
+
+  await writeTextFile(
+    `${$selectedWiki.name}/data/modifications/modified_pokemon.json`,
+    JSON.stringify($modifiedPokemon),
+    { dir: BaseDirectory.AppData },
+  );
 }
 </script>
 

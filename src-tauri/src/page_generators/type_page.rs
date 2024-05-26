@@ -5,9 +5,11 @@ use std::{
     path::PathBuf,
 };
 
+use serde_yaml::{Mapping, Value};
+
 use crate::{
     helpers::{capitalize, get_pokemon_dex_formatted_name},
-    structs::mkdocs_structs::{MKDocsConfig, Navigation},
+    structs::mkdocs_structs::MKDocsConfig,
 };
 
 pub fn generate_type_page(wiki_name: &str, base_path: PathBuf) -> Result<String, String> {
@@ -32,6 +34,43 @@ pub fn generate_type_page(wiki_name: &str, base_path: PathBuf) -> Result<String,
             .join("type_changes.md"),
     )
     .unwrap();
+
+    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
+    let mut type_page_exists = false;
+    let mut page_index = 0;
+    for (index, entry) in nav_entries.iter_mut().enumerate() {
+        let map_entries = entry.as_mapping_mut().unwrap();
+        if let Some(_) = map_entries.get_mut(Value::String("Type Changes".to_string())) {
+            type_page_exists = true;
+            page_index = index;
+            break;
+        }
+    }
+
+    if modified_pokemon.is_empty() {
+        if !type_page_exists {
+            return Ok("No Types to generate".to_string());
+        }
+
+        fs::remove_file(
+            base_path
+                .join(wiki_name)
+                .join("dist")
+                .join("docs")
+                .join("type_changes.md"),
+        )
+        .unwrap();
+        mkdocs_config
+            .nav
+            .as_sequence_mut()
+            .unwrap()
+            .remove(page_index);
+        fs::write(
+            &mkdocs_yaml_file_path,
+            serde_yaml::to_string(&mkdocs_config).unwrap(),
+        )
+        .unwrap();
+    }
 
     let mut type_changes_markdown = String::new();
     for (pokemon_name, modification_details) in modified_pokemon.iter() {
@@ -59,40 +98,21 @@ pub fn generate_type_page(wiki_name: &str, base_path: PathBuf) -> Result<String,
         )
         .unwrap();
 
-    let mut specific_changes: HashMap<String, Navigation> = HashMap::new();
-
-    /*
-    Collecting the hashmap with the Specific Changes key here so it's easier to
-    check for existing values further down.
-
-    Note: this is probably not the most elegant way of collecting this value. However,
-    because the navigation object in the mkdocs_config is so complex, I may not have a choice
-    here.
-     */
-    if let Some(pokemon_nav) = mkdocs_config.nav[1].get("Pokemon") {
-        if let Navigation::Array(pokemon_nav) = pokemon_nav {
-            for nav_item_map in pokemon_nav.iter() {
-                if let Navigation::Map(nav_item) = nav_item_map {
-                    if nav_item.contains_key("Specific Changes") {
-                        specific_changes = nav_item.clone();
-                    }
-                }
-            }
-        }
-    }
-
-    let mut type_changes_entry: HashMap<String, Navigation> = HashMap::new();
-    type_changes_entry.insert(
-        "Type Changes".to_string(),
-        Navigation::String("type_changes.md".to_string()),
+    let mut type_changes = Mapping::new();
+    type_changes.insert(
+        Value::String("Type Changes".to_string()),
+        Value::String("type_changes.md".to_string()),
     );
 
-    if let Some(pokemon_nav) = mkdocs_config.nav[1].get_mut("Pokemon") {
-        *pokemon_nav = Navigation::Array(vec![
-            Navigation::Map(type_changes_entry),
-            Navigation::Map(specific_changes),
-        ])
+    if type_page_exists {
+        return Ok("Types Page Updated".to_string());
     }
+
+    mkdocs_config
+        .nav
+        .as_sequence_mut()
+        .unwrap()
+        .insert(1, Value::Mapping(type_changes));
 
     fs::write(
         mkdocs_yaml_file_path,
