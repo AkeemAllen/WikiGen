@@ -34,46 +34,16 @@ pub async fn download_and_prep_pokemon_data(
     // I'm using math here to selectively load in data from separate pokemon files.
     // This way I don'e have to read in all of them.
     for i in (rounded_range_start..=rounded_range_end).step_by(100) {
-        if i == 100 {
-            shards.push(get_pokemon_data_from_file(wiki_name, &base_path, 1));
-            continue;
-        }
-        if i == 200 {
-            shards.push(get_pokemon_data_from_file(wiki_name, &base_path, 2));
-            continue;
-        }
-        if i == 300 {
-            shards.push(get_pokemon_data_from_file(wiki_name, &base_path, 3));
-            continue;
-        }
-        if i == 400 {
-            shards.push(get_pokemon_data_from_file(wiki_name, &base_path, 4));
-            continue;
-        }
-        if i == 500 {
-            shards.push(get_pokemon_data_from_file(wiki_name, &base_path, 5));
-            continue;
-        }
-        if i == 600 {
-            shards.push(get_pokemon_data_from_file(wiki_name, &base_path, 6));
-            continue;
-        }
-        if i == 700 {
-            shards.push(get_pokemon_data_from_file(wiki_name, &base_path, 7));
-            continue;
-        }
-        if i == 800 {
-            shards.push(get_pokemon_data_from_file(wiki_name, &base_path, 8));
-            continue;
-        }
-        if i == 900 {
-            shards.push(get_pokemon_data_from_file(wiki_name, &base_path, 9));
-            continue;
-        }
-        if i == 1000 {
+        if i > 900 {
             shards.push(get_pokemon_data_from_file(wiki_name, &base_path, 10));
             continue;
         }
+        let shard_index = i.to_string().chars().next().unwrap().to_digit(10).unwrap();
+        shards.push(get_pokemon_data_from_file(
+            wiki_name,
+            &base_path,
+            usize::try_from(shard_index).unwrap(),
+        ));
     }
 
     for i in range_start..=range_end {
@@ -174,46 +144,23 @@ pub async fn download_and_prep_pokemon_data(
         };
         // Each shard (or files) contains 100 pokemon entries.
         // I have to use this to select and modify the correct file's data.
-        if i <= 100 {
-            update_shard(&mut shards, 1, pokemon_data);
-            continue;
-        }
-        if i <= 200 {
-            update_shard(&mut shards, 2, pokemon_data);
-            continue;
-        }
-        if i <= 300 {
-            update_shard(&mut shards, 3, pokemon_data);
-            continue;
-        }
-        if i <= 400 {
-            update_shard(&mut shards, 4, pokemon_data);
-            continue;
-        }
-        if i <= 500 {
-            update_shard(&mut shards, 5, pokemon_data);
-            continue;
-        }
-        if i <= 600 {
-            update_shard(&mut shards, 6, pokemon_data);
-            continue;
-        }
-        if i <= 700 {
-            update_shard(&mut shards, 7, pokemon_data);
-            continue;
-        }
-        if i <= 800 {
-            update_shard(&mut shards, 8, pokemon_data);
-            continue;
-        }
-        if i <= 900 {
-            update_shard(&mut shards, 9, pokemon_data);
-            continue;
-        }
-        if i <= 1025 {
+        if i > 900 {
             update_shard(&mut shards, 10, pokemon_data);
             continue;
         }
+        let shard_index = round_up_to_nearest_100(i);
+        let first_digit = shard_index
+            .to_string()
+            .chars()
+            .next()
+            .unwrap()
+            .to_digit(10)
+            .unwrap();
+        update_shard(
+            &mut shards,
+            usize::try_from(first_digit).unwrap(),
+            pokemon_data,
+        );
     }
 
     write_pokemon_data_to_files(wiki_name, base_path, shards);
