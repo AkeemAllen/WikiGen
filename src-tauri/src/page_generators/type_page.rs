@@ -140,11 +140,17 @@ pub fn get_markdown_entry_for_pokemon(
 }
 
 fn get_type_images(types: Vec<String>) -> String {
-    let first_type = types.get(0).unwrap();
-    if types.len() == 1 {
+    let type_images: Vec<&String> = types
+        .iter()
+        .map(|_type| _type)
+        .filter(|_type| !_type.contains("none"))
+        .collect();
+
+    let first_type = type_images.get(0).unwrap();
+    if type_images.len() == 1 {
         return format!("![{}](img/types/{}.png)", first_type, first_type);
     }
-    let second_type = types.get(1).unwrap();
+    let second_type = type_images.get(1).unwrap();
     return format!(
         "![{}](img/types/{}.png)<br/>![{}](img/types/{}.png)",
         first_type, first_type, second_type, second_type
