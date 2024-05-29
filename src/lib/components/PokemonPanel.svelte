@@ -6,8 +6,6 @@ import {
   getToastStore,
   popup,
   type AutocompleteOption,
-  type PopupSettings,
-  type ToastSettings,
 } from "@skeletonlabs/skeleton";
 import { BaseDirectory, readTextFile, writeTextFile } from "@tauri-apps/api/fs";
 import _ from "lodash";
@@ -21,6 +19,7 @@ import {
 import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
 import PokemonMovesTab from "./PokemonMovesTab.svelte";
 import { invoke } from "@tauri-apps/api";
+import { extractPokemonRange, getShardToWrite } from "$lib/utils";
 
 const toastStore = getToastStore();
 
@@ -34,22 +33,11 @@ let tabSet: number = 0;
 let pokemonListOptions: AutocompleteOption<string | number>[] =
   $pokemonList.map(([name, id]) => ({ label: name, value: id }));
 
-const autoCompletePopup: PopupSettings = {
-  event: "focus-click",
-  target: "popupAutoComplete",
-  placement: "bottom",
-};
-
 function onPokemonNameSelected(
   event: CustomEvent<AutocompleteOption<string | number>>,
 ): void {
   pokemonName = event.detail.label;
   pokemonId = event.detail.value as number;
-}
-
-function getPokemonDetails(): void {
-  pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
-  originalPokemonDetails = _.cloneDeep(pokemonDetails);
 }
 
 async function generatePokemonPage() {
@@ -59,83 +47,37 @@ async function generatePokemonPage() {
   });
 }
 
-async function checkAndWriteModifiedTypes() {
-  if (!_.isEqual(originalPokemonDetails.types, pokemonDetails.types)) {
-    if (!$modifiedPokemon[pokemonName]) {
-      $modifiedPokemon[pokemonName] = {
-        id: pokemonDetails.id,
-        evolution: {
-          method: "no_change",
-          level: 0,
-          item: "",
-          other: "",
-          evolves_to: { id: 0, pokemon_name: "" },
-        },
-        types: {
-          original: [],
-          modified: [],
-        },
-      };
-    }
-    if ($modifiedPokemon[pokemonName].types.original.length === 0) {
-      $modifiedPokemon[pokemonName].types.original =
-        originalPokemonDetails.types;
-    }
-    $modifiedPokemon[pokemonName].types.modified = pokemonDetails.types;
-
-    if (
-      _.isEqual(
-        $modifiedPokemon[pokemonName].types.original.sort(),
-        $modifiedPokemon[pokemonName].types.modified.sort(),
-      )
-    ) {
-      $modifiedPokemon[pokemonName].types = {
-        original: [],
-        modified: [],
-      };
-    }
+async function checkAndWriteMods() {
+  if (
+    _.isEqual(originalPokemonDetails.types, pokemonDetails.types) &&
+    _.isEqual(originalPokemonDetails.evolution, pokemonDetails.evolution)
+  ) {
+    return;
   }
-}
 
-async function checkAndWriteModifiedEvolutions() {
-  if (!_.isEqual(originalPokemonDetails.evolution, pokemonDetails.evolution)) {
-    if (!$modifiedPokemon[pokemonName]) {
-      $modifiedPokemon[pokemonName] = {
-        id: pokemonDetails.id,
-        evolution: {
-          method: "no_change",
-          level: 0,
-          item: "",
-          other: "",
-          evolves_to: { id: 0, pokemon_name: "" },
-        },
-        types: {
-          original: [],
-          modified: [],
-        },
-      };
-    }
-    if (pokemonDetails.evolution.method !== "no_change") {
-      $modifiedPokemon[pokemonName].evolution = pokemonDetails.evolution;
-    } else {
-      $modifiedPokemon[pokemonName].evolution = {
+  if (!$modifiedPokemon[pokemonName]) {
+    $modifiedPokemon[pokemonName] = {
+      id: pokemonDetails.id,
+      evolution: {
         method: "no_change",
         level: 0,
         item: "",
         other: "",
         evolves_to: { id: 0, pokemon_name: "" },
-      };
-    }
+      },
+      types: {
+        original: [],
+        modified: [],
+      },
+    };
   }
-}
 
-async function savePokemonChanges() {
-  pokemon.update((p) => {
-    p.pokemon[pokemonId] = pokemonDetails;
-    return p;
-  });
-  checkAndWriteModifiedTypes();
-  checkAndWriteModifiedEvolutions();
+  if (!_.isEqual(originalPokemonDetails.types, pokemonDetails.types)) {
+    checkModifiedTypes();
+  }
+  if (!_.isEqual(originalPokemonDetails.evolution, pokemonDetails.evolution)) {
+    checkModifiedEvolutions();
+  }
 
   if (
     $modifiedPokemon[pokemonName].evolution.method === "no_change" &&
@@ -149,10 +91,51 @@ async function savePokemonChanges() {
     JSON.stringify($modifiedPokemon),
     { dir: BaseDirectory.AppData },
   );
+}
+
+function checkModifiedTypes() {
+  if ($modifiedPokemon[pokemonName].types.original.length === 0) {
+    $modifiedPokemon[pokemonName].types.original = originalPokemonDetails.types;
+  }
+  $modifiedPokemon[pokemonName].types.modified = pokemonDetails.types;
+
+  if (
+    _.isEqual(
+      $modifiedPokemon[pokemonName].types.original.sort(),
+      $modifiedPokemon[pokemonName].types.modified.sort(),
+    )
+  ) {
+    $modifiedPokemon[pokemonName].types = {
+      original: [],
+      modified: [],
+    };
+  }
+}
+
+function checkModifiedEvolutions() {
+  if (pokemonDetails.evolution.method !== "no_change") {
+    $modifiedPokemon[pokemonName].evolution = pokemonDetails.evolution;
+  } else {
+    $modifiedPokemon[pokemonName].evolution = {
+      method: "no_change",
+      level: 0,
+      item: "",
+      other: "",
+      evolves_to: { id: 0, pokemon_name: "" },
+    };
+  }
+}
+
+async function savePokemonChanges() {
+  $pokemon.pokemon[pokemonId] = pokemonDetails;
+
+  checkAndWriteMods();
+
+  let shard_index = getShardToWrite(pokemonId);
 
   await writeTextFile(
-    `${$selectedWiki.name}/data/pokemon.json`,
-    JSON.stringify($pokemon),
+    `${$selectedWiki.name}/data/pokemon_data/shard_${shard_index}.json`,
+    JSON.stringify(extractPokemonRange($pokemon, shard_index)),
     { dir: BaseDirectory.AppData },
   ).then(() => {
     originalPokemonDetails = _.cloneDeep(pokemonDetails);
@@ -174,7 +157,11 @@ async function savePokemonChanges() {
       placeholder="Pokemon Name"
       class="block w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
       bind:value={pokemonName}
-      use:popup={autoCompletePopup}
+      use:popup={{
+        event: "focus-click",
+        target: "popupAutoComplete",
+        placement: "bottom",
+      }}
     />
     <div
       data-popup="popupAutoComplete"
@@ -192,7 +179,10 @@ async function savePokemonChanges() {
   </div>
   <button
     disabled={pokemonName === ""}
-    on:click={getPokemonDetails}
+    on:click={() => {
+        pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
+        originalPokemonDetails = _.cloneDeep(pokemonDetails);
+    }}
     class="mt-2 w-32 rounded-md bg-indigo-600 text-sm font-semibold text-white
       shadow-sm hover:bg-indigo-500 focus-visible:outline
       focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
