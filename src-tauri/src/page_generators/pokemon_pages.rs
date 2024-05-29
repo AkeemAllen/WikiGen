@@ -59,9 +59,21 @@ pub fn generate_pokemon_pages(
 ) -> Result<String, String> {
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
-    let pokemon_json_file_path = base_path.join(wiki_name).join("data").join("pokemon.json");
-    let pokemon_file = File::open(&pokemon_json_file_path).unwrap();
-    let pokemon: Pokemon = serde_json::from_reader(pokemon_file).unwrap();
+    let mut pokemon: Pokemon = Pokemon {
+        pokemon: IndexMap::new(),
+    };
+
+    for i in 1..=10 {
+        let shard_json_file_path = base_path
+            .join(wiki_name)
+            .join("data")
+            .join("pokemon_data")
+            .join(format!("shard_{}.json", i));
+        let shard_file = File::open(&shard_json_file_path).unwrap();
+        let shard: Pokemon = serde_json::from_reader(shard_file).unwrap();
+
+        pokemon.pokemon.extend(shard.pokemon.into_iter());
+    }
 
     let moves_json_file_path = base_path.join(wiki_name).join("data").join("moves.json");
     let moves_file = File::open(&moves_json_file_path).unwrap();
