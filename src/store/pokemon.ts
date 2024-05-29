@@ -77,6 +77,6 @@ export const PokemonTypes = [
   "fairy",
 ];
 
-export let pokemon = writable<Pokemon>();
+export let pokemon = writable<Pokemon>({ pokemon: {} });
 export let pokemonList = writable<[string, number][]>([]);
 export let modifiedPokemon = writable<ModifiedPokemon>({});

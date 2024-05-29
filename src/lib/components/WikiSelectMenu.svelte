@@ -9,6 +9,27 @@ import { abilities, abilitiesList } from "../../store/abilities";
 import { natures, naturesList } from "../../store/natures";
 import { items, itemsList } from "../../store/items";
 
+async function loadPokemonData() {
+  for (let i = 1; i <= 10; i++) {
+    const shard = await readTextFile(
+      `${$selectedWiki.name}/data/pokemon_data/shard_${i}.json`,
+      { dir: BaseDirectory.AppData },
+    );
+    let parsedShard = JSON.parse(shard);
+    $pokemon.pokemon = {
+      ...$pokemon.pokemon,
+      ...parsedShard.pokemon,
+    };
+  }
+
+  pokemonList.set(
+    Object.entries($pokemon.pokemon).map(([key, value]) => [
+      value.name,
+      parseInt(key),
+    ]),
+  );
+}
+
 async function loadWikiData(wiki: Wiki) {
   $selectedWiki = wiki;
 
@@ -33,17 +54,8 @@ async function loadWikiData(wiki: Wiki) {
   items.set(JSON.parse(itemsFromFile));
   itemsList.set(Object.keys($items));
 
-  const pokemonFromFile = await readTextFile(
-    `${$selectedWiki.name}/data/pokemon.json`,
-    { dir: BaseDirectory.AppData },
-  );
-  pokemon.set(JSON.parse(pokemonFromFile));
-  pokemonList.set(
-    Object.entries($pokemon.pokemon).map(([key, value]) => [
-      value.name,
-      parseInt(key),
-    ]),
-  );
+  loadPokemonData();
+
   const modifiedPokemonFromFile = await readTextFile(
     `${$selectedWiki.name}/data/modifications/modified_pokemon.json`,
     { dir: BaseDirectory.AppData },
