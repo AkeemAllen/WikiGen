@@ -11,11 +11,8 @@ use crate::structs::pokemon_structs::{
     Evolution, EvolutionMethod, EvolvedPokemon, Move, Pokemon, PokemonData, Stats,
 };
 
-#[derive(Debug)]
-struct Shard {
-    data: Pokemon,
-    shard_index: usize,
-}
+// Replace with Hashmap
+type Shards = HashMap<usize, Pokemon>;
 
 #[tauri::command]
 pub async fn download_and_prep_pokemon_data(
@@ -26,7 +23,7 @@ pub async fn download_and_prep_pokemon_data(
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
 
-    let mut shards: Vec<Shard> = Vec::new();
+    let mut shards: Shards = HashMap::new();
 
     let rounded_range_start = round_up_to_nearest_100(range_start);
     let rounded_range_end = round_up_to_nearest_100(range_end);
@@ -35,15 +32,18 @@ pub async fn download_and_prep_pokemon_data(
     // This way I don'e have to read in all of them.
     for i in (rounded_range_start..=rounded_range_end).step_by(100) {
         if i > 900 {
-            shards.push(get_pokemon_data_from_file(wiki_name, &base_path, 10));
+            shards.insert(10, get_pokemon_data_from_file(wiki_name, &base_path, 10));
             continue;
         }
         let shard_index = i.to_string().chars().next().unwrap().to_digit(10).unwrap();
-        shards.push(get_pokemon_data_from_file(
-            wiki_name,
-            &base_path,
+        shards.insert(
             usize::try_from(shard_index).unwrap(),
-        ));
+            get_pokemon_data_from_file(
+                wiki_name,
+                &base_path,
+                usize::try_from(shard_index).unwrap(),
+            ),
+        );
     }
 
     for i in range_start..=range_end {
@@ -145,7 +145,11 @@ pub async fn download_and_prep_pokemon_data(
         // Each shard (or files) contains 100 pokemon entries.
         // I have to use this to select and modify the correct file's data.
         if i > 900 {
-            update_shard(&mut shards, 10, pokemon_data);
+            shards
+                .get_mut(&10)
+                .unwrap()
+                .pokemon
+                .insert(pokemon_data.id.clone(), pokemon_data.clone());
             continue;
         }
         let shard_index = round_up_to_nearest_100(i);
@@ -156,11 +160,11 @@ pub async fn download_and_prep_pokemon_data(
             .unwrap()
             .to_digit(10)
             .unwrap();
-        update_shard(
-            &mut shards,
-            usize::try_from(first_digit).unwrap(),
-            pokemon_data,
-        );
+        shards
+            .get_mut(&usize::try_from(first_digit).unwrap())
+            .unwrap()
+            .pokemon
+            .insert(pokemon_data.id.clone(), pokemon_data.clone());
     }
 
     write_pokemon_data_to_files(wiki_name, base_path, shards);
@@ -168,32 +172,20 @@ pub async fn download_and_prep_pokemon_data(
     return Ok("Pokemon Saved".to_string());
 }
 
-fn update_shard(shards: &mut Vec<Shard>, index: usize, pokemon_data: PokemonData) {
-    for shard in shards {
-        if shard.shard_index == index {
-            shard
-                .data
-                .pokemon
-                .insert(pokemon_data.id.clone(), pokemon_data.clone());
-            break;
-        }
-    }
-}
-
-fn write_pokemon_data_to_files(wiki_name: &str, base_path: PathBuf, shards: Vec<Shard>) {
+fn write_pokemon_data_to_files(wiki_name: &str, base_path: PathBuf, shards: Shards) {
     for shard in shards {
         let pokemon_path = base_path
             .join(wiki_name)
             .join("data")
             .join("pokemon_data")
-            .join(format!("shard_{}.json", shard.shard_index));
+            .join(format!("shard_{}.json", shard.0));
 
-        let string_pokemon_data = serde_json::to_string(&shard.data).unwrap();
+        let string_pokemon_data = serde_json::to_string(&shard.1).unwrap();
         fs::write(pokemon_path.clone(), string_pokemon_data).unwrap();
     }
 }
 
-fn get_pokemon_data_from_file(wiki_name: &str, base_path: &PathBuf, shard_index: usize) -> Shard {
+fn get_pokemon_data_from_file(wiki_name: &str, base_path: &PathBuf, shard_index: usize) -> Pokemon {
     let pokemon_path = base_path
         .join(wiki_name)
         .join("data")
@@ -202,10 +194,7 @@ fn get_pokemon_data_from_file(wiki_name: &str, base_path: &PathBuf, shard_index:
     let pokemon_file = File::open(&pokemon_path).unwrap();
     let pokemon: Pokemon = serde_json::from_reader(pokemon_file).unwrap();
 
-    return Shard {
-        data: pokemon,
-        shard_index,
-    };
+    return pokemon;
 }
 
 #[tauri::command]
