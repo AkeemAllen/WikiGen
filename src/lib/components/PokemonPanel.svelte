@@ -20,6 +20,7 @@ import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
 import PokemonMovesTab from "./PokemonMovesTab.svelte";
 import { invoke } from "@tauri-apps/api";
 import { extractPokemonRange, getShardToWrite } from "$lib/utils";
+import { shortcut, type ShortcutEventDetail } from "@svelte-put/shortcut";
 
 const toastStore = getToastStore();
 
@@ -147,6 +148,36 @@ async function savePokemonChanges() {
     generatePokemonPage();
   });
 }
+
+function nextPokemon() {
+  if (pokemonId === 1025) {
+    toastStore.trigger({
+      message: "No more Pokemon",
+      timeout: 3000,
+      background: "variant-filled-error",
+    });
+    return;
+  }
+  pokemonId++;
+  pokemonName = $pokemon.pokemon[pokemonId].name;
+  pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
+  originalPokemonDetails = _.cloneDeep(pokemonDetails);
+}
+
+function prevPokemon() {
+  if (pokemonId === 1) {
+    toastStore.trigger({
+      message: "No more Pokemon",
+      timeout: 3000,
+      background: "variant-filled-error",
+    });
+    return;
+  }
+  pokemonId--;
+  pokemonName = $pokemon.pokemon[pokemonId].name;
+  pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
+  originalPokemonDetails = _.cloneDeep(pokemonDetails);
+}
 </script>
 
 <div class="flex flex-row gap-7">
@@ -224,3 +255,18 @@ async function savePokemonChanges() {
     </svelte:fragment>
   </TabGroup>
 {/if}
+
+<svelte:window
+  use:shortcut={{
+    trigger: {
+      key: 'ArrowRight',
+      callback: () => nextPokemon(),
+    },
+  }}
+  use:shortcut={{
+    trigger: {
+      key: 'ArrowLeft',
+      callback: () => prevPokemon(),
+    },
+  }}
+/>
