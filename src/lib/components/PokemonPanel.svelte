@@ -28,6 +28,7 @@ let pokemonName: string = "";
 let pokemonId: number = 0;
 let pokemonDetails: PokemonDetails = {} as PokemonDetails;
 let originalPokemonDetails: PokemonDetails = {} as PokemonDetails;
+let pokemonNameInput: HTMLInputElement;
 
 let tabSet: number = 0;
 
@@ -178,6 +179,10 @@ function prevPokemon() {
   pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
   originalPokemonDetails = _.cloneDeep(pokemonDetails);
 }
+
+function setInputNode(node: HTMLElement, input: HTMLElement) {
+  pokemonNameInput = node as HTMLInputElement;
+}
 </script>
 
 <div class="flex flex-row gap-7">
@@ -188,11 +193,29 @@ function prevPokemon() {
       placeholder="Pokemon Name"
       class="block w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
       bind:value={pokemonName}
+      on:keydown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            let id = Object.entries($pokemon.pokemon).find(([_, value]) => value.name === pokemonName)?.[1].id;
+            if (id === undefined) {
+              toastStore.trigger({
+                message: "Pokemon not found",
+                timeout: 3000,
+                background: "variant-filled-error",
+              });
+              return;
+            }
+            pokemonId = id;
+            pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
+            originalPokemonDetails = _.cloneDeep(pokemonDetails);
+          }
+        }}
       use:popup={{
         event: "focus-click",
         target: "popupAutoComplete",
         placement: "bottom",
       }}
+      use:setInputNode={pokemonNameInput}
     />
     <div
       data-popup="popupAutoComplete"
@@ -259,14 +282,37 @@ function prevPokemon() {
 <svelte:window
   use:shortcut={{
     trigger: {
-      key: 'ArrowRight',
+      key: ']',
+      modifier:["ctrl", "meta"],
       callback: () => nextPokemon(),
     },
   }}
   use:shortcut={{
     trigger: {
-      key: 'ArrowLeft',
+      key: '[',
+      modifier:["ctrl", "meta"],
       callback: () => prevPokemon(),
+    },
+  }}
+  use:shortcut={{
+    trigger: {
+      key: 'k',
+      modifier:["ctrl", "meta"],
+      callback: () => pokemonNameInput.focus(),
+    },
+  }}
+  use:shortcut={{
+    trigger: {
+      key: 'm',
+      modifier:"ctrl",
+      callback: () => { tabSet = 1},
+    },
+  }}
+  use:shortcut={{
+    trigger: {
+      key: 'Enter',
+      modifier: "meta",
+      callback: () => savePokemonChanges(),
     },
   }}
 />
