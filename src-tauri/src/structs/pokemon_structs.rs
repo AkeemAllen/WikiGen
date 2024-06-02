@@ -18,6 +18,15 @@ pub struct PokemonData {
     pub moves: HashMap<String, Move>,
     pub sprite: String,
     pub evolution: Evolution,
+    pub forms: HashMap<String, PokemonForm>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PokemonForm {
+    pub types: Vec<String>,
+    pub abilities: Vec<String>,
+    pub stats: Option<Stats>,
+    pub sprite: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

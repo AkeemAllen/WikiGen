@@ -13,6 +13,16 @@ export type PokemonDetails = {
   moves: PokemonMoveSet;
   sprite: string;
   evolution: Evolution;
+  forms: {
+    [key: string]: PokemonForm;
+  };
+};
+
+export type PokemonForm = {
+  types: string[];
+  abilities: string[];
+  stats: Stats;
+  sprite: string;
 };
 
 export type ModifiedPokemon = {
