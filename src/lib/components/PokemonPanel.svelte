@@ -21,6 +21,8 @@ import PokemonMovesTab from "./PokemonMovesTab.svelte";
 import { invoke } from "@tauri-apps/api";
 import { extractPokemonRange, getShardToWrite } from "$lib/utils";
 import { shortcut, type ShortcutEventDetail } from "@svelte-put/shortcut";
+import Button from "./Button.svelte";
+import { abilities } from "../../store/abilities";
 
 const toastStore = getToastStore();
 
@@ -31,6 +33,7 @@ let originalPokemonDetails: PokemonDetails = {} as PokemonDetails;
 let pokemonNameInput: HTMLInputElement;
 
 let tabSet: number = 0;
+let formTabSet: number = 0;
 
 let pokemonListOptions: AutocompleteOption<string | number>[] =
   $pokemonList.map(([name, id]) => ({ label: name, value: id }));
@@ -257,13 +260,46 @@ function setInputNode(node: HTMLElement, input: HTMLElement) {
 </div>
 
 {#if pokemonDetails.id !== undefined}
+  {#if Object.keys(pokemonDetails.forms).length !== 0}
+    <TabGroup class="mb-4 mt-4">
+      <Tab
+        bind:group={formTabSet}
+        name="pokemon-details"
+        value={0}
+        class="text-sm"
+        on:click={() => {
+          pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
+          originalPokemonDetails = _.cloneDeep(pokemonDetails);
+        }}
+        >{_.capitalize(pokemonName)}</Tab
+      >
+      {#each Object.keys(pokemonDetails.forms) as form, index}
+        <Tab
+          bind:group={formTabSet}
+          name={form}
+          value={index + 1}
+          class="text-sm"
+          on:click={() => {
+            pokemonDetails = {
+              ...pokemonDetails,
+              ...pokemonDetails.forms[form],
+              name: form,
+            };
+            originalPokemonDetails = _.cloneDeep(pokemonDetails);
+          }}
+          >{_.capitalize(form)}</Tab
+        >
+      {/each}
+    </TabGroup>
+  {/if}
+
   <img src={pokemonDetails.sprite} alt={pokemonDetails.name} width="100" />
-  <TabGroup class="px-4">
+  <TabGroup>
     <Tab bind:group={tabSet} name="pokemon-details" value={0} class="text-sm"
-      >Pokemon Details</Tab
+      >Details</Tab
     >
     <Tab bind:group={tabSet} name="pokemon-moves" value={1} class="text-sm"
-      >Pokemon Moves</Tab
+      >Moves</Tab
     >
     <svelte:fragment slot="panel">
       {#if tabSet === 0}
