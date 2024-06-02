@@ -141,6 +141,7 @@ pub async fn download_and_prep_pokemon_data(
                 },
                 method: EvolutionMethod::NoChange,
             },
+            forms: HashMap::new(),
         };
         // Each shard (or files) contains 100 pokemon entries.
         // I have to use this to select and modify the correct file's data.
