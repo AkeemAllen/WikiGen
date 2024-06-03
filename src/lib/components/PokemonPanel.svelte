@@ -176,6 +176,7 @@ function nextPokemon() {
   pokemonName = $pokemon.pokemon[pokemonId].name;
   pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
   originalPokemonDetails = _.cloneDeep(pokemonDetails);
+  formTabSet = 0;
 }
 
 function prevPokemon() {
@@ -191,6 +192,7 @@ function prevPokemon() {
   pokemonName = $pokemon.pokemon[pokemonId].name;
   pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
   originalPokemonDetails = _.cloneDeep(pokemonDetails);
+  formTabSet = 0;
 }
 
 function setInputNode(node: HTMLElement, input: HTMLElement) {
@@ -315,7 +317,10 @@ function setInputNode(node: HTMLElement, input: HTMLElement) {
     >
     <svelte:fragment slot="panel">
       {#if tabSet === 0}
-        <PokemonDetailsTab bind:pokemonDetails={pokemonDetails} />
+        <PokemonDetailsTab
+          bind:pokemonDetails={pokemonDetails}
+          bind:formTabSet={formTabSet}
+        />
       {/if}
       {#if tabSet === 1}
         <PokemonMovesTab
