@@ -23,6 +23,7 @@ export type PokemonForm = {
   abilities: string[];
   stats: Stats;
   sprite: string;
+  moves: PokemonMoveSet;
 };
 
 export type ModifiedPokemon = {

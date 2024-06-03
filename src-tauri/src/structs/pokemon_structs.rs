@@ -25,8 +25,9 @@ pub struct PokemonData {
 pub struct PokemonForm {
     pub types: Vec<String>,
     pub abilities: Vec<String>,
-    pub stats: Option<Stats>,
+    pub stats: Stats,
     pub sprite: String,
+    pub moves: HashMap<String, Move>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
