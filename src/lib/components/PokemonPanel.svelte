@@ -223,6 +223,7 @@ function setInputNode(node: HTMLElement, input: HTMLElement) {
             pokemonId = id;
             pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
             originalPokemonDetails = _.cloneDeep(pokemonDetails);
+            formTabSet = 0;
           }
         }}
       use:popup={{
