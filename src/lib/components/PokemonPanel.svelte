@@ -20,13 +20,12 @@ import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
 import PokemonMovesTab from "./PokemonMovesTab.svelte";
 import { invoke } from "@tauri-apps/api";
 import { extractPokemonRange, getShardToWrite } from "$lib/utils";
-import { shortcut, type ShortcutEventDetail } from "@svelte-put/shortcut";
-import Button from "./Button.svelte";
-import { abilities } from "../../store/abilities";
+import { shortcut } from "@svelte-put/shortcut";
 
 const toastStore = getToastStore();
 
 let pokemonName: string = "";
+let formName: string = "";
 let pokemonId: number = 0;
 let pokemonDetails: PokemonDetails = {} as PokemonDetails;
 let originalPokemonDetails: PokemonDetails = {} as PokemonDetails;
@@ -132,7 +131,18 @@ function checkModifiedEvolutions() {
 }
 
 async function savePokemonChanges() {
-  $pokemon.pokemon[pokemonId] = pokemonDetails;
+  if (formTabSet !== 0) {
+    $pokemon.pokemon[pokemonId].forms[formName] = {
+      types: pokemonDetails.types,
+      abilities: pokemonDetails.abilities,
+      stats: pokemonDetails.stats,
+      moves: pokemonDetails.moves,
+      sprite: pokemonDetails.sprite,
+    };
+    formName = "";
+  } else {
+    $pokemon.pokemon[pokemonId] = pokemonDetails;
+  }
 
   checkAndWriteMods();
 
@@ -270,6 +280,7 @@ function setInputNode(node: HTMLElement, input: HTMLElement) {
         on:click={() => {
           pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
           originalPokemonDetails = _.cloneDeep(pokemonDetails);
+          formName = "";
         }}
         >{_.capitalize(pokemonName)}</Tab
       >
@@ -286,8 +297,9 @@ function setInputNode(node: HTMLElement, input: HTMLElement) {
               name: form,
             };
             originalPokemonDetails = _.cloneDeep(pokemonDetails);
+            formName = form;
           }}
-          >{_.capitalize(form)}</Tab
+          >{_.capitalize(form.replaceAll("-", " "))}</Tab
         >
       {/each}
     </TabGroup>
