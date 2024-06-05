@@ -30,6 +30,7 @@ let pokemonId: number = 0;
 let pokemonDetails: PokemonDetails = {} as PokemonDetails;
 let originalPokemonDetails: PokemonDetails = {} as PokemonDetails;
 let pokemonNameInput: HTMLInputElement;
+let currentPokemonName: string = "";
 
 let tabSet: number = 0;
 let formTabSet: number = 0;
@@ -174,6 +175,7 @@ function nextPokemon() {
   }
   pokemonId++;
   pokemonName = $pokemon.pokemon[pokemonId].name;
+  currentPokemonName = pokemonName;
   pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
   originalPokemonDetails = _.cloneDeep(pokemonDetails);
   formTabSet = 0;
@@ -190,6 +192,7 @@ function prevPokemon() {
   }
   pokemonId--;
   pokemonName = $pokemon.pokemon[pokemonId].name;
+  currentPokemonName = pokemonName;
   pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
   originalPokemonDetails = _.cloneDeep(pokemonDetails);
   formTabSet = 0;
@@ -251,7 +254,9 @@ function setInputNode(node: HTMLElement, input: HTMLElement) {
     disabled={pokemonName === ""}
     on:click={() => {
         pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
+        currentPokemonName = pokemonName;
         originalPokemonDetails = _.cloneDeep(pokemonDetails);
+        formTabSet = 0;
     }}
     class="mt-2 w-32 rounded-md bg-indigo-600 text-sm font-semibold text-white
       shadow-sm hover:bg-indigo-500 focus-visible:outline
@@ -285,7 +290,7 @@ function setInputNode(node: HTMLElement, input: HTMLElement) {
           originalPokemonDetails = _.cloneDeep(pokemonDetails);
           formName = "";
         }}
-        >{_.capitalize(pokemonName)}</Tab
+        >{_.capitalize(currentPokemonName.replaceAll("-", " "))}</Tab
       >
       {#each Object.keys(pokemonDetails.forms) as form, index}
         <Tab
