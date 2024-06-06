@@ -70,7 +70,13 @@ pub fn generate_pokemon_pages(
             .join("pokemon_data")
             .join(format!("shard_{}.json", i));
         let shard_file = File::open(&shard_json_file_path).unwrap();
-        let shard: Pokemon = serde_json::from_reader(shard_file).unwrap();
+        let shard: Pokemon = match serde_json::from_reader(shard_file) {
+            Ok(shard) => shard,
+            Err(err) => {
+                println!("Error {}", err);
+                return Err("Something failed".to_string());
+            }
+        };
 
         pokemon.pokemon.extend(shard.pokemon.into_iter());
     }
@@ -133,78 +139,55 @@ pub fn generate_pokemon_pages(
             }
         };
 
+        let mut pokemon_markdown_string = String::new();
+        if !pokemon_data.forms.is_empty() {}
+
         // Adding sprite
-        markdown_file
-            .write_all(
-                format!(
-                    "![{}](../img/pokemon/{}.png)\n\n",
-                    pokemon_data.name, pokedex_markdown_file_name
-                )
-                .as_bytes(),
+        pokemon_markdown_string.push_str(
+            format!(
+                "![{}](../img/pokemon/{}.png)\n\n",
+                pokemon_data.name, pokedex_markdown_file_name
             )
-            .unwrap();
+            .as_str(),
+        );
+        pokemon_markdown_string.push_str("\n\n## Types\n\n");
+        pokemon_markdown_string.push_str(create_type_table(&pokemon_data.types).as_str());
 
-        // Add Type Table
-        markdown_file.write_all(b"## Types\n\n").unwrap();
-        markdown_file
-            .write_all(create_type_table(&pokemon_data.types).as_bytes())
-            .unwrap();
-
-        // Add Defensive Matchups Table
-        markdown_file.write_all(b"\n\n##Defenses\n\n").unwrap();
-        markdown_file
-            .write_all(
-                create_defenses_table(
-                    &pokemon_data.types,
-                    wiki_name,
-                    &mut calculated_defenses,
-                    &base_path,
-                )
-                .as_bytes(),
+        pokemon_markdown_string.push_str("\n\n## Defenses\n\n");
+        pokemon_markdown_string.push_str(
+            create_defenses_table(
+                &pokemon_data.types,
+                wiki_name,
+                &mut calculated_defenses,
+                &base_path,
             )
-            .unwrap();
+            .as_str(),
+        );
 
-        // Add Abilities Table
-        markdown_file.write_all(b"\n\n## Abilities\n\n").unwrap();
-        markdown_file
-            .write_all(create_ability_table(&pokemon_data.abilities).as_bytes())
-            .unwrap();
+        pokemon_markdown_string.push_str("\n\n## Abilities\n\n");
+        pokemon_markdown_string.push_str(create_ability_table(&pokemon_data.abilities).as_str());
 
-        // Add Stats Table
-        markdown_file.write_all(b"\n\n## Stats\n\n").unwrap();
-        markdown_file
-            .write_all(create_stats_table(&pokemon_data.stats).as_bytes())
-            .unwrap();
+        pokemon_markdown_string.push_str("\n\n## Stats\n\n");
+        pokemon_markdown_string.push_str(create_stats_table(&pokemon_data.stats).as_str());
 
-        // Add Evolution Table
         if &pokemon_data.evolution.method != &EvolutionMethod::NoChange {
-            // Add Stats Table
-            markdown_file
-                .write_all(b"\n\n## Evolution Change\n\n")
-                .unwrap();
-            markdown_file
-                .write_all(create_evolution_table(pokemon_data.evolution.clone()).as_bytes())
-                .unwrap();
+            pokemon_markdown_string.push_str("\n\n## Evolution\n\n");
+            pokemon_markdown_string
+                .push_str(create_evolution_table(pokemon_data.evolution.clone()).as_str());
         }
 
-        // Add Level Up Moves
-        markdown_file
-            .write_all(b"\n\n## Level Up Moves\n\n")
-            .unwrap();
-        markdown_file
-            .write_all(
-                create_level_up_moves_table(pokemon_data.moves.clone(), moves.clone()).as_bytes(),
-            )
-            .unwrap();
+        pokemon_markdown_string.push_str("\n\n## Level Up Moves\n\n");
+        pokemon_markdown_string.push_str(
+            create_level_up_moves_table(pokemon_data.moves.clone(), moves.clone()).as_str(),
+        );
 
-        // Add Learnable Moves
+        pokemon_markdown_string.push_str("\n\n## Learnable Moves\n\n");
+        pokemon_markdown_string.push_str(
+            create_learnable_moves_table(pokemon_data.moves.clone(), moves.clone()).as_str(),
+        );
+
         markdown_file
-            .write_all(b"\n\n## Learnable Moves\n\n")
-            .unwrap();
-        markdown_file
-            .write_all(
-                create_learnable_moves_table(pokemon_data.moves.clone(), moves.clone()).as_bytes(),
-            )
+            .write_all(pokemon_markdown_string.as_bytes())
             .unwrap();
 
         let mut pokemon_page_entry = Mapping::new();
