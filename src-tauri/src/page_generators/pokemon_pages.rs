@@ -227,12 +227,6 @@ pub fn generate_pokemon_pages(
     )
     .unwrap();
 
-    fs::write(
-        calculated_defenses_path,
-        serde_json::to_string(&calculated_defenses).unwrap(),
-    )
-    .unwrap();
-
     return Ok("Pokemon Pages Generated".to_string());
 }
 
