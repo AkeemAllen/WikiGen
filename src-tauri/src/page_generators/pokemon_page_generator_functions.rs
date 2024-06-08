@@ -31,18 +31,16 @@ pub fn create_type_table(types: &Vec<String>) -> String {
 pub fn create_defenses_table(
     types: &Vec<String>,
     wiki_name: &str,
-    calculated_defenses: &mut HashMap<String, TypeEffectiveness>,
+    calculated_defenses: &HashMap<String, TypeEffectiveness>,
     base_path: &PathBuf,
 ) -> String {
     // Get Defensive Matchups from file before calculating them
     let defensive_matchups = match calculated_defenses.get(&types.join("-").to_string()) {
         Some(matchup) => matchup.0.clone(),
+        // May be able to remove this functionality since I'm only working with latest gen matchups
+        // But leaving for now.
         None => get_defensive_matchups(&types, wiki_name, base_path),
     };
-    calculated_defenses.insert(
-        types.join("-").to_string(),
-        TypeEffectiveness(defensive_matchups.clone()),
-    );
 
     let immunities = get_markdown_for_effectiveness(&defensive_matchups, "0");
     let quarter_strong_resist = get_markdown_for_effectiveness(&defensive_matchups, "0.25");
