@@ -99,7 +99,7 @@ pub fn generate_pokemon_pages(
         .join("data")
         .join("calculated_defenses.json");
     let calculated_defenses_json_file = File::open(&calculated_defenses_path).unwrap();
-    let mut calculated_defenses: HashMap<String, TypeEffectiveness> =
+    let calculated_defenses: HashMap<String, TypeEffectiveness> =
         serde_json::from_reader(calculated_defenses_json_file).unwrap();
 
     let mut mkdocs_pokemon: &mut Vec<Value> = &mut Vec::new();
@@ -123,6 +123,8 @@ pub fn generate_pokemon_pages(
                 continue;
             }
         };
+
+        println!("Rendering page for {}", pokemon_data.name);
 
         let mut pokedex_markdown_file_name = format!("00{}", dex_number);
         if dex_number >= 10 {
@@ -179,7 +181,7 @@ pub fn generate_pokemon_pages(
             let pokemon_markdown_string = generate_pokemon_page(
                 wiki_name,
                 &base_path,
-                &mut calculated_defenses,
+                &calculated_defenses,
                 form_name,
                 form_details,
                 &sprite_image_name,
@@ -237,7 +239,7 @@ pub fn generate_pokemon_pages(
 fn generate_pokemon_page(
     wiki_name: &str,
     base_path: &PathBuf,
-    mut calculated_defenses: &mut HashMap<String, TypeEffectiveness>,
+    calculated_defenses: &HashMap<String, TypeEffectiveness>,
     pokemon_name: &str,
     pokemon_details: &PokemonForm,
     sprite_image_name: &str,
@@ -270,7 +272,7 @@ fn generate_pokemon_page(
         create_defenses_table(
             &pokemon_details.types,
             wiki_name,
-            &mut calculated_defenses,
+            &calculated_defenses,
             &base_path,
         )
     ));
