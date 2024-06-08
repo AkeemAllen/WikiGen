@@ -169,13 +169,20 @@ pub fn generate_pokemon_pages(
                 tabbed = true;
             }
 
+            let mut sprite_image_name = pokedex_markdown_file_name.clone();
+
+            if &pokemon_data.name != form_name {
+                let form_image_name = format!("{}-{}", pokedex_markdown_file_name, form_name);
+                sprite_image_name = form_image_name;
+            }
+
             let pokemon_markdown_string = generate_pokemon_page(
                 wiki_name,
                 &base_path,
                 &mut calculated_defenses,
                 form_name,
                 form_details,
-                &pokedex_markdown_file_name,
+                &sprite_image_name,
                 moves.clone(),
                 pokemon_data,
                 tabbed,
@@ -233,7 +240,7 @@ fn generate_pokemon_page(
     mut calculated_defenses: &mut HashMap<String, TypeEffectiveness>,
     pokemon_name: &str,
     pokemon_details: &PokemonForm,
-    file_name: &str,
+    sprite_image_name: &str,
     moves: Moves,
     pokemon_data: &PokemonData,
     tabbed: bool,
@@ -245,7 +252,7 @@ fn generate_pokemon_page(
     }
     markdown_string.push_str(&format!(
         "{}![{}](../img/pokemon/{}.png)\n\n",
-        tab, &pokemon_name, file_name
+        tab, &pokemon_name, sprite_image_name
     ));
 
     markdown_string.push_str(&format!("{}## Types\n\n", tab));
