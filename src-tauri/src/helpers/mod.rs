@@ -22,6 +22,21 @@ pub fn capitalize(s: &str) -> String {
     }
 }
 
+pub fn capitalize_and_remove_hyphens(input: &str) -> String {
+    input
+        .split('-') // Split the string by hyphens
+        .map(|word| {
+            // Capitalize the first letter and make the rest lowercase
+            let mut c = word.chars();
+            match c.next() {
+                None => String::new(),
+                Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+            }
+        })
+        .collect::<Vec<String>>() // Collect the words into a vector
+        .join(" ") // Join the words with spaces
+}
+
 /// Copy files from source to destination recursively.
 pub fn copy_recursively(source: impl AsRef<Path>, destination: impl AsRef<Path>) -> io::Result<()> {
     fs::create_dir_all(&destination)?;
