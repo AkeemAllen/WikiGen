@@ -199,3 +199,14 @@ export function extractPokemonRange(pokemonObj: Pokemon, shard_index: number) {
   }
   return result;
 }
+
+export function convertToTitle(input: string): string {
+  return input
+    .split("-") // Split the string by hyphens
+    .map((word) => {
+      // Capitalize the first letter and make the rest lowercase
+      if (word.length === 0) return word;
+      return word[0].toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(" "); // Join the words with spaces
+}

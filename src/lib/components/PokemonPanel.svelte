@@ -19,7 +19,11 @@ import {
 import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
 import PokemonMovesTab from "./PokemonMovesTab.svelte";
 import { invoke } from "@tauri-apps/api";
-import { extractPokemonRange, getShardToWrite } from "$lib/utils";
+import {
+  convertToTitle,
+  extractPokemonRange,
+  getShardToWrite,
+} from "$lib/utils";
 import { shortcut } from "@svelte-put/shortcut";
 
 const toastStore = getToastStore();
@@ -290,7 +294,7 @@ function setInputNode(node: HTMLElement, input: HTMLElement) {
           originalPokemonDetails = _.cloneDeep(pokemonDetails);
           formName = "";
         }}
-        >{_.capitalize(currentPokemonName.replaceAll("-", " "))}</Tab
+        >{convertToTitle(currentPokemonName)}</Tab
       >
       {#each Object.keys(pokemonDetails.forms) as form, index}
         <Tab
@@ -307,7 +311,7 @@ function setInputNode(node: HTMLElement, input: HTMLElement) {
             originalPokemonDetails = _.cloneDeep(pokemonDetails);
             formName = form;
           }}
-          >{_.capitalize(form.replaceAll("-", " "))}</Tab
+          >{convertToTitle(form)}</Tab
         >
       {/each}
     </TabGroup>
