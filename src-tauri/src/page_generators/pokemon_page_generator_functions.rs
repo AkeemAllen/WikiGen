@@ -127,7 +127,11 @@ pub fn create_evolution_table(evolution: Evolution) -> String {
     );
 }
 
-pub fn create_level_up_moves_table(moves: HashMap<String, Move>, moves_from_file: Moves) -> String {
+pub fn create_level_up_moves_table(
+    moves: HashMap<String, Move>,
+    moves_from_file: Moves,
+    tabbed: bool,
+) -> String {
     let mut _moves_data: IndexMap<String, MoveSetMove> = IndexMap::new();
 
     for (move_name, details) in moves {
@@ -182,8 +186,13 @@ pub fn create_level_up_moves_table(moves: HashMap<String, Move>, moves_from_file
             level_learned = level;
         }
 
+        let mut tab = "";
+        if tabbed {
+            tab = "\t";
+        }
         let table_entry = format!(
-            "| {} | {} | {} | {} | {} | {} | {} |\n",
+            "{}| {} | {} | {} | {} | {} | {} | {} |\n",
+            tab,
             level_learned,
             capitalize(&move_name),
             power,
@@ -207,6 +216,7 @@ pub fn create_level_up_moves_table(moves: HashMap<String, Move>, moves_from_file
 pub fn create_learnable_moves_table(
     moves: HashMap<String, Move>,
     moves_from_file: Moves,
+    tabbed: bool,
 ) -> String {
     let mut _moves_data: IndexMap<String, MoveSetMove> = IndexMap::new();
 
@@ -276,8 +286,13 @@ pub fn create_learnable_moves_table(
             chars.make_ascii_uppercase();
         }
 
+        let mut tab = "";
+        if tabbed {
+            tab = "\t";
+        }
         let table_entry = format!(
-            "| {} | {} | {} | {} | {} | {} | {} |\n",
+            "{}| {} | {} | {} | {} | {} | {} | {} |\n",
+            tab,
             machine_name,
             capitalize(&move_name),
             power,
