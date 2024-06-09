@@ -8,7 +8,8 @@ export let label: string = "";
 export let value: string = "";
 export let options: { label: string; value: string | number }[] = [];
 export let onSelection: (event: CustomEvent) => void;
-export let inputNode: HTMLInputElement;
+export let inputNode: HTMLInputElement = document.createElement("input");
+export let onKeydown: (event: KeyboardEvent) => void = () => {};
 function setInputNode(node: HTMLElement, input: HTMLElement) {
   inputNode = node as HTMLInputElement;
 }
@@ -30,6 +31,7 @@ function setInputNode(node: HTMLElement, input: HTMLElement) {
       placement: "bottom",
     }}
     use:setInputNode={inputNode}
+    on:keydown={onKeydown}
   />
   <div
     data-popup={popupId}
