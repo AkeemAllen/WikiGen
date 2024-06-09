@@ -25,6 +25,8 @@ import {
   getShardToWrite,
 } from "$lib/utils";
 import { shortcut } from "@svelte-put/shortcut";
+import Button from "./Button.svelte";
+import AutoComplete from "./AutoComplete.svelte";
 
 const toastStore = getToastStore();
 
@@ -201,84 +203,34 @@ function prevPokemon() {
   originalPokemonDetails = _.cloneDeep(pokemonDetails);
   formTabSet = 0;
 }
-
-function setInputNode(node: HTMLElement, input: HTMLElement) {
-  pokemonNameInput = node as HTMLInputElement;
-}
 </script>
 
 <div class="flex flex-row gap-7">
-  <div class="mt-2 w-60">
-    <input
-      id="pokemon-name"
-      type="text"
-      placeholder="Pokemon Name"
-      class="block w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-      bind:value={pokemonName}
-      on:keydown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            let id = Object.entries($pokemon.pokemon).find(([_, value]) => value.name === pokemonName)?.[1].id;
-            if (id === undefined) {
-              toastStore.trigger({
-                message: "Pokemon not found",
-                timeout: 3000,
-                background: "variant-filled-error",
-              });
-              return;
-            }
-            pokemonId = id;
-            pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
-            originalPokemonDetails = _.cloneDeep(pokemonDetails);
-            formTabSet = 0;
-          }
-        }}
-      use:popup={{
-        event: "focus-click",
-        target: "popupAutoComplete",
-        placement: "bottom",
-      }}
-      use:setInputNode={pokemonNameInput}
-    />
-    <div
-      data-popup="popupAutoComplete"
-      class="card mt-2 w-60 overflow-y-auto rounded-sm bg-white"
-      tabindex="-1"
-    >
-      <Autocomplete
-        bind:input={pokemonName}
-        options={pokemonListOptions}
-        limit={5}
-        on:selection={onPokemonNameSelected}
-        class="w-full rounded-md border bg-white p-2 text-sm"
-      />
-    </div>
-  </div>
-  <button
-    disabled={pokemonName === ""}
-    on:click={() => {
+  <AutoComplete
+    bind:value={pokemonName}
+    placeholder="Search Pokemon"
+    options={pokemonListOptions}
+    popupId="pokemon-search"
+    onSelection={onPokemonNameSelected}
+    bind:inputNode={pokemonNameInput}
+  />
+  <Button
+    title="Search"
+    onClick={() => {
         pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
         currentPokemonName = pokemonName;
         originalPokemonDetails = _.cloneDeep(pokemonDetails);
         formTabSet = 0;
-    }}
-    class="mt-2 w-32 rounded-md bg-indigo-600 text-sm font-semibold text-white
-      shadow-sm hover:bg-indigo-500 focus-visible:outline
-      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
-      disabled:bg-indigo-400"
-  >
-    Search
-  </button>
-  <button
+      }}
+    disabled={pokemonName === ""}
+    class="mt-2 w-32"
+  />
+  <Button
+    title="Save Changes"
+    onClick={savePokemonChanges}
     disabled={_.isEqual(pokemonDetails, originalPokemonDetails)}
-    on:click={savePokemonChanges}
-    class="mt-2 w-32 rounded-md bg-indigo-600 text-sm font-semibold text-white
-      shadow-sm hover:bg-indigo-500 focus-visible:outline
-      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
-      disabled:bg-indigo-400"
-  >
-    Save Changes
-  </button>
+    class="mt-2 w-32"
+  />
 </div>
 
 {#if pokemonDetails.id !== undefined}
