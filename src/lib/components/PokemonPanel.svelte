@@ -138,13 +138,6 @@ function checkModifiedEvolutions() {
   }
 }
 
-async function generatePokemonPage() {
-  await invoke("generate_pokemon_pages_from_list", {
-    wikiName: $selectedWiki.name,
-    dexNumbers: [pokemonId],
-  });
-}
-
 async function savePokemonChanges() {
   if (formTabSet !== 0) {
     $pokemon.pokemon[pokemonId].forms[formName] = {
@@ -174,7 +167,10 @@ async function savePokemonChanges() {
       timeout: 3000,
       background: "variant-filled-success",
     });
-    generatePokemonPage();
+    invoke("generate_pokemon_pages_from_list", {
+      wikiName: $selectedWiki.name,
+      dexNumbers: [pokemonId],
+    });
   });
 }
 
