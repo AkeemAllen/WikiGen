@@ -51,11 +51,12 @@ function onPokemonNameSelected(
   pokemonId = event.detail.value as number;
 }
 
-async function generatePokemonPage() {
-  await invoke("generate_pokemon_pages_from_list", {
-    wikiName: $selectedWiki.name,
-    dexNumbers: [pokemonId],
-  });
+function setPokemonDetails(pokemonId: number) {
+  pokemonName = $pokemon.pokemon[pokemonId].name;
+  currentPokemonName = pokemonName;
+  pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
+  originalPokemonDetails = _.cloneDeep(pokemonDetails);
+  formTabSet = 0;
 }
 
 async function checkAndWriteMods() {
@@ -137,6 +138,13 @@ function checkModifiedEvolutions() {
   }
 }
 
+async function generatePokemonPage() {
+  await invoke("generate_pokemon_pages_from_list", {
+    wikiName: $selectedWiki.name,
+    dexNumbers: [pokemonId],
+  });
+}
+
 async function savePokemonChanges() {
   if (formTabSet !== 0) {
     $pokemon.pokemon[pokemonId].forms[formName] = {
@@ -179,12 +187,7 @@ function nextPokemon() {
     });
     return;
   }
-  pokemonId++;
-  pokemonName = $pokemon.pokemon[pokemonId].name;
-  currentPokemonName = pokemonName;
-  pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
-  originalPokemonDetails = _.cloneDeep(pokemonDetails);
-  formTabSet = 0;
+  setPokemonDetails(pokemonId++);
 }
 
 function prevPokemon() {
@@ -196,12 +199,7 @@ function prevPokemon() {
     });
     return;
   }
-  pokemonId--;
-  pokemonName = $pokemon.pokemon[pokemonId].name;
-  currentPokemonName = pokemonName;
-  pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
-  originalPokemonDetails = _.cloneDeep(pokemonDetails);
-  formTabSet = 0;
+  setPokemonDetails(pokemonId--);
 }
 </script>
 
@@ -213,14 +211,26 @@ function prevPokemon() {
     popupId="pokemon-search"
     onSelection={onPokemonNameSelected}
     bind:inputNode={pokemonNameInput}
+    onKeydown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          let id = Object.entries($pokemon.pokemon).find(([_, value]) => value.name === pokemonName)?.[1].id;
+          if (id === undefined) {
+            toastStore.trigger({
+              message: "Pokemon not found",
+              timeout: 3000,
+              background: "variant-filled-error",
+            });
+            return;
+          }
+          setPokemonDetails(id);
+        }
+      }}
   />
   <Button
     title="Search"
     onClick={() => {
-        pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
-        currentPokemonName = pokemonName;
-        originalPokemonDetails = _.cloneDeep(pokemonDetails);
-        formTabSet = 0;
+        setPokemonDetails(pokemonId);
       }}
     disabled={pokemonName === ""}
     class="mt-2 w-32"
