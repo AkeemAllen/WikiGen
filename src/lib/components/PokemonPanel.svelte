@@ -131,6 +131,7 @@ function prevPokemon() {
     popupId="pokemon-search"
     onSelection={onPokemonNameSelected}
     bind:inputNode={pokemonNameInput}
+    showChevron={false}
     onKeydown={(e) => {
         if (e.key === "Enter") {
           e.preventDefault();
