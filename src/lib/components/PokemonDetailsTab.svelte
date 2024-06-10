@@ -10,11 +10,19 @@ import {
 } from "../../store/pokemon";
 import NumberInput from "./NumberInput.svelte";
 import TextInput from "./TextInput.svelte";
+import { abilities, abilitiesList } from "../../store/abilities";
 
 export let pokemonDetails: PokemonDetails = {} as PokemonDetails;
 export let formTabSet: number;
 let pokemonListOptions: AutocompleteOption<string | number>[] =
   $pokemonList.map(([name, id]) => ({ label: _.capitalize(name), value: id }));
+
+const abilitiesListOptions: AutocompleteOption<string>[] = $abilitiesList.map(
+  (name) => ({
+    label: name,
+    value: name,
+  }),
+);
 </script>
 
 <div class="scroll-smooth px-4">
@@ -37,23 +45,25 @@ let pokemonListOptions: AutocompleteOption<string | number>[] =
         value: type,
       }))}
     />
-    <SelectInput
-      id="pokemon-ability-1"
-      bind:value={pokemonDetails.abilities[0]}
+    <AutoComplete
       label="Ability 1"
-      options={pokemonDetails.abilities.map((ability) => ({
-        label: _.capitalize(ability),
-        value: ability,
-      }))}
+      bind:value={pokemonDetails.abilities[0]}
+      options={abilitiesListOptions}
+      popupId="ability-1-popup"
+      onSelection={(e) => {
+        pokemonDetails.abilities[0] = e.detail.value;
+      }}
+      class="w-full"
     />
-    <SelectInput
-      id="pokemon-ability-2"
-      bind:value={pokemonDetails.abilities[1]}
+    <AutoComplete
       label="Ability 2"
-      options={pokemonDetails.abilities.map((ability) => ({
-        label: _.capitalize(ability),
-        value: ability,
-      }))}
+      bind:value={pokemonDetails.abilities[1]}
+      options={abilitiesListOptions}
+      popupId="ability-2-popup"
+      onSelection={(e) => {
+      pokemonDetails.abilities[1] = e.detail.value;
+    }}
+      class="w-full"
     />
   </div>
   {#if formTabSet === 0}
