@@ -68,6 +68,7 @@ pub fn create_ability_table(abilities: &Vec<String>) -> String {
     let ability_entries: Vec<String> = abilities
         .iter()
         .map(|ability| format!("[{}](\" {} \")", capitalize(ability), placeholder_effect))
+        .filter(|ability| !ability.contains("None"))
         .collect();
 
     return format!(
