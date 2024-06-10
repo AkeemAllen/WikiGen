@@ -1,13 +1,11 @@
 <script lang="ts">
 import {
-  Autocomplete,
   Tab,
   TabGroup,
   getToastStore,
-  popup,
   type AutocompleteOption,
 } from "@skeletonlabs/skeleton";
-import { BaseDirectory, readTextFile, writeTextFile } from "@tauri-apps/api/fs";
+import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import _ from "lodash";
 import { selectedWiki } from "../../store";
 import {
@@ -27,6 +25,7 @@ import {
 import { shortcut } from "@svelte-put/shortcut";
 import Button from "./Button.svelte";
 import AutoComplete from "./AutoComplete.svelte";
+import { updatePokemonModifications } from "$lib/utils/modificationHelpers";
 
 const toastStore = getToastStore();
 
@@ -59,85 +58,6 @@ function setPokemonDetails(pokemonId: number) {
   formTabSet = 0;
 }
 
-async function checkAndWriteMods() {
-  if (
-    _.isEqual(originalPokemonDetails.types, pokemonDetails.types) &&
-    _.isEqual(originalPokemonDetails.evolution, pokemonDetails.evolution)
-  ) {
-    return;
-  }
-
-  if (!$modifiedPokemon[pokemonName]) {
-    $modifiedPokemon[pokemonName] = {
-      id: pokemonDetails.id,
-      evolution: {
-        method: "no_change",
-        level: 0,
-        item: "",
-        other: "",
-        evolves_to: { id: 0, pokemon_name: "" },
-      },
-      types: {
-        original: [],
-        modified: [],
-      },
-    };
-  }
-
-  if (!_.isEqual(originalPokemonDetails.types, pokemonDetails.types)) {
-    checkModifiedTypes();
-  }
-  if (!_.isEqual(originalPokemonDetails.evolution, pokemonDetails.evolution)) {
-    checkModifiedEvolutions();
-  }
-
-  if (
-    $modifiedPokemon[pokemonName].evolution.method === "no_change" &&
-    $modifiedPokemon[pokemonName].types.original.length === 0
-  ) {
-    delete $modifiedPokemon[pokemonName];
-  }
-
-  await writeTextFile(
-    `${$selectedWiki.name}/data/modifications/modified_pokemon.json`,
-    JSON.stringify($modifiedPokemon),
-    { dir: BaseDirectory.AppData },
-  );
-}
-
-function checkModifiedTypes() {
-  if ($modifiedPokemon[pokemonName].types.original.length === 0) {
-    $modifiedPokemon[pokemonName].types.original = originalPokemonDetails.types;
-  }
-  $modifiedPokemon[pokemonName].types.modified = pokemonDetails.types;
-
-  if (
-    _.isEqual(
-      $modifiedPokemon[pokemonName].types.original.sort(),
-      $modifiedPokemon[pokemonName].types.modified.sort(),
-    )
-  ) {
-    $modifiedPokemon[pokemonName].types = {
-      original: [],
-      modified: [],
-    };
-  }
-}
-
-function checkModifiedEvolutions() {
-  if (pokemonDetails.evolution.method !== "no_change") {
-    $modifiedPokemon[pokemonName].evolution = pokemonDetails.evolution;
-  } else {
-    $modifiedPokemon[pokemonName].evolution = {
-      method: "no_change",
-      level: 0,
-      item: "",
-      other: "",
-      evolves_to: { id: 0, pokemon_name: "" },
-    };
-  }
-}
-
 async function savePokemonChanges() {
   if (formTabSet !== 0) {
     $pokemon.pokemon[pokemonId].forms[formName] = {
@@ -152,7 +72,11 @@ async function savePokemonChanges() {
     $pokemon.pokemon[pokemonId] = pokemonDetails;
   }
 
-  checkAndWriteMods();
+  updatePokemonModifications(
+    $modifiedPokemon,
+    originalPokemonDetails,
+    pokemonDetails,
+  );
 
   let shard_index = getShardToWrite(pokemonId);
 

@@ -1,15 +1,12 @@
 <script lang="ts">
 import Button from "$lib/components/Button.svelte";
 
-import NumberInput from "$lib/components/NumberInput.svelte";
 import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
 import { invoke } from "@tauri-apps/api/tauri";
 import { selectedWiki } from "../../store";
 
 const toastStore = getToastStore();
 
-let rangeStart: number = 1;
-let rangeEnd: number = 1;
 let loading: boolean = false;
 let tabSet: number = 0;
 

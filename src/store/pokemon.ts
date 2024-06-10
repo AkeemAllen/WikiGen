@@ -27,13 +27,15 @@ export type PokemonForm = {
 };
 
 export type ModifiedPokemon = {
-  [key: string]: {
-    id: number;
-    evolution: Evolution;
-    types: {
-      original: string[];
-      modified: string[];
-    };
+  [key: string]: ModifiedPokemonDetails;
+};
+
+export type ModifiedPokemonDetails = {
+  id: number;
+  evolution: Evolution;
+  types: {
+    original: string[];
+    modified: string[];
   };
 };
 
