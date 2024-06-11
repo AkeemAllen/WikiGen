@@ -20,7 +20,7 @@ use crate::{
         matchup_models::TypeEffectiveness,
         mkdocs_structs::MKDocsConfig,
         move_structs::Moves,
-        pokemon_structs::{EvolutionMethod, Pokemon, PokemonData, PokemonForm},
+        pokemon_structs::{Ability, EvolutionMethod, Pokemon, PokemonData, PokemonForm},
     },
 };
 
@@ -89,6 +89,13 @@ pub fn generate_pokemon_pages(
     let moves_json_file_path = base_path.join(wiki_name).join("data").join("moves.json");
     let moves_file = File::open(&moves_json_file_path).unwrap();
     let moves: Moves = serde_json::from_reader(moves_file).unwrap();
+
+    let abilities_json_file_path = base_path
+        .join(wiki_name)
+        .join("data")
+        .join("abilities.json");
+    let abilities_file = File::open(&abilities_json_file_path).unwrap();
+    let abilities: HashMap<String, Ability> = serde_json::from_reader(abilities_file).unwrap();
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
     let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
@@ -188,6 +195,7 @@ pub fn generate_pokemon_pages(
                 moves.clone(),
                 pokemon_data,
                 tabbed,
+                &abilities,
             );
 
             tab_string.push_str(&pokemon_markdown_string);
@@ -240,6 +248,7 @@ fn generate_pokemon_page(
     moves: Moves,
     pokemon_data: &PokemonData,
     tabbed: bool,
+    abilities: &HashMap<String, Ability>,
 ) -> String {
     let mut markdown_string = String::new();
     let mut tab = "";
@@ -276,7 +285,7 @@ fn generate_pokemon_page(
     markdown_string.push_str(&format!(
         "{}{}",
         tab,
-        create_ability_table(&pokemon_details.abilities)
+        create_ability_table(&pokemon_details.abilities, &abilities)
     ));
     markdown_string.push_str("\n\n");
 

@@ -7,7 +7,7 @@ use crate::{
     structs::{
         matchup_models::TypeEffectiveness,
         move_structs::{LearnMethodDetail, MoveSetMove, Moves},
-        pokemon_structs::{Evolution, EvolutionMethod, Move, Stats},
+        pokemon_structs::{Ability, Evolution, EvolutionMethod, Move, Stats},
     },
 };
 
@@ -63,11 +63,19 @@ pub fn create_defenses_table(
     );
 }
 
-pub fn create_ability_table(abilities: &Vec<String>) -> String {
-    let placeholder_effect = "Effect";
+pub fn create_ability_table(
+    abilities: &Vec<String>,
+    file_abilities: &HashMap<String, Ability>,
+) -> String {
     let ability_entries: Vec<String> = abilities
         .iter()
-        .map(|ability| format!("[{}](\" {} \")", capitalize(ability), placeholder_effect))
+        .map(|ability| {
+            format!(
+                "[{}](\" {} \")",
+                capitalize(ability),
+                file_abilities.get(ability).unwrap().effect
+            )
+        })
         .filter(|ability| !ability.contains("None"))
         .collect();
 
