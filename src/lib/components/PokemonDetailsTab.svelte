@@ -10,7 +10,8 @@ import {
 } from "../../store/pokemon";
 import NumberInput from "./NumberInput.svelte";
 import TextInput from "./TextInput.svelte";
-import { abilities, abilitiesList } from "../../store/abilities";
+import { abilitiesList } from "../../store/abilities";
+import { itemsList } from "../../store/items";
 
 export let pokemonDetails: PokemonDetails = {} as PokemonDetails;
 export let formTabSet: number;
@@ -18,6 +19,13 @@ let pokemonListOptions: AutocompleteOption<string | number>[] =
   $pokemonList.map(([name, id]) => ({ label: _.capitalize(name), value: id }));
 
 const abilitiesListOptions: AutocompleteOption<string>[] = $abilitiesList.map(
+  (name) => ({
+    label: name,
+    value: name,
+  }),
+);
+
+const itemListOptions: AutocompleteOption<string>[] = $itemsList.map(
   (name) => ({
     label: name,
     value: name,
@@ -82,10 +90,14 @@ const abilitiesListOptions: AutocompleteOption<string>[] = $abilitiesList.map(
         />
       </div>
       {#if pokemonDetails.evolution.method === "item"}
-        <TextInput
-          id="evolution-item"
-          bind:value={pokemonDetails.evolution.item}
+        <AutoComplete
           label="Evolution Item"
+          bind:value={pokemonDetails.evolution.item}
+          options={itemListOptions}
+          popupId="evolution-item-popup"
+          onSelection={(e) => {
+              pokemonDetails.evolution.item = e.detail.value;
+            }}
         />
       {/if}
       {#if pokemonDetails.evolution.method === "level_up"}
