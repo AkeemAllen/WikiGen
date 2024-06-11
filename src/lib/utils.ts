@@ -1,5 +1,5 @@
 import type { Routes, TrainerInfo } from "../store/gameRoutes";
-import type { PokemonMoveSet } from "../store/pokemon";
+import type { Pokemon, PokemonMoveSet } from "../store/pokemon";
 import { Operation, type MoveSetChange } from "../types";
 
 function addOrShiftMove(
@@ -168,3 +168,45 @@ export const setUniquePokemonId = (
     pokemonList?.find(([name, _]) => name === pokemonName)?.[1]
   }_${teamLength}_${Math.floor(Math.random() * 9000 + 1000)}`;
 };
+
+export function getShardToWrite(pokemonId: number): number {
+  let roundedId = Math.ceil(pokemonId / 100) * 100;
+
+  if (roundedId > 900) {
+    return 10;
+  }
+
+  // The first number of the rounded ID indicates the shard to write to
+  return parseInt(roundedId.toString().charAt(0));
+}
+
+export function extractPokemonRange(pokemonObj: Pokemon, shard_index: number) {
+  let shard_end = shard_index * 100;
+  let shard_start = shard_end - 99;
+
+  if (shard_end === 1000) {
+    shard_end = 1025;
+  }
+
+  let allPokemon = pokemonObj.pokemon;
+
+  let result: Pokemon = { pokemon: {} };
+
+  for (let key = shard_start; key <= shard_end; key++) {
+    if (allPokemon[key]) {
+      result.pokemon[key] = allPokemon[key];
+    }
+  }
+  return result;
+}
+
+export function convertToTitle(input: string): string {
+  return input
+    .split("-") // Split the string by hyphens
+    .map((word) => {
+      // Capitalize the first letter and make the rest lowercase
+      if (word.length === 0) return word;
+      return word[0].toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(" "); // Join the words with spaces
+}

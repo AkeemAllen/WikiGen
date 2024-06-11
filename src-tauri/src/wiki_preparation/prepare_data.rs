@@ -2,12 +2,17 @@ use reqwest;
 use serde_json::Value;
 use std::fs;
 use std::io::Cursor;
+use std::path::PathBuf;
 use std::{collections::HashMap, fs::File};
 use tauri::AppHandle;
 
+use crate::helpers::round_up_to_nearest_100;
 use crate::structs::pokemon_structs::{
     Evolution, EvolutionMethod, EvolvedPokemon, Move, Pokemon, PokemonData, Stats,
 };
+
+// Replace with Hashmap
+type Shards = HashMap<usize, Pokemon>;
 
 #[tauri::command]
 pub async fn download_and_prep_pokemon_data(
@@ -17,18 +22,39 @@ pub async fn download_and_prep_pokemon_data(
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    let pokemon_path = base_path.join(wiki_name).join("data").join("pokemon.json");
 
-    let pokemon_file = File::open(&pokemon_path).unwrap();
+    let mut shards: Shards = HashMap::new();
 
-    let mut pokemon: Pokemon = serde_json::from_reader(pokemon_file).unwrap();
+    let rounded_range_start = round_up_to_nearest_100(range_start);
+    let rounded_range_end = round_up_to_nearest_100(range_end);
+
+    // I'm using math here to selectively load in data from separate pokemon files.
+    // This way I don'e have to read in all of them.
+    for i in (rounded_range_start..=rounded_range_end).step_by(100) {
+        if i > 900 {
+            shards.insert(10, get_pokemon_data_from_file(wiki_name, &base_path, 10));
+            continue;
+        }
+        let shard_index = i.to_string().chars().next().unwrap().to_digit(10).unwrap();
+        shards.insert(
+            usize::try_from(shard_index).unwrap(),
+            get_pokemon_data_from_file(
+                wiki_name,
+                &base_path,
+                usize::try_from(shard_index).unwrap(),
+            ),
+        );
+    }
 
     for i in range_start..=range_end {
-        let response = reqwest::get(format!("https://pokeapi.co/api/v2/pokemon/{}", i))
-            .await
-            .unwrap()
-            .json::<Value>()
-            .await;
+        let response = match reqwest::get(format!("https://pokeapi.co/api/v2/pokemon/{}", i)).await
+        {
+            Ok(res) => res.json::<Value>().await,
+            Err(_) => {
+                println!("Trouble processing pokemon with dex_number {}", i);
+                continue;
+            }
+        };
         let mut pokemon_response_body = response.ok().unwrap();
 
         let mut types = Vec::new();
@@ -115,15 +141,61 @@ pub async fn download_and_prep_pokemon_data(
                 },
                 method: EvolutionMethod::NoChange,
             },
+            forms: HashMap::new(),
         };
-        pokemon
+        // Each shard (or files) contains 100 pokemon entries.
+        // I have to use this to select and modify the correct file's data.
+        if i > 900 {
+            shards
+                .get_mut(&10)
+                .unwrap()
+                .pokemon
+                .insert(pokemon_data.id.clone(), pokemon_data.clone());
+            continue;
+        }
+        let shard_index = round_up_to_nearest_100(i);
+        let first_digit = shard_index
+            .to_string()
+            .chars()
+            .next()
+            .unwrap()
+            .to_digit(10)
+            .unwrap();
+        shards
+            .get_mut(&usize::try_from(first_digit).unwrap())
+            .unwrap()
             .pokemon
             .insert(pokemon_data.id.clone(), pokemon_data.clone());
     }
-    let string_pokemon_data = serde_json::to_string(&pokemon).unwrap();
-    fs::write(pokemon_path.clone(), string_pokemon_data).unwrap();
+
+    write_pokemon_data_to_files(wiki_name, base_path, shards);
 
     return Ok("Pokemon Saved".to_string());
+}
+
+fn write_pokemon_data_to_files(wiki_name: &str, base_path: PathBuf, shards: Shards) {
+    for shard in shards {
+        let pokemon_path = base_path
+            .join(wiki_name)
+            .join("data")
+            .join("pokemon_data")
+            .join(format!("shard_{}.json", shard.0));
+
+        let string_pokemon_data = serde_json::to_string(&shard.1).unwrap();
+        fs::write(pokemon_path.clone(), string_pokemon_data).unwrap();
+    }
+}
+
+fn get_pokemon_data_from_file(wiki_name: &str, base_path: &PathBuf, shard_index: usize) -> Pokemon {
+    let pokemon_path = base_path
+        .join(wiki_name)
+        .join("data")
+        .join("pokemon_data")
+        .join(format!("shard_{}.json", shard_index));
+    let pokemon_file = File::open(&pokemon_path).unwrap();
+    let pokemon: Pokemon = serde_json::from_reader(pokemon_file).unwrap();
+
+    return pokemon;
 }
 
 #[tauri::command]

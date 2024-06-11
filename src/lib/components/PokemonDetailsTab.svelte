@@ -10,10 +10,27 @@ import {
 } from "../../store/pokemon";
 import NumberInput from "./NumberInput.svelte";
 import TextInput from "./TextInput.svelte";
+import { abilitiesList } from "../../store/abilities";
+import { itemsList } from "../../store/items";
 
 export let pokemonDetails: PokemonDetails = {} as PokemonDetails;
+export let formTabSet: number;
 let pokemonListOptions: AutocompleteOption<string | number>[] =
   $pokemonList.map(([name, id]) => ({ label: _.capitalize(name), value: id }));
+
+const abilitiesListOptions: AutocompleteOption<string>[] = $abilitiesList.map(
+  (name) => ({
+    label: name,
+    value: name,
+  }),
+);
+
+const itemListOptions: AutocompleteOption<string>[] = $itemsList.map(
+  (name) => ({
+    label: name,
+    value: name,
+  }),
+);
 </script>
 
 <div class="scroll-smooth px-4">
@@ -36,76 +53,84 @@ let pokemonListOptions: AutocompleteOption<string | number>[] =
         value: type,
       }))}
     />
-    <SelectInput
-      id="pokemon-ability-1"
-      bind:value={pokemonDetails.abilities[0]}
+    <AutoComplete
       label="Ability 1"
-      options={pokemonDetails.abilities.map((ability) => ({
-        label: _.capitalize(ability),
-        value: ability,
-      }))}
+      bind:value={pokemonDetails.abilities[0]}
+      options={abilitiesListOptions}
+      popupId="ability-1-popup"
+      onSelection={(e) => {
+        pokemonDetails.abilities[0] = e.detail.value;
+      }}
+      class="w-full"
     />
-    <SelectInput
-      id="pokemon-ability-2"
-      bind:value={pokemonDetails.abilities[1]}
+    <AutoComplete
       label="Ability 2"
-      options={pokemonDetails.abilities.map((ability) => ({
-        label: _.capitalize(ability),
-        value: ability,
-      }))}
+      bind:value={pokemonDetails.abilities[1]}
+      options={abilitiesListOptions}
+      popupId="ability-2-popup"
+      onSelection={(e) => {
+      pokemonDetails.abilities[1] = e.detail.value;
+    }}
+      class="w-full"
     />
   </div>
-  <div class="mt-5 flex flex-row gap-x-10">
-    <div class="w-44">
-      <SelectInput
-        id="evolution-method"
-        label="Evolution Method"
-        bind:value={pokemonDetails.evolution.method}
-        options={[
+  {#if formTabSet === 0}
+    <div class="mt-5 flex flex-row gap-x-10">
+      <div class="w-44">
+        <SelectInput
+          id="evolution-method"
+          label="Evolution Method"
+          bind:value={pokemonDetails.evolution.method}
+          options={[
           { label: "No Change", value: "no_change" },
           { label: "Level Up", value: "level_up" },
           { label: "Other", value: "other" },
           { label: "Use Item", value: "item" },
         ]}
-      />
-    </div>
-    {#if pokemonDetails.evolution.method === "item"}
-      <TextInput
-        id="evolution-item"
-        bind:value={pokemonDetails.evolution.item}
-        label="Evolution Item"
-      />
-    {/if}
-    {#if pokemonDetails.evolution.method === "level_up"}
-      <NumberInput
-        id="evolution-level"
-        bind:value={pokemonDetails.evolution.level}
-        label="Evolution Level"
-      />
-    {/if}
-    {#if pokemonDetails.evolution.method === "other"}
-      <TextInput
-        id="evolution-other"
-        bind:value={pokemonDetails.evolution.other}
-        label="Evolution Other"
-      />
-    {/if}
-    {#if pokemonDetails.evolution.method !== "no_change"}
-      <div class="w-44">
+        />
+      </div>
+      {#if pokemonDetails.evolution.method === "item"}
         <AutoComplete
-          label="Evolves To"
-          bind:value={pokemonDetails.evolution.evolves_to.pokemon_name}
-          placeholder="Evolves To"
-          options={pokemonListOptions}
-          popupId="ability-popup"
+          label="Evolution Item"
+          bind:value={pokemonDetails.evolution.item}
+          options={itemListOptions}
+          popupId="evolution-item-popup"
           onSelection={(e) => {
+              pokemonDetails.evolution.item = e.detail.value;
+            }}
+        />
+      {/if}
+      {#if pokemonDetails.evolution.method === "level_up"}
+        <NumberInput
+          id="evolution-level"
+          bind:value={pokemonDetails.evolution.level}
+          label="Evolution Level"
+        />
+      {/if}
+      {#if pokemonDetails.evolution.method === "other"}
+        <TextInput
+          id="evolution-other"
+          bind:value={pokemonDetails.evolution.other}
+          label="Evolution Other"
+        />
+      {/if}
+      {#if pokemonDetails.evolution.method !== "no_change"}
+        <div class="w-44">
+          <AutoComplete
+            label="Evolves To"
+            bind:value={pokemonDetails.evolution.evolves_to.pokemon_name}
+            placeholder="Evolves To"
+            options={pokemonListOptions}
+            popupId="ability-popup"
+            onSelection={(e) => {
             pokemonDetails.evolution.evolves_to.id = e.detail.value;
             pokemonDetails.evolution.evolves_to.pokemon_name = e.detail.label;
           }}
-        />
-      </div>
-    {/if}
-  </div>
+          />
+        </div>
+      {/if}
+    </div>
+  {/if}
   <p class="mt-10 text-lg">Stats</p>
   <div class="mb-2 mt-2 grid grid-cols-2 gap-x-10 gap-y-5">
     <NumberInput

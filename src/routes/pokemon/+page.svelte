@@ -63,12 +63,28 @@ async function downloadAndPrepPokemonData() {
     });
   });
 }
+
+async function generatePokemonPagesInRange() {
+  loading = true;
+  await invoke("generate_pokemon_pages_from_range", {
+    rangeStart,
+    rangeEnd,
+    wikiName: $selectedWiki.name,
+  }).then(() => {
+    loading = false;
+    toastStore.trigger({
+      message: "Pokemon Pages generated",
+      timeout: 5000,
+      hoverable: true,
+      background: "variant-filled-success",
+    });
+  });
+}
 </script>
 
 <TabGroup>
   <Tab bind:group={tabSet} name="pokemon" value={0}>Pokemon</Tab>
-  <Tab bind:group={tabSet} name="prepare-pokemon-data" value={1}
-    >Prepare Data</Tab
+  <Tab bind:group={tabSet} name="prepare-pokemon-data" value={1}>Generation</Tab
   >
   <svelte:fragment slot="panel">
     {#if tabSet === 0}
@@ -84,13 +100,13 @@ async function downloadAndPrepPokemonData() {
         <NumberInput id="range-end" label="Range End" bind:value={rangeEnd} />
       </div>
       <Button
-        class="mt-4 w-40"
+        class=" mt-4 w-40"
         disabled={rangeStart === 0 ||
-            rangeEnd === 0 ||
-            rangeStart > rangeEnd ||
-            loading === true}
-        title="Prepare Data"
-        onClick={downloadAndPrepPokemonData}
+                    rangeEnd === 0 ||
+                    rangeStart > rangeEnd ||
+                    loading === true}
+        title="Generate Pages"
+        onClick={generatePokemonPagesInRange}
         loading={loading}
       />
     {/if}

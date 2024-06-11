@@ -21,5 +21,6 @@ pub struct Types {
 
 pub mod evolution_page;
 pub mod game_routes;
+mod pokemon_page_generator_functions;
 pub mod pokemon_pages;
 pub mod type_page;

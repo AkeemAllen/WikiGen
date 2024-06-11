@@ -13,16 +13,29 @@ export type PokemonDetails = {
   moves: PokemonMoveSet;
   sprite: string;
   evolution: Evolution;
+  forms: {
+    [key: string]: PokemonForm;
+  };
+};
+
+export type PokemonForm = {
+  types: string[];
+  abilities: string[];
+  stats: Stats;
+  sprite: string;
+  moves: PokemonMoveSet;
 };
 
 export type ModifiedPokemon = {
-  [key: string]: {
-    id: number;
-    evolution: Evolution;
-    types: {
-      original: string[];
-      modified: string[];
-    };
+  [key: string]: ModifiedPokemonDetails;
+};
+
+export type ModifiedPokemonDetails = {
+  id: number;
+  evolution: Evolution;
+  types: {
+    original: string[];
+    modified: string[];
   };
 };
 
@@ -77,6 +90,6 @@ export const PokemonTypes = [
   "fairy",
 ];
 
-export let pokemon = writable<Pokemon>();
+export let pokemon = writable<Pokemon>({ pokemon: {} });
 export let pokemonList = writable<[string, number][]>([]);
 export let modifiedPokemon = writable<ModifiedPokemon>({});

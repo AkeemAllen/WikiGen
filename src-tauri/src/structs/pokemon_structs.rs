@@ -12,12 +12,26 @@ pub struct PokemonData {
     pub id: u32,
     pub name: String,
     pub types: Vec<String>,
-    // TODO: Update field to be Vec<Ability> where Ability contains name and effect
     pub abilities: Vec<String>,
     pub stats: Stats,
     pub moves: HashMap<String, Move>,
     pub sprite: String,
     pub evolution: Evolution,
+    pub forms: HashMap<String, PokemonForm>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Ability {
+    pub effect: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PokemonForm {
+    pub types: Vec<String>,
+    pub abilities: Vec<String>,
+    pub stats: Stats,
+    pub sprite: String,
+    pub moves: HashMap<String, Move>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
