@@ -94,6 +94,12 @@ async function loadWikiData(wiki: Wiki) {
     { dir: BaseDirectory.AppData },
   );
   routes.set(sortRoutesByPosition(JSON.parse(routesFromFile)));
+
+  toastStore.trigger({
+    message: `${$selectedWiki.site_name} Wiki Loaded Successfully`,
+    timeout: 2000,
+    background: "variant-filled-success",
+  });
 }
 
 async function deleteWikis() {
