@@ -15,7 +15,6 @@ export type Wiki = {
 };
 
 export type WikiSettings = {
-  version_group: string;
   deployment_url: string;
 };
 

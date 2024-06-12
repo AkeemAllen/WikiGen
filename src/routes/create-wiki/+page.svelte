@@ -14,7 +14,6 @@ let wikiCodeName = "";
 let wikiDescription = "";
 let wikiAuthor = "";
 let settings: WikiSettings = {
-  version_group: "red-blue",
   deployment_url: "",
 };
 
@@ -126,23 +125,11 @@ async function createWiki() {
         bind:value={siteUrl}
       />
     </div>
-    <SelectInput
-      id="version-group"
-      label="Version Group"
-      bind:value={settings.version_group}
-      options={[
-        { label: "Red - Blue", value: "red-blue" },
-        { label: "Generation 1", value: "gen-1" },
-        { label: "Generation 2", value: "gen-2" },
-      ]}
-    />
-
     <Button
       class="w-32"
       disabled={wikiDescription === "" ||
           wikiName === "" ||
           wikiAuthor === "" ||
-          settings.version_group === "" ||
           loading === true}
       onClick={createWiki}
       title="Create Wiki"
