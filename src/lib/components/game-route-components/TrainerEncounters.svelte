@@ -197,7 +197,7 @@ async function setPosition() {
     showChevron={false}
   />
 
-  <NumberInput label="Level" bind:value={level} class="w-32" />
+  <NumberInput label="Level" bind:value={level} class="w-32" max={100} />
   <Button
     title="Add Encounter"
     class="mt-8 w-32"

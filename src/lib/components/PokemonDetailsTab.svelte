@@ -105,6 +105,7 @@ const itemListOptions: AutocompleteOption<string>[] = $itemsList.map(
           id="evolution-level"
           bind:value={pokemonDetails.evolution.level}
           label="Evolution Level"
+          max={100}
         />
       {/if}
       {#if pokemonDetails.evolution.method === "other"}
@@ -137,31 +138,37 @@ const itemListOptions: AutocompleteOption<string>[] = $itemsList.map(
       id="pokemon-hp"
       bind:value={pokemonDetails.stats.hp}
       label="HP"
+      max={255}
     />
     <NumberInput
       id="pokemon-attack"
       bind:value={pokemonDetails.stats.attack}
       label="Attack"
+      max={255}
     />
     <NumberInput
       id="pokemon-defense"
       bind:value={pokemonDetails.stats.defense}
       label="Defense"
+      max={255}
     />
     <NumberInput
       id="pokemon-special-attack"
       bind:value={pokemonDetails.stats.sp_attack}
       label="Special Attack"
+      max={255}
     />
     <NumberInput
       id="pokemon-special-defense"
       bind:value={pokemonDetails.stats.sp_defense}
       label="Special Defense"
+      max={255}
     />
     <NumberInput
       id="pokemon-speed"
       bind:value={pokemonDetails.stats.speed}
       label="Speed"
+      max={255}
     />
   </div>
 </div>

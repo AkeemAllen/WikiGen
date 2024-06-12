@@ -165,6 +165,7 @@ function saveChanges() {
                     disabled={row.operation === Operation.DELETE ||
                       row.operation === Operation.REPLACE_MOVE ||
                       row.operation === Operation.SWAP_MOVES}
+                    max={100}
                   />
                 </td>
                 <td class="px-6 py-0 pb-1">
