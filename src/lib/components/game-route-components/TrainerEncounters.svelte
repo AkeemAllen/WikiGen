@@ -36,6 +36,10 @@ let positionModalOpen: boolean = false;
 let spriteName: string = "";
 
 $: trainers = $routes.routes[routeName].trainers ?? {};
+$: trainerOptions = Object.keys(trainers).map((trainer) => ({
+  label: trainer,
+  value: trainer,
+}));
 
 let pokemonListOptions: AutocompleteOption<string | number>[] =
   $pokemonList.map(([name, id]) => ({ label: name, value: id }));
@@ -172,20 +176,25 @@ async function setPosition() {
 </script>
 
 <div class="flex flex-row gap-x-5">
-  <TextInput
-    class="w-40"
-    id="trainer-name"
+  <AutoComplete
     label="Trainer Name"
     bind:value={trainerName}
+    options={trainerOptions}
+    popupId="popupTrainerNames"
+    onSelection={(e) => {
+      trainerName = e.detail.label;
+    }}
+    showChevron={false}
+    class="w-40"
   />
-
   <AutoComplete
     label="Pokemon for current encounter type"
     placeholder="Pokemon Name"
     bind:value={pokemonName}
     options={pokemonListOptions}
-    popupId="popupAutoComplete"
+    popupId="popupPokemonNames"
     onSelection={onPokemonNameSelected}
+    showChevron={false}
   />
 
   <NumberInput label="Level" bind:value={level} />
