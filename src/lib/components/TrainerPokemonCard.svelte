@@ -110,6 +110,7 @@ async function writeRouteToFile() {
       options={$moveList}
       maxSelect={4}
       on:change={async (e) => {writeRouteToFile()}}
+      maxOptions={5}
       style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
     />
   </div>
