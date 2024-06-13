@@ -420,6 +420,13 @@ fn extract_move(_move: Option<&String>) -> String {
     }
 }
 
+fn evaluate_attribute(attribute: &str) -> String {
+    match attribute {
+        "" => return "-".to_string(),
+        _ => return attribute.to_string(),
+    }
+}
+
 fn generate_trainer_entry(
     wiki_name: &str,
     name: &str,
@@ -444,14 +451,15 @@ fn generate_trainer_entry(
         if !pokemon.trainer_versions.contains(&version.to_string()) && version != "" {
             continue;
         }
+
         let pokemon_entry = format!(
             "| {} ",
             get_markdown_entry_for_trainer_pokemon(wiki_name, pokemon)
         );
         let level_entry = format!("| {} ", pokemon.level);
-        let item_entry = format!("| {} ", pokemon.item);
-        let nature_entry = format!("| {} ", pokemon.nature);
-        let ability_entry = format!("| {} ", pokemon.ability);
+        let item_entry = format!("| {} ", evaluate_attribute(&pokemon.item));
+        let nature_entry = format!("| {} ", evaluate_attribute(&pokemon.nature));
+        let ability_entry = format!("| {} ", evaluate_attribute(&pokemon.ability));
         let move1_entry = format!("| {} ", extract_move(pokemon.moves.get(0)));
         let move2_entry = format!("| {} ", extract_move(pokemon.moves.get(1)));
         let move3_entry = format!("| {} ", extract_move(pokemon.moves.get(2)));

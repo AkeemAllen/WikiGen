@@ -66,7 +66,6 @@ async function writeRouteToFile() {
   <AutoComplete
     label="Ability"
     bind:value={pokemon.ability}
-    placeholder="Ability"
     options={abilityListOptions}
     popupId="ability-popup"
     onSelection={async (e) => {pokemon.ability = e.detail.value; writeRouteToFile()}}
@@ -74,7 +73,6 @@ async function writeRouteToFile() {
   <AutoComplete
     label="Nature"
     bind:value={pokemon.nature}
-    placeholder="Nature"
     options={natureListOptions}
     popupId="nature-popup"
     onSelection={async (e) => {pokemon.nature = e.detail.value; writeRouteToFile()}}
@@ -82,7 +80,6 @@ async function writeRouteToFile() {
   <AutoComplete
     label="Item"
     bind:value={pokemon.item}
-    placeholder="Item"
     options={itemListOptions}
     popupId="item-popup"
     onSelection={async (e) => {pokemon.item = e.detail.value; writeRouteToFile()}}
