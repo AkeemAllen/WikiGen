@@ -27,16 +27,10 @@ pub fn get_yaml(
         Value::String("index.md".to_string()),
     );
 
-    let mut test_pokemon = Mapping::new();
-    test_pokemon.insert(
-        Value::String("Test Pokemon".to_string()),
-        Value::String("pokemon/test_pokemon.md".to_string()),
-    );
-
     let mut pokemon_map = Mapping::new();
     pokemon_map.insert(
         Value::String("Pokemon".to_string()),
-        Value::Sequence(vec![Value::Mapping(test_pokemon)]),
+        Value::Sequence(vec![]),
     );
 
     let mut wild_encounters = Mapping::new();

@@ -63,9 +63,6 @@ pub async fn create_wiki(
     let pokemon_data_folder = docs_folder.join("pokemon");
     fs::create_dir_all(pokemon_data_folder).unwrap();
 
-    let test_pokemon_file_path = docs_folder.join("pokemon").join("test_pokemon.md");
-    fs::write(test_pokemon_file_path, "# Placeholder Pokemon").unwrap();
-
     let test_route_file_path = docs_folder.join("routes").join("Test_route");
     fs::create_dir_all(&test_route_file_path).unwrap();
 
