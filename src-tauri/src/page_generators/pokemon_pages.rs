@@ -248,8 +248,6 @@ pub fn generate_pokemon_pages(
 }
 
 fn extract_pokemon_id(key: Option<&str>) -> i32 {
-    // There will only ever be one key here so no need to worry about
-    // ending the loop immediately
     // This long chain is just meant to get, format and trim dex number
     return key
         .unwrap()
