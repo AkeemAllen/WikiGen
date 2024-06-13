@@ -6,7 +6,7 @@ use std::{
 };
 
 use indexmap::IndexMap;
-use serde_yaml::{Mapping, Value};
+use serde_yaml::{mapping::Keys, Mapping, Value};
 use tauri::AppHandle;
 
 use crate::{
@@ -226,6 +226,15 @@ pub fn generate_pokemon_pages(
 
         if !page_entry_exists {
             mkdocs_pokemon.push(Value::Mapping(pokemon_page_entry));
+
+            // Sort pokemon entries so new ones don't appear out of order
+            // in the navigation
+            mkdocs_pokemon.sort_by(|a, b| {
+                let first = a.as_mapping().unwrap().keys().next().unwrap();
+                let second = b.as_mapping().unwrap().keys().next().unwrap();
+
+                extract_pokemon_id(first.as_str()).cmp(&extract_pokemon_id(second.as_str()))
+            })
         }
     }
 
@@ -236,6 +245,20 @@ pub fn generate_pokemon_pages(
     .unwrap();
 
     return Ok("Pokemon Pages Generated".to_string());
+}
+
+fn extract_pokemon_id(key: Option<&str>) -> i32 {
+    // There will only ever be one key here so no need to worry about
+    // ending the loop immediately
+    // This long chain is just meant to get, format and trim dex number
+    return key
+        .unwrap()
+        .split_once("-")
+        .unwrap()
+        .0
+        .trim()
+        .parse::<i32>()
+        .unwrap();
 }
 
 fn generate_pokemon_page(
