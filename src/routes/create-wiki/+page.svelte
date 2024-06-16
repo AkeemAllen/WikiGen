@@ -23,13 +23,6 @@ $: siteUrl = `https://${wikiAuthor}.github.io/${wikiCodeName}`;
 $: repoUrl = `https://github.com/${wikiAuthor}/${wikiCodeName}`;
 $: siteName = wikiName;
 
-const wikiCreatedToast: ToastSettings = {
-  message: "Wiki Created",
-  timeout: 5000,
-  hoverable: true,
-  background: "variant-filled-success",
-};
-
 async function createWiki() {
   loading = true;
 
@@ -50,10 +43,25 @@ async function createWiki() {
     wikiDescription,
     wikiAuthor,
     siteName,
-  }).then(() => {
-    loading = false;
-    toastStore.trigger(wikiCreatedToast);
-  });
+  })
+    .then((result) => {
+      loading = false;
+      toastStore.trigger({
+        message: result as string,
+        timeout: 5000,
+        hoverable: true,
+        background: "variant-filled-success",
+      });
+    })
+    .catch((error) => {
+      loading = false;
+      toastStore.trigger({
+        message: error as string,
+        timeout: 5000,
+        hoverable: true,
+        background: "variant-filled-error",
+      });
+    });
 }
 </script>
 

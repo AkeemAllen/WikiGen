@@ -1,4 +1,4 @@
-use crate::helpers::copy_recursively;
+use crate::helpers::{capitalize, copy_recursively};
 use crate::wiki_preparation::yaml_declaration;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -145,5 +145,8 @@ pub async fn create_wiki(
         }
     }
 
-    return Ok(format!("{} Wiki created and initialized", wiki_name));
+    return Ok(format!(
+        "{} Wiki created and initialized",
+        capitalize(wiki_name)
+    ));
 }
