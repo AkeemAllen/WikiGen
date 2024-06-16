@@ -23,24 +23,57 @@ pub async fn create_wiki(
 ) -> Result<String, String> {
     let data_dir = app_handle.path_resolver().app_data_dir().unwrap();
     let base_path = data_dir.join(wiki_name);
-    let resource_dir = app_handle.path_resolver().resource_dir().unwrap();
-    let resource_path = resource_dir.join("resources");
-
     if base_path.exists() {
         return Err(format!("{} already exists", wiki_name));
     }
 
-    fs::create_dir_all(&base_path).unwrap();
+    let resource_dir = app_handle.path_resolver().resource_dir().unwrap();
+    let resource_path = resource_dir.join("resources");
+
+    match fs::create_dir_all(&base_path) {
+        Ok(_) => {}
+        Err(err) => {
+            return Err(format!(
+                "Failed to create {} wiki's base path: {:?}",
+                wiki_name, err
+            ));
+        }
+    }
+
+    // Create dist folder
+    let dist_folder = base_path.join("dist");
+    let docs_folder = dist_folder.join("docs");
+
+    match fs::create_dir_all(&docs_folder) {
+        Ok(_) => {}
+        Err(err) => {
+            return Err(format!("Failed to create dist directory path: {:?}", err));
+        }
+    }
+
+    let pokemon_data_folder = docs_folder.join("pokemon");
+    match fs::create_dir_all(&pokemon_data_folder) {
+        Ok(_) => {}
+        Err(err) => {
+            return Err(format!(
+                "Failed to create pokemon directory path: {:?}",
+                err
+            ));
+        }
+    }
+
+    let routes_folder = docs_folder.join("routes");
+    match fs::create_dir_all(&routes_folder) {
+        Ok(_) => {}
+        Err(err) => {
+            return Err(format!("Failed to create routes directory path: {:?}", err));
+        }
+    }
 
     // Copy Starting Data to new wiki
     let wiki_data_folder = base_path.join("data");
     let starting_data_folder = resource_path.join("generator_assets").join("starting_data");
     let _ = copy_recursively(starting_data_folder, wiki_data_folder);
-
-    // Create dist folder
-    let dist_folder = base_path.join("dist");
-    let docs_folder = dist_folder.join("docs");
-    fs::create_dir_all(&docs_folder).unwrap();
 
     let generator_assets_path = resource_path.join("generator_assets");
 
@@ -59,18 +92,6 @@ pub async fn create_wiki(
     let pokemon_sprites_folder = generator_assets_path.join("pokemon_sprites");
     let pokemon_images_folder = docs_folder.join("img").join("pokemon");
     let _ = copy_recursively(pokemon_sprites_folder, pokemon_images_folder);
-
-    let pokemon_data_folder = docs_folder.join("pokemon");
-    fs::create_dir_all(pokemon_data_folder).unwrap();
-
-    let test_route_file_path = docs_folder.join("routes").join("Test_route");
-    fs::create_dir_all(&test_route_file_path).unwrap();
-
-    let wild_enounters_file_path = docs_folder
-        .join("routes")
-        .join("Test_route")
-        .join("wild_encounters.md");
-    fs::write(wild_enounters_file_path, "# Wild Encounters").unwrap();
 
     let index_file_path = docs_folder.join("index.md");
     fs::write(index_file_path, "# Index").unwrap();
