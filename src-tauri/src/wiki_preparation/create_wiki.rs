@@ -94,7 +94,12 @@ pub async fn create_wiki(
     let _ = copy_recursively(pokemon_sprites_folder, pokemon_images_folder);
 
     let index_file_path = docs_folder.join("index.md");
-    fs::write(index_file_path, "# Index").unwrap();
+    match fs::write(index_file_path, "# Index") {
+        Ok(_) => {}
+        Err(err) => {
+            return Err(format!("Failed to create index/Homepage file: {:?}", err));
+        }
+    }
 
     let wiki_config = WikiConfig {
         use_side_menu: true,
@@ -104,11 +109,15 @@ pub async fn create_wiki(
     };
 
     let config_file_path = docs_folder.join("config.json");
-    fs::write(
+    match fs::write(
         config_file_path,
         serde_json::to_string(&wiki_config).unwrap(),
-    )
-    .unwrap();
+    ) {
+        Ok(_) => {}
+        Err(err) => {
+            return Err(format!("Failed to create mkdocs config file: {:?}", err));
+        }
+    }
 
     let repo_url = format!("https://github.com/{}/{}", wiki_author, wiki_name);
     let site_url = format!(
@@ -126,11 +135,15 @@ pub async fn create_wiki(
     );
 
     let mkdocs_file_path = dist_folder.join("mkdocs.yml");
-    fs::write(
+    match fs::write(
         mkdocs_file_path,
         serde_yaml::to_string(&mkdocs_config).unwrap(),
-    )
-    .unwrap();
+    ) {
+        Ok(_) => {}
+        Err(err) => {
+            return Err(format!("Failed to create mkdocs yaml file: {:?}", err));
+        }
+    }
 
     return Ok(format!("{} Wiki created and initialized", wiki_name));
 }
