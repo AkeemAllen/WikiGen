@@ -19,20 +19,33 @@ pub fn generate_type_page(wiki_name: &str, base_path: PathBuf) -> Result<String,
         .join("modified_pokemon.json");
     let modified_pokemon_file = File::open(&modified_pokemon_json_file_path).unwrap();
     let modified_pokemon: super::ModifiedPokemon =
-        serde_json::from_reader(modified_pokemon_file).unwrap();
+        match serde_json::from_reader(modified_pokemon_file) {
+            Ok(file) => file,
+            Err(err) => {
+                return Err(format!(
+                    "Failed to read modified pokemon json file: {}",
+                    err
+                ))
+            }
+        };
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
     let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
-    let mut mkdocs_config: MKDocsConfig = serde_yaml::from_reader(mkdocs_yaml_file).unwrap();
+    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
+        Ok(file) => file,
+        Err(err) => return Err(format!("Failed to read mkdocs yaml file: {}", err)),
+    };
 
-    let mut type_changes_file = File::create(
+    let mut type_changes_file = match File::create(
         base_path
             .join(wiki_name)
             .join("dist")
             .join("docs")
             .join("type_changes.md"),
-    )
-    .unwrap();
+    ) {
+        Ok(file) => file,
+        Err(err) => return Err(format!("Failed to create type changes file: {}", err)),
+    };
 
     let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
     let mut type_page_exists = false;
@@ -64,24 +77,30 @@ pub fn generate_type_page(wiki_name: &str, base_path: PathBuf) -> Result<String,
             return Ok("No Types to generate".to_string());
         }
 
-        fs::remove_file(
+        match fs::remove_file(
             base_path
                 .join(wiki_name)
                 .join("dist")
                 .join("docs")
                 .join("type_changes.md"),
-        )
-        .unwrap();
+        ) {
+            Ok(file) => file,
+            Err(err) => {
+                println!("Failed to remove type changes file: {}", err);
+            }
+        }
         mkdocs_config
             .nav
             .as_sequence_mut()
             .unwrap()
             .remove(page_index);
-        fs::write(
+        match fs::write(
             &mkdocs_yaml_file_path,
             serde_yaml::to_string(&mkdocs_config).unwrap(),
-        )
-        .unwrap();
+        ) {
+            Ok(file) => file,
+            Err(err) => return Err(format!("Failed to update mkdocs yaml file: {}", err)),
+        }
         return Ok("No Types to genereate. Type page removed".to_string());
     }
 
@@ -114,11 +133,13 @@ pub fn generate_type_page(wiki_name: &str, base_path: PathBuf) -> Result<String,
         .unwrap()
         .insert(1, Value::Mapping(type_changes));
 
-    fs::write(
+    match fs::write(
         mkdocs_yaml_file_path,
         serde_yaml::to_string(&mkdocs_config).unwrap(),
-    )
-    .unwrap();
+    ) {
+        Ok(_) => {}
+        Err(err) => return Err(format!("Failed to update mkdocs yaml file: {}", err)),
+    }
 
     Ok("Type page generated".to_string())
 }

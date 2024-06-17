@@ -35,7 +35,7 @@ pub async fn generate_pokemon_pages_from_list(
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
     let result = generate_pokemon_pages(dex_numbers, wiki_name, base_path.clone());
     generate_type_page(wiki_name, base_path.clone()).unwrap();
-    generate_evolution_page(wiki_name, base_path).unwrap();
+    generate_evolution_page(wiki_name, base_path)?;
     return result;
 }
 
