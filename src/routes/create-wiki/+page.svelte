@@ -1,6 +1,5 @@
 <script lang="ts">
 import Button from "$lib/components/Button.svelte";
-import SelectInput from "$lib/components/SelectInput.svelte";
 import TextInput from "$lib/components/TextInput.svelte";
 import { getToastStore, type ToastSettings } from "@skeletonlabs/skeleton";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
@@ -14,7 +13,6 @@ let wikiCodeName = "";
 let wikiDescription = "";
 let wikiAuthor = "";
 let settings: WikiSettings = {
-  version_group: "red-blue",
   deployment_url: "",
 };
 
@@ -24,13 +22,6 @@ $: wikiCodeName = wikiName.toLowerCase().replaceAll(" ", "-");
 $: siteUrl = `https://${wikiAuthor}.github.io/${wikiCodeName}`;
 $: repoUrl = `https://github.com/${wikiAuthor}/${wikiCodeName}`;
 $: siteName = wikiName;
-
-const wikiCreatedToast: ToastSettings = {
-  message: "Wiki Created",
-  timeout: 5000,
-  hoverable: true,
-  background: "variant-filled-success",
-};
 
 async function createWiki() {
   loading = true;
@@ -52,10 +43,25 @@ async function createWiki() {
     wikiDescription,
     wikiAuthor,
     siteName,
-  }).then(() => {
-    loading = false;
-    toastStore.trigger(wikiCreatedToast);
-  });
+  })
+    .then((result) => {
+      loading = false;
+      toastStore.trigger({
+        message: result as string,
+        timeout: 5000,
+        hoverable: true,
+        background: "variant-filled-success",
+      });
+    })
+    .catch((error) => {
+      loading = false;
+      toastStore.trigger({
+        message: error as string,
+        timeout: 5000,
+        hoverable: true,
+        background: "variant-filled-error",
+      });
+    });
 }
 </script>
 
@@ -126,23 +132,11 @@ async function createWiki() {
         bind:value={siteUrl}
       />
     </div>
-    <SelectInput
-      id="version-group"
-      label="Version Group"
-      bind:value={settings.version_group}
-      options={[
-        { label: "Red - Blue", value: "red-blue" },
-        { label: "Generation 1", value: "gen-1" },
-        { label: "Generation 2", value: "gen-2" },
-      ]}
-    />
-
     <Button
       class="w-32"
       disabled={wikiDescription === "" ||
           wikiName === "" ||
           wikiAuthor === "" ||
-          settings.version_group === "" ||
           loading === true}
       onClick={createWiki}
       title="Create Wiki"

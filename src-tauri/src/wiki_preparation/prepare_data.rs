@@ -1,3 +1,5 @@
+// TODO: Not using data prepartion like this again.
+// May be able to remove.
 use reqwest;
 use serde_json::Value;
 use std::fs;

@@ -62,14 +62,10 @@ async function writeRouteToFile() {
 }
 </script>
 
-<BaseModal
-  bind:open={editModalOpen}
-  class="grid max-w-[40rem] grid-cols-2 gap-5"
->
+<BaseModal bind:open={editModalOpen} class="grid w-[40rem] grid-cols-2 gap-5">
   <AutoComplete
     label="Ability"
     bind:value={pokemon.ability}
-    placeholder="Ability"
     options={abilityListOptions}
     popupId="ability-popup"
     onSelection={async (e) => {pokemon.ability = e.detail.value; writeRouteToFile()}}
@@ -77,7 +73,6 @@ async function writeRouteToFile() {
   <AutoComplete
     label="Nature"
     bind:value={pokemon.nature}
-    placeholder="Nature"
     options={natureListOptions}
     popupId="nature-popup"
     onSelection={async (e) => {pokemon.nature = e.detail.value; writeRouteToFile()}}
@@ -85,7 +80,6 @@ async function writeRouteToFile() {
   <AutoComplete
     label="Item"
     bind:value={pokemon.item}
-    placeholder="Item"
     options={itemListOptions}
     popupId="item-popup"
     onSelection={async (e) => {pokemon.item = e.detail.value; writeRouteToFile()}}
@@ -101,6 +95,7 @@ async function writeRouteToFile() {
       bind:selected={pokemon.trainer_versions}
       options={trainerVersions}
       on:change={async (e) => {writeRouteToFile()}}
+      style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
     />
   </div>
   <div class="col-span-2">
@@ -115,6 +110,8 @@ async function writeRouteToFile() {
       options={$moveList}
       maxSelect={4}
       on:change={async (e) => {writeRouteToFile()}}
+      maxOptions={5}
+      style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
     />
   </div>
 </BaseModal>

@@ -36,6 +36,10 @@ let positionModalOpen: boolean = false;
 let spriteName: string = "";
 
 $: trainers = $routes.routes[routeName].trainers ?? {};
+$: trainerOptions = Object.keys(trainers).map((trainer) => ({
+  label: trainer,
+  value: trainer,
+}));
 
 let pokemonListOptions: AutocompleteOption<string | number>[] =
   $pokemonList.map(([name, id]) => ({ label: name, value: id }));
@@ -89,9 +93,9 @@ async function addPokemonToTrainer() {
           ),
           name: pokemonName,
           level,
-          item: "-",
-          nature: "-",
-          ability: "-",
+          item: "",
+          nature: "",
+          ability: "",
           trainer_versions: [],
           moves: [],
         },
@@ -172,23 +176,28 @@ async function setPosition() {
 </script>
 
 <div class="flex flex-row gap-x-5">
-  <TextInput
-    class="w-40"
-    id="trainer-name"
+  <AutoComplete
     label="Trainer Name"
     bind:value={trainerName}
+    options={trainerOptions}
+    popupId="popupTrainerNames"
+    onSelection={(e) => {
+      trainerName = e.detail.label;
+    }}
+    showChevron={false}
+    class="w-40"
   />
-
   <AutoComplete
     label="Pokemon for current encounter type"
     placeholder="Pokemon Name"
     bind:value={pokemonName}
     options={pokemonListOptions}
-    popupId="popupAutoComplete"
+    popupId="popupPokemonNames"
     onSelection={onPokemonNameSelected}
+    showChevron={false}
   />
 
-  <NumberInput label="Level" bind:value={level} />
+  <NumberInput label="Level" bind:value={level} class="w-32" max={100} />
   <Button
     title="Add Encounter"
     class="mt-8 w-32"
@@ -230,6 +239,7 @@ async function setPosition() {
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
     )}}
+      style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
     />
   </div>
 </BaseModal>

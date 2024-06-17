@@ -84,12 +84,24 @@ pub fn generate_single_route(
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
     let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
-    let routes_file = File::open(&routes_json_file_path).unwrap();
-    let routes: Routes = serde_json::from_reader(routes_file).unwrap();
+    let routes_file = match File::open(&routes_json_file_path) {
+        Ok(file) => file,
+        Err(err) => return Err(format!("Failed to read routes file: {}", err)),
+    };
+    let routes: Routes = match serde_json::from_reader(routes_file) {
+        Ok(routes) => routes,
+        Err(err) => return Err(format!("Failed to parse routes file: {}", err)),
+    };
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
-    let mut mkdocs_config: MKDocsConfig = serde_yaml::from_reader(mkdocs_yaml_file).unwrap();
+    let mkdocs_yaml_file = match File::open(&mkdocs_yaml_file_path) {
+        Ok(mkdocs) => mkdocs,
+        Err(err) => return Err(format!("Failed to read Mkdocs yaml file: {}", err)),
+    };
+    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
+        Ok(config) => config,
+        Err(err) => return Err(format!("Failed to parse Mkdocs yaml file: {}", err)),
+    };
 
     let mut mkdocs_routes: &mut Vec<Value> = &mut Vec::new();
 
@@ -122,12 +134,17 @@ pub fn generate_single_route(
             return Ok("Route is empty".to_string());
         }
         mkdocs_routes.remove(page_position);
-        fs::remove_dir_all(&routes_directory).unwrap();
-        fs::write(
+        match fs::remove_dir_all(&routes_directory) {
+            Ok(_) => {}
+            Err(err) => return Err(format!("Failed to deleted routes directory: {}", err)),
+        };
+        match fs::write(
             mkdocs_yaml_file_path,
             serde_yaml::to_string(&mkdocs_config).unwrap(),
-        )
-        .unwrap();
+        ) {
+            Ok(_) => {}
+            Err(err) => return Err(format!("Failed to update Mkdocs file: {}", err)),
+        };
         return Ok("Route is empty. Removed empty route".to_string());
     }
 
@@ -145,11 +162,13 @@ pub fn generate_single_route(
             .clone();
     }
 
-    fs::write(
+    match fs::write(
         mkdocs_yaml_file_path,
         serde_yaml::to_string(&mkdocs_config).unwrap(),
-    )
-    .unwrap();
+    ) {
+        Ok(_) => {}
+        Err(err) => return Err(format!("Failed to update Mkdocs file: {}", err)),
+    };
 
     Ok("".to_string())
 }
@@ -158,12 +177,24 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
     let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
-    let routes_file = File::open(&routes_json_file_path).unwrap();
-    let routes: Routes = serde_json::from_reader(routes_file).unwrap();
+    let routes_file = match File::open(&routes_json_file_path) {
+        Ok(file) => file,
+        Err(err) => return Err(format!("Failed to read routes file: {}", err)),
+    };
+    let routes: Routes = match serde_json::from_reader(routes_file) {
+        Ok(routes) => routes,
+        Err(err) => return Err(format!("Failed to parse routes file: {}", err)),
+    };
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
-    let mut mkdocs_config: MKDocsConfig = serde_yaml::from_reader(mkdocs_yaml_file).unwrap();
+    let mkdocs_yaml_file = match File::open(&mkdocs_yaml_file_path) {
+        Ok(mkdocs) => mkdocs,
+        Err(err) => return Err(format!("Failed to read Mkdocs yaml file: {}", err)),
+    };
+    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
+        Ok(config) => config,
+        Err(err) => return Err(format!("Failed to parse Mkdocs yaml file: {}", err)),
+    };
 
     let mut mkdocs_routes: &mut Vec<Value> = &mut Vec::new();
 
@@ -182,7 +213,10 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
     for (route_name, route_properties) in routes.routes.iter() {
         let routes_directory = docs_path.join("routes").join(route_name);
 
-        fs::create_dir_all(&routes_directory).unwrap();
+        match fs::create_dir_all(&routes_directory) {
+            Ok(_) => {}
+            Err(err) => return Err(format!("Failed to create routes directory: {}", err)),
+        };
 
         let route_entry =
             generate_route_entry(wiki_name, route_name, &routes_directory, route_properties);
@@ -194,7 +228,10 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
         mkdocs_routes.push(Value::Mapping(route_entry));
     }
 
-    let paths = fs::read_dir(&docs_path.join("routes")).unwrap();
+    let paths = match fs::read_dir(&docs_path.join("routes")) {
+        Ok(directories) => directories,
+        Err(err) => return Err(format!("Failed to read routes directory: {}", err)),
+    };
     for path in paths {
         let path_name = path
             .as_ref()
@@ -205,15 +242,20 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
             .unwrap();
 
         if !routes.routes.contains_key(&path_name) {
-            fs::remove_dir_all(&path.unwrap().path()).unwrap();
+            match fs::remove_dir_all(&path.unwrap().path()) {
+                Ok(_) => {}
+                Err(err) => return Err(format!("Failed to move directory: {}", err)),
+            };
         }
     }
 
-    fs::write(
+    match fs::write(
         mkdocs_yaml_file_path,
         serde_yaml::to_string(&mkdocs_config.clone()).unwrap(),
-    )
-    .unwrap();
+    ) {
+        Ok(_) => {}
+        Err(err) => return Err(format!("Failed to update mkdocs yaml: {}", err)),
+    };
 
     Ok("Generating Routes".to_string())
 }
@@ -420,6 +462,13 @@ fn extract_move(_move: Option<&String>) -> String {
     }
 }
 
+fn evaluate_attribute(attribute: &str) -> String {
+    match attribute {
+        "" => return "-".to_string(),
+        _ => return attribute.to_string(),
+    }
+}
+
 fn generate_trainer_entry(
     wiki_name: &str,
     name: &str,
@@ -444,14 +493,15 @@ fn generate_trainer_entry(
         if !pokemon.trainer_versions.contains(&version.to_string()) && version != "" {
             continue;
         }
+
         let pokemon_entry = format!(
             "| {} ",
             get_markdown_entry_for_trainer_pokemon(wiki_name, pokemon)
         );
         let level_entry = format!("| {} ", pokemon.level);
-        let item_entry = format!("| {} ", pokemon.item);
-        let nature_entry = format!("| {} ", pokemon.nature);
-        let ability_entry = format!("| {} ", pokemon.ability);
+        let item_entry = format!("| {} ", evaluate_attribute(&pokemon.item));
+        let nature_entry = format!("| {} ", evaluate_attribute(&pokemon.nature));
+        let ability_entry = format!("| {} ", evaluate_attribute(&pokemon.ability));
         let move1_entry = format!("| {} ", extract_move(pokemon.moves.get(0)));
         let move2_entry = format!("| {} ", extract_move(pokemon.moves.get(1)));
         let move3_entry = format!("| {} ", extract_move(pokemon.moves.get(2)));

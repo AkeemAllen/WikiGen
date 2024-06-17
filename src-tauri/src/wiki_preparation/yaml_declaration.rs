@@ -27,33 +27,14 @@ pub fn get_yaml(
         Value::String("index.md".to_string()),
     );
 
-    let mut test_pokemon = Mapping::new();
-    test_pokemon.insert(
-        Value::String("Test Pokemon".to_string()),
-        Value::String("pokemon/test_pokemon.md".to_string()),
-    );
-
     let mut pokemon_map = Mapping::new();
     pokemon_map.insert(
         Value::String("Pokemon".to_string()),
-        Value::Sequence(vec![Value::Mapping(test_pokemon)]),
+        Value::Sequence(vec![]),
     );
 
-    let mut wild_encounters = Mapping::new();
-    wild_encounters.insert(
-        Value::String("Wild Encounters".to_string()),
-        Value::String("routes/Test_route/wild_encounters.md".to_string()),
-    );
-    let mut test_route = Mapping::new();
-    test_route.insert(
-        Value::String("Test Route".to_string()),
-        Value::Sequence(vec![Value::Mapping(wild_encounters)]),
-    );
     let mut routes_map = Mapping::new();
-    routes_map.insert(
-        Value::String("Routes".to_string()),
-        Value::Sequence(vec![Value::Mapping(test_route)]),
-    );
+    routes_map.insert(Value::String("Routes".to_string()), Value::Sequence(vec![]));
 
     let mkdocs_config = MKDocsConfig {
         site_name: site_name.to_string(),

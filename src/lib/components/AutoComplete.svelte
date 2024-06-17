@@ -56,6 +56,7 @@ export { className as class };
       limit={5}
       on:selection={onSelection}
       class="w-full rounded-md border bg-white p-2 text-sm"
+      emptyState="Creating a new option..."
     />
   </div>
 </div>

@@ -107,8 +107,14 @@ async function deleteEncounter(pokemonName: string, encounterType: string) {
     options={pokemonListOptions}
     popupId="popupAutoComplete"
     onSelection={onPokemonNameSelected}
+    showChevron={false}
   />
-  <NumberInput label="Encounter Rate" bind:value={encounterRate} />
+  <NumberInput
+    label="Encounter Rate"
+    bind:value={encounterRate}
+    class="w-32"
+    max={100}
+  />
   <Button
     class="mt-8 w-32"
     title="Add Encounter"

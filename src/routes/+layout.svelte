@@ -1,48 +1,46 @@
 <script lang="ts">
-  import { page } from "$app/stores";
-  import NavButton from "$lib/components/NavButton.svelte";
-  import WikiSelectMenu from "$lib/components/WikiSelectMenu.svelte";
-  import {
-    arrow,
-    autoUpdate,
-    computePosition,
-    flip,
-    offset,
-    shift,
-  } from "@floating-ui/dom";
-  import type { ModalComponent, PopupSettings } from "@skeletonlabs/skeleton";
+import { page } from "$app/stores";
+import NavButton from "$lib/components/NavButton.svelte";
+import WikiSelectMenu from "$lib/components/WikiSelectMenu.svelte";
+import {
+  arrow,
+  autoUpdate,
+  computePosition,
+  flip,
+  offset,
+  shift,
+} from "@floating-ui/dom";
+import type { ModalComponent, PopupSettings } from "@skeletonlabs/skeleton";
+import {
+  AppBar,
+  AppShell,
+  Modal,
+  Toast,
+  initializeStores,
+  popup,
+  storePopup,
+} from "@skeletonlabs/skeleton";
+import {
+  IconBallBasketball,
+  IconDisc,
+  IconDotsVertical,
+  IconRoute2,
+  IconTestPipe,
+} from "@tabler/icons-svelte";
+import "../app.pcss";
+import { selectedWiki } from "../store";
 
-  import {
-    AppBar,
-    AppShell,
-    Modal,
-    Toast,
-    initializeStores,
-    popup,
-    storePopup,
-  } from "@skeletonlabs/skeleton";
-  import {
-    IconBallBasketball,
-    IconBinaryTree,
-    IconDisc,
-    IconDotsVertical,
-    IconRoute2,
-    IconTestPipe,
-  } from "@tabler/icons-svelte";
-  import "../app.pcss";
-  import { selectedWiki } from "../store";
+initializeStores();
 
-  initializeStores();
+storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
-  storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
+const wikiSelectPopup: PopupSettings = {
+  event: "click",
+  target: "wikiSelectPopup",
+  placement: "top",
+};
 
-  const wikiSelectPopup: PopupSettings = {
-    event: "click",
-    target: "wikiSelectPopup",
-    placement: "top",
-  };
-
-  const modalRegistry: Record<string, ModalComponent> = {};
+const modalRegistry: Record<string, ModalComponent> = {};
 </script>
 
 <Toast />
@@ -54,9 +52,9 @@
     </AppBar>
   </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
-    <div class="p-4 flex flex-col h-full gap-4 bg-white">
+    <div class="flex h-full flex-col gap-4 bg-white p-4">
       {#if $selectedWiki.name !== ""}
-        <div class="flex flex-col grow gap-y-3">
+        <div class="flex grow flex-col gap-y-3">
           <NavButton
             name="Pokemon"
             route="/pokemon"
@@ -79,13 +77,6 @@
             <IconRoute2 slot="icon" size={16} color="indigo" />
           </NavButton>
           <NavButton
-            name="Wiki Generation"
-            route="/wiki-generation"
-            active={$page.url.pathname.includes("wiki-generation")}
-          >
-            <IconBinaryTree slot="icon" size={16} color="indigo" />
-          </NavButton>
-          <NavButton
             name="Wiki Testing"
             route="/wiki-testing"
             active={$page.url.pathname.includes("wiki-testing")}
@@ -94,7 +85,7 @@
           </NavButton>
         </div>
       {/if}
-      <div class="flex flex-row w-40 justify-between items-center">
+      <div class="flex w-40 flex-row items-center justify-between">
         <p>
           {$selectedWiki.name ? $selectedWiki.site_name : "Select Wiki"}
         </p>
@@ -105,7 +96,7 @@
       <WikiSelectMenu />
     </div>
   </svelte:fragment>
-  <div class="mt-6 ml-2">
+  <div class="ml-2 mt-6">
     <slot />
   </div>
 </AppShell>

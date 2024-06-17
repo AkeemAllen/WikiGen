@@ -127,7 +127,12 @@ async function saveMoveChanges() {
   <p class="ml-2 mt-4 text-lg">{_.capitalize(currentMoveName)}</p>
   <div class="ml-2 mt-4">
     <div class="grid grid-cols-2 gap-x-10 gap-y-5 pr-4">
-      <NumberInput label="Power" id="power" bind:value={moveDetails.power} />
+      <NumberInput
+        label="Power"
+        id="power"
+        bind:value={moveDetails.power}
+        max={255}
+      />
       <SelectInput
         label="Type"
         id="type"
@@ -141,8 +146,10 @@ async function saveMoveChanges() {
         label="Accuracy"
         id="accuracy"
         bind:value={moveDetails.accuracy}
+        max={100}
       />
-      <NumberInput label="PP" id="pp" bind:value={moveDetails.pp} />
+      <!-- Highest PP move is 40, but setting it to 100 for future proofing -->
+      <NumberInput label="PP" id="pp" bind:value={moveDetails.pp} max={100} />
       <SelectInput
         label="Damage Class"
         id="damage-class"

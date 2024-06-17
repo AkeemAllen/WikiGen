@@ -66,9 +66,12 @@ async function downloadAndPrepPokemonData() {
 
 async function generatePokemonPagesInRange() {
   loading = true;
-  await invoke("generate_pokemon_pages_from_range", {
-    rangeStart,
-    rangeEnd,
+  let dexNumbers: number[] = [];
+  for (let i = rangeStart; i <= rangeEnd; i++) {
+    dexNumbers.push(i);
+  }
+  await invoke("generate_pokemon_pages_from_list", {
+    dexNumbers: dexNumbers,
     wikiName: $selectedWiki.name,
   }).then(() => {
     loading = false;
@@ -92,12 +95,19 @@ async function generatePokemonPagesInRange() {
     {/if}
     {#if tabSet === 1}
       <div class="flex gap-16">
+        <!-- Only 1025 pokemon exist in the game right now. But setting ranges to 2000 for future proofing -->
         <NumberInput
           id="range-start"
           label="Range Start"
           bind:value={rangeStart}
+          max={2000}
         />
-        <NumberInput id="range-end" label="Range End" bind:value={rangeEnd} />
+        <NumberInput
+          id="range-end"
+          label="Range End"
+          bind:value={rangeEnd}
+          max={2000}
+        />
       </div>
       <Button
         class=" mt-4 w-40"

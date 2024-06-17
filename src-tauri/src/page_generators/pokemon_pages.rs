@@ -33,27 +33,10 @@ pub async fn generate_pokemon_pages_from_list(
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    let result = generate_pokemon_pages(dex_numbers, wiki_name, base_path.clone());
-    generate_type_page(wiki_name, base_path.clone()).unwrap();
-    generate_evolution_page(wiki_name, base_path).unwrap();
-    return result;
-}
 
-#[tauri::command]
-pub async fn generate_pokemon_pages_from_range(
-    wiki_name: &str,
-    range_start: usize,
-    range_end: usize,
-    app_handle: AppHandle,
-) -> Result<String, String> {
-    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    let mut dex_numbers = Vec::new();
-    for number in range_start..=range_end {
-        dex_numbers.push(number);
-    }
     let result = generate_pokemon_pages(dex_numbers, wiki_name, base_path.clone());
-    generate_type_page(wiki_name, base_path.clone()).unwrap();
-    generate_evolution_page(wiki_name, base_path).unwrap();
+    generate_type_page(wiki_name, base_path.clone())?;
+    generate_evolution_page(wiki_name, base_path)?;
     return result;
 }
 
@@ -74,12 +57,16 @@ pub fn generate_pokemon_pages(
             .join("data")
             .join("pokemon_data")
             .join(format!("shard_{}.json", i));
-        let shard_file = File::open(&shard_json_file_path).unwrap();
+        let shard_file = match File::open(&shard_json_file_path) {
+            Ok(file) => file,
+            Err(err) => {
+                return Err(format!("Failed to open shard {} file: {}", i, err));
+            }
+        };
         let shard: Pokemon = match serde_json::from_reader(shard_file) {
             Ok(shard) => shard,
             Err(err) => {
-                println!("Error {}", err);
-                return Err("Something failed".to_string());
+                return Err(format!("Failed to parse shard {}: {}", i, err));
             }
         };
 
@@ -87,27 +74,67 @@ pub fn generate_pokemon_pages(
     }
 
     let moves_json_file_path = base_path.join(wiki_name).join("data").join("moves.json");
-    let moves_file = File::open(&moves_json_file_path).unwrap();
-    let moves: Moves = serde_json::from_reader(moves_file).unwrap();
+    let moves_file = match File::open(&moves_json_file_path) {
+        Ok(file) => file,
+        Err(err) => {
+            return Err(format!("Failed to open moves file: {}", err));
+        }
+    };
+    let moves: Moves = match serde_json::from_reader(moves_file) {
+        Ok(moves) => moves,
+        Err(err) => {
+            return Err(format!("Failed to parse moves file: {}", err));
+        }
+    };
 
     let abilities_json_file_path = base_path
         .join(wiki_name)
         .join("data")
         .join("abilities.json");
-    let abilities_file = File::open(&abilities_json_file_path).unwrap();
-    let abilities: HashMap<String, Ability> = serde_json::from_reader(abilities_file).unwrap();
+    let abilities_file = match File::open(&abilities_json_file_path) {
+        Ok(file) => file,
+        Err(err) => {
+            return Err(format!("Failed to open abilities file: {}", err));
+        }
+    };
+    let abilities: HashMap<String, Ability> = match serde_json::from_reader(abilities_file) {
+        Ok(abilities) => abilities,
+        Err(err) => {
+            return Err(format!("Failed to parse abilities file: {}", err));
+        }
+    };
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
-    let mut mkdocs_config: MKDocsConfig = serde_yaml::from_reader(mkdocs_yaml_file).unwrap();
+    let mkdocs_yaml_file = match File::open(&mkdocs_yaml_file_path) {
+        Ok(file) => file,
+        Err(err) => {
+            return Err(format!("Failed to open mkdocs yaml file: {}", err));
+        }
+    };
+    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
+        Ok(mkdocs) => mkdocs,
+        Err(err) => {
+            return Err(format!("Failed to parse mkdocs yaml file: {}", err));
+        }
+    };
 
     let calculated_defenses_path = base_path
         .join(wiki_name)
         .join("data")
         .join("calculated_defenses.json");
-    let calculated_defenses_json_file = File::open(&calculated_defenses_path).unwrap();
+    let calculated_defenses_json_file = match File::open(&calculated_defenses_path) {
+        Ok(file) => file,
+        Err(err) => {
+            return Err(format!("Failed to open calculated defenses file: {}", err));
+        }
+    };
     let calculated_defenses: HashMap<String, TypeEffectiveness> =
-        serde_json::from_reader(calculated_defenses_json_file).unwrap();
+        match serde_json::from_reader(calculated_defenses_json_file) {
+            Ok(calc_defenses) => calc_defenses,
+            Err(err) => {
+                return Err(format!("Failed to parse calculated defenses file: {}", err));
+            }
+        };
 
     let mut mkdocs_pokemon: &mut Vec<Value> = &mut Vec::new();
 
@@ -201,9 +228,15 @@ pub fn generate_pokemon_pages(
             tab_string.push_str(&pokemon_markdown_string);
         }
 
-        markdown_file
-            .write_all(format!("{}", tab_string).as_bytes())
-            .unwrap();
+        match markdown_file.write_all(format!("{}", tab_string).as_bytes()) {
+            Ok(_) => {}
+            Err(err) => {
+                return Err(format!(
+                    "Failed to write to pokemon markdown file for {}: {}",
+                    dex_number, err
+                ))
+            }
+        };
 
         let mut pokemon_page_entry = Mapping::new();
         let entry_key = format!(
@@ -226,16 +259,39 @@ pub fn generate_pokemon_pages(
 
         if !page_entry_exists {
             mkdocs_pokemon.push(Value::Mapping(pokemon_page_entry));
+
+            // Sort pokemon entries so new ones don't appear out of order
+            // in the navigation
+            mkdocs_pokemon.sort_by(|a, b| {
+                let first = a.as_mapping().unwrap().keys().next().unwrap();
+                let second = b.as_mapping().unwrap().keys().next().unwrap();
+
+                extract_pokemon_id(first.as_str()).cmp(&extract_pokemon_id(second.as_str()))
+            })
         }
     }
 
-    fs::write(
+    match fs::write(
         mkdocs_yaml_file_path,
         serde_yaml::to_string(&mkdocs_config).unwrap(),
-    )
-    .unwrap();
+    ) {
+        Ok(_) => {}
+        Err(err) => return Err(format!("Failed to update mkdocs yaml: {}", err)),
+    };
 
     return Ok("Pokemon Pages Generated".to_string());
+}
+
+fn extract_pokemon_id(key: Option<&str>) -> i32 {
+    // This long chain is just meant to get, format and trim dex number
+    return key
+        .unwrap()
+        .split_once("-")
+        .unwrap()
+        .0
+        .trim()
+        .parse::<i32>()
+        .unwrap();
 }
 
 fn generate_pokemon_page(
