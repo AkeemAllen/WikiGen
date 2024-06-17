@@ -6,7 +6,10 @@ use std::{
 
 use serde_yaml::{Mapping, Value};
 
-use crate::structs::{mkdocs_structs::MKDocsConfig, pokemon_structs::EvolutionMethod};
+use crate::structs::{
+    mkdocs_structs::MKDocsConfig,
+    pokemon_structs::{Evolution, EvolutionMethod},
+};
 
 use super::type_page::get_markdown_entry_for_pokemon;
 
@@ -18,20 +21,33 @@ pub fn generate_evolution_page(wiki_name: &str, base_path: PathBuf) -> Result<St
         .join("modified_pokemon.json");
     let modified_pokemon_file = File::open(&modified_pokemon_json_file_path).unwrap();
     let modified_pokemon: super::ModifiedPokemon =
-        serde_json::from_reader(modified_pokemon_file).unwrap();
+        match serde_json::from_reader(modified_pokemon_file) {
+            Ok(file) => file,
+            Err(err) => {
+                return Err(format!(
+                    "Failed to read modified pokemon json file: {}",
+                    err
+                ))
+            }
+        };
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
     let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
-    let mut mkdocs_config: MKDocsConfig = serde_yaml::from_reader(mkdocs_yaml_file).unwrap();
+    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
+        Ok(file) => file,
+        Err(err) => return Err(format!("Failed to read mkdocs yaml file: {}", err)),
+    };
 
-    let mut evolution_changes_file = File::create(
+    let mut evolution_changes_file = match File::create(
         base_path
             .join(wiki_name)
             .join("dist")
             .join("docs")
             .join("evolution_changes.md"),
-    )
-    .unwrap();
+    ) {
+        Ok(file) => file,
+        Err(err) => return Err(format!("Failed to create evolution changes file: {}", err)),
+    };
 
     let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
     let mut evolution_page_exists = false;
@@ -52,80 +68,52 @@ pub fn generate_evolution_page(wiki_name: &str, base_path: PathBuf) -> Result<St
 
     for (pokemon_name, modification_details) in modified_pokemon.iter() {
         let evolution_details = modification_details.evolution.clone();
-        match evolution_details.method {
-            EvolutionMethod::LevelUp => {
-                let entry = format!(
-                    "| {} | {} | {} |\n",
-                    get_markdown_entry_for_pokemon(
-                        wiki_name,
-                        pokemon_name,
-                        modification_details.id
-                    ),
-                    evolution_details.level,
-                    get_markdown_entry_for_pokemon(
-                        wiki_name,
-                        &evolution_details.evolves_to.pokemon_name,
-                        evolution_details.evolves_to.id
-                    )
-                );
-                if evolution_level.is_empty() {
-                    evolution_level.push_str(&format!(
-                        "| Base Pokemon | Level | Evolution |
+        if let EvolutionMethod::NoChange = evolution_details.method {
+            continue;
+        }
+
+        let entry = format!(
+            "| {} | {} | {} |\n",
+            get_markdown_entry_for_pokemon(wiki_name, pokemon_name, modification_details.id),
+            get_level_item_method(&evolution_details),
+            get_markdown_entry_for_pokemon(
+                wiki_name,
+                &evolution_details.evolves_to.pokemon_name,
+                evolution_details.evolves_to.id
+            )
+        );
+
+        if let EvolutionMethod::LevelUp = evolution_details.method {
+            if evolution_level.is_empty() {
+                evolution_level.push_str(&format!(
+                    "| Base Pokemon | Level | Evolution |
                                 | :--: | :-- | :--: |
                                 "
-                    ))
-                }
-                evolution_level.push_str(&entry);
+                ))
             }
-            EvolutionMethod::Other => {
-                let entry = format!(
-                    "| {} | {} | {} |\n",
-                    get_markdown_entry_for_pokemon(
-                        wiki_name,
-                        pokemon_name,
-                        modification_details.id
-                    ),
-                    &evolution_details.other,
-                    get_markdown_entry_for_pokemon(
-                        wiki_name,
-                        &evolution_details.evolves_to.pokemon_name,
-                        evolution_details.evolves_to.id
-                    )
-                );
-                if evolution_other.is_empty() {
-                    evolution_other.push_str(&format!(
-                        "| Base Pokemon | Method | Evolution |
+            evolution_level.push_str(&entry);
+        }
+
+        if let EvolutionMethod::Item = evolution_details.method {
+            if evolution_item_iteraction.is_empty() {
+                evolution_item_iteraction.push_str(&format!(
+                    "| Base Pokemon | Item | Evolution |
                                     | :--: | :-- | :--: |
                                     "
-                    ))
-                }
-                evolution_other.push_str(&entry)
+                ))
             }
-            EvolutionMethod::Item => {
-                let entry = format!(
-                    "| {} | {} | {} |\n",
-                    get_markdown_entry_for_pokemon(
-                        wiki_name,
-                        pokemon_name,
-                        modification_details.id
-                    ),
-                    evolution_details.item,
-                    get_markdown_entry_for_pokemon(
-                        wiki_name,
-                        &evolution_details.evolves_to.pokemon_name,
-                        evolution_details.evolves_to.id
-                    )
-                );
-                if evolution_item_iteraction.is_empty() {
-                    evolution_item_iteraction.push_str(&format!(
-                        "| Base Pokemon | Item | Evolution |
+            evolution_item_iteraction.push_str(&entry)
+        }
+
+        if let EvolutionMethod::Other = evolution_details.method {
+            if evolution_other.is_empty() {
+                evolution_other.push_str(&format!(
+                    "| Base Pokemon | Method | Evolution |
                                     | :--: | :-- | :--: |
                                     "
-                    ))
-                }
-                evolution_item_iteraction.push_str(&entry)
+                ))
             }
-            EvolutionMethod::NoChange => {}
+            evolution_other.push_str(&entry)
         }
     }
 
@@ -144,27 +132,33 @@ pub fn generate_evolution_page(wiki_name: &str, base_path: PathBuf) -> Result<St
 
     if evolution_changes_markdown.is_empty() {
         if !evolution_page_exists {
-            return Ok("No Types to generate".to_string());
+            return Ok("No Evolutions to generate".to_string());
         }
 
-        fs::remove_file(
+        match fs::remove_file(
             base_path
                 .join(wiki_name)
                 .join("dist")
                 .join("docs")
                 .join("evolution_changes.md"),
-        )
-        .unwrap();
+        ) {
+            Ok(file) => file,
+            Err(err) => {
+                println!("Failed to remove evolution changes filed: {}", err);
+            }
+        }
         mkdocs_config
             .nav
             .as_sequence_mut()
             .unwrap()
             .remove(page_index);
-        fs::write(
+        match fs::write(
             &mkdocs_yaml_file_path,
             serde_yaml::to_string(&mkdocs_config).unwrap(),
-        )
-        .unwrap();
+        ) {
+            Ok(file) => file,
+            Err(err) => return Err(format!("Failed to update mkdocs yaml file: {}", err)),
+        }
         return Ok("No Evolution Changes to genereate. Evolution page removed".to_string());
     }
 
@@ -188,11 +182,22 @@ pub fn generate_evolution_page(wiki_name: &str, base_path: PathBuf) -> Result<St
         .unwrap()
         .insert(1, Value::Mapping(evolution_changes));
 
-    fs::write(
+    match fs::write(
         mkdocs_yaml_file_path,
         serde_yaml::to_string(&mkdocs_config).unwrap(),
-    )
-    .unwrap();
+    ) {
+        Ok(file) => file,
+        Err(err) => return Err(format!("Failed to update mkdocs yaml file: {}", err)),
+    }
 
     Ok("Evolution Page Generated".to_string())
+}
+
+fn get_level_item_method(evolution_details: &Evolution) -> String {
+    return match evolution_details.method {
+        EvolutionMethod::LevelUp => evolution_details.level.to_string(),
+        EvolutionMethod::Item => evolution_details.item.clone(),
+        EvolutionMethod::Other => evolution_details.other.clone(),
+        _ => "".to_string(),
+    };
 }
