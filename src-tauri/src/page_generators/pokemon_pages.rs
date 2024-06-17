@@ -33,24 +33,7 @@ pub async fn generate_pokemon_pages_from_list(
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    let result = generate_pokemon_pages(dex_numbers, wiki_name, base_path.clone());
-    generate_type_page(wiki_name, base_path.clone())?;
-    generate_evolution_page(wiki_name, base_path)?;
-    return result;
-}
 
-#[tauri::command]
-pub async fn generate_pokemon_pages_from_range(
-    wiki_name: &str,
-    range_start: usize,
-    range_end: usize,
-    app_handle: AppHandle,
-) -> Result<String, String> {
-    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    let mut dex_numbers = Vec::new();
-    for number in range_start..=range_end {
-        dex_numbers.push(number);
-    }
     let result = generate_pokemon_pages(dex_numbers, wiki_name, base_path.clone());
     generate_type_page(wiki_name, base_path.clone())?;
     generate_evolution_page(wiki_name, base_path)?;

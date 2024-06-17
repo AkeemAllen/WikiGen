@@ -66,9 +66,12 @@ async function downloadAndPrepPokemonData() {
 
 async function generatePokemonPagesInRange() {
   loading = true;
-  await invoke("generate_pokemon_pages_from_range", {
-    rangeStart,
-    rangeEnd,
+  let dexNumbers: number[] = [];
+  for (let i = rangeStart; i <= rangeEnd; i++) {
+    dexNumbers.push(i);
+  }
+  await invoke("generate_pokemon_pages_from_list", {
+    dexNumbers: dexNumbers,
     wikiName: $selectedWiki.name,
   }).then(() => {
     loading = false;
