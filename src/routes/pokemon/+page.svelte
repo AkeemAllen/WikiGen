@@ -1,62 +1,93 @@
 <script lang="ts">
-  import Button from "$lib/components/Button.svelte";
-  import NumberInput from "$lib/components/NumberInput.svelte";
-  import PokemonPanel from "$lib/components/PokemonPanel.svelte";
-  import {
-    Tab,
-    TabGroup,
-    getToastStore,
-    type ToastSettings,
-  } from "@skeletonlabs/skeleton";
-  import { readTextFile } from "@tauri-apps/api/fs";
-  import { appDataDir } from "@tauri-apps/api/path";
-  import { invoke } from "@tauri-apps/api/tauri";
-  import { selectedWiki } from "../../store";
-  import { pokemon, pokemonList } from "../../store/pokemon";
+import Button from "$lib/components/Button.svelte";
+import NumberInput from "$lib/components/NumberInput.svelte";
+import PokemonPanel from "$lib/components/PokemonPanel.svelte";
+import {
+  Tab,
+  TabGroup,
+  getToastStore,
+  type ToastSettings,
+} from "@skeletonlabs/skeleton";
+import { readTextFile } from "@tauri-apps/api/fs";
+import { appDataDir } from "@tauri-apps/api/path";
+import { invoke } from "@tauri-apps/api/tauri";
+import { selectedWiki } from "../../store";
+import { pokemon, pokemonList } from "../../store/pokemon";
 
-  const toastStore = getToastStore();
+const toastStore = getToastStore();
 
-  let tabSet: number = 0;
-  let rangeStart: number = 0;
-  let rangeEnd: number = 0;
-  let loading: boolean = false;
+let tabSet: number = 0;
+let rangeStart: number = 0;
+let rangeEnd: number = 0;
+let loading: boolean = false;
 
-  const dataPreparedToast: ToastSettings = {
-    message: "Data Prepared",
-    timeout: 5000,
-    hoverable: true,
-    background: "variant-filled-success",
-  };
+const dataPreparedToast: ToastSettings = {
+  message: "Data Prepared",
+  timeout: 5000,
+  hoverable: true,
+  background: "variant-filled-success",
+};
 
-  async function downloadAndPrepPokemonData() {
-    const directory = await appDataDir();
-    loading = true;
-    await invoke("download_and_prep_pokemon_data", {
-      wikiName: $selectedWiki.name,
-      rangeStart,
-      rangeEnd,
-      dir: directory,
-    }).then(async () => {
-      const pokemonFromFile = await readTextFile(
-        `${directory}${$selectedWiki.name}/data/pokemon.json`,
-      );
-      pokemon.set(JSON.parse(pokemonFromFile));
-      pokemonList.set(
-        Object.entries($pokemon.pokemon).map(([key, value]) => [
-          value.name,
-          parseInt(key),
-        ]),
-      );
-      loading = false;
-      toastStore.trigger(dataPreparedToast);
+async function downloadAndPrepPokemonData() {
+  const directory = await appDataDir();
+  loading = true;
+  await invoke("download_and_prep_pokemon_data", {
+    wikiName: $selectedWiki.name,
+    rangeStart,
+    rangeEnd,
+  }).then(async () => {
+    const pokemonFromFile = await readTextFile(
+      `${directory}${$selectedWiki.name}/data/pokemon.json`,
+    );
+    pokemon.set(JSON.parse(pokemonFromFile));
+    pokemonList.set(
+      Object.entries($pokemon.pokemon).map(([key, value]) => [
+        value.name,
+        parseInt(key),
+      ]),
+    );
+    loading = false;
+    toastStore.trigger(dataPreparedToast);
+  });
+
+  await invoke("download_pokemon_sprites", {
+    wikiName: $selectedWiki.name,
+    rangeStart,
+    rangeEnd,
+  }).then(() => {
+    toastStore.trigger({
+      message: "Sprites prepared",
+      timeout: 5000,
+      hoverable: true,
+      background: "variant-filled-success",
     });
+  });
+}
+
+async function generatePokemonPagesInRange() {
+  loading = true;
+  let dexNumbers: number[] = [];
+  for (let i = rangeStart; i <= rangeEnd; i++) {
+    dexNumbers.push(i);
   }
+  await invoke("generate_pokemon_pages_from_list", {
+    dexNumbers: dexNumbers,
+    wikiName: $selectedWiki.name,
+  }).then(() => {
+    loading = false;
+    toastStore.trigger({
+      message: "Pokemon Pages generated",
+      timeout: 5000,
+      hoverable: true,
+      background: "variant-filled-success",
+    });
+  });
+}
 </script>
 
-<TabGroup class="mt-4 ml-2">
+<TabGroup>
   <Tab bind:group={tabSet} name="pokemon" value={0}>Pokemon</Tab>
-  <Tab bind:group={tabSet} name="prepare-pokemon-data" value={1}
-    >Prepare Data</Tab
+  <Tab bind:group={tabSet} name="prepare-pokemon-data" value={1}>Generation</Tab
   >
   <svelte:fragment slot="panel">
     {#if tabSet === 0}
@@ -64,25 +95,30 @@
     {/if}
     {#if tabSet === 1}
       <div class="flex gap-16">
+        <!-- Only 1025 pokemon exist in the game right now. But setting ranges to 2000 for future proofing -->
         <NumberInput
           id="range-start"
           label="Range Start"
           bind:value={rangeStart}
+          max={2000}
         />
-        <NumberInput id="range-end" label="Range End" bind:value={rangeEnd} />
-      </div>
-      <div class="w-40 mt-4">
-        <Button
-          disabled={rangeStart === 0 ||
-            rangeEnd === 0 ||
-            rangeStart > rangeEnd ||
-            rangeStart === rangeEnd ||
-            loading === true}
-          title="Prepare Data"
-          onClick={downloadAndPrepPokemonData}
-          {loading}
+        <NumberInput
+          id="range-end"
+          label="Range End"
+          bind:value={rangeEnd}
+          max={2000}
         />
       </div>
+      <Button
+        class=" mt-4 w-40"
+        disabled={rangeStart === 0 ||
+                    rangeEnd === 0 ||
+                    rangeStart > rangeEnd ||
+                    loading === true}
+        title="Generate Pages"
+        onClick={generatePokemonPagesInRange}
+        loading={loading}
+      />
     {/if}
   </svelte:fragment>
 </TabGroup>

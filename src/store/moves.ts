@@ -7,17 +7,12 @@ export type MoveDetails = {
   type: string;
   damage_class: string;
   past_values: any[];
-  machine_details?: MachineVersion[];
-};
-
-type MachineVersion = {
-    game_version?: string;
-    technical_name?: string;
+  machine_name: string;
 };
 
 type Moves = {
-    moves: { [key: string]: MoveDetails };
-}
+  moves: { [key: string]: MoveDetails };
+};
 
 export let moves = writable<Moves>();
 export let moveList = writable<string[]>([]);

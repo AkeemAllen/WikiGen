@@ -1,6 +1,6 @@
 [package]
 name = "wiki_gen"
-version = "0.3.0"
+version = "0.7.3"
 description = "A Desktop Application to generate wikis for Pokemon Rom Hacks"
 authors = ["Akeem Allen"]
 license = ""
@@ -18,13 +18,14 @@ tauri-build = { version = "1.5.1", features = [] }
 serde_json = "1.0"
 serde_yaml = "0.9.32"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.6.1", features = [ "updater", "api-all"] }
+tauri = { version = "1.6.1", features = ["updater", "api-all", "test"] }
 reqwest = { version = "0.12.1", features = ["blocking", "json"] }
 indexmap = { version = "2.2.6", features = ["serde"] }
 sysinfo = "0.30.10"
+image = "0.25.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
 # If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
 # DO NOT REMOVE!!
-custom-protocol = [ "tauri/custom-protocol" ]
+custom-protocol = ["tauri/custom-protocol"]

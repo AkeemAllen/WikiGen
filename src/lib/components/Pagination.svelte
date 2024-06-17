@@ -1,13 +1,13 @@
 <script lang="ts">
-  import type { DataHandler } from "@vincjo/datatables";
-  export let handler: DataHandler;
-  const pageNumber = handler.getPageNumber();
-  const pageCount = handler.getPageCount();
-  const pages = handler.getPages({ ellipsis: true });
+import type { DataHandler } from "@vincjo/datatables";
+export let handler: DataHandler;
+$: pageNumber = handler.getPageNumber();
+$: pageCount = handler.getPageCount();
+$: pages = handler.getPages({ ellipsis: true });
 </script>
 
 <!-- Desktop buttons -->
-<section class="btn-group variant-ghost-surface bg-white h-10 hidden lg:block">
+<section class="variant-ghost-surface btn-group hidden h-10 bg-white lg:block">
   <button
     type="button"
     class="hover:variant-soft-primary"
@@ -41,7 +41,7 @@
 <section class="lg:hidden">
   <button
     type="button"
-    class="btn variant-ghost-surface mr-2 mb-2 hover:variant-soft-primary"
+    class="variant-ghost-surface btn mb-2 mr-2 hover:variant-soft-primary"
     class:disabled={$pageNumber === 1}
     on:click={() => handler.setPage("previous")}
   >
@@ -49,7 +49,7 @@
   </button>
   <button
     type="button"
-    class="btn variant-ghost-surface mb-2 hover:variant-soft-primary"
+    class="variant-ghost-surface btn mb-2 hover:variant-soft-primary"
     class:disabled={$pageNumber === $pageCount}
     on:click={() => handler.setPage("next")}
   >

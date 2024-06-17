@@ -1,9 +1,9 @@
 export type MoveSetChange = {
-  operation: string,
-  move: string,
-  level: number,
-  secondaryMove: string,
-}
+  operation: string;
+  move: string;
+  level: number;
+  secondaryMove: string;
+};
 
 export enum Operation {
   ADD = "add",

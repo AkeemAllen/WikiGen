@@ -1,0 +1,2950 @@
+{
+  "dragon-fire": {
+    "2": ["Ground", "Rock", "Dragon"],
+    "1": [
+      "Normal",
+      "Water",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Flying",
+      "Psychic",
+      "Ghost",
+      "Dark",
+      "Fairy"
+    ],
+    "0.5": ["Electric", "Bug", "Steel"],
+    "0.25": ["Fire", "Grass"]
+  },
+  "rock-grass": {
+    "2": ["Ice", "Fighting", "Bug", "Steel"],
+    "0.5": ["Normal", "Electric"],
+    "1": [
+      "Fire",
+      "Water",
+      "Grass",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ]
+  },
+  "dark-grass": {
+    "1": ["Normal", "Rock", "Dragon", "Steel"],
+    "0.5": ["Water", "Electric", "Grass", "Ground", "Ghost", "Dark"],
+    "2": ["Fire", "Ice", "Fighting", "Poison", "Flying", "Fairy"],
+    "0": ["Psychic"],
+    "4": ["Bug"]
+  },
+  "dark-ground": {
+    "0": ["Electric", "Psychic"],
+    "2": ["Water", "Grass", "Ice", "Fighting", "Bug", "Fairy"],
+    "1": ["Normal", "Fire", "Ground", "Flying", "Dragon", "Steel"],
+    "0.5": ["Poison", "Rock", "Ghost", "Dark"]
+  },
+  "water-dragon": {
+    "0.25": ["Fire", "Water"],
+    "1": [
+      "Normal",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dark"
+    ],
+    "0.5": ["Steel"],
+    "2": ["Dragon", "Fairy"]
+  },
+  "water-psychic": {
+    "2": ["Electric", "Grass", "Bug", "Ghost", "Dark"],
+    "0.5": ["Fire", "Water", "Ice", "Fighting", "Psychic", "Steel"],
+    "1": ["Normal", "Poison", "Ground", "Flying", "Rock", "Dragon", "Fairy"]
+  },
+  "fighting-psychic": {
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Poison",
+      "Ground",
+      "Psychic",
+      "Bug",
+      "Dragon",
+      "Dark",
+      "Steel"
+    ],
+    "2": ["Flying", "Ghost", "Fairy"],
+    "0.5": ["Fighting", "Rock"]
+  },
+  "ghost-none": {
+    "0": ["Normal", "Fighting"],
+    "2": ["Ghost", "Dark"],
+    "0.5": ["Poison", "Bug"],
+    "1": [
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Rock",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ]
+  },
+  "water-dark": {
+    "1": ["Normal", "Poison", "Ground", "Flying", "Rock", "Dragon"],
+    "0": ["Psychic"],
+    "0.5": ["Fire", "Water", "Ice", "Ghost", "Dark", "Steel"],
+    "2": ["Electric", "Grass", "Fighting", "Bug", "Fairy"]
+  },
+  "ghost-dark": {
+    "0.5": ["Poison"],
+    "1": [
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Ground",
+      "Flying",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel"
+    ],
+    "2": ["Fairy"],
+    "0": ["Normal", "Fighting", "Psychic"]
+  },
+  "flying-psychic": {
+    "0": ["Ground"],
+    "0.5": ["Grass", "Psychic"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Poison",
+      "Flying",
+      "Bug",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ],
+    "0.25": ["Fighting"],
+    "2": ["Electric", "Ice", "Rock", "Ghost", "Dark"]
+  },
+  "ghost-fairy": {
+    "0.25": ["Bug"],
+    "2": ["Ghost", "Steel"],
+    "1": [
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Rock",
+      "Dark",
+      "Fairy"
+    ],
+    "0": ["Normal", "Fighting", "Dragon"]
+  },
+  "ghost-dragon": {
+    "0.5": ["Fire", "Water", "Electric", "Grass", "Poison", "Bug"],
+    "0": ["Normal", "Fighting"],
+    "1": ["Ground", "Flying", "Psychic", "Rock", "Steel"],
+    "2": ["Ice", "Ghost", "Dragon", "Dark", "Fairy"]
+  },
+  "steel-rock": {
+    "4": ["Fighting", "Ground"],
+    "0.25": ["Normal", "Flying"],
+    "1": ["Fire", "Electric", "Grass", "Ghost", "Dark", "Steel"],
+    "0.5": ["Ice", "Psychic", "Bug", "Rock", "Dragon", "Fairy"],
+    "2": ["Water"],
+    "0": ["Poison"]
+  },
+  "dark-flying": {
+    "0": ["Ground", "Psychic"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Fighting",
+      "Poison",
+      "Flying",
+      "Bug",
+      "Dragon",
+      "Steel"
+    ],
+    "2": ["Electric", "Ice", "Rock", "Fairy"],
+    "0.5": ["Grass", "Ghost", "Dark"]
+  },
+  "fighting-flying": {
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Poison",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Steel"
+    ],
+    "2": ["Electric", "Ice", "Flying", "Psychic", "Fairy"],
+    "0.5": ["Grass", "Fighting", "Dark"],
+    "0": ["Ground"],
+    "0.25": ["Bug"]
+  },
+  "poison-fighting": {
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Ice",
+      "Ghost",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ],
+    "0.25": ["Bug"],
+    "2": ["Ground", "Flying"],
+    "0.5": ["Grass", "Fighting", "Poison", "Rock", "Dark"],
+    "4": ["Psychic"]
+  },
+  "ice-psychic": {
+    "0.5": ["Ice", "Psychic"],
+    "2": ["Fire", "Bug", "Rock", "Ghost", "Dark", "Steel"],
+    "1": [
+      "Normal",
+      "Water",
+      "Electric",
+      "Grass",
+      "Fighting",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Dragon",
+      "Fairy"
+    ]
+  },
+  "electric-normal": {
+    "0.5": ["Electric", "Flying", "Steel"],
+    "0": ["Ghost"],
+    "2": ["Fighting", "Ground"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Grass",
+      "Ice",
+      "Poison",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ]
+  },
+  "fighting-none": {
+    "2": ["Flying", "Psychic", "Fairy"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Ground",
+      "Ghost",
+      "Dragon",
+      "Steel"
+    ],
+    "0.5": ["Bug", "Rock", "Dark"]
+  },
+  "water-ghost": {
+    "0.5": ["Fire", "Water", "Ice", "Poison", "Bug", "Steel"],
+    "1": ["Ground", "Flying", "Psychic", "Rock", "Dragon", "Fairy"],
+    "2": ["Electric", "Grass", "Ghost", "Dark"],
+    "0": ["Normal", "Fighting"]
+  },
+  "fighting-electric": {
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Flying",
+      "Ghost",
+      "Dragon"
+    ],
+    "0.5": ["Electric", "Bug", "Rock", "Dark", "Steel"],
+    "2": ["Ground", "Psychic", "Fairy"]
+  },
+  "bug-flying": {
+    "0.5": ["Bug"],
+    "0": ["Ground"],
+    "2": ["Fire", "Electric", "Ice", "Flying"],
+    "4": ["Rock"],
+    "0.25": ["Grass", "Fighting"],
+    "1": [
+      "Normal",
+      "Water",
+      "Poison",
+      "Psychic",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ]
+  },
+  "ice-none": {
+    "2": ["Fire", "Fighting", "Rock", "Steel"],
+    "0.5": ["Ice"],
+    "1": [
+      "Normal",
+      "Water",
+      "Electric",
+      "Grass",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ]
+  },
+  "rock-dragon": {
+    "0.5": ["Normal", "Electric", "Poison", "Flying"],
+    "0.25": ["Fire"],
+    "2": ["Ice", "Fighting", "Ground", "Dragon", "Steel", "Fairy"],
+    "1": ["Water", "Grass", "Psychic", "Bug", "Rock", "Ghost", "Dark"]
+  },
+  "electric-dark": {
+    "0.5": ["Electric", "Flying", "Ghost", "Dark", "Steel"],
+    "2": ["Fighting", "Ground", "Bug", "Fairy"],
+    "0": ["Psychic"],
+    "1": ["Normal", "Fire", "Water", "Grass", "Ice", "Poison", "Rock", "Dragon"]
+  },
+  "bug-none": {
+    "0.5": ["Grass", "Fighting", "Ground"],
+    "1": [
+      "Normal",
+      "Water",
+      "Electric",
+      "Ice",
+      "Poison",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "2": ["Fire", "Flying", "Rock"]
+  },
+  "electric-ghost": {
+    "0": ["Normal", "Fighting"],
+    "2": ["Ground", "Ghost", "Dark"],
+    "1": [
+      "Fire",
+      "Water",
+      "Grass",
+      "Ice",
+      "Psychic",
+      "Rock",
+      "Dragon",
+      "Fairy"
+    ],
+    "0.5": ["Electric", "Poison", "Flying", "Bug", "Steel"]
+  },
+  "bug-fire": {
+    "0.25": ["Grass"],
+    "0.5": ["Ice", "Fighting", "Bug", "Steel", "Fairy"],
+    "2": ["Water", "Flying"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Electric",
+      "Poison",
+      "Ground",
+      "Psychic",
+      "Ghost",
+      "Dragon",
+      "Dark"
+    ],
+    "4": ["Rock"]
+  },
+  "electric-flying": {
+    "0.5": ["Grass", "Fighting", "Flying", "Bug", "Steel"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Poison",
+      "Psychic",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "0": ["Ground"],
+    "2": ["Ice", "Rock"]
+  },
+  "ghost-fire": {
+    "1": ["Electric", "Flying", "Psychic", "Dragon"],
+    "0.25": ["Bug"],
+    "0.5": ["Fire", "Grass", "Ice", "Poison", "Steel", "Fairy"],
+    "0": ["Normal", "Fighting"],
+    "2": ["Water", "Ground", "Rock", "Ghost", "Dark"]
+  },
+  "poison-bug": {
+    "2": ["Fire", "Flying", "Psychic", "Rock"],
+    "0.5": ["Poison", "Bug", "Fairy"],
+    "1": [
+      "Normal",
+      "Water",
+      "Electric",
+      "Ice",
+      "Ground",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel"
+    ],
+    "0.25": ["Grass", "Fighting"]
+  },
+  "dark-ice": {
+    "0.5": ["Ice", "Ghost", "Dark"],
+    "4": ["Fighting"],
+    "2": ["Fire", "Bug", "Rock", "Steel", "Fairy"],
+    "0": ["Psychic"],
+    "1": [
+      "Normal",
+      "Water",
+      "Electric",
+      "Grass",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Dragon"
+    ]
+  },
+  "normal-grass": {
+    "1": ["Normal", "Psychic", "Rock", "Dragon", "Dark", "Steel", "Fairy"],
+    "0": ["Ghost"],
+    "2": ["Fire", "Ice", "Fighting", "Poison", "Flying", "Bug"],
+    "0.5": ["Water", "Electric", "Grass", "Ground"]
+  },
+  "grass-psychic": {
+    "4": ["Bug"],
+    "0.5": ["Water", "Electric", "Grass", "Fighting", "Ground", "Psychic"],
+    "2": ["Fire", "Ice", "Poison", "Flying", "Ghost", "Dark"],
+    "1": ["Normal", "Rock", "Dragon", "Steel", "Fairy"]
+  },
+  "dragon-ice": {
+    "1": [
+      "Normal",
+      "Fire",
+      "Ice",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dark"
+    ],
+    "2": ["Fighting", "Rock", "Dragon", "Steel", "Fairy"],
+    "0.5": ["Water", "Electric", "Grass"]
+  },
+  "fire-ground": {
+    "0.5": ["Fire", "Poison", "Bug", "Steel", "Fairy"],
+    "1": [
+      "Normal",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Flying",
+      "Psychic",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark"
+    ],
+    "0": ["Electric"],
+    "2": ["Ground"],
+    "4": ["Water"]
+  },
+  "water-rock": {
+    "0.25": ["Fire"],
+    "0.5": ["Normal", "Ice", "Poison", "Flying"],
+    "1": [
+      "Water",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "4": ["Grass"],
+    "2": ["Electric", "Fighting", "Ground"]
+  },
+  "flying-none": {
+    "0.5": ["Grass", "Fighting", "Bug"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Poison",
+      "Flying",
+      "Psychic",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "0": ["Ground"],
+    "2": ["Electric", "Ice", "Rock"]
+  },
+  "bug-poison": {
+    "0.25": ["Grass", "Fighting"],
+    "1": [
+      "Normal",
+      "Water",
+      "Electric",
+      "Ice",
+      "Ground",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel"
+    ],
+    "2": ["Fire", "Flying", "Psychic", "Rock"],
+    "0.5": ["Poison", "Bug", "Fairy"]
+  },
+  "flying-dragon": {
+    "0": ["Ground"],
+    "0.5": ["Fire", "Water", "Fighting", "Bug"],
+    "0.25": ["Grass"],
+    "4": ["Ice"],
+    "1": [
+      "Normal",
+      "Electric",
+      "Poison",
+      "Flying",
+      "Psychic",
+      "Ghost",
+      "Dark",
+      "Steel"
+    ],
+    "2": ["Rock", "Dragon", "Fairy"]
+  },
+  "grass-none": {
+    "2": ["Fire", "Ice", "Poison", "Flying", "Bug"],
+    "0.5": ["Water", "Electric", "Grass", "Ground"],
+    "1": [
+      "Normal",
+      "Fighting",
+      "Psychic",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ]
+  },
+  "electric-steel": {
+    "2": ["Fire", "Fighting"],
+    "0": ["Poison"],
+    "1": ["Water", "Ghost", "Dark"],
+    "0.5": [
+      "Normal",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Dragon",
+      "Fairy"
+    ],
+    "0.25": ["Flying", "Steel"],
+    "4": ["Ground"]
+  },
+  "ghost-grass": {
+    "1": ["Poison", "Psychic", "Bug", "Rock", "Dragon", "Steel", "Fairy"],
+    "0.5": ["Water", "Electric", "Grass", "Ground"],
+    "2": ["Fire", "Ice", "Flying", "Ghost", "Dark"],
+    "0": ["Normal", "Fighting"]
+  },
+  "psychic-ghost": {
+    "0": ["Normal", "Fighting"],
+    "1": [
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Ground",
+      "Flying",
+      "Bug",
+      "Rock",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ],
+    "4": ["Ghost", "Dark"],
+    "0.5": ["Poison", "Psychic"]
+  },
+  "fire-bug": {
+    "0.25": ["Grass"],
+    "2": ["Water", "Flying"],
+    "0.5": ["Ice", "Fighting", "Bug", "Steel", "Fairy"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Electric",
+      "Poison",
+      "Ground",
+      "Psychic",
+      "Ghost",
+      "Dragon",
+      "Dark"
+    ],
+    "4": ["Rock"]
+  },
+  "ground-grass": {
+    "0": ["Electric"],
+    "4": ["Ice"],
+    "2": ["Fire", "Flying", "Bug"],
+    "1": [
+      "Normal",
+      "Water",
+      "Grass",
+      "Fighting",
+      "Poison",
+      "Psychic",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "0.5": ["Ground", "Rock"]
+  },
+  "water-fairy": {
+    "2": ["Electric", "Grass", "Poison"],
+    "1": [
+      "Normal",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Rock",
+      "Ghost",
+      "Steel",
+      "Fairy"
+    ],
+    "0": ["Dragon"],
+    "0.5": ["Fire", "Water", "Ice", "Fighting", "Bug", "Dark"]
+  },
+  "fire-water": {
+    "2": ["Electric", "Ground", "Rock"],
+    "0.5": ["Bug", "Fairy"],
+    "1": [
+      "Normal",
+      "Water",
+      "Grass",
+      "Fighting",
+      "Poison",
+      "Flying",
+      "Psychic",
+      "Ghost",
+      "Dragon",
+      "Dark"
+    ],
+    "0.25": ["Fire", "Ice", "Steel"]
+  },
+  "flying-fighting": {
+    "2": ["Electric", "Ice", "Flying", "Psychic", "Fairy"],
+    "0.25": ["Bug"],
+    "0": ["Ground"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Poison",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Steel"
+    ],
+    "0.5": ["Grass", "Fighting", "Dark"]
+  },
+  "dark-none": {
+    "0.5": ["Ghost", "Dark"],
+    "0": ["Psychic"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Rock",
+      "Dragon",
+      "Steel"
+    ],
+    "2": ["Fighting", "Bug", "Fairy"]
+  },
+  "steel-flying": {
+    "0": ["Poison", "Ground"],
+    "2": ["Fire", "Electric"],
+    "0.5": ["Normal", "Flying", "Psychic", "Dragon", "Steel", "Fairy"],
+    "0.25": ["Grass", "Bug"],
+    "1": ["Water", "Ice", "Fighting", "Rock", "Ghost", "Dark"]
+  },
+  "ice-flying": {
+    "4": ["Rock"],
+    "2": ["Fire", "Electric", "Steel"],
+    "0": ["Ground"],
+    "1": [
+      "Normal",
+      "Water",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Flying",
+      "Psychic",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "0.5": ["Grass", "Bug"]
+  },
+  "ghost-poison": {
+    "0.5": ["Grass", "Fairy"],
+    "0": ["Normal", "Fighting"],
+    "1": [
+      "Fire",
+      "Water",
+      "Electric",
+      "Ice",
+      "Flying",
+      "Rock",
+      "Dragon",
+      "Steel"
+    ],
+    "0.25": ["Poison", "Bug"],
+    "2": ["Ground", "Psychic", "Ghost", "Dark"]
+  },
+  "ground-none": {
+    "0.5": ["Poison", "Rock"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Fighting",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "0": ["Electric"],
+    "2": ["Water", "Grass", "Ice"]
+  },
+  "psychic-normal": {
+    "2": ["Bug", "Dark"],
+    "0": ["Ghost"],
+    "0.5": ["Psychic"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Rock",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ]
+  },
+  "poison-none": {
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Ice",
+      "Flying",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel"
+    ],
+    "0.5": ["Grass", "Fighting", "Poison", "Bug", "Fairy"],
+    "2": ["Ground", "Psychic"]
+  },
+  "rock-electric": {
+    "0.25": ["Flying"],
+    "2": ["Water", "Grass", "Fighting"],
+    "1": [
+      "Ice",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "4": ["Ground"],
+    "0.5": ["Normal", "Fire", "Electric", "Poison"]
+  },
+  "poison-psychic": {
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Ice",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Dragon",
+      "Steel"
+    ],
+    "0.25": ["Fighting"],
+    "0.5": ["Grass", "Poison", "Fairy"],
+    "2": ["Ground", "Ghost", "Dark"]
+  },
+  "electric-ice": {
+    "1": [
+      "Normal",
+      "Water",
+      "Grass",
+      "Poison",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "0.5": ["Electric", "Ice", "Flying"],
+    "2": ["Fire", "Fighting", "Ground", "Rock"]
+  },
+  "poison-water": {
+    "1": ["Normal", "Grass", "Flying", "Rock", "Ghost", "Dragon", "Dark"],
+    "0.5": [
+      "Fire",
+      "Water",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Bug",
+      "Steel",
+      "Fairy"
+    ],
+    "2": ["Electric", "Ground", "Psychic"]
+  },
+  "poison-ground": {
+    "0": ["Electric"],
+    "2": ["Water", "Ice", "Ground", "Psychic"],
+    "0.5": ["Fighting", "Bug", "Rock", "Fairy"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Grass",
+      "Flying",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel"
+    ],
+    "0.25": ["Poison"]
+  },
+  "water-flying": {
+    "2": ["Rock"],
+    "0.5": ["Fire", "Water", "Fighting", "Bug", "Steel"],
+    "0": ["Ground"],
+    "4": ["Electric"],
+    "1": [
+      "Normal",
+      "Grass",
+      "Ice",
+      "Poison",
+      "Flying",
+      "Psychic",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ]
+  },
+  "poison-ghost": {
+    "2": ["Ground", "Psychic", "Ghost", "Dark"],
+    "0.25": ["Poison", "Bug"],
+    "1": [
+      "Fire",
+      "Water",
+      "Electric",
+      "Ice",
+      "Flying",
+      "Rock",
+      "Dragon",
+      "Steel"
+    ],
+    "0.5": ["Grass", "Fairy"],
+    "0": ["Normal", "Fighting"]
+  },
+  "rock-psychic": {
+    "2": ["Water", "Grass", "Ground", "Bug", "Ghost", "Dark", "Steel"],
+    "0.5": ["Normal", "Fire", "Poison", "Flying", "Psychic"],
+    "1": ["Electric", "Ice", "Fighting", "Rock", "Dragon", "Fairy"]
+  },
+  "rock-ice": {
+    "0.5": ["Normal", "Ice", "Poison", "Flying"],
+    "4": ["Fighting", "Steel"],
+    "1": [
+      "Fire",
+      "Electric",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "2": ["Water", "Grass", "Ground", "Rock"]
+  },
+  "steel-ground": {
+    "2": ["Fire", "Water", "Fighting", "Ground"],
+    "0.5": ["Normal", "Flying", "Psychic", "Bug", "Dragon", "Steel", "Fairy"],
+    "0": ["Electric", "Poison"],
+    "1": ["Grass", "Ice", "Ghost", "Dark"],
+    "0.25": ["Rock"]
+  },
+  "grass-flying": {
+    "2": ["Fire", "Poison", "Flying", "Rock"],
+    "0": ["Ground"],
+    "0.5": ["Water", "Fighting"],
+    "1": [
+      "Normal",
+      "Electric",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "4": ["Ice"],
+    "0.25": ["Grass"]
+  },
+  "flying-grass": {
+    "2": ["Fire", "Poison", "Flying", "Rock"],
+    "4": ["Ice"],
+    "1": [
+      "Normal",
+      "Electric",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "0": ["Ground"],
+    "0.5": ["Water", "Fighting"],
+    "0.25": ["Grass"]
+  },
+  "ground-flying": {
+    "0.5": ["Fighting", "Poison", "Bug"],
+    "4": ["Ice"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Grass",
+      "Flying",
+      "Psychic",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "0": ["Electric", "Ground"],
+    "2": ["Water"]
+  },
+  "ice-bug": {
+    "1": [
+      "Normal",
+      "Water",
+      "Electric",
+      "Fighting",
+      "Poison",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "4": ["Fire", "Rock"],
+    "0.5": ["Grass", "Ice", "Ground"],
+    "2": ["Flying", "Steel"]
+  },
+  "water-none": {
+    "0.5": ["Fire", "Water", "Ice", "Steel"],
+    "2": ["Electric", "Grass"],
+    "1": [
+      "Normal",
+      "Fighting",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ]
+  },
+  "electric-dragon": {
+    "0.25": ["Electric"],
+    "2": ["Ice", "Ground", "Dragon", "Fairy"],
+    "0.5": ["Fire", "Water", "Grass", "Flying", "Steel"],
+    "1": [
+      "Normal",
+      "Fighting",
+      "Poison",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dark"
+    ]
+  },
+  "psychic-steel": {
+    "0.5": [
+      "Normal",
+      "Grass",
+      "Ice",
+      "Flying",
+      "Rock",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ],
+    "0": ["Poison"],
+    "2": ["Fire", "Ground", "Ghost", "Dark"],
+    "0.25": ["Psychic"],
+    "1": ["Water", "Electric", "Fighting", "Bug"]
+  },
+  "ground-normal": {
+    "2": ["Water", "Grass", "Ice", "Fighting"],
+    "0": ["Electric", "Ghost"],
+    "0.5": ["Poison", "Rock"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ]
+  },
+  "dark-poison": {
+    "0": ["Psychic"],
+    "0.5": ["Grass", "Poison", "Ghost", "Dark"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Ice",
+      "Fighting",
+      "Flying",
+      "Bug",
+      "Rock",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ],
+    "2": ["Ground"]
+  },
+  "dark-ghost": {
+    "2": ["Fairy"],
+    "0": ["Normal", "Fighting", "Psychic"],
+    "1": [
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Ground",
+      "Flying",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel"
+    ],
+    "0.5": ["Poison"]
+  },
+  "ground-dark": {
+    "0": ["Electric", "Psychic"],
+    "2": ["Water", "Grass", "Ice", "Fighting", "Bug", "Fairy"],
+    "1": ["Normal", "Fire", "Ground", "Flying", "Dragon", "Steel"],
+    "0.5": ["Poison", "Rock", "Ghost", "Dark"]
+  },
+  "fairy-psychic": {
+    "0.5": ["Psychic"],
+    "0.25": ["Fighting"],
+    "0": ["Dragon"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Ground",
+      "Flying",
+      "Bug",
+      "Rock",
+      "Dark",
+      "Fairy"
+    ],
+    "2": ["Poison", "Ghost", "Steel"]
+  },
+  "dark-dragon": {
+    "0.5": ["Fire", "Water", "Electric", "Grass", "Ghost", "Dark"],
+    "4": ["Fairy"],
+    "2": ["Ice", "Fighting", "Bug", "Dragon"],
+    "1": ["Normal", "Poison", "Ground", "Flying", "Rock", "Steel"],
+    "0": ["Psychic"]
+  },
+  "rock-none": {
+    "1": [
+      "Electric",
+      "Ice",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "0.5": ["Normal", "Fire", "Poison", "Flying"],
+    "2": ["Water", "Grass", "Fighting", "Ground", "Steel"]
+  },
+  "rock-water": {
+    "2": ["Electric", "Fighting", "Ground"],
+    "4": ["Grass"],
+    "1": [
+      "Water",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "0.25": ["Fire"],
+    "0.5": ["Normal", "Ice", "Poison", "Flying"]
+  },
+  "normal-psychic": {
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Rock",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ],
+    "0.5": ["Psychic"],
+    "0": ["Ghost"],
+    "2": ["Bug", "Dark"]
+  },
+  "grass-ice": {
+    "2": ["Fighting", "Poison", "Flying", "Bug", "Rock", "Steel"],
+    "0.5": ["Water", "Electric", "Grass", "Ground"],
+    "1": ["Normal", "Ice", "Psychic", "Ghost", "Dragon", "Dark", "Fairy"],
+    "4": ["Fire"]
+  },
+  "ice-water": {
+    "2": ["Electric", "Grass", "Fighting", "Rock"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "0.25": ["Ice"],
+    "0.5": ["Water"]
+  },
+  "bug-psychic": {
+    "1": [
+      "Normal",
+      "Water",
+      "Electric",
+      "Ice",
+      "Poison",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ],
+    "2": ["Fire", "Flying", "Bug", "Rock", "Ghost", "Dark"],
+    "0.5": ["Grass", "Ground", "Psychic"],
+    "0.25": ["Fighting"]
+  },
+  "fire-dragon": {
+    "0.25": ["Fire", "Grass"],
+    "0.5": ["Electric", "Bug", "Steel"],
+    "2": ["Ground", "Rock", "Dragon"],
+    "1": [
+      "Normal",
+      "Water",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Flying",
+      "Psychic",
+      "Ghost",
+      "Dark",
+      "Fairy"
+    ]
+  },
+  "dark-fairy": {
+    "2": ["Poison", "Steel", "Fairy"],
+    "0.5": ["Ghost"],
+    "0": ["Psychic", "Dragon"],
+    "0.25": ["Dark"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Ground",
+      "Flying",
+      "Bug",
+      "Rock"
+    ]
+  },
+  "grass-normal": {
+    "2": ["Fire", "Ice", "Fighting", "Poison", "Flying", "Bug"],
+    "1": ["Normal", "Psychic", "Rock", "Dragon", "Dark", "Steel", "Fairy"],
+    "0.5": ["Water", "Electric", "Grass", "Ground"],
+    "0": ["Ghost"]
+  },
+  "bug-ground": {
+    "0.5": ["Fighting", "Poison", "Ground"],
+    "1": [
+      "Normal",
+      "Grass",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "2": ["Fire", "Water", "Ice", "Flying"],
+    "0": ["Electric"]
+  },
+  "fighting-dragon": {
+    "4": ["Fairy"],
+    "2": ["Ice", "Flying", "Psychic", "Dragon"],
+    "0.5": ["Fire", "Water", "Electric", "Grass", "Bug", "Rock", "Dark"],
+    "1": ["Normal", "Fighting", "Poison", "Ground", "Ghost", "Steel"]
+  },
+  "bug-steel": {
+    "4": ["Fire"],
+    "0": ["Poison"],
+    "0.5": ["Normal", "Ice", "Psychic", "Bug", "Dragon", "Steel", "Fairy"],
+    "0.25": ["Grass"],
+    "1": [
+      "Water",
+      "Electric",
+      "Fighting",
+      "Ground",
+      "Flying",
+      "Rock",
+      "Ghost",
+      "Dark"
+    ]
+  },
+  "rock-bug": {
+    "0.5": ["Normal", "Poison"],
+    "1": [
+      "Fire",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "2": ["Water", "Rock", "Steel"]
+  },
+  "ground-rock": {
+    "2": ["Ice", "Fighting", "Ground", "Steel"],
+    "0.5": ["Normal", "Fire", "Flying", "Rock"],
+    "1": ["Psychic", "Bug", "Ghost", "Dragon", "Dark", "Fairy"],
+    "0.25": ["Poison"],
+    "0": ["Electric"],
+    "4": ["Water", "Grass"]
+  },
+  "dragon-normal": {
+    "2": ["Ice", "Fighting", "Dragon", "Fairy"],
+    "1": [
+      "Normal",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Dark",
+      "Steel"
+    ],
+    "0": ["Ghost"],
+    "0.5": ["Fire", "Water", "Electric", "Grass"]
+  },
+  "steel-ghost": {
+    "2": ["Fire", "Ground", "Ghost", "Dark"],
+    "0.5": [
+      "Grass",
+      "Ice",
+      "Flying",
+      "Psychic",
+      "Rock",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ],
+    "0": ["Normal", "Fighting", "Poison"],
+    "1": ["Water", "Electric"],
+    "0.25": ["Bug"]
+  },
+  "normal-fairy": {
+    "0": ["Ghost", "Dragon"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Rock",
+      "Fairy"
+    ],
+    "2": ["Poison", "Steel"],
+    "0.5": ["Bug", "Dark"]
+  },
+  "steel-dragon": {
+    "0.5": [
+      "Normal",
+      "Water",
+      "Electric",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Steel"
+    ],
+    "2": ["Fighting", "Ground"],
+    "1": ["Fire", "Ice", "Ghost", "Dragon", "Dark", "Fairy"],
+    "0.25": ["Grass"],
+    "0": ["Poison"]
+  },
+  "psychic-none": {
+    "2": ["Bug", "Ghost", "Dark"],
+    "0.5": ["Fighting", "Psychic"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Rock",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ]
+  },
+  "rock-steel": {
+    "2": ["Water"],
+    "1": ["Fire", "Electric", "Grass", "Ghost", "Dark", "Steel"],
+    "0.25": ["Normal", "Flying"],
+    "4": ["Fighting", "Ground"],
+    "0.5": ["Ice", "Psychic", "Bug", "Rock", "Dragon", "Fairy"],
+    "0": ["Poison"]
+  },
+  "psychic-fighting": {
+    "2": ["Flying", "Ghost", "Fairy"],
+    "0.5": ["Fighting", "Rock"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Poison",
+      "Ground",
+      "Psychic",
+      "Bug",
+      "Dragon",
+      "Dark",
+      "Steel"
+    ]
+  },
+  "grass-ghost": {
+    "2": ["Fire", "Ice", "Flying", "Ghost", "Dark"],
+    "0": ["Normal", "Fighting"],
+    "0.5": ["Water", "Electric", "Grass", "Ground"],
+    "1": ["Poison", "Psychic", "Bug", "Rock", "Dragon", "Steel", "Fairy"]
+  },
+  "poison-fairy": {
+    "0.5": ["Grass", "Dark", "Fairy"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Ice",
+      "Poison",
+      "Flying",
+      "Rock",
+      "Ghost"
+    ],
+    "2": ["Ground", "Psychic", "Steel"],
+    "0.25": ["Fighting", "Bug"],
+    "0": ["Dragon"]
+  },
+  "grass-dragon": {
+    "0.5": ["Ground"],
+    "2": ["Poison", "Flying", "Bug", "Dragon", "Fairy"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Fighting",
+      "Psychic",
+      "Rock",
+      "Ghost",
+      "Dark",
+      "Steel"
+    ],
+    "0.25": ["Water", "Electric", "Grass"],
+    "4": ["Ice"]
+  },
+  "ground-ghost": {
+    "0.25": ["Poison"],
+    "0": ["Normal", "Electric", "Fighting"],
+    "2": ["Water", "Grass", "Ice", "Ghost", "Dark"],
+    "1": ["Fire", "Ground", "Flying", "Psychic", "Dragon", "Steel", "Fairy"],
+    "0.5": ["Bug", "Rock"]
+  },
+  "normal-none": {
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "2": ["Fighting"],
+    "0": ["Ghost"]
+  },
+  "normal-ground": {
+    "0.5": ["Poison", "Rock"],
+    "0": ["Electric", "Ghost"],
+    "2": ["Water", "Grass", "Ice", "Fighting"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ]
+  },
+  "dragon-none": {
+    "2": ["Ice", "Dragon", "Fairy"],
+    "1": [
+      "Normal",
+      "Fighting",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dark",
+      "Steel"
+    ],
+    "0.5": ["Fire", "Water", "Electric", "Grass"]
+  },
+  "electric-poison": {
+    "0.5": [
+      "Electric",
+      "Grass",
+      "Fighting",
+      "Poison",
+      "Flying",
+      "Bug",
+      "Steel",
+      "Fairy"
+    ],
+    "4": ["Ground"],
+    "2": ["Psychic"],
+    "1": ["Normal", "Fire", "Water", "Ice", "Rock", "Ghost", "Dragon", "Dark"]
+  },
+  "fire-fighting": {
+    "2": ["Water", "Ground", "Flying", "Psychic"],
+    "1": [
+      "Normal",
+      "Electric",
+      "Fighting",
+      "Poison",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Fairy"
+    ],
+    "0.25": ["Bug"],
+    "0.5": ["Fire", "Grass", "Ice", "Dark", "Steel"]
+  },
+  "rock-dark": {
+    "0": ["Psychic"],
+    "2": ["Water", "Grass", "Ground", "Bug", "Steel", "Fairy"],
+    "1": ["Electric", "Ice", "Rock", "Dragon"],
+    "4": ["Fighting"],
+    "0.5": ["Normal", "Fire", "Poison", "Flying", "Ghost", "Dark"]
+  },
+  "bug-rock": {
+    "2": ["Water", "Rock", "Steel"],
+    "0.5": ["Normal", "Poison"],
+    "1": [
+      "Fire",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ]
+  },
+  "dragon-ghost": {
+    "1": ["Ground", "Flying", "Psychic", "Rock", "Steel"],
+    "2": ["Ice", "Ghost", "Dragon", "Dark", "Fairy"],
+    "0.5": ["Fire", "Water", "Electric", "Grass", "Poison", "Bug"],
+    "0": ["Normal", "Fighting"]
+  },
+  "bug-dark": {
+    "0.5": ["Grass", "Ground", "Ghost", "Dark"],
+    "0": ["Psychic"],
+    "2": ["Fire", "Flying", "Bug", "Rock", "Fairy"],
+    "1": [
+      "Normal",
+      "Water",
+      "Electric",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Dragon",
+      "Steel"
+    ]
+  },
+  "fire-normal": {
+    "2": ["Water", "Fighting", "Ground", "Rock"],
+    "0": ["Ghost"],
+    "0.5": ["Fire", "Grass", "Ice", "Bug", "Steel", "Fairy"],
+    "1": ["Normal", "Electric", "Poison", "Flying", "Psychic", "Dragon", "Dark"]
+  },
+  "fire-ghost": {
+    "2": ["Water", "Ground", "Rock", "Ghost", "Dark"],
+    "0.5": ["Fire", "Grass", "Ice", "Poison", "Steel", "Fairy"],
+    "0.25": ["Bug"],
+    "0": ["Normal", "Fighting"],
+    "1": ["Electric", "Flying", "Psychic", "Dragon"]
+  },
+  "dragon-fighting": {
+    "4": ["Fairy"],
+    "0.5": ["Fire", "Water", "Electric", "Grass", "Bug", "Rock", "Dark"],
+    "1": ["Normal", "Fighting", "Poison", "Ground", "Ghost", "Steel"],
+    "2": ["Ice", "Flying", "Psychic", "Dragon"]
+  },
+  "bug-fairy": {
+    "0": ["Dragon"],
+    "2": ["Fire", "Poison", "Flying", "Rock", "Steel"],
+    "1": ["Normal", "Water", "Electric", "Ice", "Psychic", "Ghost", "Fairy"],
+    "0.5": ["Grass", "Ground", "Bug", "Dark"],
+    "0.25": ["Fighting"]
+  },
+  "ice-ground": {
+    "0": ["Electric"],
+    "1": [
+      "Normal",
+      "Ice",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "2": ["Fire", "Water", "Grass", "Fighting", "Steel"],
+    "0.5": ["Poison"]
+  },
+  "dragon-psychic": {
+    "1": ["Normal", "Poison", "Ground", "Flying", "Rock", "Steel"],
+    "2": ["Ice", "Bug", "Ghost", "Dragon", "Dark", "Fairy"],
+    "0.5": ["Fire", "Water", "Electric", "Grass", "Fighting", "Psychic"]
+  },
+  "fighting-ghost": {
+    "0": ["Normal", "Fighting"],
+    "2": ["Flying", "Psychic", "Ghost", "Fairy"],
+    "1": [
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Ground",
+      "Dragon",
+      "Dark",
+      "Steel"
+    ],
+    "0.25": ["Bug"],
+    "0.5": ["Poison", "Rock"]
+  },
+  "rock-flying": {
+    "1": ["Grass", "Fighting", "Psychic", "Ghost", "Dragon", "Dark", "Fairy"],
+    "0.5": ["Normal", "Fire", "Poison", "Flying", "Bug"],
+    "2": ["Water", "Electric", "Ice", "Rock", "Steel"],
+    "0": ["Ground"]
+  },
+  "grass-poison": {
+    "2": ["Fire", "Ice", "Flying", "Psychic"],
+    "0.5": ["Water", "Electric", "Fighting", "Fairy"],
+    "0.25": ["Grass"],
+    "1": [
+      "Normal",
+      "Poison",
+      "Ground",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel"
+    ]
+  },
+  "poison-dragon": {
+    "1": ["Normal", "Flying", "Rock", "Ghost", "Dark", "Steel", "Fairy"],
+    "0.5": ["Fire", "Water", "Electric", "Fighting", "Poison", "Bug"],
+    "2": ["Ice", "Ground", "Psychic", "Dragon"],
+    "0.25": ["Grass"]
+  },
+  "fire-psychic": {
+    "1": ["Normal", "Electric", "Poison", "Flying", "Bug", "Dragon"],
+    "2": ["Water", "Ground", "Rock", "Ghost", "Dark"],
+    "0.5": ["Fire", "Grass", "Ice", "Fighting", "Psychic", "Steel", "Fairy"]
+  },
+  "poison-fire": {
+    "0.5": ["Fire", "Ice", "Fighting", "Poison", "Steel"],
+    "0.25": ["Grass", "Bug", "Fairy"],
+    "4": ["Ground"],
+    "2": ["Water", "Psychic", "Rock"],
+    "1": ["Normal", "Electric", "Flying", "Ghost", "Dragon", "Dark"]
+  },
+  "steel-fighting": {
+    "0.25": ["Bug", "Rock"],
+    "0": ["Poison"],
+    "1": ["Water", "Electric", "Flying", "Psychic", "Ghost", "Fairy"],
+    "2": ["Fire", "Fighting", "Ground"],
+    "0.5": ["Normal", "Grass", "Ice", "Dragon", "Dark", "Steel"]
+  },
+  "poison-dark": {
+    "0": ["Psychic"],
+    "0.5": ["Grass", "Poison", "Ghost", "Dark"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Ice",
+      "Fighting",
+      "Flying",
+      "Bug",
+      "Rock",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ],
+    "2": ["Ground"]
+  },
+  "normal-fighting": {
+    "0.5": ["Bug", "Rock", "Dark"],
+    "0": ["Ghost"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Poison",
+      "Ground",
+      "Dragon",
+      "Steel"
+    ],
+    "2": ["Fighting", "Flying", "Psychic", "Fairy"]
+  },
+  "fairy-steel": {
+    "1": ["Water", "Electric", "Fighting", "Ghost", "Steel"],
+    "2": ["Fire", "Ground"],
+    "0.25": ["Bug"],
+    "0.5": [
+      "Normal",
+      "Grass",
+      "Ice",
+      "Flying",
+      "Psychic",
+      "Rock",
+      "Dark",
+      "Fairy"
+    ],
+    "0": ["Poison", "Dragon"]
+  },
+  "ground-dragon": {
+    "0": ["Electric"],
+    "0.5": ["Fire", "Poison", "Rock"],
+    "2": ["Dragon", "Fairy"],
+    "1": [
+      "Normal",
+      "Water",
+      "Grass",
+      "Fighting",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dark",
+      "Steel"
+    ],
+    "4": ["Ice"]
+  },
+  "poison-flying": {
+    "0.25": ["Grass", "Fighting", "Bug"],
+    "0": ["Ground"],
+    "2": ["Electric", "Ice", "Psychic", "Rock"],
+    "0.5": ["Poison", "Fairy"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Flying",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel"
+    ]
+  },
+  "ground-steel": {
+    "0.25": ["Rock"],
+    "1": ["Grass", "Ice", "Ghost", "Dark"],
+    "2": ["Fire", "Water", "Fighting", "Ground"],
+    "0.5": ["Normal", "Flying", "Psychic", "Bug", "Dragon", "Steel", "Fairy"],
+    "0": ["Electric", "Poison"]
+  },
+  "dark-normal": {
+    "0": ["Psychic", "Ghost"],
+    "0.5": ["Dark"],
+    "4": ["Fighting"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Rock",
+      "Dragon",
+      "Steel"
+    ],
+    "2": ["Bug", "Fairy"]
+  },
+  "water-grass": {
+    "0.25": ["Water"],
+    "0.5": ["Ground", "Steel"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Psychic",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "2": ["Poison", "Flying", "Bug"]
+  },
+  "electric-fighting": {
+    "0.5": ["Electric", "Bug", "Rock", "Dark", "Steel"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Flying",
+      "Ghost",
+      "Dragon"
+    ],
+    "2": ["Ground", "Psychic", "Fairy"]
+  },
+  "water-ground": {
+    "4": ["Grass"],
+    "0": ["Electric"],
+    "1": [
+      "Normal",
+      "Water",
+      "Ice",
+      "Fighting",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "0.5": ["Fire", "Poison", "Rock", "Steel"]
+  },
+  "dragon-dark": {
+    "0.5": ["Fire", "Water", "Electric", "Grass", "Ghost", "Dark"],
+    "0": ["Psychic"],
+    "2": ["Ice", "Fighting", "Bug", "Dragon"],
+    "1": ["Normal", "Poison", "Ground", "Flying", "Rock", "Steel"],
+    "4": ["Fairy"]
+  },
+  "ground-fighting": {
+    "2": ["Water", "Grass", "Ice", "Flying", "Psychic", "Fairy"],
+    "0": ["Electric"],
+    "0.5": ["Poison", "Bug", "Dark"],
+    "1": ["Normal", "Fire", "Fighting", "Ground", "Ghost", "Dragon", "Steel"],
+    "0.25": ["Rock"]
+  },
+  "dragon-electric": {
+    "0.25": ["Electric"],
+    "0.5": ["Fire", "Water", "Grass", "Flying", "Steel"],
+    "2": ["Ice", "Ground", "Dragon", "Fairy"],
+    "1": [
+      "Normal",
+      "Fighting",
+      "Poison",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dark"
+    ]
+  },
+  "fairy-none": {
+    "2": ["Poison", "Steel"],
+    "0.5": ["Fighting", "Bug", "Dark"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Rock",
+      "Ghost",
+      "Fairy"
+    ],
+    "0": ["Dragon"]
+  },
+  "psychic-flying": {
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Poison",
+      "Flying",
+      "Bug",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ],
+    "0.25": ["Fighting"],
+    "0.5": ["Grass", "Psychic"],
+    "2": ["Electric", "Ice", "Rock", "Ghost", "Dark"],
+    "0": ["Ground"]
+  },
+  "electric-grass": {
+    "0.5": ["Water", "Grass", "Steel"],
+    "1": [
+      "Normal",
+      "Fighting",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "2": ["Fire", "Ice", "Poison", "Bug"],
+    "0.25": ["Electric"]
+  },
+  "grass-dark": {
+    "4": ["Bug"],
+    "2": ["Fire", "Ice", "Fighting", "Poison", "Flying", "Fairy"],
+    "0.5": ["Water", "Electric", "Grass", "Ground", "Ghost", "Dark"],
+    "0": ["Psychic"],
+    "1": ["Normal", "Rock", "Dragon", "Steel"]
+  },
+  "ghost-flying": {
+    "0": ["Normal", "Fighting", "Ground"],
+    "0.25": ["Bug"],
+    "2": ["Electric", "Ice", "Rock", "Ghost", "Dark"],
+    "1": ["Fire", "Water", "Flying", "Psychic", "Dragon", "Steel", "Fairy"],
+    "0.5": ["Grass", "Poison"]
+  },
+  "bug-fighting": {
+    "1": [
+      "Normal",
+      "Water",
+      "Electric",
+      "Ice",
+      "Poison",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Steel"
+    ],
+    "4": ["Flying"],
+    "0.5": ["Grass", "Fighting", "Ground", "Bug", "Dark"],
+    "2": ["Fire", "Psychic", "Fairy"]
+  },
+  "grass-fighting": {
+    "2": ["Fire", "Ice", "Poison", "Psychic", "Fairy"],
+    "4": ["Flying"],
+    "1": ["Normal", "Fighting", "Bug", "Ghost", "Dragon", "Steel"],
+    "0.5": ["Water", "Electric", "Grass", "Ground", "Rock", "Dark"]
+  },
+  "water-ice": {
+    "1": [
+      "Normal",
+      "Fire",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "2": ["Electric", "Grass", "Fighting", "Rock"],
+    "0.5": ["Water"],
+    "0.25": ["Ice"]
+  },
+  "flying-dark": {
+    "0": ["Ground", "Psychic"],
+    "0.5": ["Grass", "Ghost", "Dark"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Fighting",
+      "Poison",
+      "Flying",
+      "Bug",
+      "Dragon",
+      "Steel"
+    ],
+    "2": ["Electric", "Ice", "Rock", "Fairy"]
+  },
+  "flying-steel": {
+    "0": ["Poison", "Ground"],
+    "0.5": ["Normal", "Flying", "Psychic", "Dragon", "Steel", "Fairy"],
+    "2": ["Fire", "Electric"],
+    "1": ["Water", "Ice", "Fighting", "Rock", "Ghost", "Dark"],
+    "0.25": ["Grass", "Bug"]
+  },
+  "dragon-water": {
+    "0.5": ["Steel"],
+    "0.25": ["Fire", "Water"],
+    "2": ["Dragon", "Fairy"],
+    "1": [
+      "Normal",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dark"
+    ]
+  },
+  "fighting-ice": {
+    "0.5": ["Ice", "Bug", "Dark"],
+    "1": [
+      "Normal",
+      "Water",
+      "Electric",
+      "Grass",
+      "Poison",
+      "Ground",
+      "Rock",
+      "Ghost",
+      "Dragon"
+    ],
+    "2": ["Fire", "Fighting", "Flying", "Psychic", "Steel", "Fairy"]
+  },
+  "grass-fairy": {
+    "1": ["Normal", "Psychic", "Bug", "Rock", "Ghost", "Fairy"],
+    "2": ["Fire", "Ice", "Flying", "Steel"],
+    "0.5": ["Water", "Electric", "Grass", "Fighting", "Ground", "Dark"],
+    "0": ["Dragon"],
+    "4": ["Poison"]
+  },
+  "grass-steel": {
+    "1": ["Ice", "Ground", "Flying", "Bug", "Ghost", "Dark"],
+    "2": ["Fighting"],
+    "4": ["Fire"],
+    "0": ["Poison"],
+    "0.25": ["Grass"],
+    "0.5": [
+      "Normal",
+      "Water",
+      "Electric",
+      "Psychic",
+      "Rock",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ]
+  },
+  "psychic-fire": {
+    "0.5": ["Fire", "Grass", "Ice", "Fighting", "Psychic", "Steel", "Fairy"],
+    "1": ["Normal", "Electric", "Poison", "Flying", "Bug", "Dragon"],
+    "2": ["Water", "Ground", "Rock", "Ghost", "Dark"]
+  },
+  "electric-fire": {
+    "2": ["Water", "Rock"],
+    "0.25": ["Steel"],
+    "4": ["Ground"],
+    "1": ["Normal", "Fighting", "Poison", "Psychic", "Ghost", "Dragon", "Dark"],
+    "0.5": ["Fire", "Electric", "Grass", "Ice", "Flying", "Bug", "Fairy"]
+  },
+  "water-bug": {
+    "0.5": ["Water", "Ice", "Fighting", "Ground", "Steel"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Grass",
+      "Poison",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "2": ["Electric", "Flying", "Rock"]
+  },
+  "rock-poison": {
+    "4": ["Ground"],
+    "2": ["Water", "Psychic", "Steel"],
+    "0.25": ["Poison"],
+    "1": [
+      "Electric",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark"
+    ],
+    "0.5": ["Normal", "Fire", "Flying", "Bug", "Fairy"]
+  },
+  "ghost-psychic": {
+    "4": ["Ghost", "Dark"],
+    "0.5": ["Poison", "Psychic"],
+    "1": [
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Ground",
+      "Flying",
+      "Bug",
+      "Rock",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ],
+    "0": ["Normal", "Fighting"]
+  },
+  "fighting-dark": {
+    "4": ["Fairy"],
+    "0.5": ["Rock", "Ghost"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Poison",
+      "Ground",
+      "Bug",
+      "Dragon",
+      "Steel"
+    ],
+    "0.25": ["Dark"],
+    "2": ["Fighting", "Flying"],
+    "0": ["Psychic"]
+  },
+  "water-steel": {
+    "1": ["Fire", "Grass", "Ghost", "Dark"],
+    "0.25": ["Ice", "Steel"],
+    "0": ["Poison"],
+    "2": ["Electric", "Fighting", "Ground"],
+    "0.5": [
+      "Normal",
+      "Water",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Dragon",
+      "Fairy"
+    ]
+  },
+  "electric-none": {
+    "2": ["Ground"],
+    "0.5": ["Electric", "Flying", "Steel"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ]
+  },
+  "fire-dark": {
+    "0.5": ["Fire", "Grass", "Ice", "Ghost", "Dark", "Steel"],
+    "2": ["Water", "Fighting", "Ground", "Rock"],
+    "0": ["Psychic"],
+    "1": ["Normal", "Electric", "Poison", "Flying", "Bug", "Dragon", "Fairy"]
+  },
+  "ghost-ground": {
+    "2": ["Water", "Grass", "Ice", "Ghost", "Dark"],
+    "0.5": ["Bug", "Rock"],
+    "1": ["Fire", "Ground", "Flying", "Psychic", "Dragon", "Steel", "Fairy"],
+    "0.25": ["Poison"],
+    "0": ["Normal", "Electric", "Fighting"]
+  },
+  "fighting-poison": {
+    "0.5": ["Grass", "Fighting", "Poison", "Rock", "Dark"],
+    "0.25": ["Bug"],
+    "2": ["Ground", "Flying"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Ice",
+      "Ghost",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ],
+    "4": ["Psychic"]
+  },
+  "electric-ground": {
+    "2": ["Water", "Grass", "Ice", "Ground"],
+    "0": ["Electric"],
+    "0.5": ["Poison", "Flying", "Rock", "Steel"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Fighting",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ]
+  },
+  "fire-rock": {
+    "0.5": ["Normal", "Ice", "Poison", "Flying", "Bug", "Fairy"],
+    "2": ["Fighting", "Rock"],
+    "4": ["Water", "Ground"],
+    "0.25": ["Fire"],
+    "1": ["Electric", "Grass", "Psychic", "Ghost", "Dragon", "Dark", "Steel"]
+  },
+  "poison-normal": {
+    "0.5": ["Grass", "Poison", "Bug", "Fairy"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Ice",
+      "Fighting",
+      "Flying",
+      "Rock",
+      "Dragon",
+      "Dark",
+      "Steel"
+    ],
+    "0": ["Ghost"],
+    "2": ["Ground", "Psychic"]
+  },
+  "bug-electric": {
+    "2": ["Fire", "Rock"],
+    "0.5": ["Electric", "Grass", "Fighting", "Steel"],
+    "1": [
+      "Normal",
+      "Water",
+      "Ice",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ]
+  },
+  "steel-fairy": {
+    "2": ["Fire", "Ground"],
+    "0.5": [
+      "Normal",
+      "Grass",
+      "Ice",
+      "Flying",
+      "Psychic",
+      "Rock",
+      "Dark",
+      "Fairy"
+    ],
+    "0": ["Poison", "Dragon"],
+    "0.25": ["Bug"],
+    "1": ["Water", "Electric", "Fighting", "Ghost", "Steel"]
+  },
+  "psychic-fairy": {
+    "0.25": ["Fighting"],
+    "0": ["Dragon"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Ground",
+      "Flying",
+      "Bug",
+      "Rock",
+      "Dark",
+      "Fairy"
+    ],
+    "2": ["Poison", "Ghost", "Steel"],
+    "0.5": ["Psychic"]
+  },
+  "flying-water": {
+    "0": ["Ground"],
+    "2": ["Rock"],
+    "0.5": ["Fire", "Water", "Fighting", "Bug", "Steel"],
+    "4": ["Electric"],
+    "1": [
+      "Normal",
+      "Grass",
+      "Ice",
+      "Poison",
+      "Flying",
+      "Psychic",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ]
+  },
+  "steel-none": {
+    "1": ["Water", "Electric", "Ghost", "Dark"],
+    "0.5": [
+      "Normal",
+      "Grass",
+      "Ice",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ],
+    "0": ["Poison"],
+    "2": ["Fire", "Fighting", "Ground"]
+  },
+  "fighting-steel": {
+    "0.25": ["Bug", "Rock"],
+    "1": ["Water", "Electric", "Flying", "Psychic", "Ghost", "Fairy"],
+    "0.5": ["Normal", "Grass", "Ice", "Dragon", "Dark", "Steel"],
+    "0": ["Poison"],
+    "2": ["Fire", "Fighting", "Ground"]
+  },
+  "grass-ground": {
+    "1": [
+      "Normal",
+      "Water",
+      "Grass",
+      "Fighting",
+      "Poison",
+      "Psychic",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "0": ["Electric"],
+    "2": ["Fire", "Flying", "Bug"],
+    "0.5": ["Ground", "Rock"],
+    "4": ["Ice"]
+  },
+  "rock-fairy": {
+    "1": [
+      "Electric",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Psychic",
+      "Rock",
+      "Ghost",
+      "Fairy"
+    ],
+    "0.5": ["Normal", "Fire", "Flying", "Bug", "Dark"],
+    "4": ["Steel"],
+    "0": ["Dragon"],
+    "2": ["Water", "Grass", "Ground"]
+  },
+  "flying-ghost": {
+    "0.25": ["Bug"],
+    "1": ["Fire", "Water", "Flying", "Psychic", "Dragon", "Steel", "Fairy"],
+    "0": ["Normal", "Fighting", "Ground"],
+    "0.5": ["Grass", "Poison"],
+    "2": ["Electric", "Ice", "Rock", "Ghost", "Dark"]
+  },
+  "fire-flying": {
+    "0.25": ["Grass", "Bug"],
+    "0.5": ["Fire", "Fighting", "Steel", "Fairy"],
+    "4": ["Rock"],
+    "2": ["Water", "Electric"],
+    "0": ["Ground"],
+    "1": [
+      "Normal",
+      "Ice",
+      "Poison",
+      "Flying",
+      "Psychic",
+      "Ghost",
+      "Dragon",
+      "Dark"
+    ]
+  },
+  "normal-water": {
+    "0": ["Ghost"],
+    "2": ["Electric", "Grass", "Fighting"],
+    "1": [
+      "Normal",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "0.5": ["Fire", "Water", "Ice", "Steel"]
+  },
+  "normal-flying": {
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Fighting",
+      "Poison",
+      "Flying",
+      "Psychic",
+      "Dragon",
+      "Dark",
+      "Steel",
+      "Fairy"
+    ],
+    "0": ["Ground", "Ghost"],
+    "2": ["Electric", "Ice", "Rock"],
+    "0.5": ["Grass", "Bug"]
+  },
+  "normal-dragon": {
+    "0.5": ["Fire", "Water", "Electric", "Grass"],
+    "2": ["Ice", "Fighting", "Dragon", "Fairy"],
+    "0": ["Ghost"],
+    "1": [
+      "Normal",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Dark",
+      "Steel"
+    ]
+  },
+  "grass-fire": {
+    "0.5": ["Electric", "Steel", "Fairy"],
+    "0.25": ["Grass"],
+    "2": ["Poison", "Flying", "Rock"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Ice",
+      "Fighting",
+      "Ground",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark"
+    ]
+  },
+  "fairy-fighting": {
+    "2": ["Poison", "Flying", "Psychic", "Steel", "Fairy"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Ground",
+      "Ghost"
+    ],
+    "0.25": ["Bug", "Dark"],
+    "0.5": ["Fighting", "Rock"],
+    "0": ["Dragon"]
+  },
+  "fairy-flying": {
+    "1": ["Normal", "Fire", "Water", "Flying", "Psychic", "Ghost", "Fairy"],
+    "0": ["Ground", "Dragon"],
+    "0.25": ["Fighting", "Bug"],
+    "2": ["Electric", "Ice", "Poison", "Rock", "Steel"],
+    "0.5": ["Grass", "Dark"]
+  },
+  "psychic-grass": {
+    "1": ["Normal", "Rock", "Dragon", "Steel", "Fairy"],
+    "0.5": ["Water", "Electric", "Grass", "Fighting", "Ground", "Psychic"],
+    "2": ["Fire", "Ice", "Poison", "Flying", "Ghost", "Dark"],
+    "4": ["Bug"]
+  },
+  "electric-fairy": {
+    "0.5": ["Electric", "Fighting", "Flying", "Bug", "Dark"],
+    "2": ["Poison", "Ground"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Grass",
+      "Ice",
+      "Psychic",
+      "Rock",
+      "Ghost",
+      "Steel",
+      "Fairy"
+    ],
+    "0": ["Dragon"]
+  },
+  "rock-fighting": {
+    "1": ["Electric", "Ice", "Flying", "Ghost", "Dragon"],
+    "2": ["Water", "Grass", "Fighting", "Ground", "Psychic", "Steel", "Fairy"],
+    "0.5": ["Normal", "Fire", "Poison", "Bug", "Rock", "Dark"]
+  },
+  "dark-psychic": {
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Ground",
+      "Flying",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel"
+    ],
+    "4": ["Bug"],
+    "2": ["Fairy"],
+    "0": ["Psychic"]
+  },
+  "rock-ground": {
+    "0.25": ["Poison"],
+    "2": ["Ice", "Fighting", "Ground", "Steel"],
+    "1": ["Psychic", "Bug", "Ghost", "Dragon", "Dark", "Fairy"],
+    "0.5": ["Normal", "Fire", "Flying", "Rock"],
+    "4": ["Water", "Grass"],
+    "0": ["Electric"]
+  },
+  "dark-fighting": {
+    "2": ["Fighting", "Flying"],
+    "0.5": ["Rock", "Ghost"],
+    "0": ["Psychic"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Water",
+      "Electric",
+      "Grass",
+      "Ice",
+      "Poison",
+      "Ground",
+      "Bug",
+      "Dragon",
+      "Steel"
+    ],
+    "0.25": ["Dark"],
+    "4": ["Fairy"]
+  },
+  "dark-fire": {
+    "0": ["Psychic"],
+    "0.5": ["Fire", "Grass", "Ice", "Ghost", "Dark", "Steel"],
+    "2": ["Water", "Fighting", "Ground", "Rock"],
+    "1": ["Normal", "Electric", "Poison", "Flying", "Bug", "Dragon", "Fairy"]
+  },
+  "fighting-water": {
+    "0.5": ["Fire", "Water", "Ice", "Bug", "Rock", "Dark", "Steel"],
+    "2": ["Electric", "Grass", "Flying", "Psychic", "Fairy"],
+    "1": ["Normal", "Fighting", "Poison", "Ground", "Ghost", "Dragon"]
+  },
+  "water-electric": {
+    "0.5": ["Fire", "Water", "Ice", "Flying"],
+    "1": [
+      "Normal",
+      "Electric",
+      "Fighting",
+      "Poison",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "2": ["Grass", "Ground"],
+    "0.25": ["Steel"]
+  },
+  "steel-poison": {
+    "1": ["Water", "Electric", "Fighting", "Psychic", "Ghost", "Dark"],
+    "0": ["Poison"],
+    "0.5": ["Normal", "Ice", "Flying", "Rock", "Dragon", "Steel"],
+    "4": ["Ground"],
+    "0.25": ["Grass", "Bug", "Fairy"],
+    "2": ["Fire"]
+  },
+  "ground-electric": {
+    "2": ["Water", "Grass", "Ice", "Ground"],
+    "0": ["Electric"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Fighting",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "0.5": ["Poison", "Flying", "Rock", "Steel"]
+  },
+  "water-poison": {
+    "0.5": [
+      "Fire",
+      "Water",
+      "Ice",
+      "Fighting",
+      "Poison",
+      "Bug",
+      "Steel",
+      "Fairy"
+    ],
+    "1": ["Normal", "Grass", "Flying", "Rock", "Ghost", "Dragon", "Dark"],
+    "2": ["Electric", "Ground", "Psychic"]
+  },
+  "bug-grass": {
+    "1": ["Normal", "Psychic", "Ghost", "Dragon", "Dark", "Steel", "Fairy"],
+    "0.25": ["Grass", "Ground"],
+    "0.5": ["Water", "Electric", "Fighting"],
+    "4": ["Fire", "Flying"],
+    "2": ["Ice", "Poison", "Bug", "Rock"]
+  },
+  "dark-steel": {
+    "0.5": [
+      "Normal",
+      "Grass",
+      "Ice",
+      "Flying",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Steel"
+    ],
+    "1": ["Water", "Electric", "Bug", "Fairy"],
+    "2": ["Fire", "Ground"],
+    "4": ["Fighting"],
+    "0": ["Poison", "Psychic"]
+  },
+  "fire-steel": {
+    "2": ["Water", "Fighting"],
+    "1": ["Fire", "Electric", "Rock", "Ghost", "Dark"],
+    "0.25": ["Grass", "Ice", "Bug", "Steel", "Fairy"],
+    "0.5": ["Normal", "Flying", "Psychic", "Dragon"],
+    "4": ["Ground"],
+    "0": ["Poison"]
+  },
+  "steel-psychic": {
+    "0.25": ["Psychic"],
+    "1": ["Water", "Electric", "Fighting", "Bug"],
+    "0": ["Poison"],
+    "2": ["Fire", "Ground", "Ghost", "Dark"],
+    "0.5": [
+      "Normal",
+      "Grass",
+      "Ice",
+      "Flying",
+      "Rock",
+      "Dragon",
+      "Steel",
+      "Fairy"
+    ]
+  },
+  "dragon-flying": {
+    "0": ["Ground"],
+    "0.5": ["Fire", "Water", "Fighting", "Bug"],
+    "0.25": ["Grass"],
+    "1": [
+      "Normal",
+      "Electric",
+      "Poison",
+      "Flying",
+      "Psychic",
+      "Ghost",
+      "Dark",
+      "Steel"
+    ],
+    "2": ["Rock", "Dragon", "Fairy"],
+    "4": ["Ice"]
+  },
+  "fire-none": {
+    "0.5": ["Fire", "Grass", "Ice", "Bug", "Steel", "Fairy"],
+    "1": [
+      "Normal",
+      "Electric",
+      "Fighting",
+      "Poison",
+      "Flying",
+      "Psychic",
+      "Ghost",
+      "Dragon",
+      "Dark"
+    ],
+    "2": ["Water", "Ground", "Rock"]
+  },
+  "rock-fire": {
+    "1": ["Electric", "Grass", "Psychic", "Ghost", "Dragon", "Dark", "Steel"],
+    "4": ["Water", "Ground"],
+    "2": ["Fighting", "Rock"],
+    "0.25": ["Fire"],
+    "0.5": ["Normal", "Ice", "Poison", "Flying", "Bug", "Fairy"]
+  },
+  "electric-water": {
+    "0.5": ["Fire", "Water", "Ice", "Flying"],
+    "1": [
+      "Normal",
+      "Electric",
+      "Fighting",
+      "Poison",
+      "Psychic",
+      "Bug",
+      "Rock",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "2": ["Grass", "Ground"],
+    "0.25": ["Steel"]
+  },
+  "ice-ghost": {
+    "1": [
+      "Water",
+      "Electric",
+      "Grass",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Dragon",
+      "Fairy"
+    ],
+    "0.5": ["Ice", "Poison", "Bug"],
+    "2": ["Fire", "Rock", "Ghost", "Dark", "Steel"],
+    "0": ["Normal", "Fighting"]
+  },
+  "ground-psychic": {
+    "0": ["Electric"],
+    "0.5": ["Fighting", "Poison", "Psychic", "Rock"],
+    "1": ["Normal", "Fire", "Ground", "Flying", "Dragon", "Steel", "Fairy"],
+    "2": ["Water", "Grass", "Ice", "Bug", "Ghost", "Dark"]
+  },
+  "fire-poison": {
+    "0.25": ["Grass", "Bug", "Fairy"],
+    "0.5": ["Fire", "Ice", "Fighting", "Poison", "Steel"],
+    "2": ["Water", "Psychic", "Rock"],
+    "1": ["Normal", "Electric", "Flying", "Ghost", "Dragon", "Dark"],
+    "4": ["Ground"]
+  },
+  "bug-water": {
+    "0.5": ["Water", "Ice", "Fighting", "Ground", "Steel"],
+    "1": [
+      "Normal",
+      "Fire",
+      "Grass",
+      "Poison",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dragon",
+      "Dark",
+      "Fairy"
+    ],
+    "2": ["Electric", "Flying", "Rock"]
+  },
+  "dragon-ground": {
+    "2": ["Dragon", "Fairy"],
+    "0": ["Electric"],
+    "4": ["Ice"],
+    "1": [
+      "Normal",
+      "Water",
+      "Grass",
+      "Fighting",
+      "Ground",
+      "Flying",
+      "Psychic",
+      "Bug",
+      "Ghost",
+      "Dark",
+      "Steel"
+    ],
+    "0.5": ["Fire", "Poison", "Rock"]
+  },
+  "water-fighting": {
+    "1": ["Normal", "Fighting", "Poison", "Ground", "Ghost", "Dragon"],
+    "2": ["Electric", "Grass", "Flying", "Psychic", "Fairy"],
+    "0.5": ["Fire", "Water", "Ice", "Bug", "Rock", "Dark", "Steel"]
+  },
+  "bug-ghost": {
+    "2": ["Fire", "Flying", "Rock", "Ghost", "Dark"],
+    "1": ["Water", "Electric", "Ice", "Psychic", "Dragon", "Steel", "Fairy"],
+    "0": ["Normal", "Fighting"],
+    "0.5": ["Grass", "Poison", "Ground", "Bug"]
+  }
+}

@@ -1,81 +1,71 @@
 <script lang="ts">
-  import Button from "$lib/components/Button.svelte";
-  import SelectInput from "$lib/components/SelectInput.svelte";
-  import TextInput from "$lib/components/TextInput.svelte";
-  import { getToastStore, type ToastSettings } from "@skeletonlabs/skeleton";
-  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
-  import { type } from "@tauri-apps/api/os";
-  import { appDataDir, resourceDir } from "@tauri-apps/api/path";
-  import { invoke } from "@tauri-apps/api/tauri";
-  import { wikis, type WikiSettings } from "../../store";
+import Button from "$lib/components/Button.svelte";
+import TextInput from "$lib/components/TextInput.svelte";
+import { getToastStore, type ToastSettings } from "@skeletonlabs/skeleton";
+import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+import { invoke } from "@tauri-apps/api/tauri";
+import { wikis, type WikiSettings } from "../../store";
 
-  const toastStore = getToastStore();
+const toastStore = getToastStore();
 
-  let wikiName = "";
-  let wikiCodeName = "";
-  let wikiDescription = "";
-  let wikiAuthor = "";
-  let settings: WikiSettings = {
-    version_group: "red-blue",
-    matchup_generation: "current",
-    deployment_url: "",
+let wikiName = "";
+let wikiCodeName = "";
+let wikiDescription = "";
+let wikiAuthor = "";
+let settings: WikiSettings = {
+  deployment_url: "",
+};
+
+let loading: boolean = false;
+
+$: wikiCodeName = wikiName.toLowerCase().replaceAll(" ", "-");
+$: siteUrl = `https://${wikiAuthor}.github.io/${wikiCodeName}`;
+$: repoUrl = `https://github.com/${wikiAuthor}/${wikiCodeName}`;
+$: siteName = wikiName;
+
+async function createWiki() {
+  loading = true;
+
+  $wikis[wikiCodeName] = {
+    name: wikiCodeName,
+    description: wikiDescription,
+    author: wikiAuthor,
+    site_name: siteName,
+    repo_url: repoUrl,
+    site_url: siteUrl,
+    settings: settings,
   };
-
-  let loading: boolean = false;
-
-  $: wikiCodeName = wikiName.toLowerCase().replaceAll(" ", "-");
-  $: siteUrl = `https://${wikiAuthor}.github.io/${wikiCodeName}`;
-  $: repoUrl = `https://github.com/${wikiAuthor}/${wikiCodeName}`;
-  $: siteName = wikiName;
-
-  const wikiCreatedToast: ToastSettings = {
-    message: "Wiki Created",
-    timeout: 5000,
-    hoverable: true,
-    background: "variant-filled-success",
-  };
-
-  async function createWiki() {
-    const directory = await appDataDir();
-    const resourceDirectory = await resourceDir();
-    let completeResourceDirectory = `${resourceDirectory}/resources/`;
-
-    const osType = await type();
-
-    // Check if platform is windows and change the directory path
-    if (osType === "Windows_NT") {
-      completeResourceDirectory = `${resourceDirectory}\\resources\\`;
-    }
-
-    loading = true;
-
-    $wikis[wikiCodeName] = {
-      name: wikiCodeName,
-      description: wikiDescription,
-      author: wikiAuthor,
-      site_name: siteName,
-      repo_url: repoUrl,
-      site_url: siteUrl,
-      settings: settings,
-    };
-    await writeTextFile("wikis.json", JSON.stringify($wikis), {
-      dir: BaseDirectory.AppData,
-    });
-    await invoke("create_wiki", {
-      wikiName: wikiCodeName,
-      wikiDescription,
-      wikiAuthor,
-      siteName,
-      dir: directory,
-      resourceDir: completeResourceDirectory,
-    }).then(() => {
+  await writeTextFile("wikis.json", JSON.stringify($wikis), {
+    dir: BaseDirectory.AppData,
+  });
+  await invoke("create_wiki", {
+    wikiName: wikiCodeName,
+    wikiDescription,
+    wikiAuthor,
+    siteName,
+  })
+    .then((result) => {
       loading = false;
-      toastStore.trigger(wikiCreatedToast);
+      toastStore.trigger({
+        message: result as string,
+        timeout: 5000,
+        hoverable: true,
+        background: "variant-filled-success",
+      });
+    })
+    .catch((error) => {
+      loading = false;
+      toastStore.trigger({
+        message: error as string,
+        timeout: 5000,
+        hoverable: true,
+        background: "variant-filled-error",
+      });
     });
-  }
+}
 </script>
 
-<div class="grid grid-cols-3 p-4 gap-16 self-center">
+<div class="grid grid-cols-3 gap-16 self-center p-4">
   <div>
     <h2 class="text-base font-semibold leading-7 text-gray-900">New Wiki</h2>
     <p class="mt-1 text-sm leading-6 text-gray-600">
@@ -83,7 +73,7 @@
     </p>
   </div>
   <div
-    class="flex flex-col col-span-2 gap-y-5 card border rounded-lg p-5 w-[45rem]"
+    class="card col-span-2 flex w-[45rem] flex-col gap-y-5 rounded-lg border p-5"
   >
     <div class="grid grid-cols-2 gap-16">
       <TextInput
@@ -108,30 +98,17 @@
       >
       <textarea
         id="wiki-description"
-        class="block w-full pl-2 mt-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 disabled:bg-gray-100 disabled:text-gray-400"
+        class="mt-2 block w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
         placeholder="Wiki Description"
         bind:value={wikiDescription}
       />
     </div>
-    <div class="grid grid-cols-2 gap-16">
-      <TextInput
-        id="wiki-author"
-        label="Wiki Author"
-        placeholder="Recommended: Your Github Username"
-        bind:value={wikiAuthor}
-      />
-
-      <SelectInput
-        id="matchup-generation"
-        label="Matchup Generation"
-        bind:value={settings.matchup_generation}
-        options={[
-          { label: "Current", value: "current" },
-          { label: "Generation 1", value: "gen-1" },
-          { label: "Generation 2", value: "gen-2" },
-        ]}
-      />
-    </div>
+    <TextInput
+      id="wiki-author"
+      label="Wiki Author"
+      placeholder="Recommended: Your Github Username"
+      bind:value={wikiAuthor}
+    />
 
     <TextInput
       id="deployment-url"
@@ -155,28 +132,15 @@
         bind:value={siteUrl}
       />
     </div>
-    <SelectInput
-      id="version-group"
-      label="Version Group"
-      bind:value={settings.version_group}
-      options={[
-        { label: "Red - Blue", value: "red-blue" },
-        { label: "Generation 1", value: "gen-1" },
-        { label: "Generation 2", value: "gen-2" },
-      ]}
-    />
-
-    <div class="w-32">
-      <Button
-        disabled={wikiDescription === "" ||
+    <Button
+      class="w-32"
+      disabled={wikiDescription === "" ||
           wikiName === "" ||
           wikiAuthor === "" ||
-          settings.version_group === "" ||
           loading === true}
-        onClick={createWiki}
-        title="Create Wiki"
-        {loading}
-      />
-    </div>
+      onClick={createWiki}
+      title="Create Wiki"
+      loading={loading}
+    />
   </div>
 </div>
