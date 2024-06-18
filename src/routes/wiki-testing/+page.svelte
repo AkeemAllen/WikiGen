@@ -36,9 +36,8 @@ onMount(() => {
 });
 
 async function spawnProcess() {
-  const appData = await appDataDir();
   await invoke("spawn_mkdocs_process", {
-    mkdocsFilePath: `${appData}${$selectedWiki.name}/dist/mkdocs.yml`,
+    wikiName: $selectedWiki.name,
     port: 4000,
   })
     .then((response) => {
@@ -48,6 +47,10 @@ async function spawnProcess() {
     })
     .catch((error) => {
       const typedError = error as Response;
+      toastStore.trigger({
+        message: typedError.message,
+        background: "bg-red-500",
+      });
       if (typedError.status === "Occupied") {
         toastStore.trigger({
           message: typedError.message,

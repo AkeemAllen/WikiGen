@@ -5,6 +5,7 @@ use std::net::TcpStream;
 use std::path::Path;
 use std::process::{id, Command};
 use sysinfo::{Pid, System};
+use tauri::AppHandle;
 
 #[derive(Debug, Serialize, Clone)]
 enum MkdocsServerStatus {
@@ -24,7 +25,14 @@ pub struct Payload {
 // User will need to have python3 or mkdocs installed.
 // Either inform the user to install it or install it for them.
 #[tauri::command]
-pub async fn spawn_mkdocs_process(mkdocs_file_path: String, port: u16) -> Result<Payload, Payload> {
+pub async fn spawn_mkdocs_process(
+    wiki_name: &str,
+    app_handle: AppHandle,
+    port: u16,
+) -> Result<Payload, Payload> {
+    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
+
     let mut is_port_in_use = false;
 
     match TcpStream::connect(("0.0.0.0", port)) {
@@ -58,7 +66,7 @@ pub async fn spawn_mkdocs_process(mkdocs_file_path: String, port: u16) -> Result
         .arg("-a")
         .arg(format!("0.0.0.0:{}", &port))
         .arg("-f")
-        .arg(Path::new(&mkdocs_file_path));
+        .arg(mkdocs_yaml_file_path);
 
     let child_stdout = mkdocs_serve.spawn().expect("Failed to start Mkdocs Server");
 
