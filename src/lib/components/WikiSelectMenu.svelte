@@ -17,10 +17,13 @@ import BaseModal from "./BaseModal.svelte";
 import MultiSelect from "svelte-multiselect";
 import Button from "./Button.svelte";
 import { getToastStore } from "@skeletonlabs/skeleton";
+import TextInput from "./TextInput.svelte";
+import { invoke } from "@tauri-apps/api";
 
 const toastStore = getToastStore();
 
 let deleteWikiModalOpen: boolean = false;
+let deployWikiModalOpen: boolean = false;
 let wikisToDelete: string[] = [];
 let directoriesRemoved: boolean = false;
 let wikiJsonUpdated: boolean = false;
@@ -129,6 +132,26 @@ async function deleteWikis() {
   deleteWikiModalOpen = false;
   wikisToDelete = [];
 }
+
+async function deployWiki() {
+  await invoke("deploy_wiki", {
+    wikiName: $selectedWiki.name,
+  })
+    .then((res) => {
+      toastStore.trigger({
+        message: res as string,
+        background: "variant-filled-success",
+      });
+      deployWikiModalOpen = false;
+    })
+    .catch((err) => {
+      toastStore.trigger({
+        message: err as string,
+        background: "variant-filled-error",
+      });
+      deployWikiModalOpen = false;
+    });
+}
 </script>
 
 <BaseModal bind:open={deleteWikiModalOpen}>
@@ -144,6 +167,11 @@ async function deleteWikis() {
     />
   </div>
   <Button onClick={() => deleteWikis()} title="Delete Selected Wikis" />
+</BaseModal>
+
+<BaseModal bind:open={deployWikiModalOpen} class="w-64">
+  <TextInput label="Repo/Deployment URL" bind:value={$selectedWiki.repo_url} />
+  <Button title="Deploy Wiki" onClick={deployWiki} />
 </BaseModal>
 
 <div
@@ -166,6 +194,12 @@ async function deleteWikis() {
       >Create New Wiki</button
     >
   </a>
+  {#if $selectedWiki.name !== ""}
+    <button
+      class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+      on:click={() => deployWikiModalOpen = true}>Deploy Wiki</button
+    >
+  {/if}
   <button
     class="w-full rounded-md p-2 text-left text-sm text-red-500 hover:bg-slate-300"
     on:click={() => deleteWikiModalOpen = true}>Delete A Wiki</button
