@@ -12,90 +12,120 @@ It allows you to document changes to:
 
 And have those changes immediately reflect in the wiki.
 
-# Guide
-
-This guide will take you from wiki creation to deployment. By the end, you'll have an example wiki that anyone can use.
-
 ## Getting Started
 
 ### Prerequisites
 
-#### WikiGen Download and Installation
+1. Install [Python](https://www.python.org/downloads/) on your system and run `pip install mkdocs mkdocs-material` in a terminal.
 
-The first step is to install the binary for your operating system.
+2. Download and install the application binary for your operating system.
 
-**Windows**
-
-- Download and run the setup.exe from the releases
-  - Since the app is unsigned you'll run into some warnings. Just choose to run anyway.
-
-**Mac**
-
-- Download and install the \*.dmg executable.
-
-### **NOTE**
-
-When you try to open the app, you might get this popup message from apple.
-
-_Todo_: Add Image here.
-
-You're getting this because the app is currently unsigned. I'd need apple developer account - costing $100 a year- to sign it (as far as I know). I'm not ready for that level of commitment yet so you can get past it with the below instructions if you choose.
-
-- Open Finder
-- Ctrl + click the app
-- Click Open
-- You might get one more popup, click open again.
-
-You should only need to do this once.
-
-**Linux**
-
-- Download and depackage the \*.deb file.
-
-_Note: I haven't gotten chance to test on a linux machine as yet so I'm not sure what complications you might face._
-
-#### Python and Mkdocs
-
-Next, We want to install Python and mkdocs. These are needed for building the actual wiki site.
-
-1. Download and install [Python](https://www.python.org/downloads/) from their downloads page.
-2. Open a terminal and run `pip install mkdocs mkdocs-material`.
-
-Now that all the process stuff is out of the way, let's move on to the meat.
+> [!IMPORTANT]  
+> On Mac, when you try to open the app, you might get this popup message. "'WikiGen' cannot be opened because the developer cannot be verified."
+> The app is currently unsigned. I plan on signing it in the future. For now, just follow the below instructions once to get past it.
+> - Open Finder
+> - Ctrl + click the app 
+> - Click Open
+> - You might get one more popup. Click open again.
 
 ## Creating and Running the Wiki Locally
 
 **Creation**
 
-When you first open the app you'll see a blank page with a few elements. Click the three dots to open the Wiki Select Menu and click "Create New Wiki".
+1. Start the app and click the three dots to open the Wiki Select Menu and select "Create New Wiki".
 
-This will bring you to the create-wiki page. Fill out the fields as instructed (leaving Deployment URL blank for now) and click the Create Wiki button at the bottom.
+2. Fill out the fields as instructed and click the "Create Wiki" button.
 
-_Note: For the author field, it asks for your github username so the wiki can be deployed to github pages. However, if you prefer to host it elsewhere, then you can use whatever name you'd like._
+> [!TIP]  
+> Use your github username to make deployment to github pages easier.
+> However, you can use a different name if you prefer to host it elsewhere
 
-Once it's done, click the three dots again and select the wiki.
-
-You should now see some new pages for Pokemon, Routes, etc.
+3. Click the three dots again and select the new wiki. You'll see new pages for Pokemon, Routes, etc.
 
 **Running the Server**
 
-Once you've created and selected you wiki, navigate to the Wiki Testing page. You can follow the instructions there to get a local server running. If you've already setup the Python and Mkdocs prerequisites, you can skip steps 1 and 2.
-
-By the end, your wiki will be available in your browser for your own testing. I hope to automate this process in the future, but the manual steps should be easy to accomplish.
+Navigate to the Wiki Testing page and follow the instructions to get the local server running.
 
 ## Modifying Pokemon
 
-The app comes preloaded with data for all 1025 Pokemon. This includes stats, types, movesets, etc. You can modify them as you see fit and a page will generate with the updates.
+The app comes preloaded with data for all 1025 Pokemon. As of this release, you can modify a Pokemon's types, abilities, stats, evolution details, and movesets.
 
-Simply navigate to the Pokemon page, search for a Pokemon, updates its information, and save the changes.
+> [!NOTE]  
+> The data is currently missing mega-evolutions, regional variants, and some minor forms.
+
+On the Pokemon page, find, edit, and save any entry. Saved changes will be immediately reflected in the wiki. Give it a go!
 
 ## Generating Pokemon Pages
 
-### Type Change Page
-
-### Evolution Change Page
+1. Open the "Generation" tab on the Pokemon page
+2. Select a range (representing the Pokedex number for Pokemon) and click Generate.
+3. Wiki pages for all Pokemon within that range will be generated.
 
 ## Modifying Routes
+
+Open the Game Routes page and create a new route, eg, Nimbasa City, or Route 1. Open the newly created route by clicking its box. All changes to wild encounters and trainer encounters will be reflected in the wiki.
+
+> [!TIP]  
+> You'll also see an option to "Modify Encounter Types." Use this to add all the environments where a player can encounter wild pokemon on a route. Eg. Grass, Tall-Grass, Surfing, Fishing, Cave, etc.
+>
+> You can add as many as you wish.
+
+**Documenting Wild Encounters**
+
+1. Select the "Wild Encounters" tab. (You should be here by default)
+2. Fill in the encounter type, Pokemon, and Encounter rate and click save.
+3. The new route and wild encounter should be reflected in the wiki.
+4. Do this for all wild pokemon on the route.
+
+**Documenting Trainer Encounters**
+
+There are quite a few things you can do when documenting trainer encounters.
+
+##### Adding Pokemon
+
+1. Select the "Trainer Encounters" tab
+2. Add the Trainer Name, one of their Pokemon and its level and click save.
+3. You should now see the Trainer and their Pokemon.
+4. Add their other Pokemon, if they have more.
+
+##### Deleting Pokemon
+
+1. Hover over one of the Pokemon cards, you should see an edit and a delete icon appear.
+2. Click the delete icon to delete a Pokemon from the team.
+3. Deleing all Pokemon will delete the trainer as well.
+
+
+##### Modifying Pokemon Moves, Held Items, etc
+
+1. Hover over one of the Pokemon cards, you should see an edit and a delete icon appear.
+2. Click the edit icon and a dialog will open.
+3. If applicable, give the pokemon a nature, held item, ability, trainer version (will explain later), and moves.
+4. Repeat for all pokemon on the team as necessary
+
+##### Modifying Trainer Sprites
+
+For some trainers, such as gym leaders, you may want a sprite.
+
+1. Click the three horizontal dots beside the trainer name and select Add sprite.
+2. Type in the name of a sprite, such as blue and click Set Sprite.
+
+> [!NOTE]  
+> All trainer sprites are taken from the [Pokemon Showdown Trainer Sprites](https://play.pokemonshowdown.com/sprites/trainers/) page.
+> You can peruse this site if you're not sure what sprite name to use.
+>
+> Also, credit to all of the authors who made these sprites! Wouldn't be able to shout them all out here lol
+
+##### Modifying Trainer Versions
+
+It's possible for a trainer to have different versions depending on in-game factors. A good example would be your rival's starter, which will depend on the start your choose.
+
+You can create different trainer versions to reflect their team based on in-game factors.
+
+1. Click the three horizontal dots beside the trainer name and select Modify Trainer Version.
+2. Type in a trainer version based on a defining charasteric, eg. "Fire" to represent their team if you pick the fire starter. and click "Create this option"
+3. Click anywhere outside of the dialog to exit.
+4. Hover over one of the Pokemon cards and click the edit icon.
+5. Add the versions of the trainer that the pokemon will belong to.
 
 ## Generating Route Pages
 
