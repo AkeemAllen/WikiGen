@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "WikiGen",
-    "version": "0.7.3"
+    "version": "0.7.4"
   },
   "tauri": {
     "allowlist": {
@@ -68,7 +68,9 @@
     },
     "updater": {
       "active": true,
-      "endpoints": [],
+      "endpoints": [
+        "https://gist.github.com/AkeemAllen/45b036d6d2330074b996823297c1d125/raw"
+      ],
       "dialog": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDRFNUFDQzNFQjA2NDUxMjQKUldRa1VXU3dQc3hhVGtpRllIbjZiV09VZEl0U0xYTHUzcEdUYnlvaFpoYXlXT21vN0orcVI2S3kK"
     },
