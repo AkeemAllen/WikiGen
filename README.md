@@ -22,13 +22,13 @@ And have those changes immediately reflect in the wiki.
 
 > [!IMPORTANT]  
 > On Mac, when you try to open the app, you might get this popup message. "'WikiGen' cannot be opened because the developer cannot be verified."
-> The app is currently unsigned. I plan on signing it in the future. For now, just follow the below instructions once to get past it.
+> The app is currently unsigned but I plan on signing it in the future. For now, just follow the below instructions once to get past it.
 > - Open Finder
 > - Ctrl + click the app 
 > - Click Open
 > - You might get one more popup. Click open again.
 
-## Creating and Running the Wiki Locally
+### Creating and Running the Wiki Locally
 
 **Creation**
 
@@ -55,7 +55,7 @@ The app comes preloaded with data for all 1025 Pokemon. As of this release, you 
 
 On the Pokemon page, find, edit, and save any entry. Saved changes will be immediately reflected in the wiki. Give it a go!
 
-## Generating Pokemon Pages
+### Generating Pokemon Pages
 
 1. Open the "Generation" tab on the Pokemon page
 2. Select a range (representing the Pokedex number for Pokemon) and click Generate.
@@ -113,20 +113,45 @@ For some trainers, such as gym leaders, you may want a sprite.
 > All trainer sprites are taken from the [Pokemon Showdown Trainer Sprites](https://play.pokemonshowdown.com/sprites/trainers/) page.
 > You can peruse this site if you're not sure what sprite name to use.
 >
-> Also, credit to all of the authors who made these sprites! Wouldn't be able to shout them all out here lol
+> Also, credit to all of the artists who made these sprites! Wouldn't be able to shout them all out here lol
 
 ##### Modifying Trainer Versions
 
-It's possible for a trainer to have different versions depending on in-game factors. A good example would be your rival's starter, which will depend on the start your choose.
+It's possible for a trainer to have different versions depending on in-game factors. A good example would be your rival's starter, which will depend on the starter you choose.
 
-You can create different trainer versions to reflect their team based on in-game factors.
+You can create different versions of trainers to reflect their team based on in-game factors.
 
 1. Click the three horizontal dots beside the trainer name and select Modify Trainer Version.
-2. Type in a trainer version based on a defining charasteric, eg. "Fire" to represent their team if you pick the fire starter. and click "Create this option"
+2. Type in a version name based on a defining charasteric, eg. "Fire" to represent their team if you pick the grass starter, and click "Create this option"
 3. Click anywhere outside of the dialog to exit.
 4. Hover over one of the Pokemon cards and click the edit icon.
 5. Add the versions of the trainer that the pokemon will belong to.
 
-## Generating Route Pages
+### Generating Route Pages
+
+Simply open the "Generation" tab on the Game Routes page and click "Generate Pages".
 
 ## Deployment
+
+*I'm writing these intructions under the assumption that you're deploying to github pages.*
+
+#### Prerequisite
+
+1. Have a [Github](https://github.com/) account
+2. Create a new repository with the name (code name) of the wiki. Eg. blaze-black, emerald-kaizo, etc.
+
+#### Full deployment
+
+1. Open a terminal and navigate to the wiki's dist folder.
+2. Run the following git commands:
+   - `git init`
+   - `git add .`
+   - `git commit -m "__Update_Message__"`
+   - `git remote add origin git@github.com:AkeemAllen/test-deployment.git`
+   - `git push -u origin main`
+3. Finally, run the command `mkdocs gh-deploy` to deploy the site to github pages. The command will also spit out a link to your wiki's site.
+4. Visit the link and refresh after a few minutes, the site should be available.
+
+Your Wiki is now deployed and ready to be used by you Rom Hack Enjoyers!!!!
+
+*I plan on automating the deployment process in the future.*
