@@ -50,7 +50,8 @@ function onPokemonNameSelected(
   pokemonId = event.detail.value as number;
 }
 
-function setPokemonDetails(pokemonId: number) {
+function setPokemonDetails(id: number) {
+  pokemonId = id;
   pokemonName = $pokemon.pokemon[pokemonId].name;
   currentPokemonName = pokemonName;
   pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
@@ -107,7 +108,7 @@ function nextPokemon() {
     });
     return;
   }
-  setPokemonDetails(pokemonId++);
+  setPokemonDetails(pokemonId + 1);
 }
 
 function prevPokemon() {
@@ -119,7 +120,7 @@ function prevPokemon() {
     });
     return;
   }
-  setPokemonDetails(pokemonId--);
+  setPokemonDetails(pokemonId - 1);
 }
 </script>
 
@@ -230,14 +231,14 @@ function prevPokemon() {
     trigger: {
       key: ']',
       modifier:["ctrl", "meta"],
-      callback: () => nextPokemon(),
+      callback: nextPokemon,
     },
   }}
   use:shortcut={{
     trigger: {
       key: '[',
       modifier:["ctrl", "meta"],
-      callback: () => prevPokemon(),
+      callback: prevPokemon,
     },
   }}
   use:shortcut={{
