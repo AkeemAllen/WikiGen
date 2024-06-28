@@ -7,7 +7,7 @@ import {
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import _ from "lodash";
 import { selectedWiki } from "../../../store";
-import { routes, type RouteProperties } from "../../../store/gameRoutes";
+import { routes } from "../../../store/gameRoutes";
 import { pokemonList, pokemon } from "../../../store/pokemon";
 import Button from "../Button.svelte";
 import NumberInput from "../NumberInput.svelte";
@@ -15,11 +15,20 @@ import SelectInput from "../SelectInput.svelte";
 import { IconTrash } from "@tabler/icons-svelte";
 import AutoComplete from "../AutoComplete.svelte";
 import { invoke } from "@tauri-apps/api";
+import TextInput from "../TextInput.svelte";
 
 export let routeName: string = "";
 let pokemonName: string = "";
 let encounterType: string = "grass-normal";
 let encounterRate: number = 0;
+let areaLevels = _.cloneDeep(
+  $routes.routes[routeName].wild_encounter_area_levels,
+);
+let originalAreaLevels = _.cloneDeep(areaLevels);
+let routeWildEncounters = _.cloneDeep(
+  $routes.routes[routeName].wild_encounters,
+);
+let originalRouteWildEncounters = _.cloneDeep(routeWildEncounters);
 let pokemonListOptions: AutocompleteOption<string | number>[] =
   $pokemonList.map(([name, id]) => ({ label: name, value: id }));
 
@@ -35,20 +44,11 @@ function onPokemonNameSelected(
   pokemonName = event.detail.label;
 }
 
-async function generateRoutePage() {
-  await invoke("generate_single_route_page_with_handle", {
-    wikiName: $selectedWiki.name,
-    routeName,
-  }).catch((e) => {
-    console.error(e);
-  });
-}
-
 async function addEncounter() {
-  $routes.routes[routeName].wild_encounters = {
-    ...$routes.routes[routeName].wild_encounters,
+  routeWildEncounters = {
+    ...routeWildEncounters,
     [encounterType]: [
-      ...($routes.routes[routeName].wild_encounters[encounterType] ?? []),
+      ...(routeWildEncounters[encounterType] ?? []),
       {
         id: $pokemonList.find(
           ([name, _]) => name === pokemonName,
@@ -58,18 +58,11 @@ async function addEncounter() {
       },
     ],
   };
-  await writeTextFile(
-    `${$selectedWiki.name}/data/routes.json`,
-    JSON.stringify($routes),
-    { dir: BaseDirectory.AppData },
-  ).then(() => {
-    generateRoutePage();
-  });
 }
 
 async function deleteEncounter(pokemonName: string, encounterType: string) {
   let updatedEncounters = {
-    ...$routes.routes[routeName].wild_encounters,
+    ...routeWildEncounters,
   };
   updatedEncounters[encounterType] = updatedEncounters[encounterType].filter(
     (encounter) => encounter.name !== pokemonName,
@@ -78,14 +71,31 @@ async function deleteEncounter(pokemonName: string, encounterType: string) {
     delete updatedEncounters[encounterType];
   }
 
-  $routes.routes[routeName].wild_encounters = updatedEncounters;
+  routeWildEncounters = updatedEncounters;
+}
+
+async function saveChanges() {
+  $routes.routes[routeName].wild_encounters = routeWildEncounters;
+  $routes.routes[routeName].wild_encounter_area_levels = areaLevels;
+
+  routeWildEncounters = _.cloneDeep($routes.routes[routeName].wild_encounters);
+  originalRouteWildEncounters = _.cloneDeep(routeWildEncounters);
+  areaLevels = _.cloneDeep(
+    $routes.routes[routeName].wild_encounter_area_levels,
+  );
+  originalAreaLevels = _.cloneDeep(areaLevels);
 
   await writeTextFile(
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
     { dir: BaseDirectory.AppData },
   ).then(() => {
-    generateRoutePage();
+    invoke("generate_single_route_page_with_handle", {
+      wikiName: $selectedWiki.name,
+      routeName,
+    }).catch((e) => {
+      console.error(e);
+    });
   });
 }
 </script>
@@ -121,14 +131,25 @@ async function deleteEncounter(pokemonName: string, encounterType: string) {
     disabled={pokemonName === "" || encounterRate === 0}
     onClick={addEncounter}
   />
+  <Button
+    class="mt-8 w-32"
+    title="Save Changes"
+    disabled={_.isEqual(routeWildEncounters, originalRouteWildEncounters) && _.isEqual(areaLevels, originalAreaLevels)}
+    onClick={saveChanges}
+  />
 </div>
 
 <div class="mt-5 flex flex-col gap-y-5">
-  {#each Object.entries($routes.routes[routeName].wild_encounters) as [_encounterType, encounters]}
+  {#each Object.entries(routeWildEncounters) as [_encounterType, encounters]}
     <div>
       <strong>
         {_.capitalize(_encounterType)} Encounters
       </strong>
+      <TextInput
+        bind:value={areaLevels[_encounterType]}
+        placeholder="Lv."
+        class="w-20"
+      />
       <div class="mt-2 grid grid-cols-6 gap-5">
         {#each encounters as encounter}
           <div
