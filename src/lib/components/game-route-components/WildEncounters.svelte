@@ -93,9 +93,17 @@ async function saveChanges() {
     invoke("generate_single_route_page_with_handle", {
       wikiName: $selectedWiki.name,
       routeName,
-    }).catch((e) => {
-      console.error(e);
-    });
+    })
+      .then(() => {
+        toastStore.trigger({
+          message: "Changes saved successfully",
+          timeout: 3000,
+          background: "variant-filled-success",
+        });
+      })
+      .catch((e) => {
+        console.error(e);
+      });
   });
 }
 </script>
