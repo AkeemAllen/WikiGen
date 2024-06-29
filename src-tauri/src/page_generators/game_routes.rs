@@ -439,13 +439,12 @@ fn get_markdown_entry_for_pokemon(wiki_name: &str, pokemon: &WildEncounter) -> S
 fn get_markdown_entry_for_trainer_pokemon(wiki_name: &str, pokemon: &TrainerPokemon) -> String {
     let dex_number_file_name = get_pokemon_dex_formatted_name(pokemon.id);
     return format!(
-        "![{}](../../img/pokemon/{}.png)<br/> [{}](/{}/pokemon/{})<br/> Lv. {}",
+        "![{}](../../img/pokemon/{}.png)<br/> [{}](/{}/pokemon/{})",
         pokemon.name,
         dex_number_file_name,
         capitalize(&pokemon.name),
         wiki_name,
         dex_number_file_name,
-        pokemon.level
     );
 }
 
