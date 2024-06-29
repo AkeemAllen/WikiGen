@@ -10,11 +10,7 @@ import NumberInput from "../NumberInput.svelte";
 import Button from "../Button.svelte";
 import { pokemonList, pokemon as storePokemon } from "../../../store/pokemon";
 import { selectedWiki } from "../../../store";
-import {
-  routes,
-  type TrainerInfo,
-  type TrainerPokemon,
-} from "../../../store/gameRoutes";
+import { routes, type TrainerInfo } from "../../../store/gameRoutes";
 import TextInput from "../TextInput.svelte";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { setUniquePokemonId, sortTrainersByPosition } from "$lib/utils";
@@ -39,9 +35,8 @@ let trainerVersionsModalOpen: boolean = false;
 let positionModalOpen: boolean = false;
 let spriteName: string = "";
 
-let routeTrainers = _.cloneDeep($routes.routes[routeName].trainers);
-let originalTrainers = _.cloneDeep(routeTrainers);
-$: trainerOptions = Object.keys(routeTrainers).map((trainer) => ({
+$: trainers = $routes.routes[routeName].trainers ?? {};
+$: trainerOptions = Object.keys(trainers).map((trainer) => ({
   label: trainer,
   value: trainer,
 }));
@@ -55,28 +50,41 @@ function onPokemonNameSelected(
   pokemonName = event.detail.label;
 }
 
+async function generateRoutePage() {
+  await invoke("generate_single_route_page_with_handle", {
+    wikiName: $selectedWiki.name,
+    routeName,
+  }).catch((e) => {
+    console.error(e);
+  });
+}
+
 async function addPokemonToTrainer() {
-  if (routeTrainers[trainerName] === undefined) {
-    routeTrainers[trainerName] = {
-      position: Object.keys(routeTrainers).length,
+  let trainers = {
+    ...$routes.routes[routeName].trainers,
+  };
+
+  if (trainers[trainerName] === undefined) {
+    trainers[trainerName] = {
+      position: Object.keys(trainers).length,
       sprite: "",
       versions: [],
       pokemon_team: [],
     };
   }
 
-  routeTrainers = {
-    ...routeTrainers,
+  $routes.routes[routeName].trainers = {
+    ...$routes.routes[routeName].trainers,
     [trainerName]: {
-      ...routeTrainers[trainerName],
+      ...trainers[trainerName],
       pokemon_team: [
-        ...routeTrainers[trainerName].pokemon_team,
+        ...trainers[trainerName].pokemon_team,
         {
           id: $pokemonList.find(
             ([name, _]) => name === pokemonName,
           )?.[1] as number,
           unique_id: setUniquePokemonId(
-            routeTrainers as {
+            $routes.routes[routeName].trainers as {
               [key: string]: TrainerInfo;
             },
             trainerName,
@@ -95,13 +103,21 @@ async function addPokemonToTrainer() {
     },
   };
 
-  let sortedTrainers = sortTrainersByPosition(routeTrainers);
-  routeTrainers = sortedTrainers;
+  let sortedTrainers = sortTrainersByPosition($routes, routeName);
+  $routes.routes[routeName].trainers = sortedTrainers;
+
+  await writeTextFile(
+    `${$selectedWiki.name}/data/routes.json`,
+    JSON.stringify($routes),
+    { dir: BaseDirectory.AppData },
+  ).then(() => {
+    generateRoutePage();
+  });
 }
 
 async function deletePokemonFromTrainer(uniqueId: string, trainerName: string) {
   let updatedTrainers = {
-    ...routeTrainers,
+    ...$routes.routes[routeName].trainers,
   };
   updatedTrainers[trainerName].pokemon_team = updatedTrainers[
     trainerName
@@ -110,67 +126,51 @@ async function deletePokemonFromTrainer(uniqueId: string, trainerName: string) {
     delete updatedTrainers[trainerName];
   }
 
-  routeTrainers = updatedTrainers;
-}
-
-async function setTrainerSprite() {
-  let updatedTrainers = {
-    ...routeTrainers,
-  };
-  updatedTrainers[trainerToUpdate].sprite = spriteName.toLowerCase();
-
-  routeTrainers = updatedTrainers;
-
-  trainerToUpdate = "";
-  spriteName = "";
-}
-
-async function setPosition() {
-  routeTrainers = sortTrainersByPosition(routeTrainers);
-
-  positionModalOpen = false;
-}
-
-async function savePokemonChanges(
-  pokemon: TrainerPokemon,
-  trainerName: string,
-) {
-  // A bit of a hack to get the pokemon object to update in the routeTrainers object
-  // since it's a reference and not a new value.
-  let pokemonToSave = routeTrainers[trainerName].pokemon_team.find(
-    (p) => p.unique_id === pokemon.unique_id,
-  );
-  pokemonToSave = pokemon;
-  saveChanges();
-}
-
-async function saveChanges() {
-  routeTrainers = sortTrainersByPosition(routeTrainers);
-
-  $routes.routes[routeName].trainers = routeTrainers;
-
-  routeTrainers = _.cloneDeep($routes.routes[routeName].trainers);
-  originalTrainers = _.cloneDeep(routeTrainers);
+  $routes.routes[routeName].trainers = updatedTrainers;
 
   await writeTextFile(
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
     { dir: BaseDirectory.AppData },
   ).then(() => {
-    invoke("generate_single_route_page_with_handle", {
-      wikiName: $selectedWiki.name,
-      routeName,
-    })
-      .then(() => {
-        toastStore.trigger({
-          message: "Changes saved successfully",
-          timeout: 3000,
-          background: "variant-filled-success",
-        });
-      })
-      .catch((e) => {
-        console.error(e);
-      });
+    generateRoutePage();
+  });
+}
+
+async function setTrainerSprite() {
+  let updatedTrainers = {
+    ...$routes.routes[routeName].trainers,
+  };
+  updatedTrainers[trainerToUpdate].sprite = spriteName.toLowerCase();
+
+  $routes.routes[routeName].trainers = updatedTrainers;
+
+  await writeTextFile(
+    `${$selectedWiki.name}/data/routes.json`,
+    JSON.stringify($routes),
+    { dir: BaseDirectory.AppData },
+  ).then(() => {
+    generateRoutePage();
+  });
+
+  trainerToUpdate = "";
+  spriteName = "";
+}
+
+async function setPosition() {
+  $routes.routes[routeName].trainers = sortTrainersByPosition(
+    $routes,
+    routeName,
+  );
+
+  positionModalOpen = false;
+
+  await writeTextFile(
+    `${$selectedWiki.name}/data/routes.json`,
+    JSON.stringify($routes),
+    { dir: BaseDirectory.AppData },
+  ).then(() => {
+    generateRoutePage();
   });
 }
 </script>
@@ -204,12 +204,6 @@ async function saveChanges() {
     disabled={pokemonName === "" || level === 0 || trainerName === ""}
     onClick={addPokemonToTrainer}
   />
-  <Button
-    class="mt-8 w-32"
-    title="Save Changes"
-    disabled={_.isEqual(routeTrainers, originalTrainers)}
-    onClick={saveChanges}
-  />
 </div>
 
 <!-- Sprite Modal -->
@@ -237,9 +231,14 @@ async function saveChanges() {
     >
     <MultiSelect
       id="versions"
-      bind:selected={routeTrainers[trainerToUpdate].versions}
+      bind:selected={trainers[trainerToUpdate].versions}
       allowUserOptions={true}
-      options={routeTrainers[trainerToUpdate].versions ?? []}
+      options={trainers[trainerToUpdate].versions ?? []}
+      on:change={async (e) => {await writeTextFile(
+      `${$selectedWiki.name}/data/routes.json`,
+      JSON.stringify($routes),
+      { dir: BaseDirectory.AppData },
+    )}}
       style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
     />
   </div>
@@ -248,13 +247,13 @@ async function saveChanges() {
 <BaseModal bind:open={positionModalOpen}>
   <NumberInput
     label="Position"
-    bind:value={routeTrainers[trainerToUpdate].position}
+    bind:value={trainers[trainerToUpdate].position}
   />
   <Button title="Set Position" onClick={setPosition} />
 </BaseModal>
 
 <div class="mt-5 flex flex-col gap-y-5">
-  {#each Object.entries(routeTrainers) as [name, trainerInfo], index}
+  {#each Object.entries($routes.routes[routeName].trainers ?? {}) as [name, trainerInfo], index}
     <div>
       <strong class="flex flex-row items-center gap-x-4">
         {_.capitalize(name)}
@@ -306,10 +305,10 @@ async function saveChanges() {
         {#each trainerInfo.pokemon_team as pokemon}
           <TrainerPokemonCard
             pokemon={pokemon}
-            savePokemonChanges={savePokemonChanges}
             trainerName={name}
             trainerVersions={trainerInfo.versions ?? []}
             deletePokemon={deletePokemonFromTrainer}
+            routeName={routeName}
           />
         {/each}
       </div>
