@@ -16,6 +16,7 @@ import { IconTrash } from "@tabler/icons-svelte";
 import AutoComplete from "../AutoComplete.svelte";
 import { invoke } from "@tauri-apps/api";
 import TextInput from "../TextInput.svelte";
+import { sortWildEncountersByEncounterRate } from "$lib/utils";
 
 export let routeName: string = "";
 let pokemonName: string = "";
@@ -58,6 +59,12 @@ async function addEncounter() {
       },
     ],
   };
+  routeWildEncounters[encounterType]
+    .sort(
+      (encounter1, encounter2) =>
+        encounter1.encounter_rate - encounter2.encounter_rate,
+    )
+    .reverse();
 }
 
 async function deleteEncounter(pokemonName: string, encounterType: string) {
@@ -70,6 +77,13 @@ async function deleteEncounter(pokemonName: string, encounterType: string) {
   if (updatedEncounters[encounterType].length === 0) {
     delete updatedEncounters[encounterType];
   }
+
+  updatedEncounters[encounterType]
+    .sort(
+      (encounter1, encounter2) =>
+        encounter1.encounter_rate - encounter2.encounter_rate,
+    )
+    .reverse();
 
   routeWildEncounters = updatedEncounters;
 }
