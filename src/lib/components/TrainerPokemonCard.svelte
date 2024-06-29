@@ -42,7 +42,17 @@ let itemListOptions = $itemsList.map((item) => ({
 </script>
 
 <BaseModal bind:open={editModalOpen} class="grid w-[40rem] grid-cols-2 gap-5">
+  <div class="col-span-2 text-lg font-bold">
+    {_.capitalize(pokemon.name)}
+  </div>
   <NumberInput label="Level" bind:value={pokemon.level} />
+  <AutoComplete
+    label="Item"
+    bind:value={pokemon.item}
+    options={itemListOptions}
+    popupId="item-popup"
+    onSelection={async (e) => {pokemon.item = e.detail.value; }}
+  />
   <AutoComplete
     label="Ability"
     bind:value={pokemon.ability}
@@ -57,27 +67,6 @@ let itemListOptions = $itemsList.map((item) => ({
     popupId="nature-popup"
     onSelection={async (e) => {pokemon.nature = e.detail.value; }}
   />
-  <AutoComplete
-    label="Item"
-    bind:value={pokemon.item}
-    options={itemListOptions}
-    popupId="item-popup"
-    onSelection={async (e) => {pokemon.item = e.detail.value; }}
-  />
-  <div class="col-span-2">
-    <label
-      for="versions"
-      class="mb-2 block text-sm font-medium leading-6 text-gray-900"
-      >Trainer Versions</label
-    >
-    <MultiSelect
-      id="versions"
-      bind:selected={pokemon.trainer_versions}
-      options={trainerVersions}
-      on:change={async (e) => {}}
-      style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
-    />
-  </div>
   <div class="col-span-2">
     <label
       for="moveSet"
@@ -93,17 +82,42 @@ let itemListOptions = $itemsList.map((item) => ({
       style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
     />
   </div>
+  <div class="col-span-2">
+    <label
+      for="versions"
+      class="mb-2 block text-sm font-medium leading-6 text-gray-900"
+      >Trainer Versions</label
+    >
+    <MultiSelect
+      id="versions"
+      bind:selected={pokemon.trainer_versions}
+      options={trainerVersions}
+      on:change={async (e) => {}}
+      style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
+    />
+  </div>
   <Button
     class="mt-8 w-32"
     title="Save Changes"
     disabled={_.isEqual(pokemon, originalPokemonAttributes)}
     onClick={() => {savePokemonChanges(pokemon, trainerName);
     originalPokemonAttributes = _.cloneDeep(pokemon);
+    editModalOpen = false;
     }}
   />
 </BaseModal>
 <div
-  class="group card relative grid !bg-transparent p-2 shadow-md hover:cursor-pointer"
+  class="group card relative grid !bg-transparent p-2 shadow-md transition ease-in-out hover:scale-110 hover:cursor-pointer"
+  on:click={() => {
+        editModalOpen = true;
+      }}
+  role="button"
+  tabindex={0}
+  on:keydown={(e) => {
+        if (e.key === "Enter") {
+          editModalOpen = true;
+        }
+      }}
 >
   <img
     src={$storePokemon.pokemon[pokemon.id].sprite}
@@ -119,17 +133,9 @@ let itemListOptions = $itemsList.map((item) => ({
     </p>
   </div>
   <button
-    class="invisible absolute right-8 top-2 group-hover:visible"
-    on:click={() => {
-          editModalOpen = true;
-        }}
-  >
-    <IconEdit size={16} color="grey" />
-  </button>
-  <button
-    class="invisible absolute right-2 top-2 group-hover:visible"
+    class="invisible absolute right-2 top-2 hover:scale-110 group-hover:visible"
     on:click={() => deletePokemon(pokemon.unique_id, trainerName)}
   >
-    <IconTrash size={16} color="grey" />
+    <IconTrash size={20} color="grey" />
   </button>
 </div>

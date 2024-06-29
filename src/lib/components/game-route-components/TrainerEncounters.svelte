@@ -18,7 +18,7 @@ import {
 import TextInput from "../TextInput.svelte";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { setUniquePokemonId, sortTrainersByPosition } from "$lib/utils";
-import { IconDots, IconEdit, IconTrash } from "@tabler/icons-svelte";
+import { IconDots } from "@tabler/icons-svelte";
 import _ from "lodash";
 import AutoComplete from "../AutoComplete.svelte";
 import TrainerPokemonCard from "../TrainerPokemonCard.svelte";
