@@ -20,6 +20,7 @@ import TrainerPokemonCard from "../TrainerPokemonCard.svelte";
 import MultiSelect from "svelte-multiselect";
 import { invoke } from "@tauri-apps/api/tauri";
 import TrainerMenu from "../modals/TrainerMenu.svelte";
+import EditTrainerPokemonModal from "../modals/EditTrainerPokemonModal.svelte";
 
 const toastStore = getToastStore();
 
@@ -28,7 +29,10 @@ let trainerName: string = "";
 let pokemonSearchName: string = "";
 let level: number = 0;
 
+let editPokemonModalOpen: boolean = false;
 let trainerToUpdate: string = "";
+let currentTrainerPokemon: TrainerPokemon = {} as TrainerPokemon;
+let currentTrainerVersions: string[] = [];
 
 let spriteModalOpen: boolean = false;
 let trainerVersionsModalOpen: boolean = false;
@@ -42,6 +46,8 @@ $: trainerOptions = Object.keys(routeTrainers).map((trainer) => ({
   value: trainer,
 }));
 
+$: console.log({ routeTrainers });
+
 let pokemonListOptions: AutocompleteOption<string | number>[] =
   $pokemonList.map(([name, id]) => ({ label: name, value: id }));
 
@@ -51,7 +57,7 @@ function onPokemonNameSelected(
   pokemonSearchName = event.detail.label;
 }
 
-async function addPokemonToTrainer() {
+function addPokemonToTrainer() {
   if (routeTrainers[trainerName] === undefined) {
     routeTrainers[trainerName] = {
       position: Object.keys(routeTrainers).length,
@@ -92,7 +98,7 @@ async function addPokemonToTrainer() {
   routeTrainers = sortedTrainers;
 }
 
-async function deletePokemonFromTrainer(uniqueId: string, trainerName: string) {
+function deletePokemonFromTrainer(uniqueId: string, trainerName: string) {
   let updatedTrainers = {
     ...routeTrainers,
   };
@@ -106,16 +112,53 @@ async function deletePokemonFromTrainer(uniqueId: string, trainerName: string) {
   routeTrainers = updatedTrainers;
 }
 
-async function savePokemonChanges(
-  pokemon: TrainerPokemon,
-  trainerName: string,
-) {
-  // A bit of a hack to get the pokemon object to update in the routeTrainers object
-  // since it's a reference and not a new value.
-  let pokemonToSave = routeTrainers[trainerName].pokemon_team.find(
-    (p) => p.unique_id === pokemon.unique_id,
+function nextTrainerPokemon() {
+  let existingPokemon = routeTrainers[trainerToUpdate].pokemon_team.find(
+    (p) => p.unique_id === currentTrainerPokemon.unique_id,
+  ) as TrainerPokemon;
+
+  let index =
+    routeTrainers[trainerToUpdate].pokemon_team.indexOf(existingPokemon);
+  if (index === routeTrainers[trainerToUpdate].pokemon_team.length - 1) {
+    toastStore.trigger({
+      message: "No more trainer pokemon",
+      timeout: 3000,
+      background: "variant-filled-error",
+    });
+    return;
+  }
+  currentTrainerPokemon = _.cloneDeep(
+    routeTrainers[trainerToUpdate].pokemon_team[index + 1],
   );
-  pokemonToSave = pokemon;
+}
+
+function prevTrainerPokemon() {
+  let existingPokemon = routeTrainers[trainerToUpdate].pokemon_team.find(
+    (p) => p.unique_id === currentTrainerPokemon.unique_id,
+  ) as TrainerPokemon;
+
+  let index =
+    routeTrainers[trainerToUpdate].pokemon_team.indexOf(existingPokemon);
+  if (index === 0) {
+    toastStore.trigger({
+      message: "No more trainer pokemon",
+      timeout: 3000,
+      background: "variant-filled-error",
+    });
+    return;
+  }
+  currentTrainerPokemon = _.cloneDeep(
+    routeTrainers[trainerToUpdate].pokemon_team[index - 1],
+  );
+}
+
+async function savePokemonChanges(trainerName: string) {
+  let pokemonToSave = routeTrainers[trainerName].pokemon_team.find(
+    (p) => p.unique_id === currentTrainerPokemon.unique_id,
+  ) as TrainerPokemon;
+  let index = routeTrainers[trainerName].pokemon_team.indexOf(pokemonToSave);
+
+  routeTrainers[trainerName].pokemon_team[index] = currentTrainerPokemon;
   saveChanges();
 }
 
@@ -205,6 +248,7 @@ async function saveChanges() {
   />
 </BaseModal>
 
+<!-- Position Modal -->
 <BaseModal bind:open={positionModalOpen} class="w-[25rem]">
   <NumberInput
     label="Position"
@@ -220,6 +264,16 @@ async function saveChanges() {
   }}
   />
 </BaseModal>
+
+<EditTrainerPokemonModal
+  bind:open={editPokemonModalOpen}
+  pokemon={currentTrainerPokemon}
+  trainerToUpdate={trainerToUpdate}
+  trainerVersions={currentTrainerVersions}
+  nextTrainerPokemon={nextTrainerPokemon}
+  prevTrainerPokemon={prevTrainerPokemon}
+  savePokemonChanges={savePokemonChanges}
+/>
 
 <div class="flex flex-row gap-x-5">
   <AutoComplete
@@ -281,13 +335,21 @@ async function saveChanges() {
           />
         {/if}
         {#each trainerInfo.pokemon_team as pokemon}
-          <TrainerPokemonCard
-            pokemon={pokemon}
-            routeTrainers={routeTrainers}
-            trainerName={name}
-            trainerVersions={trainerInfo.versions ?? []}
-            deletePokemon={deletePokemonFromTrainer}
-          />
+          <button
+            class="group card relative grid !bg-transparent p-2 shadow-md transition ease-in-out hover:scale-110 hover:cursor-pointer"
+            on:click={() => {
+                    editPokemonModalOpen = true;
+                    currentTrainerPokemon = _.cloneDeep(pokemon);
+                    trainerToUpdate = name;
+                    currentTrainerVersions = trainerInfo.versions ?? [];
+                  }}
+          >
+            <TrainerPokemonCard
+              pokemon={pokemon}
+              trainerName={name}
+              deletePokemon={deletePokemonFromTrainer}
+            />
+          </button>
         {/each}
       </div>
       <div></div>
