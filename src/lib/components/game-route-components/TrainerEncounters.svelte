@@ -157,43 +157,6 @@ async function saveChanges() {
 }
 </script>
 
-<div class="flex flex-row gap-x-5">
-  <AutoComplete
-    label="Trainer Name"
-    bind:value={trainerName}
-    options={trainerOptions}
-    popupId="popupTrainerNames"
-    onSelection={(e) => {
-      trainerName = e.detail.label;
-    }}
-    showChevron={false}
-    class="w-40"
-  />
-  <AutoComplete
-    label="Pokemon for current encounter type"
-    placeholder="Pokemon Name"
-    bind:value={pokemonName}
-    options={pokemonListOptions}
-    popupId="popupPokemonNames"
-    onSelection={onPokemonNameSelected}
-    showChevron={false}
-  />
-
-  <NumberInput label="Level" bind:value={level} class="w-32" max={100} />
-  <Button
-    title="Add Encounter"
-    class="mt-8 w-32"
-    disabled={pokemonName === "" || level === 0 || trainerName === ""}
-    onClick={addPokemonToTrainer}
-  />
-  <Button
-    class="mt-8 w-32"
-    title="Save Changes"
-    disabled={_.isEqual(routeTrainers, originalTrainers)}
-    onClick={saveChanges}
-  />
-</div>
-
 <!-- Sprite Modal -->
 <BaseModal bind:open={spriteModalOpen} class="w-[25rem]">
   {#if spriteName !== ""}
@@ -265,6 +228,43 @@ async function saveChanges() {
   />
 </BaseModal>
 
+<div class="flex flex-row gap-x-5">
+  <AutoComplete
+    label="Trainer Name"
+    bind:value={trainerName}
+    options={trainerOptions}
+    popupId="popupTrainerNames"
+    onSelection={(e) => {
+      trainerName = e.detail.label;
+    }}
+    showChevron={false}
+    class="w-40"
+  />
+  <AutoComplete
+    label="Pokemon for current encounter type"
+    placeholder="Pokemon Name"
+    bind:value={pokemonName}
+    options={pokemonListOptions}
+    popupId="popupPokemonNames"
+    onSelection={onPokemonNameSelected}
+    showChevron={false}
+  />
+
+  <NumberInput label="Level" bind:value={level} class="w-32" max={100} />
+  <Button
+    title="Add Encounter"
+    class="mt-8 w-32"
+    disabled={pokemonName === "" || level === 0 || trainerName === ""}
+    onClick={addPokemonToTrainer}
+  />
+  <Button
+    class="mt-8 w-32"
+    title="Save Changes"
+    disabled={_.isEqual(routeTrainers, originalTrainers)}
+    onClick={saveChanges}
+  />
+</div>
+
 <div class="mt-5 flex flex-col gap-y-5">
   {#each Object.entries(routeTrainers) as [name, trainerInfo], index}
     <div>
@@ -321,7 +321,7 @@ async function saveChanges() {
         {#each trainerInfo.pokemon_team as pokemon}
           <TrainerPokemonCard
             pokemon={pokemon}
-            savePokemonChanges={savePokemonChanges}
+            routeTrainers={routeTrainers}
             trainerName={name}
             trainerVersions={trainerInfo.versions ?? []}
             deletePokemon={deletePokemonFromTrainer}
