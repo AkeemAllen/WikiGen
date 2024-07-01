@@ -14,18 +14,18 @@ import {
 import TextInput from "../TextInput.svelte";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { setUniquePokemonId, sortTrainersByPosition } from "$lib/utils";
-import { IconDots } from "@tabler/icons-svelte";
 import _ from "lodash";
 import AutoComplete from "../AutoComplete.svelte";
 import TrainerPokemonCard from "../TrainerPokemonCard.svelte";
 import MultiSelect from "svelte-multiselect";
 import { invoke } from "@tauri-apps/api/tauri";
+import TrainerMenu from "../modals/TrainerMenu.svelte";
 
 const toastStore = getToastStore();
 
 export let routeName: string;
 let trainerName: string = "";
-let pokemonName: string = "";
+let pokemonSearchName: string = "";
 let level: number = 0;
 
 let trainerToUpdate: string = "";
@@ -48,7 +48,7 @@ let pokemonListOptions: AutocompleteOption<string | number>[] =
 function onPokemonNameSelected(
   event: CustomEvent<AutocompleteOption<string | number>>,
 ): void {
-  pokemonName = event.detail.label;
+  pokemonSearchName = event.detail.label;
 }
 
 async function addPokemonToTrainer() {
@@ -239,7 +239,7 @@ async function saveChanges() {
   <AutoComplete
     label="Pokemon for current encounter type"
     placeholder="Pokemon Name"
-    bind:value={pokemonName}
+    bind:value={pokemonSearchName}
     options={pokemonListOptions}
     popupId="popupPokemonNames"
     onSelection={onPokemonNameSelected}
@@ -250,7 +250,7 @@ async function saveChanges() {
   <Button
     title="Add Encounter"
     class="mt-8 w-32"
-    disabled={pokemonName === "" || level === 0 || trainerName === ""}
+    disabled={pokemonSearchName === "" || level === 0 || trainerName === ""}
     onClick={addPokemonToTrainer}
   />
   <Button
