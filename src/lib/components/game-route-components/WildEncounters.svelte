@@ -123,84 +123,88 @@ async function saveChanges() {
 }
 </script>
 
-<div class="sticky flex flex-row gap-x-5">
-  <div class="w-40">
-    <SelectInput
-      id="encounter-type"
-      label="Encounter Type"
-      bind:value={encounterType}
-      options={encounterTypes}
+<div class="relative">
+  <div
+    class="sticky:bg-red-100 sticky top-0 z-50 flex flex-row gap-x-5 rounded-md bg-white pb-1 shadow-sm"
+  >
+    <div class="w-40">
+      <SelectInput
+        id="encounter-type"
+        label="Encounter Type"
+        bind:value={encounterType}
+        options={encounterTypes}
+      />
+    </div>
+
+    <AutoComplete
+      label="Pokemon for current encounter type"
+      placeholder="Pokemon Name"
+      bind:value={pokemonName}
+      options={pokemonListOptions}
+      popupId="popupAutoComplete"
+      onSelection={onPokemonNameSelected}
+      showChevron={false}
+    />
+    <NumberInput
+      label="Encounter Rate"
+      bind:value={encounterRate}
+      class="w-32"
+      max={100}
+    />
+    <Button
+      class="mt-8 w-32"
+      title="Add Encounter"
+      disabled={pokemonName === "" || encounterRate === 0}
+      onClick={addEncounter}
+    />
+    <Button
+      class="mt-8 w-32"
+      title="Save Changes"
+      disabled={_.isEqual(routeWildEncounters, originalRouteWildEncounters) && _.isEqual(areaLevels, originalAreaLevels)}
+      onClick={saveChanges}
     />
   </div>
 
-  <AutoComplete
-    label="Pokemon for current encounter type"
-    placeholder="Pokemon Name"
-    bind:value={pokemonName}
-    options={pokemonListOptions}
-    popupId="popupAutoComplete"
-    onSelection={onPokemonNameSelected}
-    showChevron={false}
-  />
-  <NumberInput
-    label="Encounter Rate"
-    bind:value={encounterRate}
-    class="w-32"
-    max={100}
-  />
-  <Button
-    class="mt-8 w-32"
-    title="Add Encounter"
-    disabled={pokemonName === "" || encounterRate === 0}
-    onClick={addEncounter}
-  />
-  <Button
-    class="mt-8 w-32"
-    title="Save Changes"
-    disabled={_.isEqual(routeWildEncounters, originalRouteWildEncounters) && _.isEqual(areaLevels, originalAreaLevels)}
-    onClick={saveChanges}
-  />
-</div>
-
-<div class="mt-5 flex flex-col gap-y-5">
-  {#each Object.entries(routeWildEncounters) as [_encounterType, encounters]}
-    <div>
-      <strong>
-        {_.capitalize(_encounterType)} Encounters
-      </strong>
-      <TextInput
-        bind:value={areaLevels[_encounterType]}
-        placeholder="Lv."
-        class="w-20"
-      />
-      <div class="mt-2 grid grid-cols-6 gap-5">
-        {#each encounters as encounter}
-          <div
-            class="group card relative grid !bg-transparent p-2 shadow-md hover:cursor-pointer"
-          >
-            <img
-              src={$pokemon.pokemon[encounter.id].sprite}
-              alt={encounter.name}
-              class="m-0 justify-self-center"
-            />
-            <div class="w-full rounded-md border-2">
-              <p class="text-center">
-                {_.capitalize(encounter.name)}
-              </p>
-              <p class="text-center">
-                {encounter.encounter_rate}%
-              </p>
-            </div>
-            <button
-              class="invisible absolute right-2 top-2 group-hover:visible"
-              on:click={() => deleteEncounter(encounter.name, _encounterType)}
+  <div class="mt-5 flex flex-col gap-y-5">
+    {#each Object.entries(routeWildEncounters) as [_encounterType, encounters]}
+      <div>
+        <strong>
+          {_.capitalize(_encounterType)} Encounters
+        </strong>
+        <TextInput
+          bind:value={areaLevels[_encounterType]}
+          placeholder="Lv."
+          class="w-20"
+        />
+        <div class="mt-2 grid grid-cols-6 gap-5">
+          {#each encounters as encounter}
+            <div
+              class="group card relative grid !bg-transparent p-2 shadow-md hover:cursor-pointer"
             >
-              <IconTrash size={16} color="grey" />
-            </button>
-          </div>
-        {/each}
+              <img
+                src={$pokemon.pokemon[encounter.id].sprite}
+                alt={encounter.name}
+                class="m-0 justify-self-center"
+              />
+              <div class="w-full rounded-md border-2">
+                <p class="text-center">
+                  {_.capitalize(encounter.name)}
+                </p>
+                <p class="text-center">
+                  {encounter.encounter_rate}%
+                </p>
+              </div>
+              <button
+                class="invisible absolute right-2 top-2 group-hover:visible"
+                on:click={() => deleteEncounter(encounter.name, _encounterType)}
+              >
+                <IconTrash size={16} color="grey" />
+              </button>
+            </div>
+          {/each}
+        </div>
+        <div></div>
       </div>
-      <div></div>
-    </div>
-  {/each}
+    {/each}
+  </div>
 </div>
