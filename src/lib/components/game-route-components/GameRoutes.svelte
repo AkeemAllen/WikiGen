@@ -4,12 +4,14 @@ import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { routes } from "../../../store/gameRoutes";
 import { selectedWiki } from "../../../store";
 import { sortRoutesByPosition } from "$lib/utils";
+import _ from "lodash";
 
 import { popup } from "@skeletonlabs/skeleton";
 import { IconDotsVertical } from "@tabler/icons-svelte";
 
 export let positionModalOpen: boolean = false;
 export let routeToUpdate: string = "";
+export let oldRoutePosition: number = 0;
 
 let newRouteName: string = "";
 let routeBeingEdited: string;
@@ -51,7 +53,7 @@ async function duplicateRoute(routeName: string) {
 }
 </script>
 
-<div class="mt-6 grid grid-cols-5 gap-x-4 gap-y-1">
+<div class="mt-6 grid grid-cols-5 gap-x-4 gap-y-3">
   {#each Object.keys($routes.routes) as routeName, index}
     <div
       class="card flex flex-row items-center justify-between !bg-transparent p-3 shadow-sm"
@@ -98,7 +100,11 @@ async function duplicateRoute(routeName: string) {
       >
       <button
         class="w-full rounded-md bg-gray-100 px-3 py-1 text-start text-sm hover:cursor-pointer hover:bg-gray-300"
-        on:click={() => {positionModalOpen = true;routeToUpdate=routeName}}
+        on:click={() => {
+            positionModalOpen = true;
+            routeToUpdate=routeName;
+            oldRoutePosition = $routes.routes[routeName].position;
+          }}
         >Change Position</button
       >
     </div>

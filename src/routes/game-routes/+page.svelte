@@ -21,12 +21,13 @@ let newRouteModalOpen: boolean = false;
 let encounterTypeModalOpen: boolean = false;
 let positionModalOpen: boolean = false;
 let newEncounterType: string = "";
+let oldRoutePosition: number = 0;
 let loading = false;
 let tabSet = 0;
 
 async function createNewRoute() {
   $routes.routes[routeName.trim()] = {
-    position: Object.keys($routes.routes).length,
+    position: Object.keys($routes.routes).length + 1,
     trainers: {},
     wild_encounters: {},
     wild_encounter_area_levels: {},
@@ -59,6 +60,31 @@ async function deleteEncounterType(encounterType: string) {
 }
 
 async function updatePosition() {
+  let newRoutePosition = $routes.routes[routeToUpdate].position;
+  if (oldRoutePosition === newRoutePosition) {
+    return;
+  }
+
+  if (oldRoutePosition > newRoutePosition) {
+    for (const route in $routes.routes) {
+      if (
+        $routes.routes[route].position >= newRoutePosition &&
+        route !== routeToUpdate
+      ) {
+        $routes.routes[route].position += 1;
+      }
+    }
+  } else {
+    for (const route in $routes.routes) {
+      if (
+        $routes.routes[route].position <= newRoutePosition &&
+        route !== routeToUpdate
+      ) {
+        $routes.routes[route].position -= 1;
+      }
+    }
+  }
+
   $routes = sortRoutesByPosition($routes);
   await writeTextFile(
     `${$selectedWiki.name}/data/routes.json`,
@@ -83,6 +109,7 @@ async function generateRoutePages() {
 }
 </script>
 
+<!-- New Route Modal -->
 <BaseModal bind:open={newRouteModalOpen}>
   <TextInput bind:value={routeName} label="Route Name" />
   <Button
@@ -94,6 +121,8 @@ async function generateRoutePages() {
     disabled={routeName === ""}
   />
 </BaseModal>
+
+<!-- Position Modal -->
 <BaseModal bind:open={positionModalOpen}>
   <NumberInput
     bind:value={$routes.routes[routeToUpdate].position}
@@ -104,6 +133,8 @@ async function generateRoutePages() {
     onClick={() => {updatePosition(); positionModalOpen = false;}}
   />
 </BaseModal>
+
+<!-- Encounter Type Modal -->
 <BaseModal bind:open={encounterTypeModalOpen}>
   <div class="flex flex-row gap-3">
     <Button
@@ -146,7 +177,11 @@ async function generateRoutePages() {
           onClick={() => (encounterTypeModalOpen = true)}
         />
       </div>
-      <GameRoutes />
+      <GameRoutes
+        bind:positionModalOpen={positionModalOpen}
+        bind:routeToUpdate={routeToUpdate}
+        bind:oldRoutePosition={oldRoutePosition}
+      />
     {/if}
     {#if tabSet === 1}
       <Button
