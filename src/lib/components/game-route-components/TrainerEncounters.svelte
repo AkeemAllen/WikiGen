@@ -61,35 +61,32 @@ async function addPokemonToTrainer() {
     };
   }
 
-  routeTrainers = {
-    ...routeTrainers,
-    [trainerName]: {
-      ...routeTrainers[trainerName],
-      pokemon_team: [
-        ...routeTrainers[trainerName].pokemon_team,
-        {
-          id: $pokemonList.find(
-            ([name, _]) => name === pokemonName,
-          )?.[1] as number,
-          unique_id: setUniquePokemonId(
-            routeTrainers as {
-              [key: string]: TrainerInfo;
-            },
-            trainerName,
-            pokemonName,
-            $pokemonList,
-          ),
-          name: pokemonName,
-          level,
-          item: "",
-          nature: "",
-          ability: "",
-          trainer_versions: [],
-          moves: [],
-        },
-      ],
+  let id = $pokemonList.find(
+    ([name, _]) => name === pokemonSearchName,
+  )?.[1] as number;
+  let uniqueId = setUniquePokemonId(
+    routeTrainers as {
+      [key: string]: TrainerInfo;
     },
-  };
+    trainerName,
+    pokemonSearchName,
+    $pokemonList,
+  );
+
+  routeTrainers[trainerName].pokemon_team = [
+    ...routeTrainers[trainerName].pokemon_team,
+    {
+      id: id,
+      unique_id: uniqueId,
+      name: pokemonSearchName,
+      level,
+      item: "",
+      nature: "",
+      ability: "",
+      trainer_versions: [],
+      moves: [],
+    },
+  ];
 
   let sortedTrainers = sortTrainersByPosition(routeTrainers);
   routeTrainers = sortedTrainers;
