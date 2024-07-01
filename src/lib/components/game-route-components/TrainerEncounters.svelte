@@ -1,11 +1,7 @@
 <script lang="ts">
 import BaseModal from "$lib/components/BaseModal.svelte";
 
-import {
-  getToastStore,
-  popup,
-  type AutocompleteOption,
-} from "@skeletonlabs/skeleton";
+import { getToastStore, type AutocompleteOption } from "@skeletonlabs/skeleton";
 import NumberInput from "../NumberInput.svelte";
 import Button from "../Button.svelte";
 import { pokemonList } from "../../../store/pokemon";
@@ -270,45 +266,14 @@ async function saveChanges() {
     <div>
       <strong class="flex flex-row items-center gap-x-4">
         {_.capitalize(name)}
-        <button
-          class="hover:cursor-pointer"
-          use:popup={{
-            event: "click",
-            target: "trainerMenu" + index,
-            placement: "right",
-          }}
-        >
-          <IconDots size={20} color="gray" />
-        </button>
-        <div
-          class="card z-10 w-44 bg-white p-2"
-          data-popup="trainerMenu{index}"
-        >
-          <button
-            class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-            on:click={() => {
-                    spriteModalOpen = true;
-                    trainerToUpdate = name;
-                }}
-            >Add Sprite</button
-          >
-          <button
-            class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-            on:click={() => {
-                    trainerVersionsModalOpen = true;
-                    trainerToUpdate = name;
-                }}
-            >Trainer Versions</button
-          >
-          <button
-            class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-            on:click={() => {
-                    positionModalOpen = true;
-                    trainerToUpdate = name;
-                }}
-            >Change Position</button
-          >
-        </div>
+        <TrainerMenu
+          index={index}
+          trainerName={name}
+          bind:trainerToUpdate={trainerToUpdate}
+          bind:positionModalOpen={positionModalOpen}
+          bind:spriteModalOpen={spriteModalOpen}
+          bind:trainerVersionsModalOpen={trainerVersionsModalOpen}
+        />
       </strong>
       <div class="mt-2 grid grid-cols-6 items-center gap-5">
         {#if trainerInfo.sprite}
