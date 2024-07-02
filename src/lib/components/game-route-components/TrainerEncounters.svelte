@@ -275,7 +275,9 @@ async function saveChanges() {
   savePokemonChanges={savePokemonChanges}
 />
 
-<div class="flex flex-row gap-x-5">
+<div
+  class="sticky top-0 z-10 flex flex-row gap-x-5 rounded-md bg-white pb-1 shadow-sm"
+>
   <AutoComplete
     label="Trainer Name"
     bind:value={trainerName}
