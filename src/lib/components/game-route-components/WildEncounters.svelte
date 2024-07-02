@@ -71,6 +71,7 @@ async function addEncounter() {
 }
 
 async function deleteEncounter(pokemonName: string, encounterType: string) {
+  editEncounterModalOpen = false;
   let updatedEncounters = {
     ...routeWildEncounters,
   };
@@ -146,7 +147,7 @@ async function saveChanges() {
 </BaseModal>
 
 <div
-  class="sticky:bg-red-100 sticky top-0 z-50 flex flex-row gap-x-5 rounded-md bg-white pb-1 shadow-sm"
+  class="sticky top-0 z-50 flex flex-row gap-x-5 rounded-md bg-white pb-1 shadow-sm"
 >
   <div class="w-40">
     <SelectInput
@@ -221,8 +222,8 @@ async function saveChanges() {
               </p>
             </div>
             <button
-              class="invisible absolute right-2 top-2 rounded-md bg-red-200 p-1 hover:scale-110 group-hover:visible"
-              on:click={() => deleteEncounter(encounter.name, _encounterType)}
+              class="invisible absolute right-2 top-2 z-20 rounded-md bg-red-200 p-1 hover:scale-110 group-hover:visible"
+              on:click={(e) => {e.stopPropagation() ;deleteEncounter(encounter.name, _encounterType)}}
             >
               <IconTrash size={16} color="grey" />
             </button>

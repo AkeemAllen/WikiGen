@@ -24,8 +24,8 @@ export let deletePokemon = (id: string, name: string) => {};
   </p>
 </div>
 <button
-  class="invisible absolute right-2 top-2 rounded-sm bg-red-200 p-1 hover:scale-110 group-hover:visible"
-  on:click={() => deletePokemon(pokemon.unique_id, trainerName)}
+  class="invisible absolute right-2 top-2 z-10 rounded-md bg-red-200 p-1 hover:scale-110 group-hover:visible"
+  on:click={(e) => {e.stopPropagation();deletePokemon(pokemon.unique_id, trainerName)}}
 >
   <IconTrash size={16} color="white" />
 </button>
