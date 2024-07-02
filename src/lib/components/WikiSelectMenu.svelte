@@ -147,7 +147,7 @@ async function deleteWikis() {
 </BaseModal>
 
 <div
-  class="card max-w-52 grid-cols-1 p-4 shadow-xl"
+  class="card z-10 max-w-52 grid-cols-1 p-4 shadow-xl"
   data-popup="wikiSelectPopup"
 >
   {#if Object.keys($wikis).length !== 0}

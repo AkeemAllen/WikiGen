@@ -119,12 +119,11 @@ export function sortRoutesByPosition(routes: Routes): Routes {
   return sortedRoutes;
 }
 
-export function sortTrainersByPosition(
-  routes: Routes,
-  routeName: string,
-): { [key: string]: TrainerInfo } {
+export function sortTrainersByPosition(trainers: {
+  [key: string]: TrainerInfo;
+}): { [key: string]: TrainerInfo } {
   // Convert object into an array of key-value pairs
-  const trainersArray = Object.entries(routes.routes[routeName].trainers);
+  const trainersArray = Object.entries(trainers);
 
   // Sort the array based on the "position" property
   trainersArray.sort(

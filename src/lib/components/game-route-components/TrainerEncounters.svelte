@@ -1,45 +1,52 @@
 <script lang="ts">
 import BaseModal from "$lib/components/BaseModal.svelte";
 
-import {
-  getToastStore,
-  popup,
-  type AutocompleteOption,
-} from "@skeletonlabs/skeleton";
+import { getToastStore, type AutocompleteOption } from "@skeletonlabs/skeleton";
 import NumberInput from "../NumberInput.svelte";
 import Button from "../Button.svelte";
-import { pokemonList, pokemon as storePokemon } from "../../../store/pokemon";
+import { pokemonList } from "../../../store/pokemon";
 import { selectedWiki } from "../../../store";
-import { routes, type TrainerInfo } from "../../../store/gameRoutes";
+import {
+  routes,
+  type TrainerInfo,
+  type TrainerPokemon,
+} from "../../../store/gameRoutes";
 import TextInput from "../TextInput.svelte";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { setUniquePokemonId, sortTrainersByPosition } from "$lib/utils";
-import { IconDots, IconEdit, IconTrash } from "@tabler/icons-svelte";
 import _ from "lodash";
 import AutoComplete from "../AutoComplete.svelte";
 import TrainerPokemonCard from "../TrainerPokemonCard.svelte";
 import MultiSelect from "svelte-multiselect";
 import { invoke } from "@tauri-apps/api/tauri";
+import TrainerMenu from "../modals/TrainerMenu.svelte";
+import EditTrainerPokemonModal from "../modals/EditTrainerPokemonModal.svelte";
 
 const toastStore = getToastStore();
 
 export let routeName: string;
 let trainerName: string = "";
-let pokemonName: string = "";
+let pokemonSearchName: string = "";
 let level: number = 0;
 
+let editPokemonModalOpen: boolean = false;
 let trainerToUpdate: string = "";
+let currentTrainerPokemon: TrainerPokemon = {} as TrainerPokemon;
+let currentTrainerVersions: string[] = [];
 
 let spriteModalOpen: boolean = false;
 let trainerVersionsModalOpen: boolean = false;
 let positionModalOpen: boolean = false;
 let spriteName: string = "";
 
-$: trainers = $routes.routes[routeName].trainers ?? {};
-$: trainerOptions = Object.keys(trainers).map((trainer) => ({
+let routeTrainers = _.cloneDeep($routes.routes[routeName].trainers);
+let originalTrainers = _.cloneDeep(routeTrainers);
+$: trainerOptions = Object.keys(routeTrainers).map((trainer) => ({
   label: trainer,
   value: trainer,
 }));
+
+$: console.log({ routeTrainers });
 
 let pokemonListOptions: AutocompleteOption<string | number>[] =
   $pokemonList.map(([name, id]) => ({ label: name, value: id }));
@@ -47,77 +54,53 @@ let pokemonListOptions: AutocompleteOption<string | number>[] =
 function onPokemonNameSelected(
   event: CustomEvent<AutocompleteOption<string | number>>,
 ): void {
-  pokemonName = event.detail.label;
+  pokemonSearchName = event.detail.label;
 }
 
-async function generateRoutePage() {
-  await invoke("generate_single_route_page_with_handle", {
-    wikiName: $selectedWiki.name,
-    routeName,
-  }).catch((e) => {
-    console.error(e);
-  });
-}
-
-async function addPokemonToTrainer() {
-  let trainers = {
-    ...$routes.routes[routeName].trainers,
-  };
-
-  if (trainers[trainerName] === undefined) {
-    trainers[trainerName] = {
-      position: Object.keys(trainers).length,
+function addPokemonToTrainer() {
+  if (routeTrainers[trainerName] === undefined) {
+    routeTrainers[trainerName] = {
+      position: Object.keys(routeTrainers).length,
       sprite: "",
       versions: [],
       pokemon_team: [],
     };
   }
 
-  $routes.routes[routeName].trainers = {
-    ...$routes.routes[routeName].trainers,
-    [trainerName]: {
-      ...trainers[trainerName],
-      pokemon_team: [
-        ...trainers[trainerName].pokemon_team,
-        {
-          id: $pokemonList.find(
-            ([name, _]) => name === pokemonName,
-          )?.[1] as number,
-          unique_id: setUniquePokemonId(
-            $routes.routes[routeName].trainers as {
-              [key: string]: TrainerInfo;
-            },
-            trainerName,
-            pokemonName,
-            $pokemonList,
-          ),
-          name: pokemonName,
-          level,
-          item: "",
-          nature: "",
-          ability: "",
-          trainer_versions: [],
-          moves: [],
-        },
-      ],
+  let id = $pokemonList.find(
+    ([name, _]) => name === pokemonSearchName,
+  )?.[1] as number;
+  let uniqueId = setUniquePokemonId(
+    routeTrainers as {
+      [key: string]: TrainerInfo;
     },
-  };
+    trainerName,
+    pokemonSearchName,
+    $pokemonList,
+  );
 
-  let sortedTrainers = sortTrainersByPosition($routes, routeName);
-  $routes.routes[routeName].trainers = sortedTrainers;
+  routeTrainers[trainerName].pokemon_team = [
+    ...routeTrainers[trainerName].pokemon_team,
+    {
+      id: id,
+      unique_id: uniqueId,
+      name: pokemonSearchName,
+      level,
+      item: "",
+      nature: "",
+      ability: "",
+      trainer_versions: [],
+      moves: [],
+    },
+  ];
 
-  await writeTextFile(
-    `${$selectedWiki.name}/data/routes.json`,
-    JSON.stringify($routes),
-    { dir: BaseDirectory.AppData },
-  ).then(() => {
-    generateRoutePage();
-  });
+  let sortedTrainers = sortTrainersByPosition(routeTrainers);
+  routeTrainers = sortedTrainers;
 }
 
-async function deletePokemonFromTrainer(uniqueId: string, trainerName: string) {
+function deletePokemonFromTrainer(uniqueId: string, trainerName: string) {
   let updatedTrainers = {
-    ...$routes.routes[routeName].trainers,
+    ...routeTrainers,
   };
   updatedTrainers[trainerName].pokemon_team = updatedTrainers[
     trainerName
@@ -126,56 +109,175 @@ async function deletePokemonFromTrainer(uniqueId: string, trainerName: string) {
     delete updatedTrainers[trainerName];
   }
 
-  $routes.routes[routeName].trainers = updatedTrainers;
-
-  await writeTextFile(
-    `${$selectedWiki.name}/data/routes.json`,
-    JSON.stringify($routes),
-    { dir: BaseDirectory.AppData },
-  ).then(() => {
-    generateRoutePage();
-  });
+  routeTrainers = updatedTrainers;
 }
 
-async function setTrainerSprite() {
-  let updatedTrainers = {
-    ...$routes.routes[routeName].trainers,
-  };
-  updatedTrainers[trainerToUpdate].sprite = spriteName.toLowerCase();
+function nextTrainerPokemon() {
+  let existingPokemon = routeTrainers[trainerToUpdate].pokemon_team.find(
+    (p) => p.unique_id === currentTrainerPokemon.unique_id,
+  ) as TrainerPokemon;
 
-  $routes.routes[routeName].trainers = updatedTrainers;
-
-  await writeTextFile(
-    `${$selectedWiki.name}/data/routes.json`,
-    JSON.stringify($routes),
-    { dir: BaseDirectory.AppData },
-  ).then(() => {
-    generateRoutePage();
-  });
-
-  trainerToUpdate = "";
-  spriteName = "";
-}
-
-async function setPosition() {
-  $routes.routes[routeName].trainers = sortTrainersByPosition(
-    $routes,
-    routeName,
+  let index =
+    routeTrainers[trainerToUpdate].pokemon_team.indexOf(existingPokemon);
+  if (index === routeTrainers[trainerToUpdate].pokemon_team.length - 1) {
+    toastStore.trigger({
+      message: "No more trainer pokemon",
+      timeout: 3000,
+      background: "variant-filled-error",
+    });
+    return;
+  }
+  currentTrainerPokemon = _.cloneDeep(
+    routeTrainers[trainerToUpdate].pokemon_team[index + 1],
   );
+}
 
-  positionModalOpen = false;
+function prevTrainerPokemon() {
+  let existingPokemon = routeTrainers[trainerToUpdate].pokemon_team.find(
+    (p) => p.unique_id === currentTrainerPokemon.unique_id,
+  ) as TrainerPokemon;
+
+  let index =
+    routeTrainers[trainerToUpdate].pokemon_team.indexOf(existingPokemon);
+  if (index === 0) {
+    toastStore.trigger({
+      message: "No more trainer pokemon",
+      timeout: 3000,
+      background: "variant-filled-error",
+    });
+    return;
+  }
+  currentTrainerPokemon = _.cloneDeep(
+    routeTrainers[trainerToUpdate].pokemon_team[index - 1],
+  );
+}
+
+async function savePokemonChanges(trainerName: string) {
+  let pokemonToSave = routeTrainers[trainerName].pokemon_team.find(
+    (p) => p.unique_id === currentTrainerPokemon.unique_id,
+  ) as TrainerPokemon;
+  let index = routeTrainers[trainerName].pokemon_team.indexOf(pokemonToSave);
+
+  routeTrainers[trainerName].pokemon_team[index] = currentTrainerPokemon;
+  saveChanges();
+}
+
+async function saveChanges() {
+  routeTrainers = sortTrainersByPosition(routeTrainers);
+
+  $routes.routes[routeName].trainers = routeTrainers;
+
+  routeTrainers = _.cloneDeep($routes.routes[routeName].trainers);
+  originalTrainers = _.cloneDeep(routeTrainers);
 
   await writeTextFile(
     `${$selectedWiki.name}/data/routes.json`,
     JSON.stringify($routes),
     { dir: BaseDirectory.AppData },
   ).then(() => {
-    generateRoutePage();
+    invoke("generate_single_route_page_with_handle", {
+      wikiName: $selectedWiki.name,
+      routeName,
+    })
+      .then(() => {
+        toastStore.trigger({
+          message: "Changes saved successfully",
+          timeout: 3000,
+          background: "variant-filled-success",
+        });
+      })
+      .catch((e) => {
+        console.error(e);
+      });
   });
 }
 </script>
 
-<div class="flex flex-row gap-x-5">
+<!-- Sprite Modal -->
+<BaseModal bind:open={spriteModalOpen} class="w-[25rem]">
+  {#if spriteName !== ""}
+    <img
+      src={`https://play.pokemonshowdown.com/sprites/trainers/${spriteName.toLowerCase()}.png`}
+      alt="Trainer Sprite"
+      class="h-32 w-32"
+    />
+  {/if}
+  <TextInput
+    id="sprite-name"
+    label="Sprite Name"
+    placeholder="Type name to see sprite. Eg. red"
+    bind:value={spriteName}
+  />
+  <Button
+    title="Set Sprite"
+    class="w-32"
+    disabled={spriteName === ""}
+    onClick={() => {
+        routeTrainers[trainerToUpdate].sprite = spriteName.toLowerCase();
+        trainerToUpdate = "";
+        spriteName = "";
+        spriteModalOpen = false;
+    }}
+  />
+</BaseModal>
+
+<!-- Trainer Versions Modal -->
+<BaseModal bind:open={trainerVersionsModalOpen} class="w-[25rem] gap-y-1">
+  <div>
+    <label
+      for="versions"
+      class="block text-sm font-medium leading-6 text-gray-900"
+      >Trainer Versions</label
+    >
+    <MultiSelect
+      id="versions"
+      bind:selected={routeTrainers[trainerToUpdate].versions}
+      allowUserOptions={true}
+      options={routeTrainers[trainerToUpdate].versions ?? []}
+      style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
+    />
+  </div>
+  <Button
+    class="w-32"
+    title="Save Versions"
+    disabled={_.isEqual(routeTrainers, originalTrainers)}
+    onClick={() => {
+      saveChanges()
+      trainerVersionsModalOpen = false;
+    }}
+  />
+</BaseModal>
+
+<!-- Position Modal -->
+<BaseModal bind:open={positionModalOpen} class="w-[25rem]">
+  <NumberInput
+    label="Position"
+    bind:value={routeTrainers[trainerToUpdate].position}
+  />
+  <Button
+    class="w-32"
+    title="Set Position"
+    disabled={_.isEqual(routeTrainers, originalTrainers)}
+    onClick={() => {
+    routeTrainers = sortTrainersByPosition(routeTrainers);
+    positionModalOpen = false;
+  }}
+  />
+</BaseModal>
+
+<EditTrainerPokemonModal
+  bind:open={editPokemonModalOpen}
+  pokemon={currentTrainerPokemon}
+  trainerToUpdate={trainerToUpdate}
+  trainerVersions={currentTrainerVersions}
+  nextTrainerPokemon={nextTrainerPokemon}
+  prevTrainerPokemon={prevTrainerPokemon}
+  savePokemonChanges={savePokemonChanges}
+/>
+
+<div
+  class="sticky top-0 z-10 flex flex-row gap-x-5 rounded-md bg-white pb-1 shadow-sm"
+>
   <AutoComplete
     label="Trainer Name"
     bind:value={trainerName}
@@ -190,7 +292,7 @@ async function setPosition() {
   <AutoComplete
     label="Pokemon for current encounter type"
     placeholder="Pokemon Name"
-    bind:value={pokemonName}
+    bind:value={pokemonSearchName}
     options={pokemonListOptions}
     popupId="popupPokemonNames"
     onSelection={onPokemonNameSelected}
@@ -201,115 +303,55 @@ async function setPosition() {
   <Button
     title="Add Encounter"
     class="mt-8 w-32"
-    disabled={pokemonName === "" || level === 0 || trainerName === ""}
+    disabled={pokemonSearchName === "" || level === 0 || trainerName === ""}
     onClick={addPokemonToTrainer}
+  />
+  <Button
+    class="mt-8 w-32"
+    title="Save Changes"
+    disabled={_.isEqual(routeTrainers, originalTrainers)}
+    onClick={saveChanges}
   />
 </div>
 
-<!-- Sprite Modal -->
-<BaseModal bind:open={spriteModalOpen}>
-  <TextInput
-    id="sprite-name"
-    label="Sprite Name"
-    placeholder="Sprites are loaded from pokemon https://play.pokemonshowdown.com/sprites/trainers/"
-    bind:value={spriteName}
-  />
-  <Button
-    title="Set Sprite"
-    disabled={spriteName === ""}
-    onClick={setTrainerSprite}
-  />
-</BaseModal>
-
-<!-- Trainer Versions Modal -->
-<BaseModal bind:open={trainerVersionsModalOpen} class="gap-y-1">
-  <div>
-    <label
-      for="versions"
-      class="block text-sm font-medium leading-6 text-gray-900"
-      >Trainer Versions</label
-    >
-    <MultiSelect
-      id="versions"
-      bind:selected={trainers[trainerToUpdate].versions}
-      allowUserOptions={true}
-      options={trainers[trainerToUpdate].versions ?? []}
-      on:change={async (e) => {await writeTextFile(
-      `${$selectedWiki.name}/data/routes.json`,
-      JSON.stringify($routes),
-      { dir: BaseDirectory.AppData },
-    )}}
-      style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
-    />
-  </div>
-</BaseModal>
-
-<BaseModal bind:open={positionModalOpen}>
-  <NumberInput
-    label="Position"
-    bind:value={trainers[trainerToUpdate].position}
-  />
-  <Button title="Set Position" onClick={setPosition} />
-</BaseModal>
-
 <div class="mt-5 flex flex-col gap-y-5">
-  {#each Object.entries($routes.routes[routeName].trainers ?? {}) as [name, trainerInfo], index}
+  {#each Object.entries(routeTrainers) as [name, trainerInfo], index}
     <div>
       <strong class="flex flex-row items-center gap-x-4">
         {_.capitalize(name)}
-        <button
-          class="hover:cursor-pointer"
-          use:popup={{
-            event: "click",
-            target: "trainerMenu" + index,
-            placement: "right",
-          }}
-        >
-          <IconDots size={20} color="gray" />
-        </button>
-        <div class="card z-10 bg-white p-2" data-popup="trainerMenu{index}">
-          <button
-            class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-            on:click={() => {
-                    spriteModalOpen = true;
-                    trainerToUpdate = name;
-                }}
-            >Add Sprite</button
-          >
-          <button
-            class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-            on:click={() => {
-                    trainerVersionsModalOpen = true;
-                    trainerToUpdate = name;
-                }}
-            >Modify Trainer Versions</button
-          >
-          <button
-            class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-            on:click={() => {
-                    positionModalOpen = true;
-                    trainerToUpdate = name;
-                }}
-            >Change Position</button
-          >
-        </div>
-      </strong>
-      {#if trainerInfo.sprite}
-        <img
-          src={`https://play.pokemonshowdown.com/sprites/trainers/${trainerInfo.sprite}.png`}
-          alt={name}
-          class="m-0 justify-self-center"
+        <TrainerMenu
+          index={index}
+          trainerName={name}
+          bind:trainerToUpdate={trainerToUpdate}
+          bind:positionModalOpen={positionModalOpen}
+          bind:spriteModalOpen={spriteModalOpen}
+          bind:trainerVersionsModalOpen={trainerVersionsModalOpen}
         />
-      {/if}
-      <div class="mt-2 grid grid-cols-6 gap-5">
-        {#each trainerInfo.pokemon_team as pokemon}
-          <TrainerPokemonCard
-            pokemon={pokemon}
-            trainerName={name}
-            trainerVersions={trainerInfo.versions ?? []}
-            deletePokemon={deletePokemonFromTrainer}
-            routeName={routeName}
+      </strong>
+      <div class="mt-2 grid grid-cols-6 items-center gap-5">
+        {#if trainerInfo.sprite}
+          <img
+            src={`https://play.pokemonshowdown.com/sprites/trainers/${trainerInfo.sprite}.png`}
+            alt={name}
+            class="m-0 justify-self-center"
           />
+        {/if}
+        {#each trainerInfo.pokemon_team as pokemon}
+          <button
+            class="group card relative grid !bg-transparent p-2 shadow-md transition ease-in-out hover:scale-110 hover:cursor-pointer"
+            on:click={() => {
+                    editPokemonModalOpen = true;
+                    currentTrainerPokemon = _.cloneDeep(pokemon);
+                    trainerToUpdate = name;
+                    currentTrainerVersions = trainerInfo.versions ?? [];
+                  }}
+          >
+            <TrainerPokemonCard
+              pokemon={pokemon}
+              trainerName={name}
+              deletePokemon={deletePokemonFromTrainer}
+            />
+          </button>
         {/each}
       </div>
       <div></div>

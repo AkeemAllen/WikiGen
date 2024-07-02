@@ -11,7 +11,7 @@ use serde_yaml::{Mapping, Value};
 use tauri::AppHandle;
 
 use crate::{
-    helpers::{capitalize, get_pokemon_dex_formatted_name},
+    helpers::{capitalize, capitalize_and_remove_hyphens, get_pokemon_dex_formatted_name},
     structs::mkdocs_structs::MKDocsConfig,
 };
 
@@ -346,7 +346,11 @@ fn create_encounter_table(
         pokemon_entries.push_str("|");
 
         let encounter_type_entry = match encounter_areas_levels.get(&encounter_type.clone()) {
-            Some(area_level) => format!("{}<br/> lv {}", &encounter_type, area_level),
+            Some(area_level) => format!(
+                "{}<br/> Lv. {}",
+                capitalize_and_remove_hyphens(&encounter_type),
+                area_level
+            ),
             None => encounter_type.to_string(),
         };
         let encounter_entry = format!("| {} {}\n", encounter_type_entry, pokemon_entries);
@@ -435,13 +439,12 @@ fn get_markdown_entry_for_pokemon(wiki_name: &str, pokemon: &WildEncounter) -> S
 fn get_markdown_entry_for_trainer_pokemon(wiki_name: &str, pokemon: &TrainerPokemon) -> String {
     let dex_number_file_name = get_pokemon_dex_formatted_name(pokemon.id);
     return format!(
-        "![{}](../../img/pokemon/{}.png)<br/> [{}](/{}/pokemon/{})<br/> Lv. {}",
+        "![{}](../../img/pokemon/{}.png)<br/> [{}](/{}/pokemon/{})",
         pokemon.name,
         dex_number_file_name,
         capitalize(&pokemon.name),
         wiki_name,
         dex_number_file_name,
-        pokemon.level
     );
 }
 
