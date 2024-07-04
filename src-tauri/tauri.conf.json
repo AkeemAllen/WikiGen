@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "WikiGen",
-    "version": "0.9.0"
+    "version": "0.9.1"
   },
   "tauri": {
     "allowlist": {
@@ -58,9 +58,9 @@
       "shortDescription": "",
       "targets": "all",
       "windows": {
-        "certificateThumbprint": null,
+        "certificateThumbprint": "4B0CE0420724C89B5E1D5B9090EB1F67C3648B70",
         "digestAlgorithm": "sha256",
-        "timestampUrl": ""
+        "timestampUrl": "http://timestamp.comodoca.com"
       }
     },
     "security": {
