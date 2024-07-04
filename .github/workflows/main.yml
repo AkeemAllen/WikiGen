@@ -5,6 +5,7 @@ on:
     branches:
       - release
       - main
+      - bug/issue-59-sign-app-for-windows
 
 jobs:
   publish-tauri:
