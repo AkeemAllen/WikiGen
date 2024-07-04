@@ -2,38 +2,43 @@
 import _ from "lodash";
 import AutoComplete from "$lib/components/AutoComplete.svelte";
 import Button from "$lib/components/Button.svelte";
-import { itemsList, type Item, items } from "../../store/items";
+import { abilitiesList, type Ability, abilities } from "../../store/abilities";
 import { selectedWiki } from "../../store";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { getToastStore } from "@skeletonlabs/skeleton";
 
 const toastStore = getToastStore();
 
-let itemName: string = "";
-let currentItemName: string = "";
-let itemDetails: Item = {} as Item;
-let originalItemDetails: Item = {} as Item;
+let abilityName: string = "";
+let currentAbilityName: string = "";
+let abilityDetails: Ability = {} as Ability;
+let originalAbilityDetails: Ability = {} as Ability;
 
-let itemListOptions = $itemsList.map((item) => ({
-  label: item,
-  value: item,
+// let natureListOptions = $naturesList.map((nature) => ({
+//   label: nature,
+//   value: nature,
+// }));
+
+let abilityListOptions = $abilitiesList.map((ability) => ({
+  label: ability,
+  value: ability,
 }));
 
-async function saveItemChanges() {
-  $items[currentItemName] = itemDetails;
+async function saveAbilityChanges() {
+  $abilities[currentAbilityName] = abilityDetails;
 
   await writeTextFile(
-    `${$selectedWiki.name}/data/items.json`,
-    JSON.stringify($items),
+    `${$selectedWiki.name}/data/abilities.json`,
+    JSON.stringify($abilities),
     { dir: BaseDirectory.AppData },
   ).then(() => {
-    originalItemDetails = _.cloneDeep(itemDetails);
+    originalAbilityDetails = _.cloneDeep(abilityDetails);
     // invoke("generate_items_page", {
     //   wikiName: $selectedWiki.name,
     //   dexNumbers: [pokemonId],
     // });
     toastStore.trigger({
-      message: "Item changes saved!",
+      message: "Ability changes saved!",
       background: "variant-filled-success",
     });
   });
@@ -42,38 +47,37 @@ async function saveItemChanges() {
 
 <div class="flex flex-row gap-7">
   <AutoComplete
-    bind:value={itemName}
-    placeholder="Search Items"
-    options={itemListOptions}
-    popupId="item-search"
+    bind:value={abilityName}
+    placeholder="Search Abilities"
+    options={abilityListOptions}
+    popupId="abilities-search"
     onSelection={(e) => {
-      itemName = e.detail.value;
+      abilityName = e.detail.value;
     }}
     showChevron={false}
   />
   <Button
     title="Search"
     onClick={() => {
-      currentItemName = itemName;
-        itemDetails = _.cloneDeep($items[itemName]);
-        originalItemDetails = _.cloneDeep(itemDetails);
+      currentAbilityName = abilityName;
+      abilityDetails = _.cloneDeep($abilities[abilityName]);
+        originalAbilityDetails = _.cloneDeep(abilityDetails);
       }}
-    disabled={itemName === ""}
+    disabled={abilityName === ""}
     class="mt-2 w-32"
   />
   <Button
     title="Save Changes"
-    onClick={saveItemChanges}
-    disabled={_.isEqual(itemDetails, originalItemDetails)}
+    onClick={saveAbilityChanges}
+    disabled={_.isEqual(abilityDetails, originalAbilityDetails)}
     class="mt-2 w-32"
   />
 </div>
 
-{#if !_.isEmpty(itemDetails)}
+{#if !_.isEmpty(abilityDetails)}
   <p class="mt-4 text-lg">
-    {_.capitalize(currentItemName.replaceAll("-", " "))}
+    {_.capitalize(currentAbilityName.replaceAll("-", " "))}
   </p>
-  <img src={itemDetails.sprite} alt={currentItemName} />
   <div>
     <label
       for="effect"
@@ -82,7 +86,7 @@ async function saveItemChanges() {
     <div class="mt-2">
       <textarea
         id="effect"
-        bind:value={itemDetails.effect}
+        bind:value={abilityDetails.effect}
         class="block h-32 w-[50rem] rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
       />
     </div>
