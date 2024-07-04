@@ -10,6 +10,7 @@ use page_generators::game_routes::{
     generate_route_pages_with_handle, generate_single_route_page_with_handle,
 };
 use page_generators::pokemon_pages::generate_pokemon_pages_from_list;
+use wiki_preparation::backup_wiki::backup_wiki;
 use wiki_preparation::create_wiki::create_wiki;
 use wiki_preparation::prepare_data::{download_and_prep_pokemon_data, download_pokemon_sprites};
 
@@ -24,7 +25,8 @@ fn main() {
             generate_pokemon_pages_from_list,
             download_pokemon_sprites,
             generate_route_pages_with_handle,
-            generate_single_route_page_with_handle
+            generate_single_route_page_with_handle,
+            backup_wiki
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

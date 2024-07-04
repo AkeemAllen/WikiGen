@@ -1,6 +1,6 @@
 [package]
 name = "wiki_gen"
-version = "0.8.0"
+version = "0.9.0"
 description = "A Desktop Application to generate wikis for Pokemon Rom Hacks"
 authors = ["Akeem Allen"]
 license = ""
@@ -23,6 +23,7 @@ reqwest = { version = "0.12.1", features = ["blocking", "json"] }
 indexmap = { version = "2.2.6", features = ["serde"] }
 sysinfo = "0.30.10"
 image = "0.25.1"
+chrono = "0.4.38"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
