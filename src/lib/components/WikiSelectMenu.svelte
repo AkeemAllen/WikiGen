@@ -17,6 +17,7 @@ import BaseModal from "./BaseModal.svelte";
 import MultiSelect from "svelte-multiselect";
 import Button from "./Button.svelte";
 import { getToastStore } from "@skeletonlabs/skeleton";
+import { invoke } from "@tauri-apps/api";
 
 const toastStore = getToastStore();
 
@@ -129,6 +130,17 @@ async function deleteWikis() {
   deleteWikiModalOpen = false;
   wikisToDelete = [];
 }
+
+async function backupWiki() {
+  await invoke("backup_wiki", {
+    wikiName: $selectedWiki.name,
+  }).then(() => {
+    toastStore.trigger({
+      message: "Wiki Backed Up Successfully",
+      background: "variant-filled-success",
+    });
+  });
+}
 </script>
 
 <BaseModal bind:open={deleteWikiModalOpen}>
@@ -166,6 +178,12 @@ async function deleteWikis() {
       >Create New Wiki</button
     >
   </a>
+  {#if $selectedWiki.name}
+    <button
+      class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+      on:click={backupWiki}>Backup Wiki</button
+    >
+  {/if}
   <button
     class="w-full rounded-md p-2 text-left text-sm text-red-500 hover:bg-slate-300"
     on:click={() => deleteWikiModalOpen = true}>Delete A Wiki</button
