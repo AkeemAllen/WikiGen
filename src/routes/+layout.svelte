@@ -22,6 +22,7 @@ import {
 } from "@skeletonlabs/skeleton";
 import {
   IconBallBasketball,
+  IconBottleFilled,
   IconDisc,
   IconDotsVertical,
   IconRoute2,
@@ -68,6 +69,13 @@ const modalRegistry: Record<string, ModalComponent> = {};
             active={$page.url.pathname.includes("moves")}
           >
             <IconDisc slot="icon" size={16} color="indigo" />
+          </NavButton>
+          <NavButton
+            name="Items"
+            route="/items"
+            active={$page.url.pathname.includes("items")}
+          >
+            <IconBottleFilled slot="icon" size={16} color="indigo" />
           </NavButton>
           <NavButton
             name="Game Routes"
