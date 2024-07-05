@@ -2,8 +2,15 @@
 import _ from "lodash";
 import AutoComplete from "$lib/components/AutoComplete.svelte";
 import Button from "$lib/components/Button.svelte";
-import { abilitiesList, type Ability, abilities } from "../../store/abilities";
+import {
+  abilitiesList,
+  modifiedAbilities,
+  type Ability,
+  abilities,
+} from "../../store/abilities";
 import { pokemon } from "../../store/pokemon";
+import { modifiedItems } from "../../store/items";
+import { modifiedNatures } from "../../store/natures";
 import { selectedWiki } from "../../store";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { getToastStore } from "@skeletonlabs/skeleton";
@@ -22,7 +29,43 @@ let abilityListOptions = $abilitiesList.map((ability) => ({
 }));
 
 async function saveAbilityChanges() {
+  if (!$modifiedAbilities[currentAbilityName]) {
+    $modifiedAbilities[currentAbilityName] = {
+      original: {
+        effect: "",
+      },
+      modified: {
+        effect: "",
+      },
+    };
+  }
+
+  if ($modifiedAbilities[currentAbilityName].original.effect === "") {
+    $modifiedAbilities[currentAbilityName].original.effect =
+      $abilities[currentAbilityName].effect;
+  }
+
+  $modifiedAbilities[currentAbilityName].modified.effect =
+    abilityDetails.effect;
+
+  if (
+    $modifiedAbilities[currentAbilityName].original.effect ===
+    $modifiedAbilities[currentAbilityName].modified.effect
+  ) {
+    delete $modifiedAbilities[currentAbilityName];
+  }
+
   $abilities[currentAbilityName] = abilityDetails;
+
+  await writeTextFile(
+    `${$selectedWiki.name}/data/modifications/modified_items_natures_abilities.json`,
+    JSON.stringify({
+      items: $modifiedItems,
+      natures: $modifiedNatures,
+      abilities: $modifiedAbilities,
+    }),
+    { dir: BaseDirectory.AppData },
+  );
 
   let pokemonWithAbility = Object.values($pokemon.pokemon)
     .filter((pokemon) => pokemon.abilities.includes(currentAbilityName))
