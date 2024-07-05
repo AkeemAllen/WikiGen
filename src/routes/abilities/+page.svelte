@@ -3,9 +3,11 @@ import _ from "lodash";
 import AutoComplete from "$lib/components/AutoComplete.svelte";
 import Button from "$lib/components/Button.svelte";
 import { abilitiesList, type Ability, abilities } from "../../store/abilities";
+import { pokemon } from "../../store/pokemon";
 import { selectedWiki } from "../../store";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { getToastStore } from "@skeletonlabs/skeleton";
+import { invoke } from "@tauri-apps/api";
 
 const toastStore = getToastStore();
 
@@ -27,6 +29,10 @@ let abilityListOptions = $abilitiesList.map((ability) => ({
 async function saveAbilityChanges() {
   $abilities[currentAbilityName] = abilityDetails;
 
+  let pokemonWithAbility = Object.values($pokemon.pokemon)
+    .filter((pokemon) => pokemon.abilities.includes(currentAbilityName))
+    .map((pokemon) => pokemon.id);
+
   await writeTextFile(
     `${$selectedWiki.name}/data/abilities.json`,
     JSON.stringify($abilities),
@@ -40,6 +46,11 @@ async function saveAbilityChanges() {
     toastStore.trigger({
       message: "Ability changes saved!",
       background: "variant-filled-success",
+    });
+    // regenerate pages for pokemon with ability
+    invoke("generate_pokemon_pages_from_list", {
+      wikiName: $selectedWiki.name,
+      dexNumbers: pokemonWithAbility,
     });
   });
 }
