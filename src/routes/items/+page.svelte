@@ -2,7 +2,9 @@
 import _ from "lodash";
 import AutoComplete from "$lib/components/AutoComplete.svelte";
 import Button from "$lib/components/Button.svelte";
-import { itemsList, type Item, items } from "../../store/items";
+import { itemsList, modifiedItems, type Item, items } from "../../store/items";
+import { modifiedNatures } from "../../store/natures";
+import { modifiedAbilities } from "../../store/abilities";
 import { selectedWiki } from "../../store";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { getToastStore } from "@skeletonlabs/skeleton";
@@ -20,7 +22,42 @@ let itemListOptions = $itemsList.map((item) => ({
 }));
 
 async function saveItemChanges() {
+  if (!$modifiedItems[currentItemName]) {
+    $modifiedItems[currentItemName] = {
+      original: {
+        effect: "",
+      },
+      modified: {
+        effect: "",
+      },
+    };
+  }
+
+  if ($modifiedItems[currentItemName].original.effect === "") {
+    $modifiedItems[currentItemName].original.effect =
+      $items[currentItemName].effect;
+  }
+
+  $modifiedItems[currentItemName].modified.effect = itemDetails.effect;
+
+  if (
+    $modifiedItems[currentItemName].original.effect ===
+    $modifiedItems[currentItemName].modified.effect
+  ) {
+    delete $modifiedItems[currentItemName];
+  }
+
   $items[currentItemName] = itemDetails;
+
+  await writeTextFile(
+    `${$selectedWiki.name}/data/modifications/modified_items_natures_abilities.json`,
+    JSON.stringify({
+      items: $modifiedItems,
+      natures: $modifiedNatures,
+      abilities: $modifiedAbilities,
+    }),
+    { dir: BaseDirectory.AppData },
+  );
 
   await writeTextFile(
     `${$selectedWiki.name}/data/items.json`,
@@ -28,10 +65,6 @@ async function saveItemChanges() {
     { dir: BaseDirectory.AppData },
   ).then(() => {
     originalItemDetails = _.cloneDeep(itemDetails);
-    // invoke("generate_items_page", {
-    //   wikiName: $selectedWiki.name,
-    //   dexNumbers: [pokemonId],
-    // });
     toastStore.trigger({
       message: "Item changes saved!",
       background: "variant-filled-success",
