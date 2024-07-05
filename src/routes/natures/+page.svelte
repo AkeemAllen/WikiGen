@@ -2,8 +2,15 @@
 import _ from "lodash";
 import AutoComplete from "$lib/components/AutoComplete.svelte";
 import Button from "$lib/components/Button.svelte";
-import { naturesList, type Nature, natures } from "../../store/natures";
+import {
+  naturesList,
+  modifiedNatures,
+  type Nature,
+  natures,
+} from "../../store/natures";
 import { selectedWiki } from "../../store";
+import { modifiedItems } from "../../store/items";
+import { modifiedAbilities } from "../../store/abilities";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { getToastStore } from "@skeletonlabs/skeleton";
 import SelectInput from "$lib/components/SelectInput.svelte";
@@ -33,7 +40,45 @@ const natureOptions = [
 });
 
 async function saveNatureChanges() {
+  if (!$modifiedNatures[currentNatureName]) {
+    $modifiedNatures[currentNatureName] = {
+      original: null,
+      modified: null,
+    };
+  }
+
+  if ($modifiedNatures[currentNatureName].original === null) {
+    $modifiedNatures[currentNatureName].original = {
+      increased_stat: $natures[currentNatureName].increased_stat,
+      decreased_stat: $natures[currentNatureName].decreased_stat,
+    };
+  }
+
+  $modifiedNatures[currentNatureName].modified = {
+    increased_stat: natureDetails.increased_stat,
+    decreased_stat: natureDetails.decreased_stat,
+  };
+
+  if (
+    _.isEqual(
+      $modifiedNatures[currentNatureName].original,
+      $modifiedNatures[currentNatureName].modified,
+    )
+  ) {
+    delete $modifiedNatures[currentNatureName];
+  }
+
   $natures[currentNatureName] = natureDetails;
+
+  await writeTextFile(
+    `${$selectedWiki.name}/data/modifications/modified_items_natures_abilities.json`,
+    JSON.stringify({
+      items: $modifiedItems,
+      natures: $modifiedNatures,
+      abilities: $modifiedAbilities,
+    }),
+    { dir: BaseDirectory.AppData },
+  );
 
   await writeTextFile(
     `${$selectedWiki.name}/data/natures.json`,
