@@ -16,11 +16,6 @@ let currentAbilityName: string = "";
 let abilityDetails: Ability = {} as Ability;
 let originalAbilityDetails: Ability = {} as Ability;
 
-// let natureListOptions = $naturesList.map((nature) => ({
-//   label: nature,
-//   value: nature,
-// }));
-
 let abilityListOptions = $abilitiesList.map((ability) => ({
   label: ability,
   value: ability,
@@ -39,10 +34,6 @@ async function saveAbilityChanges() {
     { dir: BaseDirectory.AppData },
   ).then(() => {
     originalAbilityDetails = _.cloneDeep(abilityDetails);
-    // invoke("generate_items_page", {
-    //   wikiName: $selectedWiki.name,
-    //   dexNumbers: [pokemonId],
-    // });
     toastStore.trigger({
       message: "Ability changes saved!",
       background: "variant-filled-success",
