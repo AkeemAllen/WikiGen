@@ -13,8 +13,8 @@ export type ModifiedNatures = {
 };
 
 export type ModifiedNature = {
-  original: Nature | null;
-  modified: Nature | null;
+  original: Nature;
+  modified: Nature;
 };
 
 export let natures = writable<Natures>();

@@ -14,6 +14,7 @@ import { modifiedAbilities } from "../../store/abilities";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { getToastStore } from "@skeletonlabs/skeleton";
 import SelectInput from "$lib/components/SelectInput.svelte";
+import { invoke } from "@tauri-apps/api";
 
 const toastStore = getToastStore();
 
@@ -42,12 +43,23 @@ const natureOptions = [
 async function saveNatureChanges() {
   if (!$modifiedNatures[currentNatureName]) {
     $modifiedNatures[currentNatureName] = {
-      original: null,
-      modified: null,
+      original: {
+        increased_stat: "",
+        decreased_stat: "",
+      },
+      modified: {
+        increased_stat: "",
+        decreased_stat: "",
+      },
     };
   }
 
-  if ($modifiedNatures[currentNatureName].original === null) {
+  if (
+    _.isEqual($modifiedNatures[currentNatureName].original, {
+      increased_stat: "",
+      decreased_stat: "",
+    })
+  ) {
     $modifiedNatures[currentNatureName].original = {
       increased_stat: $natures[currentNatureName].increased_stat,
       decreased_stat: $natures[currentNatureName].decreased_stat,
@@ -86,10 +98,16 @@ async function saveNatureChanges() {
     { dir: BaseDirectory.AppData },
   ).then(() => {
     originalNatureDetails = _.cloneDeep(natureDetails);
-    // invoke("generate_items_page", {
-    //   wikiName: $selectedWiki.name,
-    //   dexNumbers: [pokemonId],
-    // });
+    invoke("generate_nature_page", { wikiName: $selectedWiki.name })
+      .then(() => {
+        toastStore.trigger({
+          message: "Nature page regenerated!",
+          background: "variant-filled-success",
+        });
+      })
+      .catch((err) => {
+        console.error("Failed to regenerate nature page: ", err);
+      });
     toastStore.trigger({
       message: "Nature changes saved!",
       background: "variant-filled-success",
