@@ -46,7 +46,7 @@ pub fn generate_item_page(wiki_name: &str, app_handle: AppHandle) -> Result<Stri
             .join("item_changes.md"),
     ) {
         Ok(file) => file,
-        Err(err) => return Err(format!("Failed to create type changes file: {}", err)),
+        Err(err) => return Err(format!("Failed to create item changes file: {}", err)),
     };
 
     let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
