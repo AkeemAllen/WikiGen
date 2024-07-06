@@ -19,8 +19,45 @@ pub struct Types {
     modified: Vec<String>,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct ModifiedItemsNaturesAbilities {
+    items: HashMap<String, ModifiedItem>,
+    natures: HashMap<String, ModifiedNature>,
+    abilities: HashMap<String, ModifiedAbility>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ModifiedItem {
+    pub original: Effect,
+    pub modified: Effect,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ModifiedAbility {
+    pub original: Effect,
+    pub modified: Effect,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ModifiedNature {
+    pub original: Nature,
+    pub modified: Nature,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Nature {
+    pub increased_stat: String,
+    pub decreased_stat: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Effect {
+    pub effect: String,
+}
+
 pub mod evolution_page;
 pub mod game_routes;
+pub mod item_page;
 mod pokemon_page_generator_functions;
 pub mod pokemon_pages;
 pub mod type_page;

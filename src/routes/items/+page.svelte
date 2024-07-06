@@ -8,6 +8,7 @@ import { modifiedAbilities } from "../../store/abilities";
 import { selectedWiki } from "../../store";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { getToastStore } from "@skeletonlabs/skeleton";
+import { invoke } from "@tauri-apps/api";
 
 const toastStore = getToastStore();
 
@@ -68,6 +69,12 @@ async function saveItemChanges() {
     toastStore.trigger({
       message: "Item changes saved!",
       background: "variant-filled-success",
+    });
+    invoke("generate_item_page", { wikiName: $selectedWiki.name }).then(() => {
+      toastStore.trigger({
+        message: "Item page regenerated!",
+        background: "variant-filled-success",
+      });
     });
   });
 }
