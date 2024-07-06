@@ -21,11 +21,14 @@ import {
   storePopup,
 } from "@skeletonlabs/skeleton";
 import {
+  IconAdjustmentsUp,
   IconBallBasketball,
+  IconBottleFilled,
   IconDisc,
   IconDotsVertical,
   IconRoute2,
   IconTestPipe,
+  IconTree,
 } from "@tabler/icons-svelte";
 import "../app.pcss";
 import { selectedWiki } from "../store";
@@ -63,6 +66,13 @@ const modalRegistry: Record<string, ModalComponent> = {};
             <IconBallBasketball slot="icon" size={16} color="indigo" />
           </NavButton>
           <NavButton
+            name="Game Routes"
+            route="/game-routes"
+            active={$page.url.pathname.includes("game-routes")}
+          >
+            <IconRoute2 slot="icon" size={16} color="indigo" />
+          </NavButton>
+          <NavButton
             name="Moves"
             route="/moves"
             active={$page.url.pathname.includes("moves")}
@@ -70,11 +80,25 @@ const modalRegistry: Record<string, ModalComponent> = {};
             <IconDisc slot="icon" size={16} color="indigo" />
           </NavButton>
           <NavButton
-            name="Game Routes"
-            route="/game-routes"
-            active={$page.url.pathname.includes("game-routes")}
+            name="Items"
+            route="/items"
+            active={$page.url.pathname.includes("items")}
           >
-            <IconRoute2 slot="icon" size={16} color="indigo" />
+            <IconBottleFilled slot="icon" size={16} color="indigo" />
+          </NavButton>
+          <NavButton
+            name="Abiities"
+            route="/abilities"
+            active={$page.url.pathname.includes("abilities")}
+          >
+            <IconAdjustmentsUp slot="icon" size={16} color="indigo" />
+          </NavButton>
+          <NavButton
+            name="Natures"
+            route="/natures"
+            active={$page.url.pathname.includes("natures")}
+          >
+            <IconTree slot="icon" size={16} color="indigo" />
           </NavButton>
           <NavButton
             name="Wiki Testing"

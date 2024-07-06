@@ -10,9 +10,13 @@ import { routes } from "../../store/gameRoutes";
 import { moveList, moves } from "../../store/moves";
 import { modifiedPokemon, pokemon, pokemonList } from "../../store/pokemon";
 import { sortRoutesByPosition } from "$lib/utils";
-import { abilities, abilitiesList } from "../../store/abilities";
-import { natures, naturesList } from "../../store/natures";
-import { items, itemsList } from "../../store/items";
+import {
+  abilities,
+  abilitiesList,
+  modifiedAbilities,
+} from "../../store/abilities";
+import { modifiedNatures, natures, naturesList } from "../../store/natures";
+import { items, itemsList, modifiedItems } from "../../store/items";
 import BaseModal from "./BaseModal.svelte";
 import MultiSelect from "svelte-multiselect";
 import Button from "./Button.svelte";
@@ -82,6 +86,18 @@ async function loadWikiData(wiki: Wiki) {
     { dir: BaseDirectory.AppData },
   );
   modifiedPokemon.set(JSON.parse(modifiedPokemonFromFile));
+
+  const modifiedItemsNaturesAbilitiesFromFile = await readTextFile(
+    `${$selectedWiki.name}/data/modifications/modified_items_natures_abilities.json`,
+    { dir: BaseDirectory.AppData },
+  );
+  modifiedItems.set(JSON.parse(modifiedItemsNaturesAbilitiesFromFile).items);
+  modifiedNatures.set(
+    JSON.parse(modifiedItemsNaturesAbilitiesFromFile).natures,
+  );
+  modifiedAbilities.set(
+    JSON.parse(modifiedItemsNaturesAbilitiesFromFile).abilities,
+  );
 
   const movesFromFile = await readTextFile(
     `${$selectedWiki.name}/data/moves.json`,
