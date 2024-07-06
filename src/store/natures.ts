@@ -8,5 +8,15 @@ export type Nature = {
   decreased_stat: string | null;
 };
 
+export type ModifiedNatures = {
+  [key: string]: ModifiedNature;
+};
+
+export type ModifiedNature = {
+  original: Nature;
+  modified: Nature;
+};
+
 export let natures = writable<Natures>();
 export let naturesList = writable<string[]>([]);
+export let modifiedNatures = writable<ModifiedNatures>({});

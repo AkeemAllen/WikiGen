@@ -92,7 +92,7 @@ There are quite a few things you can do when documenting trainer encounters.
 
 1. Hover over one of the Pokemon cards, you should see an edit and a delete icon appear.
 2. Click the delete icon to delete a Pokemon from the team.
-3. Deleing all Pokemon will delete the trainer as well.
+3. Deleting all Pokemon will delete the trainer as well.
 
 
 ##### Modifying Pokemon Moves, Held Items, etc

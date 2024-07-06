@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "WikiGen",
-    "version": "0.9.1"
+    "version": "0.10.0"
   },
   "tauri": {
     "allowlist": {
@@ -24,7 +24,10 @@
         "removeFile": true,
         "renameFile": true,
         "writeFile": true,
-        "scope": ["$APPDATA/**", "$RESOURCE/**"]
+        "scope": [
+          "$APPDATA/**",
+          "$RESOURCE/**"
+        ]
       },
       "os": {
         "all": true
@@ -54,7 +57,9 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": ["resources/**"],
+      "resources": [
+        "resources/**"
+      ],
       "shortDescription": "",
       "targets": "all",
       "windows": {
