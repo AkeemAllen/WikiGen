@@ -55,6 +55,7 @@ pub struct Effect {
     pub effect: String,
 }
 
+pub mod ability_page;
 pub mod evolution_page;
 pub mod game_routes;
 pub mod item_page;

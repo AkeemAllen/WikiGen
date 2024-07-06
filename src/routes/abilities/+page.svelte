@@ -86,6 +86,14 @@ async function saveAbilityChanges() {
       wikiName: $selectedWiki.name,
       dexNumbers: pokemonWithAbility,
     });
+    invoke("generate_ability_page", { wikiName: $selectedWiki.name }).then(
+      () => {
+        toastStore.trigger({
+          message: "Ability page regenerated!",
+          background: "variant-filled-success",
+        });
+      },
+    );
   });
 }
 </script>

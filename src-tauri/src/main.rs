@@ -6,6 +6,7 @@ mod structs;
 mod wiki_preparation;
 
 use helpers::mkdocs_process::{check_process_status, kill_mkdocs_process, spawn_mkdocs_process};
+use page_generators::ability_page::generate_ability_page;
 use page_generators::game_routes::{
     generate_route_pages_with_handle, generate_single_route_page_with_handle,
 };
@@ -30,7 +31,8 @@ fn main() {
             generate_single_route_page_with_handle,
             backup_wiki,
             generate_item_page,
-            generate_nature_page
+            generate_nature_page,
+            generate_ability_page
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
