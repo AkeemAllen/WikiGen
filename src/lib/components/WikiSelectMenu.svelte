@@ -30,6 +30,8 @@ let wikisToDelete: string[] = [];
 let directoriesRemoved: boolean = false;
 let wikiJsonUpdated: boolean = false;
 
+let hotKeysModalOpen: boolean = false;
+
 $: wikiListOptions = Object.keys($wikis).filter(
   (wiki) => wiki !== $selectedWiki.name,
 );
@@ -174,6 +176,58 @@ async function backupWiki() {
   <Button onClick={() => deleteWikis()} title="Delete Selected Wikis" />
 </BaseModal>
 
+<BaseModal bind:open={hotKeysModalOpen} class="w-[40rem]">
+  <h2 class="text-lg font-medium leading-6 text-gray-900">Hot Keys</h2>
+  <div class="grid grid-cols-2 gap-3">
+    <div>
+      <h4 class="mb-2 leading-3">On Pokemon Page</h4>
+      <div class="flex flex-col gap-2 text-sm">
+        <p>
+          <span class="code font-semibold">Ctrl + k</span> - Search Pokemon
+        </p>
+        <p>
+          <span class="code font-semibold">Ctrl + ]</span> - Next Pokemon
+        </p>
+        <p>
+          <span class="code font-semibold">Ctrl + [</span> - Previous Pokemon
+        </p>
+        <p>
+          <span class="code font-semibold">Ctrl + Enter</span> - Save Changes
+        </p>
+        <p>
+          <span class="code font-semibold">Ctrl + m</span> - Switch to Moves tab
+        </p>
+        <p class="mt-2 italic">While on Moves tab:</p>
+        <p>
+          <span class="code font-semibold">Ctrl + m</span> - Open Moveset Change
+          Modal
+        </p>
+        <p>
+          <span class="code font-semibold">Ctrl + l</span> - Add Row to Moveset Modal
+        </p>
+        <p>
+          <span class="code font-semibold">Ctrl + Enter</span> - Save Moveset Changes
+        </p>
+      </div>
+    </div>
+    <div>
+      <h4 class="mb-2 leading-3">On Game Routes Page</h4>
+      <div class="flex flex-col gap-2 text-sm">
+        <p>
+          <span class="code font-semibold">Ctrl + Enter</span> - Save Changes
+        </p>
+        <p class="mt-2 italic">Trainer Encounter tab in Pokemon Edit Modal:</p>
+        <p>
+          <span class="code font-semibold">Ctrl + ]</span> - Next Trainer Pokemon
+        </p>
+        <p>
+          <span class="code font-semibold">Ctrl + [</span> - Previous Trainer Pokemon
+        </p>
+      </div>
+    </div>
+  </div>
+</BaseModal>
+
 <div
   class="card z-10 max-w-52 grid-cols-1 p-4 shadow-xl"
   data-popup="wikiSelectPopup"
@@ -200,6 +254,10 @@ async function backupWiki() {
       on:click={backupWiki}>Backup Wiki</button
     >
   {/if}
+  <button
+    class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+    on:click={() => hotKeysModalOpen = true}>View Hotkeys</button
+  >
   <button
     class="w-full rounded-md p-2 text-left text-sm text-red-500 hover:bg-slate-300"
     on:click={() => deleteWikiModalOpen = true}>Delete A Wiki</button
