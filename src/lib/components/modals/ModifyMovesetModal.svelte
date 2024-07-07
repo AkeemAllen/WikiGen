@@ -60,6 +60,9 @@ function removeMoveSetChange(index: number) {
 }
 
 function saveChanges() {
+  if (moveSetChangeList.length === 0) {
+    return;
+  }
   pokemonDetails.moves = modifyLevelUpMoveSet(
     moveSetChangeList,
     pokemonDetails.moves,
@@ -244,7 +247,7 @@ function saveChanges() {
   use:shortcut={{
     trigger: {
       key: 'Enter',
-      modifier: "meta",
+      modifier: ["ctrl", "meta"],
       callback: () => saveChanges(),
     },
   }}

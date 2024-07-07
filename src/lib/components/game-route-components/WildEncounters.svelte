@@ -17,6 +17,7 @@ import AutoComplete from "../AutoComplete.svelte";
 import { invoke } from "@tauri-apps/api";
 import TextInput from "../TextInput.svelte";
 import BaseModal from "../BaseModal.svelte";
+import { shortcut } from "@svelte-put/shortcut";
 
 export let routeName: string = "";
 let pokemonName: string = "";
@@ -234,3 +235,18 @@ async function saveChanges() {
     </div>
   {/each}
 </div>
+
+<svelte:window
+  use:shortcut={{
+    trigger: {
+      key: 'Enter',
+      modifier: ["ctrl", "meta"],
+      callback: () => {
+        if (_.isEqual(routeWildEncounters, originalRouteWildEncounters) && _.isEqual(areaLevels, originalAreaLevels)) {
+          return;
+        }
+        saveChanges();
+      }
+    },
+  }}
+/>

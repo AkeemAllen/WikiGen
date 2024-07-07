@@ -21,6 +21,7 @@ import MultiSelect from "svelte-multiselect";
 import { invoke } from "@tauri-apps/api/tauri";
 import TrainerMenu from "../modals/TrainerMenu.svelte";
 import EditTrainerPokemonModal from "../modals/EditTrainerPokemonModal.svelte";
+import { shortcut } from "@svelte-put/shortcut";
 
 const toastStore = getToastStore();
 
@@ -358,3 +359,18 @@ async function saveChanges() {
     </div>
   {/each}
 </div>
+
+<svelte:window
+  use:shortcut={{
+    trigger: {
+      key: 'Enter',
+      modifier: ["ctrl", "meta"],
+      callback: () => {
+        if (_.isEqual(routeTrainers, originalTrainers)) {
+          return;
+        }
+        saveChanges();
+      }
+    },
+  }}
+/>

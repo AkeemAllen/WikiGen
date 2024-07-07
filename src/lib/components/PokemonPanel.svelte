@@ -60,6 +60,9 @@ function setPokemonDetails(id: number) {
 }
 
 async function savePokemonChanges() {
+  if (_.isEqual(originalPokemonDetails, pokemonDetails)) {
+    return;
+  }
   if (formTabSet !== 0) {
     $pokemon.pokemon[pokemonId].forms[formName] = {
       types: pokemonDetails.types,
@@ -258,7 +261,7 @@ function prevPokemon() {
   use:shortcut={{
     trigger: {
       key: 'Enter',
-      modifier: "meta",
+      modifier: ["ctrl","meta"],
       callback: () => savePokemonChanges(),
     },
   }}
