@@ -15,6 +15,9 @@ import { selectedWiki } from "../../store";
 
 // const toastStore = getToastStore();
 let mkdocsFilePath: string = "";
+$: getMkdocsDirectory($selectedWiki.name).then((response) => {
+  mkdocsFilePath = response;
+});
 
 // let isProcessRunning: boolean = false;
 
@@ -27,11 +30,6 @@ let mkdocsFilePath: string = "";
 // //     }
 // //   });
 // // });
-onMount(() => {
-  getMkdocsDirectory().then((response) => {
-    mkdocsFilePath = response;
-  });
-});
 
 // async function spawnProcess() {
 //   const appData = await appDataDir();
@@ -64,9 +62,9 @@ onMount(() => {
 //     isProcessRunning = false;
 //   });
 // }
-async function getMkdocsDirectory(): Promise<string> {
+async function getMkdocsDirectory(wikiName: string): Promise<string> {
   const appData = await appDataDir();
-  let mkdocsFilePath = `${appData}${$selectedWiki.name}/dist`;
+  let mkdocsFilePath = `${appData}${wikiName}/dist`;
   const osType = await type();
   if (osType === "Windows_NT") {
     mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
