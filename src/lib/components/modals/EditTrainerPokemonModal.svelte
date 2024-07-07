@@ -143,7 +143,7 @@ let itemListOptions = $itemsList.map((item) => ({
   use:shortcut={{
     trigger: {
       key: 'Enter',
-      modifier: "meta",
+      modifier: ["ctrl", "meta"],
       callback: () => {
         if (_.isEqual(pokemon, originalPokemonAttributes)) {
           return;
