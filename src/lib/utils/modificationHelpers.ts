@@ -8,6 +8,10 @@ import type {
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { selectedWiki } from "../../store";
 import { get } from "svelte/store";
+import type { Item, ModifiedItem, ModifiedItems } from "../../store/items";
+import { items } from "../../store/items";
+import { modifiedNatures } from "../../store/natures";
+import { modifiedAbilities } from "../../store/abilities";
 
 export async function updatePokemonModifications(
   modifiedPokemon: ModifiedPokemon,
@@ -106,4 +110,48 @@ function checkModifiedEvolutions(
       evolves_to: { id: 0, pokemon_name: "" },
     };
   }
+}
+
+export async function updateItemModifications(
+  modifiedItems: ModifiedItems,
+  itemName: string,
+  itemDetails: Item,
+) {
+  if (!modifiedItems[itemName]) {
+    modifiedItems[itemName] = {
+      original: {
+        effect: "",
+        sprite: "",
+      },
+      modified: {
+        effect: "",
+        sprite: "",
+      },
+      is_new_item: false,
+    };
+  }
+
+  if (modifiedItems[itemName].original.effect === "") {
+    modifiedItems[itemName].original.effect = get(items)[itemName].effect;
+  }
+
+  modifiedItems[itemName].modified.effect = itemDetails.effect;
+
+  if (
+    modifiedItems[itemName].original.effect ===
+      modifiedItems[itemName].modified.effect &&
+    !modifiedItems[itemName].is_new_item
+  ) {
+    delete modifiedItems[itemName];
+  }
+
+  await writeTextFile(
+    `${get(selectedWiki).name}/data/modifications/modified_items_natures_abilities.json`,
+    JSON.stringify({
+      items: modifiedItems,
+      natures: get(modifiedNatures),
+      abilities: get(modifiedAbilities),
+    }),
+    { dir: BaseDirectory.AppData },
+  );
 }
