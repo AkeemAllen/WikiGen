@@ -11,6 +11,7 @@ import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { getToastStore } from "@skeletonlabs/skeleton";
 import { invoke } from "@tauri-apps/api";
 import TextInput from "$lib/components/TextInput.svelte";
+import { updateItemModifications } from "$lib/utils/modificationHelpers";
 
 const toastStore = getToastStore();
 
@@ -20,51 +21,18 @@ let itemDetails: Item = {} as Item;
 let originalItemDetails: Item = {} as Item;
 
 let newItemName: string = "";
-let newItemDetails: Item = {} as Item;
+let newItemDetails: Item = { effect: "", sprite: "" };
 let newItemModalOpen: boolean = false;
 
-let itemListOptions = $itemsList.map((item) => ({
+$: itemListOptions = $itemsList.map((item) => ({
   label: item,
   value: item,
 }));
 
 async function saveItemChanges() {
-  if (!$modifiedItems[currentItemName]) {
-    $modifiedItems[currentItemName] = {
-      original: {
-        effect: "",
-      },
-      modified: {
-        effect: "",
-      },
-    };
-  }
-
-  if ($modifiedItems[currentItemName].original.effect === "") {
-    $modifiedItems[currentItemName].original.effect =
-      $items[currentItemName].effect;
-  }
-
-  $modifiedItems[currentItemName].modified.effect = itemDetails.effect;
-
-  if (
-    $modifiedItems[currentItemName].original.effect ===
-    $modifiedItems[currentItemName].modified.effect
-  ) {
-    delete $modifiedItems[currentItemName];
-  }
+  updateItemModifications($modifiedItems, currentItemName, itemDetails);
 
   $items[currentItemName] = itemDetails;
-
-  await writeTextFile(
-    `${$selectedWiki.name}/data/modifications/modified_items_natures_abilities.json`,
-    JSON.stringify({
-      items: $modifiedItems,
-      natures: $modifiedNatures,
-      abilities: $modifiedAbilities,
-    }),
-    { dir: BaseDirectory.AppData },
-  );
 
   await writeTextFile(
     `${$selectedWiki.name}/data/items.json`,
@@ -76,6 +44,63 @@ async function saveItemChanges() {
       message: "Item changes saved!",
       background: "variant-filled-success",
     });
+    invoke("generate_item_page", { wikiName: $selectedWiki.name }).then(() => {
+      toastStore.trigger({
+        message: "Item page regenerated!",
+        background: "variant-filled-success",
+      });
+    });
+  });
+}
+
+async function createNewItem() {
+  if ($items[newItemName]) {
+    toastStore.trigger({
+      message: "Item already exists!",
+      background: "variant-filled-error",
+    });
+    return;
+  }
+
+  $modifiedItems[newItemName] = {
+    original: {
+      effect: newItemDetails.effect,
+      sprite: newItemDetails.sprite,
+    },
+    modified: {
+      effect: "",
+      sprite: "",
+    },
+    is_new_item: true,
+  };
+
+  await writeTextFile(
+    `${$selectedWiki.name}/data/modifications/modified_items_natures_abilities.json`,
+    JSON.stringify({
+      items: $modifiedItems,
+      natures: $modifiedNatures,
+      abilities: $modifiedAbilities,
+    }),
+    { dir: BaseDirectory.AppData },
+  );
+
+  $items[newItemName] = newItemDetails;
+  itemsList.update((list) => {
+    list.push(newItemName);
+    return list;
+  });
+
+  await writeTextFile(
+    `${$selectedWiki.name}/data/items.json`,
+    JSON.stringify($items),
+    { dir: BaseDirectory.AppData },
+  ).then(() => {
+    originalItemDetails = _.cloneDeep(itemDetails);
+    toastStore.trigger({
+      message: "New Item Created!",
+      background: "variant-filled-success",
+    });
+    newItemModalOpen = false;
     invoke("generate_item_page", { wikiName: $selectedWiki.name }).then(() => {
       toastStore.trigger({
         message: "Item page regenerated!",
@@ -150,6 +175,7 @@ async function saveItemChanges() {
     title="Create Item"
     class="w-32"
     disabled={newItemName === "" || newItemDetails.effect === "" || newItemDetails.sprite === ""}
+    onClick={createNewItem}
   />
 </BaseModal>
 
