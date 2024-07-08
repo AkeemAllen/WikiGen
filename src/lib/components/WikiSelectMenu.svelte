@@ -22,6 +22,7 @@ import MultiSelect from "svelte-multiselect";
 import Button from "./Button.svelte";
 import { getToastStore } from "@skeletonlabs/skeleton";
 import { invoke } from "@tauri-apps/api";
+import { goto } from "$app/navigation";
 
 const toastStore = getToastStore();
 
@@ -115,7 +116,7 @@ async function loadWikiData(wiki: Wiki) {
   routes.set(sortRoutesByPosition(JSON.parse(routesFromFile)));
 
   toastStore.trigger({
-    message: `${$selectedWiki.site_name} Wiki Loaded Successfully`,
+    message: `${$selectedWiki.site_name} Wiki Loaded`,
     timeout: 2000,
     background: "variant-filled-success",
   });
@@ -235,11 +236,13 @@ async function backupWiki() {
   {#if Object.keys($wikis).length !== 0}
     <p class="mb-1 text-xs text-slate-400">Wikis</p>
     {#each Object.entries($wikis) as [_, value]}
-      <button
-        on:click={() => loadWikiData(value)}
-        class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-        >{value.site_name}</button
-      >
+      {#if value.name !== $selectedWiki.name}
+        <button
+          on:click={() => {loadWikiData(value); goto("/")}}
+          class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+          >{value.site_name}</button
+        >
+      {/if}
     {/each}
   {/if}
   <p class="mb-1 text-xs text-slate-400">Actions</p>
