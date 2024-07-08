@@ -109,6 +109,52 @@ async function createNewItem() {
     });
   });
 }
+
+async function deleteItem() {
+  if ($modifiedItems[currentItemName]) {
+    delete $modifiedItems[currentItemName];
+
+    await writeTextFile(
+      `${$selectedWiki.name}/data/modifications/modified_items_natures_abilities.json`,
+      JSON.stringify({
+        items: $modifiedItems,
+        natures: $modifiedNatures,
+        abilities: $modifiedAbilities,
+      }),
+      { dir: BaseDirectory.AppData },
+    );
+  }
+
+  $items = Object.entries($items)
+    .filter(([name, _]) => name !== currentItemName)
+    .map(([name, item]) => ({ [name]: item }))
+    .reduce((acc, item) => ({ ...acc, ...item }), {});
+
+  itemsList.update((list) => {
+    return list.filter((item) => item !== currentItemName);
+  });
+
+  await writeTextFile(
+    `${$selectedWiki.name}/data/items.json`,
+    JSON.stringify($items),
+    { dir: BaseDirectory.AppData },
+  ).then(() => {
+    currentItemName = "";
+    itemName = "";
+    itemDetails = {} as Item;
+    originalItemDetails = _.cloneDeep(itemDetails);
+    toastStore.trigger({
+      message: "Item Deleted!",
+      background: "variant-filled-success",
+    });
+    invoke("generate_item_page", { wikiName: $selectedWiki.name }).then(() => {
+      toastStore.trigger({
+        message: "Item page regenerated!",
+        background: "variant-filled-success",
+      });
+    });
+  });
+}
 </script>
 
 <div class="flex flex-row gap-7">
@@ -140,8 +186,14 @@ async function createNewItem() {
   />
   <Button
     title="Add New Item"
-    class="ml-auto mr-5 mt-2 w-32"
+    class="ml-auto mr-3 mt-2 w-32"
     onClick={() => newItemModalOpen = true}
+  />
+  <Button
+    title="Delete Item"
+    class="mr-5 mt-2 w-32"
+    disabled={currentItemName === ""}
+    onClick={deleteItem}
   />
 </div>
 
@@ -157,7 +209,7 @@ async function createNewItem() {
 >
   <h2 class="text-lg font-medium leading-6 text-gray-900">Create New Item</h2>
   <TextInput label="New Item Name" bind:value={newItemName} />
-  <TextInput label="Sprite" bind:value={newItemDetails.sprite} />
+  <TextInput label="Sprite Url" bind:value={newItemDetails.sprite} />
   <div>
     <label
       for="effect"
