@@ -64,12 +64,12 @@ async function createNewItem() {
 
   $modifiedItems[newItemName] = {
     original: {
-      effect: newItemDetails.effect,
-      sprite: newItemDetails.sprite,
-    },
-    modified: {
       effect: "",
       sprite: "",
+    },
+    modified: {
+      effect: newItemDetails.effect,
+      sprite: newItemDetails.sprite,
     },
     is_new_item: true,
   };

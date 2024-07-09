@@ -28,26 +28,35 @@ struct ModifiedItemsNaturesAbilities {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ModifiedItem {
-    pub original: Effect,
-    pub modified: Effect,
+    pub original: Item,
+    pub modified: Item,
+    pub is_new_item: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ModifiedAbility {
     pub original: Effect,
     pub modified: Effect,
+    pub is_new_ability: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ModifiedNature {
     pub original: Nature,
     pub modified: Nature,
+    pub is_new_nature: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Nature {
-    pub increased_stat: String,
-    pub decreased_stat: String,
+    pub increased_stat: Option<String>,
+    pub decreased_stat: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Item {
+    pub effect: String,
+    pub sprite: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

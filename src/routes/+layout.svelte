@@ -49,7 +49,7 @@ const modalRegistry: Record<string, ModalComponent> = {};
 <Modal components={modalRegistry} />
 <AppShell class="h-screen bg-white">
   <svelte:fragment slot="sidebarLeft">
-    <div class="flex h-full flex-col gap-4 bg-white p-4">
+    <div class="flex h-full flex-col gap-4 bg-white p-4 pt-6">
       {#if $selectedWiki.name !== ""}
         <div class="flex grow flex-col gap-y-3">
           <NavButton

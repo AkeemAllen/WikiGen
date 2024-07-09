@@ -140,8 +140,9 @@ export async function updateItemModifications(
   }
 
   if (
-    modifiedItems[itemName].original.effect === "" ||
-    modifiedItems[itemName].original.sprite === ""
+    (modifiedItems[itemName].original.effect === "" ||
+      modifiedItems[itemName].original.sprite === "") &&
+    !modifiedItems[itemName].is_new_item
   ) {
     modifiedItems[itemName].original.effect = get(items)[itemName].effect;
     modifiedItems[itemName].original.effect = get(items)[itemName].sprite;
@@ -188,7 +189,10 @@ export async function updateAbilityModifications(
     };
   }
 
-  if (modifiedAbilities[abilityName].original.effect === "") {
+  if (
+    modifiedAbilities[abilityName].original.effect === "" &&
+    !modifiedAbilities[abilityName].is_new_ability
+  ) {
     modifiedAbilities[abilityName].original.effect =
       get(abilities)[abilityName].effect;
   }
@@ -222,12 +226,12 @@ export async function updateNatureModifications(
   if (!modifiedNatures[natureName]) {
     modifiedNatures[natureName] = {
       original: {
-        increased_stat: "",
-        decreased_stat: "",
+        increased_stat: null,
+        decreased_stat: null,
       },
       modified: {
-        increased_stat: "",
-        decreased_stat: "",
+        increased_stat: null,
+        decreased_stat: null,
       },
       is_new_nature: false,
     };
@@ -235,9 +239,10 @@ export async function updateNatureModifications(
 
   if (
     _.isEqual(modifiedNatures[natureName].original, {
-      increased_stat: "",
-      decreased_stat: "",
-    })
+      increased_stat: null,
+      decreased_stat: null,
+    }) &&
+    !modifiedNatures[natureName].is_new_nature
   ) {
     modifiedNatures[natureName].original = {
       increased_stat: get(natures)[natureName].increased_stat,

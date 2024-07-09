@@ -28,7 +28,7 @@ let originalNatureDetails: Nature = {} as Nature;
 
 let newNatureModalOpen: boolean = false;
 let newNatureName: string = "";
-let newNatureDetails: Nature = { increased_stat: "", decreased_stat: "" };
+let newNatureDetails: Nature = { increased_stat: null, decreased_stat: null };
 
 $: natureListOptions = $naturesList.map((nature) => ({
   label: nature,
@@ -36,7 +36,7 @@ $: natureListOptions = $naturesList.map((nature) => ({
 }));
 
 const natureOptions = [
-  "",
+  null,
   "hp",
   "attack",
   "defense",
@@ -44,6 +44,9 @@ const natureOptions = [
   "special-defense",
   "speed",
 ].map((nature) => {
+  if (nature === null) {
+    return { label: "None", value: null };
+  }
   return { label: nature, value: nature };
 });
 
@@ -85,12 +88,12 @@ async function createNewNature() {
 
   $modifiedNatures[newNatureName] = {
     original: {
-      increased_stat: newNatureDetails.increased_stat,
-      decreased_stat: newNatureDetails.decreased_stat,
+      increased_stat: null,
+      decreased_stat: null,
     },
     modified: {
-      increased_stat: "",
-      decreased_stat: "",
+      increased_stat: newNatureDetails.increased_stat,
+      decreased_stat: newNatureDetails.decreased_stat,
     },
     is_new_nature: true,
   };
@@ -124,7 +127,7 @@ async function createNewNature() {
     });
     newNatureModalOpen = false;
     newNatureName = "";
-    newNatureDetails = { increased_stat: "", decreased_stat: "" };
+    newNatureDetails = { increased_stat: null, decreased_stat: null };
     invoke("generate_nature_page", { wikiName: $selectedWiki.name }).then(
       () => {
         toastStore.trigger({

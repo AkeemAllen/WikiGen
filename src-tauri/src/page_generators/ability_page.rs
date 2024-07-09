@@ -6,7 +6,7 @@ use std::{
 use serde_yaml::{Mapping, Value};
 use tauri::AppHandle;
 
-use crate::structs::mkdocs_structs::MKDocsConfig;
+use crate::{helpers::capitalize_and_remove_hyphens, structs::mkdocs_structs::MKDocsConfig};
 
 #[tauri::command]
 pub fn generate_ability_page(wiki_name: &str, app_handle: AppHandle) -> Result<String, String> {
@@ -62,13 +62,44 @@ pub fn generate_ability_page(wiki_name: &str, app_handle: AppHandle) -> Result<S
     }
 
     let mut ability_changes_markdown = String::new();
+    let mut ability_new = String::new();
+    let mut ability_modified = String::new();
+
     for (ability_name, ability_details) in modified_abilities.iter() {
-        let ability_change = format!(
+        let entry = format!(
             "| {} | {} |\n",
-            ability_name,
+            capitalize_and_remove_hyphens(ability_name),
             ability_details.modified.effect.replace("\n", "")
         );
-        ability_changes_markdown.push_str(&ability_change);
+
+        if ability_details.is_new_ability {
+            if ability_new.is_empty() {
+                ability_new.push_str(&format!(
+                    "| New Abilities | Effect |
+                    | :--: | :-- |
+                    "
+                ))
+            }
+            ability_new.push_str(&entry);
+        } else {
+            if ability_modified.is_empty() {
+                ability_modified.push_str(&format!(
+                    "| Modified Abilities | Effect |
+                    | :--: | :-- |
+                    "
+                ))
+            }
+            ability_modified.push_str(&entry);
+        }
+    }
+
+    if !ability_new.is_empty() {
+        let entry = format!("{}\n", ability_new);
+        ability_changes_markdown.push_str(&entry);
+    }
+    if !ability_modified.is_empty() {
+        let entry = format!("{}\n", ability_modified);
+        ability_changes_markdown.push_str(&entry);
     }
 
     if ability_changes_markdown.is_empty() {
@@ -106,16 +137,7 @@ pub fn generate_ability_page(wiki_name: &str, app_handle: AppHandle) -> Result<S
     }
 
     ability_changes_file
-        .write_all(
-            format!(
-                "| Ability | Effect |
-                | :--: | :-- |
-                {}
-                ",
-                ability_changes_markdown
-            )
-            .as_bytes(),
-        )
+        .write_all(format!("{}", ability_changes_markdown).as_bytes())
         .unwrap();
 
     if ability_page_exists {

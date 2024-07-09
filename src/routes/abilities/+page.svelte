@@ -80,10 +80,10 @@ async function createNewAbility() {
 
   $modifiedAbilities[newAbilityName] = {
     original: {
-      effect: newAbilityDetails.effect,
+      effect: "",
     },
     modified: {
-      effect: "",
+      effect: newAbilityDetails.effect,
     },
     is_new_ability: true,
   };
@@ -99,7 +99,6 @@ async function createNewAbility() {
   );
 
   $abilities[newAbilityName] = _.clone(newAbilityDetails);
-  console.log($abilities[newAbilityName]);
   abilitiesList.update((list) => {
     list.push(newAbilityName);
     return list;
