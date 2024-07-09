@@ -139,15 +139,22 @@ export async function updateItemModifications(
     };
   }
 
-  if (modifiedItems[itemName].original.effect === "") {
+  if (
+    modifiedItems[itemName].original.effect === "" ||
+    modifiedItems[itemName].original.sprite === ""
+  ) {
     modifiedItems[itemName].original.effect = get(items)[itemName].effect;
+    modifiedItems[itemName].original.effect = get(items)[itemName].sprite;
   }
 
   modifiedItems[itemName].modified.effect = itemDetails.effect;
+  modifiedItems[itemName].modified.sprite = itemDetails.sprite;
 
   if (
-    modifiedItems[itemName].original.effect ===
-      modifiedItems[itemName].modified.effect &&
+    _.isEqual(
+      modifiedItems[itemName].original,
+      modifiedItems[itemName].modified,
+    ) &&
     !modifiedItems[itemName].is_new_item
   ) {
     delete modifiedItems[itemName];

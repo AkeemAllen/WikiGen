@@ -32,7 +32,7 @@ $: itemListOptions = $itemsList.map((item) => ({
 async function saveItemChanges() {
   updateItemModifications(currentItemName, itemDetails);
 
-  $items[currentItemName] = itemDetails;
+  $items[currentItemName] = _.cloneDeep(itemDetails);
 
   await writeTextFile(
     `${$selectedWiki.name}/data/items.json`,
@@ -230,6 +230,7 @@ async function deleteItem() {
     {_.capitalize(currentItemName.replaceAll("-", " "))}
   </p>
   <img src={itemDetails.sprite} alt={currentItemName} />
+  <TextInput label="Sprite Url" bind:value={itemDetails.sprite} />
   <div>
     <label
       for="effect"
