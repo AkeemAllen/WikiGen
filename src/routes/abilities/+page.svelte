@@ -35,8 +35,6 @@ $: abilityListOptions = $abilitiesList.map((ability) => ({
   value: ability,
 }));
 
-$: console.log(abilityDetails);
-
 async function saveAbilityChanges() {
   updateAbilityModifications(currentAbilityName, abilityDetails);
   $abilities[currentAbilityName] = abilityDetails;
@@ -148,8 +146,8 @@ async function deleteAbility() {
 
   $abilities = Object.entries($abilities)
     .filter(([name, _]) => name !== currentAbilityName)
-    .map(([name, item]) => ({ [name]: item }))
-    .reduce((acc, item) => ({ ...acc, ...item }), {});
+    .map(([name, ability]) => ({ [name]: ability }))
+    .reduce((acc, ability) => ({ ...acc, ...ability }), {});
 
   abilitiesList.update((list) => {
     return list.filter((ability) => ability !== currentAbilityName);

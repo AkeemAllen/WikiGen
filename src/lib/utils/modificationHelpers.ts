@@ -10,7 +10,11 @@ import { selectedWiki } from "../../store";
 import { get } from "svelte/store";
 import type { Item, ModifiedItems } from "../../store/items";
 import { items, modifiedItems as _mdItems } from "../../store/items";
-import { natures, modifiedNatures as _mdNatures } from "../../store/natures";
+import {
+  natures,
+  modifiedNatures as _mdNatures,
+  type Nature,
+} from "../../store/natures";
 import {
   abilities,
   modifiedAbilities as _mdAbilities,
@@ -198,6 +202,63 @@ export async function updateAbilityModifications(
       items: get(_mdItems),
       natures: get(_mdNatures),
       abilities: modifiedAbilities,
+    }),
+    { dir: BaseDirectory.AppData },
+  );
+}
+
+export async function updateNatureModifications(
+  natureName: string,
+  natureDetails: Nature,
+) {
+  let modifiedNatures = get(_mdNatures);
+  if (!modifiedNatures[natureName]) {
+    modifiedNatures[natureName] = {
+      original: {
+        increased_stat: "",
+        decreased_stat: "",
+      },
+      modified: {
+        increased_stat: "",
+        decreased_stat: "",
+      },
+      is_new_nature: false,
+    };
+  }
+
+  if (
+    _.isEqual(modifiedNatures[natureName].original, {
+      increased_stat: "",
+      decreased_stat: "",
+    })
+  ) {
+    modifiedNatures[natureName].original = {
+      increased_stat: get(natures)[natureName].increased_stat,
+      decreased_stat: get(natures)[natureName].decreased_stat,
+    };
+  }
+
+  modifiedNatures[natureName].modified = {
+    increased_stat: natureDetails.increased_stat,
+    decreased_stat: natureDetails.decreased_stat,
+  };
+
+  if (
+    _.isEqual(
+      modifiedNatures[natureName].original,
+      modifiedNatures[natureName].modified,
+    ) &&
+    !modifiedNatures[natureName].is_new_nature
+  ) {
+    delete modifiedNatures[natureName];
+  }
+
+  await writeTextFile(
+    `${get(selectedWiki).name}/data/modifications/modified_items_natures_abilities.json`,
+    JSON.stringify({
+      items: get(_mdItems),
+      natures: modifiedNatures,
+      abilities: get(_mdAbilities),
     }),
     { dir: BaseDirectory.AppData },
   );

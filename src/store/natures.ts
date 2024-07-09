@@ -15,6 +15,7 @@ export type ModifiedNatures = {
 export type ModifiedNature = {
   original: Nature;
   modified: Nature;
+  is_new_nature: boolean;
 };
 
 export let natures = writable<Natures>();
