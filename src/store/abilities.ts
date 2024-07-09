@@ -15,6 +15,7 @@ export type ModifiedAbilities = {
 export type ModifiedAbility = {
   original: { effect: string };
   modified: { effect: string };
+  is_new_ability: boolean;
 };
 
 export let abilities = writable<Abilities>();

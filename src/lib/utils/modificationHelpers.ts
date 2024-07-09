@@ -8,10 +8,14 @@ import type {
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { selectedWiki } from "../../store";
 import { get } from "svelte/store";
-import type { Item, ModifiedItem, ModifiedItems } from "../../store/items";
-import { items } from "../../store/items";
-import { modifiedNatures } from "../../store/natures";
-import { modifiedAbilities } from "../../store/abilities";
+import type { Item, ModifiedItems } from "../../store/items";
+import { items, modifiedItems as _mdItems } from "../../store/items";
+import { natures, modifiedNatures as _mdNatures } from "../../store/natures";
+import {
+  abilities,
+  modifiedAbilities as _mdAbilities,
+  type Ability,
+} from "../../store/abilities";
 
 export async function updatePokemonModifications(
   modifiedPokemon: ModifiedPokemon,
@@ -113,10 +117,10 @@ function checkModifiedEvolutions(
 }
 
 export async function updateItemModifications(
-  modifiedItems: ModifiedItems,
   itemName: string,
   itemDetails: Item,
 ) {
+  let modifiedItems = get(_mdItems);
   if (!modifiedItems[itemName]) {
     modifiedItems[itemName] = {
       original: {
@@ -149,8 +153,51 @@ export async function updateItemModifications(
     `${get(selectedWiki).name}/data/modifications/modified_items_natures_abilities.json`,
     JSON.stringify({
       items: modifiedItems,
-      natures: get(modifiedNatures),
-      abilities: get(modifiedAbilities),
+      natures: get(_mdNatures),
+      abilities: get(_mdAbilities),
+    }),
+    { dir: BaseDirectory.AppData },
+  );
+}
+
+export async function updateAbilityModifications(
+  abilityName: string,
+  abilityDetails: Ability,
+) {
+  let modifiedAbilities = get(_mdAbilities);
+  if (!modifiedAbilities[abilityName]) {
+    modifiedAbilities[abilityName] = {
+      original: {
+        effect: "",
+      },
+      modified: {
+        effect: "",
+      },
+      is_new_ability: false,
+    };
+  }
+
+  if (modifiedAbilities[abilityName].original.effect === "") {
+    modifiedAbilities[abilityName].original.effect =
+      get(abilities)[abilityName].effect;
+  }
+
+  modifiedAbilities[abilityName].modified.effect = abilityDetails.effect;
+
+  if (
+    modifiedAbilities[abilityName].original.effect ===
+      modifiedAbilities[abilityName].modified.effect &&
+    !modifiedAbilities[abilityName].is_new_ability
+  ) {
+    delete modifiedAbilities[abilityName];
+  }
+
+  await writeTextFile(
+    `${get(selectedWiki).name}/data/modifications/modified_items_natures_abilities.json`,
+    JSON.stringify({
+      items: get(_mdItems),
+      natures: get(_mdNatures),
+      abilities: modifiedAbilities,
     }),
     { dir: BaseDirectory.AppData },
   );
