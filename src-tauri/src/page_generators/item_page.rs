@@ -175,7 +175,7 @@ pub fn generate_item_page(wiki_name: &str, app_handle: AppHandle) -> Result<Stri
 
 fn get_item_image(item_name: &str, item_details: &ModifiedItem) -> String {
     if item_details.is_new_item {
-        return format!("![{}]({})", item_name, item_details.original.sprite);
+        return format!("![{}]({})", item_name, item_details.modified.sprite);
     }
     return format!("![{}](img/items/{}.png)", item_name, item_name);
 }
