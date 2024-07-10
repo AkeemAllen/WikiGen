@@ -12,7 +12,6 @@ import {
 } from "@floating-ui/dom";
 import type { ModalComponent, PopupSettings } from "@skeletonlabs/skeleton";
 import {
-  AppBar,
   AppShell,
   Modal,
   Toast,
@@ -49,13 +48,8 @@ const modalRegistry: Record<string, ModalComponent> = {};
 <Toast />
 <Modal components={modalRegistry} />
 <AppShell class="h-screen bg-white">
-  <svelte:fragment slot="header">
-    <AppBar class="bg-white">
-      <a href="/">WikiGen</a>
-    </AppBar>
-  </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
-    <div class="flex h-full flex-col gap-4 bg-white p-4">
+    <div class="flex h-full flex-col gap-4 bg-white p-4 pt-6">
       {#if $selectedWiki.name !== ""}
         <div class="flex grow flex-col gap-y-3">
           <NavButton

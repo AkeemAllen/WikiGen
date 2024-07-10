@@ -6,7 +6,10 @@ use std::{
 use serde_yaml::{Mapping, Value};
 use tauri::AppHandle;
 
-use crate::{helpers::capitalize, structs::mkdocs_structs::MKDocsConfig};
+use crate::{
+    helpers::{capitalize, capitalize_and_remove_hyphens},
+    structs::mkdocs_structs::MKDocsConfig,
+};
 
 #[tauri::command]
 pub fn generate_nature_page(wiki_name: &str, app_handle: AppHandle) -> Result<String, String> {
@@ -62,23 +65,55 @@ pub fn generate_nature_page(wiki_name: &str, app_handle: AppHandle) -> Result<St
     }
 
     let mut nature_changes_markdown = String::new();
-    for (nature_name, nature_details) in modified_natures.iter() {
-        let mut increased_stat = nature_details.modified.increased_stat.clone();
-        if increased_stat.is_empty() {
-            increased_stat = "None".to_string();
-        }
-        let mut decreased_stat = nature_details.modified.decreased_stat.clone();
-        if decreased_stat.is_empty() {
-            decreased_stat = "None".to_string();
-        }
+    let mut nature_new = String::new();
+    let mut nature_modified = String::new();
 
-        let nature_change = format!(
+    for (nature_name, nature_details) in modified_natures.iter() {
+        let increased_stat = match nature_details.modified.increased_stat.clone() {
+            Some(stat) => capitalize_and_remove_hyphens(&stat),
+            None => "None".to_string(),
+        };
+        let decreased_stat = match nature_details.modified.decreased_stat.clone() {
+            Some(stat) => capitalize_and_remove_hyphens(&stat),
+            None => "None".to_string(),
+        };
+
+        let entry = format!(
             "| {} | {} | {} |\n",
             capitalize(nature_name),
             increased_stat,
             decreased_stat
         );
-        nature_changes_markdown.push_str(&nature_change);
+
+        if nature_details.is_new_nature {
+            if nature_new.is_empty() {
+                nature_new.push_str(&format!(
+                    "| New Natures | Increased Stat | Decreased Stat |
+                    | :--: | :-- | :-- |
+                    "
+                ))
+            }
+            nature_new.push_str(&entry);
+        } else {
+            if nature_modified.is_empty() {
+                nature_modified.push_str(&format!(
+                    "| Modified Natures | Increased Stat | Decreased Stat |
+                    | :--: | :-- | :-- |
+                    "
+                ))
+            }
+            nature_modified.push_str(&entry);
+        }
+    }
+
+    if !nature_new.is_empty() {
+        let entry = format!("{}\n", nature_new);
+        nature_changes_markdown.push_str(&entry);
+    }
+
+    if !nature_modified.is_empty() {
+        let entry = format!("{}\n", nature_modified);
+        nature_changes_markdown.push_str(&entry);
     }
 
     if nature_changes_markdown.is_empty() {
@@ -116,16 +151,7 @@ pub fn generate_nature_page(wiki_name: &str, app_handle: AppHandle) -> Result<St
     }
 
     nature_changes_file
-        .write_all(
-            format!(
-                "| Item | Increased Stat | Decreased Stat |
-                | :--: | :-- | :-- |
-                {}
-                ",
-                nature_changes_markdown
-            )
-            .as_bytes(),
-        )
+        .write_all(format!("{}", nature_changes_markdown).as_bytes())
         .unwrap();
 
     if nature_page_exists {

@@ -5337,7 +5337,7 @@ checksum = "53a85b86a771b1c87058196170769dd264f66c0782acf1ae6cc51bfd64b39082"
 
 [[package]]
 name = "wiki_gen"
-version = "0.10.3"
+version = "0.11.0"
 dependencies = [
  "chrono",
  "image 0.25.1",

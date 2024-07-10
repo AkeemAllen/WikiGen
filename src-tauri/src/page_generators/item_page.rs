@@ -6,7 +6,9 @@ use std::{
 use serde_yaml::{Mapping, Value};
 use tauri::AppHandle;
 
-use crate::structs::mkdocs_structs::MKDocsConfig;
+use crate::{helpers::capitalize_and_remove_hyphens, structs::mkdocs_structs::MKDocsConfig};
+
+use super::ModifiedItem;
 
 #[tauri::command]
 pub fn generate_item_page(wiki_name: &str, app_handle: AppHandle) -> Result<String, String> {
@@ -62,13 +64,48 @@ pub fn generate_item_page(wiki_name: &str, app_handle: AppHandle) -> Result<Stri
     }
 
     let mut item_changes_markdown = String::new();
+    let mut item_new = String::new();
+    let mut item_modified = String::new();
+
     for (item_name, item_details) in modified_items.iter() {
-        let item_change = format!(
+        let entry = format!(
             "| {} | {} |\n",
-            item_name,
+            format!(
+                "{}<br/>{}",
+                get_item_image(item_name, item_details),
+                capitalize_and_remove_hyphens(item_name)
+            ),
             item_details.modified.effect.replace("\n", "")
         );
-        item_changes_markdown.push_str(&item_change);
+
+        if item_details.is_new_item {
+            if item_new.is_empty() {
+                item_new.push_str(&format!(
+                    "| New Items | Effect |
+                    | :--: | :-- |
+                    "
+                ))
+            }
+            item_new.push_str(&entry);
+        } else {
+            if item_modified.is_empty() {
+                item_modified.push_str(&format!(
+                    "| Modified Items | Effect |
+                    | :--: | :-- |
+                    "
+                ))
+            }
+            item_modified.push_str(&entry);
+        }
+    }
+
+    if !item_new.is_empty() {
+        let entry = format!("{}\n", item_new);
+        item_changes_markdown.push_str(&entry);
+    }
+    if !item_modified.is_empty() {
+        let entry = format!("{}\n", item_modified);
+        item_changes_markdown.push_str(&entry);
     }
 
     if item_changes_markdown.is_empty() {
@@ -106,16 +143,7 @@ pub fn generate_item_page(wiki_name: &str, app_handle: AppHandle) -> Result<Stri
     }
 
     item_changes_file
-        .write_all(
-            format!(
-                "| Item | Effect |
-                | :--: | :-- |
-                {}
-                ",
-                item_changes_markdown
-            )
-            .as_bytes(),
-        )
+        .write_all(format!("{}", item_changes_markdown).as_bytes())
         .unwrap();
 
     if item_page_exists {
@@ -143,4 +171,11 @@ pub fn generate_item_page(wiki_name: &str, app_handle: AppHandle) -> Result<Stri
     }
 
     Ok("Items Page Generated".to_string())
+}
+
+fn get_item_image(item_name: &str, item_details: &ModifiedItem) -> String {
+    if item_details.is_new_item {
+        return format!("![{}]({})", item_name, item_details.modified.sprite);
+    }
+    return format!("![{}](img/items/{}.png)", item_name, item_name);
 }

@@ -8,6 +8,18 @@ import type {
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import { selectedWiki } from "../../store";
 import { get } from "svelte/store";
+import type { Item, ModifiedItems } from "../../store/items";
+import { items, modifiedItems as _mdItems } from "../../store/items";
+import {
+  natures,
+  modifiedNatures as _mdNatures,
+  type Nature,
+} from "../../store/natures";
+import {
+  abilities,
+  modifiedAbilities as _mdAbilities,
+  type Ability,
+} from "../../store/abilities";
 
 export async function updatePokemonModifications(
   modifiedPokemon: ModifiedPokemon,
@@ -106,4 +118,160 @@ function checkModifiedEvolutions(
       evolves_to: { id: 0, pokemon_name: "" },
     };
   }
+}
+
+export async function updateItemModifications(
+  itemName: string,
+  itemDetails: Item,
+) {
+  let modifiedItems = get(_mdItems);
+  if (!modifiedItems[itemName]) {
+    modifiedItems[itemName] = {
+      original: {
+        effect: "",
+        sprite: "",
+      },
+      modified: {
+        effect: "",
+        sprite: "",
+      },
+      is_new_item: false,
+    };
+  }
+
+  if (
+    (modifiedItems[itemName].original.effect === "" ||
+      modifiedItems[itemName].original.sprite === "") &&
+    !modifiedItems[itemName].is_new_item
+  ) {
+    modifiedItems[itemName].original.effect = get(items)[itemName].effect;
+    modifiedItems[itemName].original.effect = get(items)[itemName].sprite;
+  }
+
+  modifiedItems[itemName].modified.effect = itemDetails.effect;
+  modifiedItems[itemName].modified.sprite = itemDetails.sprite;
+
+  if (
+    _.isEqual(
+      modifiedItems[itemName].original,
+      modifiedItems[itemName].modified,
+    ) &&
+    !modifiedItems[itemName].is_new_item
+  ) {
+    delete modifiedItems[itemName];
+  }
+
+  await writeTextFile(
+    `${get(selectedWiki).name}/data/modifications/modified_items_natures_abilities.json`,
+    JSON.stringify({
+      items: modifiedItems,
+      natures: get(_mdNatures),
+      abilities: get(_mdAbilities),
+    }),
+    { dir: BaseDirectory.AppData },
+  );
+}
+
+export async function updateAbilityModifications(
+  abilityName: string,
+  abilityDetails: Ability,
+) {
+  let modifiedAbilities = get(_mdAbilities);
+  if (!modifiedAbilities[abilityName]) {
+    modifiedAbilities[abilityName] = {
+      original: {
+        effect: "",
+      },
+      modified: {
+        effect: "",
+      },
+      is_new_ability: false,
+    };
+  }
+
+  if (
+    modifiedAbilities[abilityName].original.effect === "" &&
+    !modifiedAbilities[abilityName].is_new_ability
+  ) {
+    modifiedAbilities[abilityName].original.effect =
+      get(abilities)[abilityName].effect;
+  }
+
+  modifiedAbilities[abilityName].modified.effect = abilityDetails.effect;
+
+  if (
+    modifiedAbilities[abilityName].original.effect ===
+      modifiedAbilities[abilityName].modified.effect &&
+    !modifiedAbilities[abilityName].is_new_ability
+  ) {
+    delete modifiedAbilities[abilityName];
+  }
+
+  await writeTextFile(
+    `${get(selectedWiki).name}/data/modifications/modified_items_natures_abilities.json`,
+    JSON.stringify({
+      items: get(_mdItems),
+      natures: get(_mdNatures),
+      abilities: modifiedAbilities,
+    }),
+    { dir: BaseDirectory.AppData },
+  );
+}
+
+export async function updateNatureModifications(
+  natureName: string,
+  natureDetails: Nature,
+) {
+  let modifiedNatures = get(_mdNatures);
+  if (!modifiedNatures[natureName]) {
+    modifiedNatures[natureName] = {
+      original: {
+        increased_stat: null,
+        decreased_stat: null,
+      },
+      modified: {
+        increased_stat: null,
+        decreased_stat: null,
+      },
+      is_new_nature: false,
+    };
+  }
+
+  if (
+    _.isEqual(modifiedNatures[natureName].original, {
+      increased_stat: null,
+      decreased_stat: null,
+    }) &&
+    !modifiedNatures[natureName].is_new_nature
+  ) {
+    modifiedNatures[natureName].original = {
+      increased_stat: get(natures)[natureName].increased_stat,
+      decreased_stat: get(natures)[natureName].decreased_stat,
+    };
+  }
+
+  modifiedNatures[natureName].modified = {
+    increased_stat: natureDetails.increased_stat,
+    decreased_stat: natureDetails.decreased_stat,
+  };
+
+  if (
+    _.isEqual(
+      modifiedNatures[natureName].original,
+      modifiedNatures[natureName].modified,
+    ) &&
+    !modifiedNatures[natureName].is_new_nature
+  ) {
+    delete modifiedNatures[natureName];
+  }
+
+  await writeTextFile(
+    `${get(selectedWiki).name}/data/modifications/modified_items_natures_abilities.json`,
+    JSON.stringify({
+      items: get(_mdItems),
+      natures: modifiedNatures,
+      abilities: get(_mdAbilities),
+    }),
+    { dir: BaseDirectory.AppData },
+  );
 }

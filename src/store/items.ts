@@ -14,8 +14,9 @@ export type ModifiedItems = {
 };
 
 export type ModifiedItem = {
-  original: { effect: string };
-  modified: { effect: string };
+  original: { effect: string; sprite: string };
+  modified: { effect: string; sprite: string };
+  is_new_item: boolean;
 };
 
 export let items = writable<Items>();

@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "WikiGen",
-    "version": "0.10.3"
+    "version": "0.11.0"
   },
   "tauri": {
     "allowlist": {
@@ -77,10 +77,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 800,
+        "height": 900,
         "resizable": true,
         "title": "WikiGen",
-        "width": 1200
+        "width": 1400
       }
     ]
   }
