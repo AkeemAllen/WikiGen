@@ -209,3 +209,13 @@ export function convertToTitle(input: string): string {
     })
     .join(" "); // Join the words with spaces
 }
+
+export function base64ToArray(base64String: string, contentType = "") {
+  const byteCharacters = atob(base64String);
+  const byteArrays = [];
+
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteArrays.push(byteCharacters.charCodeAt(i));
+  }
+  return byteArrays;
+}
