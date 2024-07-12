@@ -16,13 +16,21 @@ import {
   modifiedAbilities,
 } from "../../store/abilities";
 import { modifiedNatures, natures, naturesList } from "../../store/natures";
-import { items, itemsList, modifiedItems } from "../../store/items";
+import {
+  items,
+  itemsList,
+  modifiedItems,
+  dbItemsList,
+  type SearchItem,
+} from "../../store/items";
 import BaseModal from "./BaseModal.svelte";
 import MultiSelect from "svelte-multiselect";
 import Button from "./Button.svelte";
 import { getToastStore } from "@skeletonlabs/skeleton";
 import { invoke } from "@tauri-apps/api";
 import { goto } from "$app/navigation";
+import Database from "tauri-plugin-sql-api";
+import { db } from "../../store/db";
 
 const toastStore = getToastStore();
 
@@ -75,12 +83,12 @@ async function loadWikiData(wiki: Wiki) {
   natures.set(JSON.parse(naturesFromFile));
   naturesList.set(Object.keys($natures));
 
-  const itemsFromFile = await readTextFile(
-    `${$selectedWiki.name}/data/items.json`,
-    { dir: BaseDirectory.AppData },
-  );
-  items.set(JSON.parse(itemsFromFile));
-  itemsList.set(Object.keys($items));
+  // const itemsFromFile = await readTextFile(
+  //   `${$selectedWiki.name}/data/items.json`,
+  //   { dir: BaseDirectory.AppData },
+  // );
+  // items.set(JSON.parse(itemsFromFile));
+  // itemsList.set(Object.keys($items));
 
   loadPokemonData();
 
@@ -160,6 +168,20 @@ async function backupWiki() {
     });
   });
 }
+
+async function loadDatabase(wiki: Wiki) {
+  $selectedWiki = wiki;
+  await Database.load(`sqlite:${wiki.name}/${wiki.name}.db`).then(
+    (database) => {
+      db.set(database);
+      // Load Items
+      $db.select("SELECT id, name FROM items").then((items: any) => {
+        let itemNames = items.map((item: SearchItem) => [item.id, item.name]);
+        dbItemsList.set(itemNames);
+      });
+    },
+  );
+}
 </script>
 
 <BaseModal bind:open={deleteWikiModalOpen}>
@@ -238,7 +260,7 @@ async function backupWiki() {
     {#each Object.entries($wikis) as [_, value]}
       {#if value.name !== $selectedWiki.name}
         <button
-          on:click={() => {loadWikiData(value); goto("/")}}
+          on:click={() => {loadWikiData(value); loadDatabase(value); goto("/")}}
           class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
           >{value.site_name}</button
         >
