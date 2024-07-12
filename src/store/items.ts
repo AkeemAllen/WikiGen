@@ -9,6 +9,18 @@ export type Item = {
   sprite: string;
 };
 
+export type DBItem = {
+  id: number;
+  name: string;
+  effect: string;
+  sprite: string;
+};
+
+export type SearchItem = {
+  id: number;
+  name: string;
+};
+
 export type ModifiedItems = {
   [key: string]: ModifiedItem;
 };
@@ -22,3 +34,5 @@ export type ModifiedItem = {
 export let items = writable<Items>();
 export let itemsList = writable<string[]>([]);
 export let modifiedItems = writable<ModifiedItems>({});
+
+export let dbItemsList = writable<[number, string][]>([]);
