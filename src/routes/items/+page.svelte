@@ -12,21 +12,20 @@ import {
 import { selectedWiki } from "../../store";
 import { getToastStore } from "@skeletonlabs/skeleton";
 import { invoke } from "@tauri-apps/api";
+import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
 import TextInput from "$lib/components/TextInput.svelte";
 import { db } from "../../store/db";
-import { base64ToArray } from "$lib/utils";
+import { base64ToArray, isNullEmptyOrUndefined } from "$lib/utils";
 
 const toastStore = getToastStore();
 
 let itemSearch: [number, string] = [0, ""];
-let currentItemName: string = "";
 
 let dbItemDetails: DBItem = {} as DBItem;
 let dbOriginalItemDetails: DBItem = {} as DBItem;
 let spriteImage: string = "";
 
-let newItemName: string = "";
-let newItemDetails: Item = { effect: "", sprite: "" };
+let newItemDetails: DBItem = {} as DBItem;
 let newItemModalOpen: boolean = false;
 
 $: itemListOptions = $dbItemsList.map(([id, name]) => ({
@@ -61,20 +60,6 @@ async function getItemDetails() {
     .then(async (res) => {
       dbItemDetails = res[0];
       dbOriginalItemDetails = _.cloneDeep(dbItemDetails);
-
-      // The image data is stored as a number array in the database
-      // However, it gets returned as a string, so we need to convert it back to a number array
-      // and then to a Uint8Array to create a blob.
-      //
-      // I don' know if this is how this works in other languages, but it's a pain in JS
-      let array = dbItemDetails.sprite
-        .replace("[", "")
-        .replace("]", "")
-        .split(",");
-      let numberArray = array.map((x) => parseInt(x));
-      let data = new Uint8Array(numberArray);
-      let blob = new Blob([data], { type: "image/png" });
-      spriteImage = URL.createObjectURL(blob);
     });
 }
 
@@ -90,7 +75,7 @@ async function saveItemDetails() {
         message: "Item changes saved!",
         background: "variant-filled-success",
       });
-      // generateItemPage();
+      generateItemPage();
     })
     .catch((err) => {
       console.error(err);
@@ -101,37 +86,39 @@ async function saveItemDetails() {
     });
 }
 
-async function _createNewItem() {
-  // Truth be told, I don't fully how Blobs work in JS, I just know it's been painful :(
-  // In order to store a 'blob' in the database, we need to convert it to an number array
-  // It's meant to represent the binary data of the image
-  const blob = base64ToArray(
-    newItemDetails.sprite.replace("data:image/png;base64,", ""),
-    "image/png",
-  );
-
+async function createNewItem() {
   await $db
-    .execute("INSERT INTO items (name, effect, sprite) VALUES ($1, $2, $3);", [
-      newItemName,
+    .execute("INSERT INTO items (name, effect) VALUES ($1, $2);", [
+      newItemDetails.name,
       newItemDetails.effect,
-      blob,
     ])
     .then(() => {
+      // Write image to file
+      const imageBytes = base64ToArray(
+        spriteImage.replace("data:image/png;base64,", ""),
+        "image/png",
+      );
+      writeBinaryFile(
+        `${$selectedWiki.name}/dist/docs/img/items/${newItemDetails.name}.png`,
+        imageBytes,
+        { dir: BaseDirectory.AppData },
+      ).then(() => {
+        spriteImage = "";
+      });
+
       toastStore.trigger({
         message: "New Item Created!",
         background: "variant-filled-success",
       });
       newItemModalOpen = false;
-      newItemName = "";
-      newItemDetails.sprite = "";
-      newItemDetails.effect = "";
+      newItemDetails = {} as DBItem;
 
       // Update the items list
       $db.select("SELECT id, name FROM items").then((items: any) => {
         let itemNames = items.map((item: SearchItem) => [item.id, item.name]);
         dbItemsList.set(itemNames);
       });
-      // generateItemPage();
+      generateItemPage();
     })
     .catch((err) => {
       toastStore.trigger({
@@ -156,7 +143,7 @@ async function deleteItem() {
       });
       dbItemDetails = {} as DBItem;
       dbOriginalItemDetails = {} as DBItem;
-      // generateItemPage();
+      generateItemPage();
     })
     .catch((err) => {
       toastStore.trigger({
@@ -170,7 +157,15 @@ function onImageUpload(e: any) {
   let file = e.target.files[0];
   let reader = new FileReader();
   reader.onloadend = (e) => {
-    newItemDetails.sprite = e.target?.result as string;
+    let base64 = e.target?.result as string;
+    if (!base64.includes("data:image/png;base64,")) {
+      toastStore.trigger({
+        message: "Invalid image format!",
+        background: "variant-filled-error",
+      });
+      return;
+    }
+    spriteImage = e.target?.result as string;
   };
   reader.readAsDataURL(file);
 }
@@ -178,15 +173,15 @@ function onImageUpload(e: any) {
 
 <BaseModal class="w-[30rem]" bind:open={newItemModalOpen}>
   <h2 class="text-lg font-medium leading-6 text-gray-900">Create New Item</h2>
-  <TextInput label="New Item Name" bind:value={newItemName} />
-  {#if newItemDetails.sprite !== ""}
-    <img src={newItemDetails.sprite} alt="Sprite" width="30" height="30" />
-  {/if}
+  <TextInput label="New Item Name" bind:value={newItemDetails.name} />
   <div>
     <label
       for="sprite-image"
       class="block text-sm font-medium leading-6 text-gray-900">Sprite</label
     >
+    {#if spriteImage !== ""}
+      <img src={spriteImage} alt="Sprite" width="30" height="30" />
+    {/if}
     <input
       id="sprite-image"
       type="file"
@@ -211,8 +206,8 @@ function onImageUpload(e: any) {
   <Button
     title="Create Item"
     class="w-32"
-    disabled={newItemName === "" || newItemDetails.effect === "" || newItemDetails.sprite === ""}
-    onClick={_createNewItem}
+    disabled={isNullEmptyOrUndefined(newItemDetails.name) || isNullEmptyOrUndefined(newItemDetails.effect) || spriteImage === ""}
+    onClick={createNewItem}
   />
 </BaseModal>
 
@@ -256,7 +251,7 @@ function onImageUpload(e: any) {
   <p class="mt-4 text-lg">
     {_.capitalize(dbItemDetails.name.replaceAll("-", " "))}
   </p>
-  <img id="sprite_img" alt={currentItemName} src={spriteImage} />
+  <img id="sprite_img" alt={dbItemDetails.name} src={spriteImage} />
   <div>
     <label
       for="effect"

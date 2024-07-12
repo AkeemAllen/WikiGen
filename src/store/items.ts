@@ -13,7 +13,6 @@ export type DBItem = {
   id: number;
   name: string;
   effect: string;
-  sprite: string;
 };
 
 export type SearchItem = {
