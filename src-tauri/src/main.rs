@@ -5,6 +5,8 @@ mod page_generators;
 mod structs;
 mod wiki_preparation;
 
+use std::fs::File;
+
 use helpers::mkdocs_process::{check_process_status, kill_mkdocs_process, spawn_mkdocs_process};
 use page_generators::ability_page::generate_ability_page;
 use page_generators::game_routes::{
@@ -13,12 +15,37 @@ use page_generators::game_routes::{
 use page_generators::item_page::generate_item_page;
 use page_generators::nature_page::generate_nature_page;
 use page_generators::pokemon_pages::generate_pokemon_pages_from_list;
+use tauri_plugin_sql;
 use wiki_preparation::backup_wiki::backup_wiki;
 use wiki_preparation::create_wiki::create_wiki;
 use wiki_preparation::prepare_data::{download_and_prep_pokemon_data, download_pokemon_sprites};
 
 fn main() {
     tauri::Builder::default()
+        .setup(|app| {
+            let base_path = app.path_resolver().app_data_dir().unwrap();
+            match base_path.join("initial.db").try_exists() {
+                Ok(true) => {
+                    println!("Database already exists");
+                }
+                Ok(false) => {
+                    println!("Creating initial database");
+                    match File::create(base_path.join("initial.db")) {
+                        Ok(_) => {
+                            println!("Database created");
+                        }
+                        Err(_) => {
+                            println!("Error creating initial.db");
+                        }
+                    };
+                }
+                Err(_) => {
+                    println!("Error Checking for initial.db");
+                }
+            }
+            Ok(())
+        })
+        .plugin(tauri_plugin_sql::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             create_wiki,
             download_and_prep_pokemon_data,
