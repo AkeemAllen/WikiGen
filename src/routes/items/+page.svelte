@@ -12,10 +12,15 @@ import {
 import { selectedWiki } from "../../store";
 import { getToastStore } from "@skeletonlabs/skeleton";
 import { invoke } from "@tauri-apps/api";
-import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
+import {
+  writeBinaryFile,
+  BaseDirectory,
+  readBinaryFile,
+} from "@tauri-apps/api/fs";
 import TextInput from "$lib/components/TextInput.svelte";
 import { db } from "../../store/db";
 import { base64ToArray, isNullEmptyOrUndefined } from "$lib/utils";
+import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
 
 const toastStore = getToastStore();
 
@@ -26,6 +31,7 @@ let dbOriginalItemDetails: DBItem = {} as DBItem;
 let spriteImage: string = "";
 
 let newItemDetails: DBItem = {} as DBItem;
+let newSpriteImage: string = "";
 let newItemModalOpen: boolean = false;
 
 $: itemListOptions = $dbItemsList.map(([id, name]) => ({
@@ -60,13 +66,23 @@ async function getItemDetails() {
     .then(async (res) => {
       dbItemDetails = res[0];
       dbOriginalItemDetails = _.cloneDeep(dbItemDetails);
+
+      // Reading in image separately
+      spriteImage = await readBinaryFile(
+        `${$selectedWiki.name}/dist/docs/img/items/${dbItemDetails.name}.png`,
+        { dir: BaseDirectory.AppData },
+      ).then((res) => {
+        const blob = new Blob([res], { type: "image/png" });
+        return URL.createObjectURL(blob);
+      });
     });
 }
 
 async function saveItemDetails() {
   await $db
-    .execute("UPDATE items SET effect = $1 WHERE id = $2;", [
+    .execute("UPDATE items SET effect = $1, is_modified = $2 WHERE id = $3;", [
       dbItemDetails.effect,
+      dbItemDetails.is_modified,
       itemSearch[0],
     ])
     .then(() => {
@@ -87,15 +103,17 @@ async function saveItemDetails() {
 }
 
 async function createNewItem() {
+  newItemDetails.is_new = TRUE;
   await $db
-    .execute("INSERT INTO items (name, effect) VALUES ($1, $2);", [
+    .execute("INSERT INTO items (name, effect, is_new) VALUES ($1, $2, $3);", [
       newItemDetails.name,
       newItemDetails.effect,
+      newItemDetails.is_new,
     ])
     .then(() => {
       // Write image to file
       const imageBytes = base64ToArray(
-        spriteImage.replace("data:image/png;base64,", ""),
+        newSpriteImage.replace("data:image/png;base64,", ""),
         "image/png",
       );
       writeBinaryFile(
@@ -103,7 +121,7 @@ async function createNewItem() {
         imageBytes,
         { dir: BaseDirectory.AppData },
       ).then(() => {
-        spriteImage = "";
+        newSpriteImage = "";
       });
 
       toastStore.trigger({
@@ -165,9 +183,13 @@ function onImageUpload(e: any) {
       });
       return;
     }
-    spriteImage = e.target?.result as string;
+    newSpriteImage = e.target?.result as string;
   };
   reader.readAsDataURL(file);
+}
+
+function setModified(e: any) {
+  dbItemDetails.is_modified = e.target?.checked ? TRUE : FALSE;
 }
 </script>
 
@@ -179,8 +201,8 @@ function onImageUpload(e: any) {
       for="sprite-image"
       class="block text-sm font-medium leading-6 text-gray-900">Sprite</label
     >
-    {#if spriteImage !== ""}
-      <img src={spriteImage} alt="Sprite" width="30" height="30" />
+    {#if newSpriteImage !== ""}
+      <img src={newSpriteImage} alt="Sprite" width="30" height="30" />
     {/if}
     <input
       id="sprite-image"
@@ -206,7 +228,7 @@ function onImageUpload(e: any) {
   <Button
     title="Create Item"
     class="w-32"
-    disabled={isNullEmptyOrUndefined(newItemDetails.name) || isNullEmptyOrUndefined(newItemDetails.effect) || spriteImage === ""}
+    disabled={isNullEmptyOrUndefined(newItemDetails.name) || isNullEmptyOrUndefined(newItemDetails.effect) || newSpriteImage === ""}
     onClick={createNewItem}
   />
 </BaseModal>
@@ -248,21 +270,41 @@ function onImageUpload(e: any) {
 </div>
 
 {#if !_.isEmpty(dbItemDetails)}
-  <p class="mt-4 text-lg">
-    {_.capitalize(dbItemDetails.name.replaceAll("-", " "))}
-  </p>
-  <img id="sprite_img" alt={dbItemDetails.name} src={spriteImage} />
-  <div>
-    <label
-      for="effect"
-      class="block text-sm font-medium leading-6 text-gray-900">Effect</label
-    >
-    <div class="mt-2">
-      <textarea
-        id="effect"
-        bind:value={dbItemDetails.effect}
-        class="block h-32 w-[50rem] rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-      />
+  <div class="mt-4 flex flex-col gap-4">
+    <p class="text-lg">
+      {_.capitalize(dbItemDetails.name.replaceAll("-", " "))}
+    </p>
+    <img
+      id="sprite_img"
+      alt={dbItemDetails.name}
+      src={spriteImage}
+      height="50"
+      width="50"
+    />
+    <div>
+      <label
+        for="effect"
+        class="block text-sm font-medium leading-6 text-gray-900"
+        >Effect/Description</label
+      >
+      <div class="mt-2">
+        <textarea
+          id="effect"
+          bind:value={dbItemDetails.effect}
+          class="block h-20 w-[50rem] rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
+        />
+      </div>
     </div>
+    {#if !dbItemDetails.is_new}
+      <label class="block text-sm font-medium leading-6 text-gray-900">
+        <input
+          type="checkbox"
+          checked={Boolean(dbItemDetails.is_modified)}
+          on:change={setModified}
+          class="text-sm font-medium leading-6 text-gray-900"
+        />
+        Mark Item as Modified
+      </label>
+    {/if}
   </div>
 {/if}
