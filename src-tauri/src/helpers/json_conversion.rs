@@ -51,3 +51,53 @@ pub async fn convert_items_to_sqlite(
     conn.close().await;
     Ok("Success".to_string())
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct Ability {
+    effect: String,
+}
+
+type Abilties = HashMap<String, Ability>;
+
+#[tauri::command]
+pub async fn convert_abilities_to_sqlite(
+    wiki_name: &str,
+    app_handle: AppHandle,
+) -> Result<String, String> {
+    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+
+    let json_abilities_file_path = base_path
+        .join(wiki_name)
+        .join("data")
+        .join("abilities.json");
+    let json_abilities_file = File::open(&json_abilities_file_path).unwrap();
+    let json_abilities: Abilties = match serde_json::from_reader(json_abilities_file) {
+        Ok(file) => file,
+        Err(err) => return Err(format!("Failed to read abilities json file: {}", err)),
+    };
+
+    let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
+    let sqlite_connection_string = format!("sqlite:{}", sqlite_path.to_str().unwrap());
+
+    let conn = match SqlitePool::connect(&sqlite_connection_string).await {
+        Ok(conn) => conn,
+        Err(err) => {
+            return Err(format!("Failed to connect to database: {}", err));
+        }
+    };
+
+    for (name, ability) in json_abilities {
+        let effect = &ability.effect;
+        let result = sqlx::query("INSERT INTO abilities (name, effect) VALUES (?, ?)")
+            .bind(&name)
+            .bind(effect)
+            .execute(&conn)
+            .await
+            .unwrap();
+
+        println!("{:?}", result);
+    }
+
+    conn.close().await;
+    Ok("Success".to_string())
+}

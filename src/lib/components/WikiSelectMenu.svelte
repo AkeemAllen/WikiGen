@@ -10,11 +10,7 @@ import { routes } from "../../store/gameRoutes";
 import { moveList, moves } from "../../store/moves";
 import { modifiedPokemon, pokemon, pokemonList } from "../../store/pokemon";
 import { sortRoutesByPosition } from "$lib/utils";
-import {
-  abilities,
-  abilitiesList,
-  modifiedAbilities,
-} from "../../store/abilities";
+import { abilitiesList, type SearchAbility } from "../../store/abilities";
 import { modifiedNatures, natures, naturesList } from "../../store/natures";
 import { itemsList, type SearchItem } from "../../store/items";
 import BaseModal from "./BaseModal.svelte";
@@ -63,13 +59,6 @@ async function loadPokemonData() {
 async function loadWikiData(wiki: Wiki) {
   $selectedWiki = wiki;
 
-  const abilitiesFromFile = await readTextFile(
-    `${$selectedWiki.name}/data/abilities.json`,
-    { dir: BaseDirectory.AppData },
-  );
-  abilities.set(JSON.parse(abilitiesFromFile));
-  abilitiesList.set(Object.keys($abilities));
-
   const naturesFromFile = await readTextFile(
     `${$selectedWiki.name}/data/natures.json`,
     { dir: BaseDirectory.AppData },
@@ -91,9 +80,6 @@ async function loadWikiData(wiki: Wiki) {
   );
   modifiedNatures.set(
     JSON.parse(modifiedItemsNaturesAbilitiesFromFile).natures,
-  );
-  modifiedAbilities.set(
-    JSON.parse(modifiedItemsNaturesAbilitiesFromFile).abilities,
   );
 
   const movesFromFile = await readTextFile(
@@ -162,8 +148,14 @@ async function loadDatabase(wiki: Wiki) {
       db.set(database);
       // Load Items
       $db.select("SELECT id, name FROM items").then((items: any) => {
-        let itemNames = items.map((item: SearchItem) => [item.id, item.name]);
-        itemsList.set(itemNames);
+        itemsList.set(items.map((item: SearchItem) => [item.id, item.name]));
+      });
+
+      // Load Abilities
+      $db.select("SELECT id, name FROM abilities").then((abilities: any) => {
+        abilitiesList.set(
+          abilities.map((ability: SearchAbility) => [ability.id, ability.name]),
+        );
       });
     },
   );

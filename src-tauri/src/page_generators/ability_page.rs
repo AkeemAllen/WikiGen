@@ -4,32 +4,50 @@ use std::{
 };
 
 use serde_yaml::{Mapping, Value};
+use sqlx::{migrate::MigrateDatabase, FromRow, Sqlite, SqlitePool};
 use tauri::AppHandle;
 
-use crate::{helpers::capitalize_and_remove_hyphens, structs::mkdocs_structs::MKDocsConfig};
+use crate::{
+    helpers::{capitalize_and_remove_hyphens, FALSE, TRUE},
+    structs::mkdocs_structs::MKDocsConfig,
+};
+
+#[derive(Debug, Clone, FromRow)]
+struct Ability {
+    name: String,
+    effect: String,
+    is_modified: i32,
+    is_new: i32,
+}
 
 #[tauri::command]
-pub fn generate_ability_page(wiki_name: &str, app_handle: AppHandle) -> Result<String, String> {
+pub async fn generate_ability_page(
+    wiki_name: &str,
+    app_handle: AppHandle,
+) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
 
-    let modified_items_natures_abilities_json_file_path = base_path
-        .join(wiki_name)
-        .join("data")
-        .join("modifications")
-        .join("modified_items_natures_abilities.json");
-    let modified_items_natures_abilities_file =
-        File::open(&modified_items_natures_abilities_json_file_path).unwrap();
-    let modified_items_natures_abilities: super::ModifiedItemsNaturesAbilities =
-        match serde_json::from_reader(modified_items_natures_abilities_file) {
-            Ok(file) => file,
-            Err(err) => {
-                return Err(format!(
-                    "Failed to read modified items, natures, and abilities json file: {}",
-                    err
-                ))
-            }
-        };
-    let modified_abilities = modified_items_natures_abilities.abilities;
+    let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
+    let sqlite_connection_string = format!("sqlite:{}", sqlite_path.to_str().unwrap());
+    if !Sqlite::database_exists(&sqlite_connection_string)
+        .await
+        .unwrap_or(false)
+    {
+        return Err("Database does not exist".to_string());
+    }
+    let conn = match SqlitePool::connect(&sqlite_connection_string).await {
+        Ok(conn) => conn,
+        Err(err) => {
+            return Err(format!("Failed to connect to database: {}", err));
+        }
+    };
+
+    let abilities = sqlx::query_as::<_, Ability>("SELECT * FROM abilities")
+        .fetch_all(&conn)
+        .await
+        .unwrap();
+
+    conn.close().await;
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
     let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
@@ -65,14 +83,18 @@ pub fn generate_ability_page(wiki_name: &str, app_handle: AppHandle) -> Result<S
     let mut ability_new = String::new();
     let mut ability_modified = String::new();
 
-    for (ability_name, ability_details) in modified_abilities.iter() {
+    for ability in abilities {
+        if ability.is_new == FALSE && ability.is_modified == FALSE {
+            continue;
+        }
+
         let entry = format!(
             "| {} | {} |\n",
-            capitalize_and_remove_hyphens(ability_name),
-            ability_details.modified.effect.replace("\n", "")
+            capitalize_and_remove_hyphens(&ability.name),
+            &ability.effect.replace("\n", "")
         );
 
-        if ability_details.is_new_ability {
+        if ability.is_new == TRUE {
             if ability_new.is_empty() {
                 ability_new.push_str(&format!(
                     "| New Abilities | Effect |
@@ -81,7 +103,9 @@ pub fn generate_ability_page(wiki_name: &str, app_handle: AppHandle) -> Result<S
                 ))
             }
             ability_new.push_str(&entry);
-        } else {
+        }
+
+        if ability.is_modified == TRUE {
             if ability_modified.is_empty() {
                 ability_modified.push_str(&format!(
                     "| Modified Abilities | Effect |

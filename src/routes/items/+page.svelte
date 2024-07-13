@@ -45,7 +45,7 @@ async function generateItemPage() {
   );
 }
 
-async function getItemDetails() {
+async function getItem() {
   let retrievedItem = $itemsList.find(([_, name]) => name === itemSearch[1]);
 
   if (!retrievedItem) {
@@ -81,7 +81,7 @@ async function getItemDetails() {
     });
 }
 
-async function saveItemDetails() {
+async function saveItemChanges() {
   await $db
     .execute("UPDATE items SET effect = $1, is_modified = $2 WHERE id = $3;", [
       item.effect,
@@ -96,8 +96,7 @@ async function saveItemDetails() {
       });
       generateItemPage();
     })
-    .catch((err) => {
-      console.error(err);
+    .catch(() => {
       toastStore.trigger({
         message: "Error saving item changes!",
         background: "variant-filled-error",
@@ -105,7 +104,7 @@ async function saveItemDetails() {
     });
 }
 
-async function createNewItem() {
+async function createItem() {
   newItem.is_new = TRUE;
   await $db
     .execute("INSERT INTO items (name, effect, is_new) VALUES ($1, $2, $3);", [
@@ -137,7 +136,7 @@ async function createNewItem() {
       // Update the items list
       $db.select("SELECT id, name FROM items").then((items: any) => {
         let itemNames = items.map((item: SearchItem) => [item.id, item.name]);
-        dbItemsList.set(itemNames);
+        itemsList.set(itemNames);
       });
       generateItemPage();
     })
@@ -160,7 +159,7 @@ async function deleteItem() {
       // Update the items list
       $db.select("SELECT id, name FROM items").then((items: any) => {
         let itemNames = items.map((item: SearchItem) => [item.id, item.name]);
-        dbItemsList.set(itemNames);
+        itemsList.set(itemNames);
       });
       item = {} as Item;
       originalItemDetails = {} as Item;
@@ -206,7 +205,6 @@ async function convertItemToSqlite() {
       });
     })
     .catch((err) => {
-      console.error(err);
       toastStore.trigger({
         message: "Error converting items!",
         background: "variant-filled-error",
@@ -251,7 +249,7 @@ async function convertItemToSqlite() {
     title="Create Item"
     class="w-32"
     disabled={isNullEmptyOrUndefined(newItem.name) || isNullEmptyOrUndefined(newItem.effect) || newSpriteImage === ""}
-    onClick={createNewItem}
+    onClick={createItem}
   />
 </BaseModal>
 
@@ -268,13 +266,13 @@ async function convertItemToSqlite() {
   />
   <Button
     title="Search"
-    onClick={getItemDetails}
+    onClick={getItem}
     disabled={itemSearch[0] === 0}
     class="mt-2 w-32"
   />
   <Button
     title="Save Changes"
-    onClick={saveItemDetails}
+    onClick={saveItemChanges}
     class="mt-2 w-32"
     disabled={_.isEqual(item, originalItemDetails)}
   />
