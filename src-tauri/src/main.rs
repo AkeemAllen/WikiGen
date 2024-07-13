@@ -3,10 +3,12 @@
 mod helpers;
 mod page_generators;
 mod structs;
+mod tests;
 mod wiki_preparation;
 
 use std::fs::File;
 
+use helpers::json_conversion::convert_items_to_sqlite;
 use helpers::mkdocs_process::{check_process_status, kill_mkdocs_process, spawn_mkdocs_process};
 use page_generators::ability_page::generate_ability_page;
 use page_generators::game_routes::{
@@ -59,7 +61,8 @@ fn main() {
             backup_wiki,
             generate_item_page,
             generate_nature_page,
-            generate_ability_page
+            generate_ability_page,
+            convert_items_to_sqlite
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

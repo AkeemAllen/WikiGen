@@ -3,7 +3,6 @@ use std::{
     io::Write,
 };
 
-use futures::TryStreamExt;
 use serde_yaml::{Mapping, Value};
 use sqlx::{migrate::MigrateDatabase, FromRow, Sqlite, SqlitePool};
 use tauri::AppHandle;
@@ -13,11 +12,8 @@ use crate::{
     structs::mkdocs_structs::MKDocsConfig,
 };
 
-use super::ModifiedItem;
-
 #[derive(Debug, Clone, FromRow)]
-struct ItemDetails {
-    id: i32,
+struct Item {
     name: String,
     effect: String,
     is_modified: i32,
@@ -43,7 +39,7 @@ pub async fn generate_item_page(wiki_name: &str, app_handle: AppHandle) -> Resul
         }
     };
 
-    let items = sqlx::query_as::<_, ItemDetails>("SELECT * FROM items")
+    let items = sqlx::query_as::<_, Item>("SELECT * FROM items")
         .fetch_all(&conn)
         .await
         .unwrap();

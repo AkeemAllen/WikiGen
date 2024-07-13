@@ -3,6 +3,7 @@ pub const FALSE: i32 = 0;
 
 use std::{fs, io, path::Path};
 
+pub mod json_conversion;
 pub mod matchups;
 pub mod mkdocs_process;
 
