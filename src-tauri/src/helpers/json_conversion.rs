@@ -154,3 +154,65 @@ pub async fn convert_natures_to_sqlite(
     conn.close().await;
     Ok("Success".to_string())
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct Move {
+    power: Option<i32>,
+    accuracy: Option<i32>,
+    pp: Option<i32>,
+    #[serde(rename = "type")]
+    type_: String,
+    damage_class: String,
+    machine_name: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct JsonMoves {
+    moves: HashMap<String, Move>,
+}
+
+#[tauri::command]
+pub async fn convert_moves_to_sqlite(
+    wiki_name: &str,
+    app_handle: AppHandle,
+) -> Result<String, String> {
+    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+
+    let json_moves_file_path = base_path.join(wiki_name).join("data").join("moves.json");
+    let json_moves_file = File::open(&json_moves_file_path).unwrap();
+    let json_moves: JsonMoves = match serde_json::from_reader(json_moves_file) {
+        Ok(file) => file,
+        Err(err) => return Err(format!("Failed to read moves json file: {}", err)),
+    };
+
+    let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
+    let sqlite_connection_string = format!("sqlite:{}", sqlite_path.to_str().unwrap());
+
+    let conn = match SqlitePool::connect(&sqlite_connection_string).await {
+        Ok(conn) => conn,
+        Err(err) => {
+            return Err(format!("Failed to connect to database: {}", err));
+        }
+    };
+
+    for (name, _move) in json_moves.moves {
+        let result = sqlx::query(
+            "INSERT INTO moves (name, power, accuracy, pp, type, damage_class, machine_name) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        )
+        .bind(&name)
+        .bind(_move.power)
+        .bind(_move.accuracy)
+        .bind(_move.pp)
+        .bind(_move.type_)
+        .bind(_move.damage_class)
+        .bind(_move.machine_name)
+        .execute(&conn)
+        .await
+        .unwrap();
+
+        println!("{:?}", result);
+    }
+
+    conn.close().await;
+    Ok("Success".to_string())
+}

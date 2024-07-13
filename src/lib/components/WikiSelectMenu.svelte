@@ -7,7 +7,7 @@ import {
 } from "@tauri-apps/api/fs";
 import { selectedWiki, wikis, type Wiki } from "../../store";
 import { routes } from "../../store/gameRoutes";
-import { moveList, moves } from "../../store/moves";
+import { moveList, type SearchMove } from "../../store/moves";
 import { modifiedPokemon, pokemon, pokemonList } from "../../store/pokemon";
 import { sortRoutesByPosition } from "$lib/utils";
 import { abilitiesList, type SearchAbility } from "../../store/abilities";
@@ -66,13 +66,6 @@ async function loadWikiData(wiki: Wiki) {
     { dir: BaseDirectory.AppData },
   );
   modifiedPokemon.set(JSON.parse(modifiedPokemonFromFile));
-
-  const movesFromFile = await readTextFile(
-    `${$selectedWiki.name}/data/moves.json`,
-    { dir: BaseDirectory.AppData },
-  );
-  moves.set(JSON.parse(movesFromFile));
-  moveList.set(Object.keys($moves.moves));
 
   const routesFromFile = await readTextFile(
     `${$selectedWiki.name}/data/routes.json`,
@@ -148,6 +141,11 @@ async function loadDatabase(wiki: Wiki) {
         naturesList.set(
           natures.map((nature: SearchNature) => [nature.id, nature.name]),
         );
+      });
+
+      // Load Moves
+      $db.select("SELECT id, name FROM moves").then((moves: any) => {
+        moveList.set(moves.map((move: SearchMove) => [move.id, move.name]));
       });
     },
   );

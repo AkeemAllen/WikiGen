@@ -1,60 +1,51 @@
 <script lang="ts">
 import NumberInput from "$lib/components/NumberInput.svelte";
 import SelectInput from "$lib/components/SelectInput.svelte";
-import {
-  Autocomplete,
-  getToastStore,
-  popup,
-  type AutocompleteOption,
-  type PopupSettings,
-  type ToastSettings,
-} from "@skeletonlabs/skeleton";
-import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+import Button from "$lib/components/Button.svelte";
+import AutoComplete from "$lib/components/AutoComplete.svelte";
+import { getToastStore } from "@skeletonlabs/skeleton";
 import _ from "lodash";
 import { selectedWiki } from "../../store";
-import { moveList, moves, type MoveDetails } from "../../store/moves";
+import { moveList, type Move } from "../../store/moves";
 import { PokemonTypes, pokemon } from "../../store/pokemon";
 import { invoke } from "@tauri-apps/api/tauri";
+import { db } from "../../store/db";
+import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
 
 const toastStore = getToastStore();
 
-let moveName: string = "";
-let currentMoveName: string = "";
-let moveDetails: MoveDetails = {} as MoveDetails;
-let originalMoveDetails: MoveDetails = {} as MoveDetails;
+let moveSearch: [number, string] = [0, ""];
 
-const moveListOptions: AutocompleteOption<string>[] = $moveList.map((name) => ({
+let move: Move = {} as Move;
+let originalMoveDetails: Move = {} as Move;
+
+const moveListOptions = $moveList.map(([id, name]) => ({
   label: name,
-  value: name,
+  value: id,
 }));
 
-const autoCompletePopup: PopupSettings = {
-  event: "focus-click",
-  target: "popupAutoComplete",
-  placement: "bottom",
-};
+async function getMove() {
+  let retrievedMove = $moveList.find(([_, name]) => name === moveSearch[1]);
 
-const moveDataSavedToast: ToastSettings = {
-  message: "Data saved",
-  timeout: 3000,
-  background: "variant-filled-success",
-};
+  if (!retrievedMove) {
+    toastStore.trigger({
+      message: "Move not found!",
+      background: "variant-filled-error",
+    });
+    return;
+  }
 
-function onMoveNameSelected(
-  event: CustomEvent<AutocompleteOption<string>>,
-): void {
-  moveName = event.detail.value;
-}
-
-function getMoveDetails() {
-  moveDetails = _.cloneDeep($moves.moves[moveName]);
-  originalMoveDetails = _.cloneDeep(moveDetails);
-  currentMoveName = moveName;
+  await $db
+    .select<Move[]>("SELECT * FROM moves WHERE id = $1;", [moveSearch[0]])
+    .then(async (res) => {
+      move = res[0];
+      originalMoveDetails = _.cloneDeep(move);
+    });
 }
 
 async function updatePagesForPokemonWithMove() {
   let pokemonToUpdate = Object.values($pokemon.pokemon)
-    .filter((p) => Object.keys(p.moves).includes(moveName))
+    .filter((p) => Object.keys(p.moves).includes(move.name))
     .map((p) => p.id);
 
   await invoke("generate_pokemon_pages_from_list", {
@@ -64,79 +55,92 @@ async function updatePagesForPokemonWithMove() {
 }
 
 async function saveMoveChanges() {
-  $moves.moves[moveName] = moveDetails;
-  await writeTextFile(
-    `${$selectedWiki.name}/data/moves.json`,
-    JSON.stringify($moves),
-    { dir: BaseDirectory.AppData },
-  ).then(() => {
-    originalMoveDetails = _.cloneDeep(moveDetails);
-    toastStore.trigger(moveDataSavedToast);
-    updatePagesForPokemonWithMove();
-  });
+  await $db
+    .execute(
+      "UPDATE moves SET power=$1,accuracy=$2,pp=$3,type=$4,damage_class=$5,machine_name=$6,is_modified=$7 WHERE id = $8;",
+      [
+        move.power,
+        move.accuracy,
+        move.pp,
+        move.type,
+        move.damage_class,
+        move.machine_name,
+        move.is_modified,
+        move.id,
+      ],
+    )
+    .then(() => {
+      originalMoveDetails = _.cloneDeep(move);
+      toastStore.trigger({
+        message: "Move changes saved!",
+        background: "variant-filled-success",
+      });
+    })
+    .catch(() => {
+      toastStore.trigger({
+        message: "Error saving move changes!",
+        background: "variant-filled-error",
+      });
+    });
+}
+
+function setModified(e: any) {
+  move.is_modified = e.target?.checked ? TRUE : FALSE;
+}
+
+async function convertMovesToSqlite() {
+  await invoke("convert_moves_to_sqlite", {
+    wikiName: $selectedWiki.name,
+  })
+    .then(() => {
+      toastStore.trigger({
+        message: "Moves converted!",
+        background: "variant-filled-success",
+      });
+    })
+    .catch((err) => {
+      toastStore.trigger({
+        message: "Error converting moves!",
+        background: "variant-filled-error",
+      });
+    });
 }
 </script>
 
 <div class="flex flex-row gap-7">
-  <div class="mt-2 w-60">
-    <input
-      id="pokemon-name"
-      type="text"
-      placeholder="Move Name"
-      class="block w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-      bind:value={moveName}
-      use:popup={autoCompletePopup}
-    />
-    <div
-      data-popup="popupAutoComplete"
-      class="card mt-2 w-60 overflow-y-auto rounded-sm bg-white"
-      tabindex="-1"
-    >
-      <Autocomplete
-        bind:input={moveName}
-        options={moveListOptions}
-        limit={5}
-        on:selection={onMoveNameSelected}
-        class="w-full rounded-md border bg-white p-2 text-sm"
-      />
-    </div>
-  </div>
-  <button
-    disabled={moveName === ""}
-    on:click={getMoveDetails}
-    class="mt-2 w-32 rounded-md bg-indigo-600 text-sm font-semibold text-white
-      shadow-sm hover:bg-indigo-500 focus-visible:outline
-      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
-      disabled:bg-indigo-400"
-  >
-    Search
-  </button>
-  <button
-    disabled={_.isEqual(moveDetails, originalMoveDetails)}
-    on:click={saveMoveChanges}
-    class="mt-2 w-32 rounded-md bg-indigo-600 text-sm font-semibold text-white
-      shadow-sm hover:bg-indigo-500 focus-visible:outline
-      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
-      disabled:bg-indigo-400"
-  >
-    Save Changes
-  </button>
+  <AutoComplete
+    bind:value={moveSearch[1]}
+    placeholder="Search Moves"
+    options={moveListOptions}
+    popupId="abilities-search"
+    onSelection={(e) => {
+          moveSearch = [e.detail.value, e.detail.label];
+        }}
+    showChevron={false}
+  />
+  <Button
+    title="Search"
+    onClick={getMove}
+    disabled={moveSearch[0] === 0}
+    class="mt-2 w-32"
+  />
+  <Button
+    title="Save Changes"
+    onClick={saveMoveChanges}
+    disabled={_.isEqual(move, originalMoveDetails)}
+    class="mt-2 w-32"
+  />
 </div>
 
-{#if !_.isEmpty(moveDetails)}
-  <p class="ml-2 mt-4 text-lg">{_.capitalize(currentMoveName)}</p>
+{#if !_.isEmpty(move)}
+  <p class="ml-2 mt-4 text-lg">{_.capitalize(move.name)}</p>
   <div class="ml-2 mt-4">
     <div class="grid grid-cols-2 gap-x-10 gap-y-5 pr-4">
-      <NumberInput
-        label="Power"
-        id="power"
-        bind:value={moveDetails.power}
-        max={255}
-      />
+      <NumberInput label="Power" id="power" bind:value={move.power} max={255} />
       <SelectInput
         label="Type"
         id="type"
-        bind:value={moveDetails.type}
+        bind:value={move.type}
         options={PokemonTypes.map((type) => ({
           label: _.capitalize(type),
           value: type,
@@ -145,15 +149,15 @@ async function saveMoveChanges() {
       <NumberInput
         label="Accuracy"
         id="accuracy"
-        bind:value={moveDetails.accuracy}
+        bind:value={move.accuracy}
         max={100}
       />
       <!-- Highest PP move is 40, but setting it to 100 for future proofing -->
-      <NumberInput label="PP" id="pp" bind:value={moveDetails.pp} max={100} />
+      <NumberInput label="PP" id="pp" bind:value={move.pp} max={100} />
       <SelectInput
         label="Damage Class"
         id="damage-class"
-        bind:value={moveDetails.damage_class}
+        bind:value={move.damage_class}
         options={[
           { label: "status", value: "status" },
           { label: "physical", value: "physical" },
@@ -162,4 +166,16 @@ async function saveMoveChanges() {
       />
     </div>
   </div>
+  {#if !move.is_new}
+    <label class="block text-sm font-medium leading-6 text-gray-900">
+      <input
+        type="checkbox"
+        checked={Boolean(move.is_modified)}
+        on:change={setModified}
+        class="text-sm font-medium leading-6 text-gray-900"
+      />
+      Mark Move as Modified
+    </label>
+  {/if}
 {/if}
+<Button title="Convert Moves to SQLite" onClick={convertMovesToSqlite} />
