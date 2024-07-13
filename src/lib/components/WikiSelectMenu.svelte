@@ -11,7 +11,7 @@ import { moveList, moves } from "../../store/moves";
 import { modifiedPokemon, pokemon, pokemonList } from "../../store/pokemon";
 import { sortRoutesByPosition } from "$lib/utils";
 import { abilitiesList, type SearchAbility } from "../../store/abilities";
-import { modifiedNatures, natures, naturesList } from "../../store/natures";
+import { naturesList, type SearchNature } from "../../store/natures";
 import { itemsList, type SearchItem } from "../../store/items";
 import BaseModal from "./BaseModal.svelte";
 import MultiSelect from "svelte-multiselect";
@@ -59,13 +59,6 @@ async function loadPokemonData() {
 async function loadWikiData(wiki: Wiki) {
   $selectedWiki = wiki;
 
-  const naturesFromFile = await readTextFile(
-    `${$selectedWiki.name}/data/natures.json`,
-    { dir: BaseDirectory.AppData },
-  );
-  natures.set(JSON.parse(naturesFromFile));
-  naturesList.set(Object.keys($natures));
-
   loadPokemonData();
 
   const modifiedPokemonFromFile = await readTextFile(
@@ -73,14 +66,6 @@ async function loadWikiData(wiki: Wiki) {
     { dir: BaseDirectory.AppData },
   );
   modifiedPokemon.set(JSON.parse(modifiedPokemonFromFile));
-
-  const modifiedItemsNaturesAbilitiesFromFile = await readTextFile(
-    `${$selectedWiki.name}/data/modifications/modified_items_natures_abilities.json`,
-    { dir: BaseDirectory.AppData },
-  );
-  modifiedNatures.set(
-    JSON.parse(modifiedItemsNaturesAbilitiesFromFile).natures,
-  );
 
   const movesFromFile = await readTextFile(
     `${$selectedWiki.name}/data/moves.json`,
@@ -155,6 +140,13 @@ async function loadDatabase(wiki: Wiki) {
       $db.select("SELECT id, name FROM abilities").then((abilities: any) => {
         abilitiesList.set(
           abilities.map((ability: SearchAbility) => [ability.id, ability.name]),
+        );
+      });
+
+      // Load Natures
+      $db.select("SELECT id, name FROM natures").then((natures: any) => {
+        naturesList.set(
+          natures.map((nature: SearchNature) => [nature.id, nature.name]),
         );
       });
     },

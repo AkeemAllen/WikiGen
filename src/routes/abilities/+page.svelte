@@ -81,7 +81,7 @@ async function saveAbilityChanges() {
     })
     .catch(() => {
       toastStore.trigger({
-        message: "Error saving item changes!",
+        message: "Error saving ability changes!",
         background: "variant-filled-error",
       });
     });
@@ -124,16 +124,14 @@ async function deleteAbility() {
     .execute("DELETE FROM abilities WHERE id = $1;", [ability.id])
     .then(() => {
       toastStore.trigger({
-        message: "Item deleted!",
+        message: "Ability deleted!",
         background: "variant-filled-success",
       });
       // Update the abilities list
       $db.select("SELECT id, name FROM abilities").then((abilities: any) => {
-        let itemNames = abilities.map((item: SearchAbility) => [
-          item.id,
-          item.name,
-        ]);
-        abilitiesList.set(itemNames);
+        abilitiesList.set(
+          abilities.map((ability: SearchAbility) => [ability.id, ability.name]),
+        );
       });
       ability = {} as Ability;
       originalAbilityDetails = {} as Ability;
@@ -141,7 +139,7 @@ async function deleteAbility() {
     })
     .catch(() => {
       toastStore.trigger({
-        message: "Error deleting item!",
+        message: "Error deleting ability!",
         background: "variant-filled-error",
       });
     });

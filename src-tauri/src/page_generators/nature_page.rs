@@ -4,35 +4,59 @@ use std::{
 };
 
 use serde_yaml::{Mapping, Value};
+use sqlx::{migrate::MigrateDatabase, FromRow, Sqlite, SqlitePool};
 use tauri::AppHandle;
 
 use crate::{
-    helpers::{capitalize, capitalize_and_remove_hyphens},
+    helpers::{capitalize, capitalize_and_remove_hyphens, FALSE, TRUE},
     structs::mkdocs_structs::MKDocsConfig,
 };
 
+#[derive(Debug, Clone, FromRow)]
+struct Nature {
+    name: String,
+    increased_stat: Option<String>,
+    decreased_stat: Option<String>,
+    is_modified: i32,
+    is_new: i32,
+}
+
+// enum Stat {
+//     Attack,
+//     Defense,
+//     SpecialAttack,
+//     SpecialDefense,
+//     Speed,
+// }
+
 #[tauri::command]
-pub fn generate_nature_page(wiki_name: &str, app_handle: AppHandle) -> Result<String, String> {
+pub async fn generate_nature_page(
+    wiki_name: &str,
+    app_handle: AppHandle,
+) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
 
-    let modified_items_natures_abilities_json_file_path = base_path
-        .join(wiki_name)
-        .join("data")
-        .join("modifications")
-        .join("modified_items_natures_abilities.json");
-    let modified_items_natures_abilities_file =
-        File::open(&modified_items_natures_abilities_json_file_path).unwrap();
-    let modified_items_natures_abilities: super::ModifiedItemsNaturesAbilities =
-        match serde_json::from_reader(modified_items_natures_abilities_file) {
-            Ok(file) => file,
-            Err(err) => {
-                return Err(format!(
-                    "Failed to read modified items, natures, and abilities json file: {}",
-                    err
-                ))
-            }
-        };
-    let modified_natures = modified_items_natures_abilities.natures;
+    let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
+    let sqlite_connection_string = format!("sqlite:{}", sqlite_path.to_str().unwrap());
+    if !Sqlite::database_exists(&sqlite_connection_string)
+        .await
+        .unwrap_or(false)
+    {
+        return Err("Database does not exist".to_string());
+    }
+    let conn = match SqlitePool::connect(&sqlite_connection_string).await {
+        Ok(conn) => conn,
+        Err(err) => {
+            return Err(format!("Failed to connect to database: {}", err));
+        }
+    };
+
+    let natures = sqlx::query_as::<_, Nature>("SELECT * FROM natures")
+        .fetch_all(&conn)
+        .await
+        .unwrap();
+
+    conn.close().await;
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
     let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
@@ -68,24 +92,28 @@ pub fn generate_nature_page(wiki_name: &str, app_handle: AppHandle) -> Result<St
     let mut nature_new = String::new();
     let mut nature_modified = String::new();
 
-    for (nature_name, nature_details) in modified_natures.iter() {
-        let increased_stat = match nature_details.modified.increased_stat.clone() {
+    for nature in natures {
+        if nature.is_new == FALSE && nature.is_modified == FALSE {
+            continue;
+        }
+
+        let increased_stat = match nature.increased_stat.clone() {
             Some(stat) => capitalize_and_remove_hyphens(&stat),
             None => "None".to_string(),
         };
-        let decreased_stat = match nature_details.modified.decreased_stat.clone() {
+        let decreased_stat = match nature.decreased_stat.clone() {
             Some(stat) => capitalize_and_remove_hyphens(&stat),
             None => "None".to_string(),
         };
 
         let entry = format!(
             "| {} | {} | {} |\n",
-            capitalize(nature_name),
+            capitalize(&nature.name),
             increased_stat,
             decreased_stat
         );
 
-        if nature_details.is_new_nature {
+        if nature.is_new == TRUE {
             if nature_new.is_empty() {
                 nature_new.push_str(&format!(
                     "| New Natures | Increased Stat | Decreased Stat |
@@ -94,7 +122,9 @@ pub fn generate_nature_page(wiki_name: &str, app_handle: AppHandle) -> Result<St
                 ))
             }
             nature_new.push_str(&entry);
-        } else {
+        }
+
+        if nature.is_modified == TRUE {
             if nature_modified.is_empty() {
                 nature_modified.push_str(&format!(
                     "| Modified Natures | Increased Stat | Decreased Stat |

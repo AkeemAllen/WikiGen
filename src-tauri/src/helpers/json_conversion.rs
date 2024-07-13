@@ -101,3 +101,56 @@ pub async fn convert_abilities_to_sqlite(
     conn.close().await;
     Ok("Success".to_string())
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct Nature {
+    increased_stat: Option<String>,
+    decreased_stat: Option<String>,
+}
+
+type Natures = HashMap<String, Nature>;
+
+#[tauri::command]
+pub async fn convert_natures_to_sqlite(
+    wiki_name: &str,
+    app_handle: AppHandle,
+) -> Result<String, String> {
+    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+
+    let json_natures_file_path = base_path.join(wiki_name).join("data").join("natures.json");
+    let json_natures_file = File::open(&json_natures_file_path).unwrap();
+    let json_natures: Natures = match serde_json::from_reader(json_natures_file) {
+        Ok(file) => file,
+        Err(err) => return Err(format!("Failed to read natures json file: {}", err)),
+    };
+
+    let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
+    let sqlite_connection_string = format!("sqlite:{}", sqlite_path.to_str().unwrap());
+
+    let conn = match SqlitePool::connect(&sqlite_connection_string).await {
+        Ok(conn) => conn,
+        Err(err) => {
+            return Err(format!("Failed to connect to database: {}", err));
+        }
+    };
+
+    for (name, nature) in json_natures {
+        let increased_stat = nature.increased_stat.clone();
+        let decreased_stat = nature.decreased_stat.clone();
+
+        let result = sqlx::query(
+            "INSERT INTO natures (name, increased_stat, decreased_stat) VALUES (?, ?, ?)",
+        )
+        .bind(&name)
+        .bind(increased_stat)
+        .bind(decreased_stat)
+        .execute(&conn)
+        .await
+        .unwrap();
+
+        println!("{:?}", result);
+    }
+
+    conn.close().await;
+    Ok("Success".to_string())
+}
