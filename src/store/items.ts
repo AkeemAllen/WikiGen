@@ -1,15 +1,6 @@
 import { writable } from "svelte/store";
 
-export type Items = {
-  [key: string]: Item;
-};
-
 export type Item = {
-  effect: string;
-  sprite: string;
-};
-
-export type DBItem = {
   id: number;
   name: string;
   effect: string;

@@ -83,13 +83,6 @@ async function loadWikiData(wiki: Wiki) {
   natures.set(JSON.parse(naturesFromFile));
   naturesList.set(Object.keys($natures));
 
-  // const itemsFromFile = await readTextFile(
-  //   `${$selectedWiki.name}/data/items.json`,
-  //   { dir: BaseDirectory.AppData },
-  // );
-  // items.set(JSON.parse(itemsFromFile));
-  // itemsList.set(Object.keys($items));
-
   loadPokemonData();
 
   const modifiedPokemonFromFile = await readTextFile(
