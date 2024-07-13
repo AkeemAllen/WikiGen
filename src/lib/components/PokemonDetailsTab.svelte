@@ -25,12 +25,10 @@ const abilitiesListOptions: AutocompleteOption<string>[] = $abilitiesList.map(
   }),
 );
 
-const itemListOptions: AutocompleteOption<string>[] = $itemsList.map(
-  (name) => ({
-    label: name,
-    value: name,
-  }),
-);
+const itemListOptions = $itemsList.map(([id, name]) => ({
+  label: name,
+  value: id,
+}));
 </script>
 
 <div class="scroll-smooth px-4">

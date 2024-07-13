@@ -125,6 +125,24 @@ function prevPokemon() {
   }
   setPokemonDetails(pokemonId - 1);
 }
+
+async function convertPokemonToSqlite() {
+  await invoke("convert_pokemon_to_sqlite", {
+    wikiName: $selectedWiki.name,
+  })
+    .then(() => {
+      toastStore.trigger({
+        message: "Pokemon converted!",
+        background: "variant-filled-success",
+      });
+    })
+    .catch((err) => {
+      toastStore.trigger({
+        message: "Error converting pokemon!",
+        background: "variant-filled-error",
+      });
+    });
+}
 </script>
 
 <div class="flex flex-row gap-7">
@@ -228,6 +246,7 @@ function prevPokemon() {
     </svelte:fragment>
   </TabGroup>
 {/if}
+<Button title="Convert Pokemon to SQLite" onClick={convertPokemonToSqlite} />
 
 <svelte:window
   use:shortcut={{

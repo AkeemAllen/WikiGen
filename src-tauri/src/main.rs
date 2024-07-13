@@ -10,7 +10,7 @@ use std::fs::File;
 
 use helpers::json_conversion::{
     convert_abilities_to_sqlite, convert_items_to_sqlite, convert_moves_to_sqlite,
-    convert_natures_to_sqlite,
+    convert_natures_to_sqlite, convert_pokemon_to_sqlite,
 };
 use helpers::mkdocs_process::{check_process_status, kill_mkdocs_process, spawn_mkdocs_process};
 use page_generators::ability_page::generate_ability_page;
@@ -68,7 +68,8 @@ fn main() {
             convert_items_to_sqlite,
             convert_abilities_to_sqlite,
             convert_natures_to_sqlite,
-            convert_moves_to_sqlite
+            convert_moves_to_sqlite,
+            convert_pokemon_to_sqlite
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
