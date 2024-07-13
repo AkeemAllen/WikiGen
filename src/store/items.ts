@@ -13,18 +13,4 @@ export type SearchItem = {
   name: string;
 };
 
-export type ModifiedItems = {
-  [key: string]: ModifiedItem;
-};
-
-export type ModifiedItem = {
-  original: { effect: string; sprite: string };
-  modified: { effect: string; sprite: string };
-  is_new_item: boolean;
-};
-
-export let items = writable<Items>();
-export let itemsList = writable<string[]>([]);
-export let modifiedItems = writable<ModifiedItems>({});
-
-export let dbItemsList = writable<[number, string][]>([]);
+export let itemsList = writable<[number, string][]>([]);

@@ -16,13 +16,7 @@ import {
   modifiedAbilities,
 } from "../../store/abilities";
 import { modifiedNatures, natures, naturesList } from "../../store/natures";
-import {
-  items,
-  itemsList,
-  modifiedItems,
-  dbItemsList,
-  type SearchItem,
-} from "../../store/items";
+import { itemsList, type SearchItem } from "../../store/items";
 import BaseModal from "./BaseModal.svelte";
 import MultiSelect from "svelte-multiselect";
 import Button from "./Button.svelte";
@@ -95,7 +89,6 @@ async function loadWikiData(wiki: Wiki) {
     `${$selectedWiki.name}/data/modifications/modified_items_natures_abilities.json`,
     { dir: BaseDirectory.AppData },
   );
-  modifiedItems.set(JSON.parse(modifiedItemsNaturesAbilitiesFromFile).items);
   modifiedNatures.set(
     JSON.parse(modifiedItemsNaturesAbilitiesFromFile).natures,
   );
@@ -170,7 +163,7 @@ async function loadDatabase(wiki: Wiki) {
       // Load Items
       $db.select("SELECT id, name FROM items").then((items: any) => {
         let itemNames = items.map((item: SearchItem) => [item.id, item.name]);
-        dbItemsList.set(itemNames);
+        itemsList.set(itemNames);
       });
     },
   );

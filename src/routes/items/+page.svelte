@@ -3,7 +3,7 @@ import _ from "lodash";
 import AutoComplete from "$lib/components/AutoComplete.svelte";
 import Button from "$lib/components/Button.svelte";
 import BaseModal from "$lib/components/BaseModal.svelte";
-import { type Item, dbItemsList, type SearchItem } from "../../store/items";
+import { type Item, itemsList, type SearchItem } from "../../store/items";
 import { selectedWiki } from "../../store";
 import { getToastStore } from "@skeletonlabs/skeleton";
 import { invoke } from "@tauri-apps/api";
@@ -29,7 +29,7 @@ let newItem: Item = {} as Item;
 let newSpriteImage: string = "";
 let newItemModalOpen: boolean = false;
 
-$: itemListOptions = $dbItemsList.map(([id, name]) => ({
+$: itemListOptions = $itemsList.map(([id, name]) => ({
   label: name,
   value: id,
 }));
@@ -46,7 +46,7 @@ async function generateItemPage() {
 }
 
 async function getItemDetails() {
-  let retrievedItem = $dbItemsList.find(([_, name]) => name === itemSearch[1]);
+  let retrievedItem = $itemsList.find(([_, name]) => name === itemSearch[1]);
 
   if (!retrievedItem) {
     toastStore.trigger({
