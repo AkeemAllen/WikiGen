@@ -8,7 +8,13 @@ import {
 import { selectedWiki, wikis, type Wiki } from "../../store";
 import { routes } from "../../store/gameRoutes";
 import { moveList, type SearchMove } from "../../store/moves";
-import { modifiedPokemon, pokemon, pokemonList } from "../../store/pokemon";
+import {
+  modifiedPokemon,
+  pokemon,
+  pokemonList,
+  type SearchPokemon,
+  dbPokemonList,
+} from "../../store/pokemon";
 import { sortRoutesByPosition } from "$lib/utils";
 import { abilitiesList, type SearchAbility } from "../../store/abilities";
 import { naturesList, type SearchNature } from "../../store/natures";
@@ -124,6 +130,11 @@ async function loadDatabase(wiki: Wiki) {
   await Database.load(`sqlite:${wiki.name}/${wiki.name}.db`).then(
     (database) => {
       db.set(database);
+      // Load Pokemon
+      $db.select("SELECT id, name FROM pokemon").then((pokemon: any) => {
+        dbPokemonList.set(pokemon.map((p: SearchPokemon) => [p.id, p.name]));
+      });
+
       // Load Items
       $db.select("SELECT id, name FROM items").then((items: any) => {
         itemsList.set(items.map((item: SearchItem) => [item.id, item.name]));

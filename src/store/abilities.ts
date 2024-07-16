@@ -13,4 +13,4 @@ export type SearchAbility = {
   name: string;
 };
 
-export let abilitiesList = writable<string[]>([]);
+export let abilitiesList = writable<[number, string][]>([]);

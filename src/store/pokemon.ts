@@ -1,5 +1,27 @@
 import { writable } from "svelte/store";
 
+export type SearchPokemon = {
+  id: number;
+  name: string;
+};
+
+export type DBPokemon = {
+  id: number;
+  dex_number: number;
+  name: string;
+  type_1: string | null;
+  type_2: string | null;
+  ability_1: number | null;
+  ability_2: number | null;
+  hp: number;
+  attack: number;
+  defense: number;
+  sp_attack: number;
+  sp_defense: number;
+  speed: number;
+  evolution_change: number | null;
+};
+
 export type Pokemon = {
   pokemon: { [key: number]: PokemonDetails };
 };
@@ -48,15 +70,13 @@ export type Stats = {
   speed: number;
 };
 
-export type Evolution = {
-  level: number;
-  item: string;
-  other: string;
-  evolves_to: {
-    id: number;
-    pokemon_name: string;
-  };
-  method: "no_change" | "level_up" | "item" | "other";
+export type EvolutionChange = {
+  id: number;
+  level: number | null;
+  item: number | null;
+  other: string | null;
+  evolved_pokemon: number | null;
+  method: "level_up" | "item" | "other" | "no_change";
 };
 
 export type PokemonMoveSet = {
@@ -69,7 +89,7 @@ export type PokemonMove = {
 };
 
 export const PokemonTypes = [
-  "none",
+  null,
   "normal",
   "fire",
   "water",
@@ -92,4 +112,5 @@ export const PokemonTypes = [
 
 export let pokemon = writable<Pokemon>({ pokemon: {} });
 export let pokemonList = writable<[string, number][]>([]);
+export let dbPokemonList = writable<[number, string][]>([]);
 export let modifiedPokemon = writable<ModifiedPokemon>({});
