@@ -8,13 +8,7 @@ import {
 import { selectedWiki, wikis, type Wiki } from "../../store";
 import { routes } from "../../store/gameRoutes";
 import { moveList, type SearchMove } from "../../store/moves";
-import {
-  modifiedPokemon,
-  pokemon,
-  pokemonList,
-  type SearchPokemon,
-  dbPokemonList,
-} from "../../store/pokemon";
+import { pokemonList, type SearchPokemon } from "../../store/pokemon";
 import { sortRoutesByPosition } from "$lib/utils";
 import { abilitiesList, type SearchAbility } from "../../store/abilities";
 import { naturesList, type SearchNature } from "../../store/natures";
@@ -41,38 +35,8 @@ $: wikiListOptions = Object.keys($wikis).filter(
   (wiki) => wiki !== $selectedWiki.name,
 );
 
-async function loadPokemonData() {
-  for (let i = 1; i <= 10; i++) {
-    const shard = await readTextFile(
-      `${$selectedWiki.name}/data/pokemon_data/shard_${i}.json`,
-      { dir: BaseDirectory.AppData },
-    );
-    let parsedShard = JSON.parse(shard);
-    $pokemon.pokemon = {
-      ...$pokemon.pokemon,
-      ...parsedShard.pokemon,
-    };
-  }
-
-  pokemonList.set(
-    Object.entries($pokemon.pokemon).map(([key, value]) => [
-      value.name,
-      parseInt(key),
-    ]),
-  );
-}
-
 async function loadWikiData(wiki: Wiki) {
   $selectedWiki = wiki;
-
-  loadPokemonData();
-
-  const modifiedPokemonFromFile = await readTextFile(
-    `${$selectedWiki.name}/data/modifications/modified_pokemon.json`,
-    { dir: BaseDirectory.AppData },
-  );
-  modifiedPokemon.set(JSON.parse(modifiedPokemonFromFile));
-
   const routesFromFile = await readTextFile(
     `${$selectedWiki.name}/data/routes.json`,
     { dir: BaseDirectory.AppData },
@@ -131,9 +95,11 @@ async function loadDatabase(wiki: Wiki) {
     (database) => {
       db.set(database);
       // Load Pokemon
-      $db.select("SELECT id, name FROM pokemon").then((pokemon: any) => {
-        dbPokemonList.set(pokemon.map((p: SearchPokemon) => [p.id, p.name]));
-      });
+      $db
+        .select("SELECT id, name FROM pokemon ORDER BY dex_number")
+        .then((pokemon: any) => {
+          pokemonList.set(pokemon.map((p: SearchPokemon) => [p.id, p.name]));
+        });
 
       // Load Items
       $db.select("SELECT id, name FROM items").then((items: any) => {
