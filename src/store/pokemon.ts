@@ -5,7 +5,7 @@ export type SearchPokemon = {
   name: string;
 };
 
-export type DBPokemon = {
+export type Pokemon = {
   id: number;
   dex_number: number;
   name: string;
@@ -22,52 +22,11 @@ export type DBPokemon = {
   evolution_change: number | null;
 };
 
-export type Pokemon = {
-  pokemon: { [key: number]: PokemonDetails };
-};
-
-export type PokemonDetails = {
+export type Moveset = {
   id: number;
   name: string;
-  types: string[];
-  abilities: string[];
-  stats: Stats;
-  moves: PokemonMoveSet;
-  sprite: string;
-  evolution: Evolution;
-  forms: {
-    [key: string]: PokemonForm;
-  };
-};
-
-export type PokemonForm = {
-  types: string[];
-  abilities: string[];
-  stats: Stats;
-  sprite: string;
-  moves: PokemonMoveSet;
-};
-
-export type ModifiedPokemon = {
-  [key: string]: ModifiedPokemonDetails;
-};
-
-export type ModifiedPokemonDetails = {
-  id: number;
-  evolution: Evolution;
-  types: {
-    original: string[];
-    modified: string[];
-  };
-};
-
-export type Stats = {
-  hp: number;
-  attack: number;
-  defense: number;
-  sp_attack: number;
-  sp_defense: number;
-  speed: number;
+  learn_method: string;
+  level_learned: number;
 };
 
 export type EvolutionChange = {
@@ -110,7 +69,4 @@ export const PokemonTypes = [
   "fairy",
 ];
 
-export let pokemon = writable<Pokemon>({ pokemon: {} });
-export let pokemonList = writable<[string, number][]>([]);
-export let dbPokemonList = writable<[number, string][]>([]);
-export let modifiedPokemon = writable<ModifiedPokemon>({});
+export let pokemonList = writable<[number, string][]>([]);
