@@ -1,66 +1,43 @@
 <script lang="ts">
-import {
-  Tab,
-  TabGroup,
-  getToastStore,
-  type AutocompleteOption,
-} from "@skeletonlabs/skeleton";
+import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
 import {
   BaseDirectory,
   readBinaryFile,
   writeBinaryFile,
-  writeTextFile,
 } from "@tauri-apps/api/fs";
 import _ from "lodash";
 import { selectedWiki } from "../../store";
-import {
-  pokemon,
-  pokemonList,
-  dbPokemonList,
-  modifiedPokemon,
-  type PokemonDetails,
-  type DBPokemon,
-} from "../../store/pokemon";
+import { pokemonList, type Pokemon, type Moveset } from "../../store/pokemon";
 import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
 import PokemonMovesTab from "./PokemonMovesTab.svelte";
 import { invoke } from "@tauri-apps/api";
-import {
-  base64ToArray,
-  convertToTitle,
-  extractPokemonRange,
-  getShardToWrite,
-} from "$lib/utils";
+import { base64ToArray } from "$lib/utils";
 import { shortcut } from "@svelte-put/shortcut";
 import Button from "./Button.svelte";
 import AutoComplete from "./AutoComplete.svelte";
-import { updatePokemonModifications } from "$lib/utils/modificationHelpers";
 import { db } from "../../store/db";
 
 const toastStore = getToastStore();
 
 let pokemonSearch: [number, string] = [0, ""];
 
-let pokemonName: string = "";
-let formName: string = "";
-let pokemonId: number = 0;
-let pokemonDetails: PokemonDetails = {} as PokemonDetails;
-let originalPokemonDetails: PokemonDetails = {} as PokemonDetails;
 let pokemonNameInput: HTMLInputElement;
 
-let selectedPokemon = {} as DBPokemon;
-let originalSelectedPokemon: DBPokemon = {} as DBPokemon;
+let pokemon = {} as Pokemon;
+let originalPokemonDetails: Pokemon = {} as Pokemon;
+let pokemonMoveset: Moveset[] = [];
 let pokemonSprite: string = "";
 
 let tabSet: number = 0;
 
-let pokemonListOptions = $dbPokemonList.map(([id, name]) => ({
-  label: name,
+let pokemonListOptions = $pokemonList.map(([id, name]) => ({
+  label: _.capitalize(name),
   value: id,
 }));
 
 async function getPokemon() {
-  let retrievedPokemon = $dbPokemonList.find(
-    ([_, name]) => name === pokemonSearch[1],
+  let retrievedPokemon = $pokemonList.find(
+    ([__, name]) => name === pokemonSearch[1].toLowerCase(),
   );
 
   if (!retrievedPokemon) {
@@ -72,16 +49,35 @@ async function getPokemon() {
   }
 
   await $db
-    .select<DBPokemon[]>("SELECT * FROM pokemon WHERE id = $1;", [
+    .select<Pokemon[]>("SELECT * FROM pokemon WHERE id = $1;", [
       pokemonSearch[0],
     ])
     .then(async (res) => {
-      selectedPokemon = res[0];
-      originalSelectedPokemon = _.cloneDeep(selectedPokemon);
+      pokemon = res[0];
+      originalPokemonDetails = _.cloneDeep(pokemon);
+
+      // Gather moveset
+      await $db
+        .select<Moveset[]>(
+          `SELECT id, name, learn_method, level_learned FROM pokemon_movesets
+            INNER JOIN moves on moves.id = pokemon_movesets.move
+            WHERE pokemon = $1;`,
+          [pokemon.id],
+        )
+        .then((res) => {
+          pokemonMoveset = res;
+        })
+        .catch((err) => {
+          console.log(err);
+          toastStore.trigger({
+            message: "Error loading Pokemon moveset!",
+            background: "variant-filled-error",
+          });
+        });
 
       // Reading in image separately
       pokemonSprite = await readBinaryFile(
-        `${$selectedWiki.name}/dist/docs/img/pokemon/${selectedPokemon.name}.png`,
+        `${$selectedWiki.name}/dist/docs/img/pokemon/${pokemon.name}.png`,
         { dir: BaseDirectory.AppData },
       )
         .then((res) => {
@@ -106,7 +102,7 @@ async function getPokemon() {
 }
 
 async function savePokemonChanges() {
-  if (_.isEqual(selectedPokemon, originalSelectedPokemon)) {
+  if (_.isEqual(pokemon, originalPokemonDetails)) {
     return;
   }
   await $db
@@ -126,23 +122,23 @@ async function savePokemonChanges() {
           speed = $12
         WHERE id = $13;`,
       [
-        selectedPokemon.dex_number,
-        selectedPokemon.name,
-        selectedPokemon.type_1,
-        selectedPokemon.type_2,
-        selectedPokemon.ability_1,
-        selectedPokemon.ability_2,
-        selectedPokemon.hp,
-        selectedPokemon.attack,
-        selectedPokemon.defense,
-        selectedPokemon.sp_attack,
-        selectedPokemon.sp_defense,
-        selectedPokemon.speed,
-        selectedPokemon.id,
+        pokemon.dex_number,
+        pokemon.name,
+        pokemon.type_1,
+        pokemon.type_2,
+        pokemon.ability_1,
+        pokemon.ability_2,
+        pokemon.hp,
+        pokemon.attack,
+        pokemon.defense,
+        pokemon.sp_attack,
+        pokemon.sp_defense,
+        pokemon.speed,
+        pokemon.id,
       ],
     )
     .then(() => {
-      originalSelectedPokemon = _.cloneDeep(selectedPokemon);
+      originalPokemonDetails = _.cloneDeep(pokemon);
       toastStore.trigger({
         message: "Pokemon changes saved!",
         background: "variant-filled-success",
@@ -198,50 +194,68 @@ async function convertPokemonToSqlite() {
     });
 }
 
-async function updateSpriteNames() {
-  for (const entry of $pokemonList) {
-    let id: string | number = entry[1];
-
-    if (id < 10) {
-      id = `00${id}`;
-    } else if (id < 100) {
-      id = `0${id}`;
-    }
-
-    let sprite = await readBinaryFile(
-      `${$selectedWiki.name}/dist/docs/img/pokemon/${id}.png`,
-      { dir: BaseDirectory.AppData },
-    )
-      .then((res) => {
-        const blob = new Blob([res], { type: "image/png" });
-        return URL.createObjectURL(blob);
-      })
-      .catch((err) => {
-        console.log(err);
-        if (err.includes("No such file or directory")) {
-          return "404";
-        }
-        return "Error loading image";
+async function convertMovesetsToSqlite() {
+  await invoke("convert_pokemon_movesets_to_sqlite", {
+    wikiName: $selectedWiki.name,
+  })
+    .then(() => {
+      toastStore.trigger({
+        message: "Moveset converted!",
+        background: "variant-filled-success",
       });
-    if (sprite === "404" || sprite === "Error loading image") {
-      continue;
-    }
-
-    let reader = new FileReader();
-    reader.onloadend = (e) => {
-      let imageBytes = base64ToArray(
-        (e.target?.result as string).replace("data:image/png;base64,", ""),
-        "image/png",
-      );
-      writeBinaryFile(
-        `${$selectedWiki.name}/dist/docs/img/temp_pokemon/${entry[0]}.png`,
-        imageBytes,
-        { dir: BaseDirectory.AppData },
-      );
-    };
-    reader.readAsDataURL(await fetch(sprite).then((res) => res.blob()));
-  }
+    })
+    .catch((err) => {
+      toastStore.trigger({
+        message: "Error converting moveset!",
+        background: "variant-filled-error",
+      });
+    });
 }
+
+// async function updateSpriteNames() {
+//   for (const entry of $pokemonList) {
+//     let id: string | number = entry[1];
+
+//     if (id < 10) {
+//       id = `00${id}`;
+//     } else if (id < 100) {
+//       id = `0${id}`;
+//     }
+
+//     let sprite = await readBinaryFile(
+//       `${$selectedWiki.name}/dist/docs/img/pokemon/${id}.png`,
+//       { dir: BaseDirectory.AppData },
+//     )
+//       .then((res) => {
+//         const blob = new Blob([res], { type: "image/png" });
+//         return URL.createObjectURL(blob);
+//       })
+//       .catch((err) => {
+//         console.log(err);
+//         if (err.includes("No such file or directory")) {
+//           return "404";
+//         }
+//         return "Error loading image";
+//       });
+//     if (sprite === "404" || sprite === "Error loading image") {
+//       continue;
+//     }
+
+//     let reader = new FileReader();
+//     reader.onloadend = (e) => {
+//       let imageBytes = base64ToArray(
+//         (e.target?.result as string).replace("data:image/png;base64,", ""),
+//         "image/png",
+//       );
+//       writeBinaryFile(
+//         `${$selectedWiki.name}/dist/docs/img/temp_pokemon/${entry[0]}.png`,
+//         imageBytes,
+//         { dir: BaseDirectory.AppData },
+//       );
+//     };
+//     reader.readAsDataURL(await fetch(sprite).then((res) => res.blob()));
+//   }
+// }
 </script>
 
 <div class="flex flex-row gap-7">
@@ -265,16 +279,16 @@ async function updateSpriteNames() {
   <Button
     title="Save Changes"
     onClick={savePokemonChanges}
-    disabled={_.isEqual(selectedPokemon, originalSelectedPokemon)}
+    disabled={_.isEqual(pokemon, originalPokemonDetails)}
     class="mt-2 w-32"
   />
 </div>
 
-{#if !_.isEmpty(selectedPokemon)}
+{#if !_.isEmpty(pokemon)}
   {#if pokemonSprite === "404"}
-    <p>No sprite found for {selectedPokemon.name}</p>
+    <p>No sprite found for {pokemon.name}</p>
   {:else}
-    <img src={pokemonSprite} alt={selectedPokemon.name} width="100" />
+    <img src={pokemonSprite} alt={pokemon.name} width="100" />
   {/if}
   <TabGroup>
     <Tab bind:group={tabSet} name="pokemon-details" value={0} class="text-sm"
@@ -285,19 +299,17 @@ async function updateSpriteNames() {
     >
     <svelte:fragment slot="panel">
       {#if tabSet === 0}
-        <PokemonDetailsTab bind:pokemon={selectedPokemon} />
+        <PokemonDetailsTab bind:pokemon={pokemon} />
       {/if}
       {#if tabSet === 1}
-        <!-- <PokemonMovesTab
-          bind:pokemonDetails={pokemonDetails}
-          savePokemonChanges={savePokemonChanges}
-        /> -->
+        <PokemonMovesTab bind:moveset={pokemonMoveset} pokemonId={pokemon.id} />
       {/if}
     </svelte:fragment>
   </TabGroup>
 {/if}
 <!-- <Button title="Convert Pokemon to SQLite" onClick={convertPokemonToSqlite} />
 <Button title="Update Sprite Names" onClick={updateSpriteNames} /> -->
+<!-- <Button title="Convert Movesets to SQLite" onClick={convertMovesetsToSqlite} /> -->
 
 <svelte:window
   use:shortcut={{
