@@ -11,7 +11,7 @@ import { wikis } from "../store";
 export const prerender = true;
 export const ssr = false;
 
-export async function load({ params }) {
+export async function load({ params }: { params: { slug: string } }) {
   // These lines ensure that the appData directory exists on initial application launch.
   // Would prefer a more ideal way to do this, but this is the best I could come up with.
   //

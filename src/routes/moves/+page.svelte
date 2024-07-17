@@ -7,7 +7,7 @@ import { getToastStore } from "@skeletonlabs/skeleton";
 import _ from "lodash";
 import { selectedWiki } from "../../store";
 import { moveList, type Move } from "../../store/moves";
-import { PokemonTypes, pokemon } from "../../store/pokemon";
+import { PokemonTypes } from "../../store/pokemon";
 import { invoke } from "@tauri-apps/api/tauri";
 import { db } from "../../store/db";
 import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
@@ -43,16 +43,16 @@ async function getMove() {
     });
 }
 
-async function updatePagesForPokemonWithMove() {
-  let pokemonToUpdate = Object.values($pokemon.pokemon)
-    .filter((p) => Object.keys(p.moves).includes(move.name))
-    .map((p) => p.id);
+// async function updatePagesForPokemonWithMove() {
+//   let pokemonToUpdate = Object.values($pokemon.pokemon)
+//     .filter((p) => Object.keys(p.moves).includes(move.name))
+//     .map((p) => p.id);
 
-  await invoke("generate_pokemon_pages_from_list", {
-    dexNumbers: pokemonToUpdate,
-    wikiName: $selectedWiki.name,
-  });
-}
+//   await invoke("generate_pokemon_pages_from_list", {
+//     dexNumbers: pokemonToUpdate,
+//     wikiName: $selectedWiki.name,
+//   });
+// }
 
 async function saveMoveChanges() {
   await $db
@@ -141,10 +141,17 @@ async function convertMovesToSqlite() {
         label="Type"
         id="type"
         bind:value={move.type}
-        options={PokemonTypes.map((type) => ({
+        options={PokemonTypes.map((type) => {
+          if (type === null) {
+            return {
+              label: "None",
+              value: null,
+            };
+          }
+          return {
           label: _.capitalize(type),
           value: type,
-        }))}
+        }})}
       />
       <NumberInput
         label="Accuracy"
