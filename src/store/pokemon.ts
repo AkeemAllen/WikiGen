@@ -20,6 +20,14 @@ export type Pokemon = {
   sp_defense: number;
   speed: number;
   evolution_change: number | null;
+  ability_1_name: string;
+  ability_2_name: string;
+  evolution_change_object: EvolutionChange;
+};
+
+export type Ability = {
+  id: number;
+  name: string;
 };
 
 export type Moveset = {
@@ -34,7 +42,7 @@ export type EvolutionChange = {
   level: number | null;
   item: number | null;
   other: string | null;
-  evolved_pokemon: number | null;
+  evolved_pokemon: { id: number; name: string };
   method: "level_up" | "item" | "other" | "no_change";
 };
 
