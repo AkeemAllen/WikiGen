@@ -9,7 +9,7 @@ export let label: string = "";
 export let value: string | number | null = "";
 export let showChevron: boolean = true;
 export let disabled: boolean = false;
-export let options: { label: string; value: string | number }[] = [];
+export let options: { label: string; value: string | number | null }[] = [];
 export let onSelection: (event: CustomEvent) => void;
 export let inputNode: HTMLInputElement = document.createElement("input");
 export let onKeydown: (event: KeyboardEvent) => void = () => {};
