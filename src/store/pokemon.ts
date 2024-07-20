@@ -30,12 +30,33 @@ export type Ability = {
   name: string;
 };
 
-export type Moveset = {
+export type PokemonMove = {
   id: number;
   name: string;
   learn_method: string;
   level_learned: number;
 };
+
+export type MoveSetChange = {
+  id: number;
+  operation: string;
+  move: string;
+  method: LearnMethod[];
+  level: number;
+  secondaryMoveId: number | null | undefined;
+  secondaryMove: string;
+};
+
+type LearnMethod = "level-up" | "machine" | "tutor" | "egg";
+
+export enum Operation {
+  ADD = "add",
+  SHIFT = "shift",
+  DELETE = "delete",
+  REPLACE_MOVE = "replace_move",
+  // REPLACE_BY_LEVEL = "replace_by_level",
+  // SWAP_MOVES = "swap_moves",
+}
 
 export type EvolutionChange = {
   id: number;
@@ -44,15 +65,6 @@ export type EvolutionChange = {
   other: string | null;
   evolved_pokemon: { id: number; name: string };
   method: "level_up" | "item" | "other" | "no_change";
-};
-
-export type PokemonMoveSet = {
-  [key: string]: PokemonMove;
-};
-
-export type PokemonMove = {
-  level_learned: number;
-  learn_method: string[];
 };
 
 export const PokemonTypes = [

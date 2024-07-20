@@ -1,102 +1,188 @@
+import { get } from "svelte/store";
 import type { Routes, TrainerInfo } from "../store/gameRoutes";
-import type { Pokemon, PokemonMoveSet } from "../store/pokemon";
-import { Operation, type MoveSetChange } from "../types";
+import type { Pokemon, PokemonMove, MoveSetChange } from "../store/pokemon";
+import { Operation } from "../store/pokemon";
+import { db } from "../store/db";
+import { moveList } from "../store/moves";
+import type Database from "tauri-plugin-sql-api";
+import type { QueryResult } from "tauri-plugin-sql-api";
+import _ from "lodash";
 
-function addOrShiftMove(
-  moveSet: PokemonMoveSet,
-  moveSetChange: MoveSetChange,
-  previous_learn_method: string[],
-) {
-  if (previous_learn_method.includes("machine")) {
-    moveSet[moveSetChange.move] = {
-      level_learned: moveSetChange.level,
-      learn_method: ["level-up", "machine"],
-    };
-  } else {
-    moveSet[moveSetChange.move] = {
-      level_learned: moveSetChange.level,
-      learn_method: ["level-up"],
-    };
+async function addMoves(
+  moveAdditions: MoveSetChange[],
+  pokemonId: number,
+  database: Database,
+): Promise<QueryResult> {
+  let movesToInsert = "";
+  for (let index = 0; index < moveAdditions.length; index++) {
+    let move = moveAdditions[index];
+
+    if (index === moveAdditions.length - 1) {
+      movesToInsert += `(${pokemonId}, ${move.id}, '${move.method.join(",")}', ${move.level})`;
+      break;
+    }
+    movesToInsert += `(${pokemonId}, ${move.id}, '${move.method.join(",")}', ${move.level}), `;
   }
+  return await database.execute(`INSERT INTO pokemon_movesets (pokemon, move, learn_method, level_learned)
+          VALUES ${movesToInsert}`);
 }
 
-function replaceMove(moveSet: PokemonMoveSet, moveSetChange: MoveSetChange) {
-  moveSet[moveSetChange.secondaryMove] = moveSet[moveSetChange.move];
-  delete moveSet[moveSetChange.move];
+async function shiftMoves(
+  moveShifts: MoveSetChange[],
+  pokemonId: number,
+  database: Database,
+): Promise<QueryResult> {
+  let updateQueries = "";
+  for (let index = 0; index < moveShifts.length; index++) {
+    let move = moveShifts[index];
+
+    updateQueries += `UPDATE pokemon_movesets SET level_learned = ${move.level} WHERE pokemon = ${pokemonId} AND move = ${move.id}; `;
+  }
+
+  return await database.execute(
+    `BEGIN TRANSACTION;
+        ${updateQueries}
+      COMMIT;
+      `,
+  );
+}
+
+async function deleteMoves(
+  moveDeletions: MoveSetChange[],
+  pokemonId: number,
+  database: Database,
+): Promise<QueryResult> {
+  let moveIds = moveDeletions.map((move) => move.id);
+  return await database.execute(
+    `DELETE FROM pokemon_movesets WHERE pokemon = ? AND move IN (${moveIds.join(",")})`,
+    [pokemonId],
+  );
+}
+
+async function replaceMoves(
+  moveReplacements: MoveSetChange[],
+  pokemonId: number,
+  database: Database,
+): Promise<QueryResult | void> {
+  let movesToAdd = moveReplacements.map((move) => {
+    return {
+      id: move.secondaryMoveId,
+      method: move.method,
+      level: move.level,
+    };
+  }) as MoveSetChange[];
+
+  let movesToDelete = moveReplacements.map((move) => {
+    return { id: move.id };
+  }) as MoveSetChange[];
+
+  await addMoves(movesToAdd, pokemonId, database).then(async () => {
+    return await deleteMoves(movesToDelete, pokemonId, database);
+  });
 }
 
 function replaceByLevel(
-  moveSet: PokemonMoveSet,
-  moveSetChange: MoveSetChange,
-  previous_learn_method: string[],
+  moveReplacementsByLevel: MoveSetChange[],
+  pokemonId: number,
+  database: Database,
+) {}
+
+async function swapMoves(
+  movwSwaps: MoveSetChange[],
+  pokemonId: number,
+  database: Database,
 ) {
-  for (const move of Object.entries(moveSet)) {
-    if (move[1].level_learned === moveSetChange.level) {
-      delete moveSet[move[0]];
-      addOrShiftMove(moveSet, moveSetChange, previous_learn_method);
-      break;
-    }
+  let updateQueries = "";
+  for (let index = 0; index < movwSwaps.length; index++) {
+    let move = movwSwaps[index];
+
+    updateQueries += `UPDATE pokemon_movesets SET move = ${move.secondaryMoveId} WHERE pokemon = ${pokemonId} AND move = ${move.id}; `;
   }
+
+  return await database.execute(
+    `BEGIN TRANSACTION;
+          ${updateQueries}
+        COMMIT;
+        `,
+  );
 }
 
-function swapMoves(
-  moveSet: PokemonMoveSet,
-  moveSetChange: MoveSetChange,
-  previous_learn_method: string[],
-) {
-  const temp = moveSet[moveSetChange.move];
-  moveSet[moveSetChange.move] = moveSet[moveSetChange.secondaryMove];
-  moveSet[moveSetChange.secondaryMove] = temp;
-
-  if (previous_learn_method.includes("machine")) {
-    moveSet[moveSetChange.move].learn_method = ["level-up", "machine"];
-    moveSet[moveSetChange.secondaryMove].learn_method = ["level-up", "machine"];
-  } else {
-    moveSet[moveSetChange.move].learn_method = ["level-up"];
-    moveSet[moveSetChange.secondaryMove].learn_method = ["level-up"];
-  }
-}
-
-export function modifyLevelUpMoveSet(
+export async function modifyMoveSet(
   moveSetChangeList: MoveSetChange[],
-  moveSet: PokemonMoveSet,
-): PokemonMoveSet {
-  for (const moveSetChange of moveSetChangeList) {
-    let previous_learn_method: string[] = [];
-    if (moveSetChange.move in moveSet) {
-      previous_learn_method = moveSet[moveSetChange.move].learn_method;
-    }
+  pokemonMoveset: PokemonMove[],
+  pokemonId: number,
+): Promise<PokemonMove[]> {
+  let database = get(db);
 
-    if (
-      moveSetChange.operation === Operation.ADD ||
-      moveSetChange.operation === Operation.SHIFT
-    ) {
-      addOrShiftMove(moveSet, moveSetChange, previous_learn_method);
+  let moveAdditions: MoveSetChange[] = [];
+  let moveShifts: MoveSetChange[] = [];
+  let moveDeletions: MoveSetChange[] = [];
+  let moveReplacements: MoveSetChange[] = [];
+  let moveReplacementsByLevel: MoveSetChange[] = [];
+  for (let index = 0; index < moveSetChangeList.length; index++) {
+    let moveSetChange = moveSetChangeList[index];
+
+    if (moveSetChange.operation === Operation.SHIFT) {
+      moveShifts.push(moveSetChange);
       continue;
     }
-
-    if (moveSetChange.operation === Operation.REPLACE_MOVE) {
-      replaceMove(moveSet, moveSetChange);
-      continue;
-    }
-
-    if (moveSetChange.operation === Operation.REPLACE_BY_LEVEL) {
-      replaceByLevel(moveSet, moveSetChange, previous_learn_method);
-      continue;
-    }
-
-    if (moveSetChange.operation === Operation.SWAP_MOVES) {
-      swapMoves(moveSet, moveSetChange, previous_learn_method);
+    if (moveSetChange.operation === Operation.ADD) {
+      moveAdditions.push(moveSetChange);
       continue;
     }
 
     if (moveSetChange.operation === Operation.DELETE) {
-      delete moveSet[moveSetChange.move];
+      moveDeletions.push(moveSetChange);
+      continue;
+    }
+
+    if (moveSetChange.operation === Operation.REPLACE_MOVE) {
+      moveReplacements.push(moveSetChange);
       continue;
     }
   }
+  if (moveAdditions.length > 0) {
+    await addMoves(moveAdditions, pokemonId, database).then((res) => {
+      moveAdditions.forEach((move) => {
+        pokemonMoveset.push({
+          id: move.id,
+          name: move.move,
+          learn_method: move.method.join(","),
+          level_learned: move.level,
+        });
+      });
+    });
+  }
+  if (moveShifts.length > 0) {
+    await shiftMoves(moveShifts, pokemonId, database).then((res) => {
+      moveShifts.forEach((move) => {
+        let index = pokemonMoveset.findIndex((m) => m.id === move.id);
+        console.log(index);
+        pokemonMoveset[index].level_learned = move.level;
+      });
+    });
+  }
+  if (moveDeletions.length > 0) {
+    await deleteMoves(moveDeletions, pokemonId, database).then((res) => {
+      moveDeletions.forEach((move) => {
+        let index = pokemonMoveset.findIndex((m) => m.id === move.id);
+        pokemonMoveset.splice(index, 1);
+      });
+    });
+  }
+  if (moveReplacements.length > 0) {
+    await replaceMoves(moveReplacements, pokemonId, database).then((res) => {
+      moveReplacements.forEach((move) => {
+        let index = pokemonMoveset.findIndex((m) => m.id === move.id);
+        pokemonMoveset[index].id = move.secondaryMoveId as number;
+        pokemonMoveset[index].name = move.secondaryMove;
+        pokemonMoveset[index].learn_method = move.method.join(",");
+        pokemonMoveset[index].level_learned = move.level;
+      });
+    });
+  }
 
-  return moveSet;
+  return pokemonMoveset;
 }
 
 export function sortRoutesByPosition(routes: Routes): Routes {
@@ -151,7 +237,6 @@ export const setUniquePokemonId = (
 ) => {
   let teamLength = 0;
 
-  console.log(pokemonList.find(([name, _]) => name === pokemonName)?.[1]);
   if (isNullEmptyOrUndefined(trainers)) {
     return `${
       pokemonList.find(([name, _]) => name === pokemonName)?.[1]

@@ -10,7 +10,7 @@ import { selectedWiki } from "../../store";
 import {
   pokemonList,
   type Pokemon,
-  type Moveset,
+  type PokemonMove,
   type EvolutionChange,
 } from "../../store/pokemon";
 import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
@@ -30,7 +30,7 @@ let pokemonNameInput: HTMLInputElement;
 
 let pokemon = {} as Pokemon;
 let originalPokemonDetails: Pokemon = {} as Pokemon;
-let pokemonMoveset: Moveset[] = [];
+let pokemonMoveset: PokemonMove[] = [];
 let pokemonSprite: string = "";
 
 let tabSet: number = 0;
@@ -68,8 +68,8 @@ async function getPokemon() {
 
       // Gather moveset
       await $db
-        .select<Moveset[]>(
-          `SELECT id, name, learn_method, level_learned FROM pokemon_movesets
+        .select<PokemonMove[]>(
+          `SELECT moves.id as id, moves.name as name, learn_method, level_learned FROM pokemon_movesets
             INNER JOIN moves on moves.id = pokemon_movesets.move
             WHERE pokemon = $1;`,
           [temp_pokemon.id],
@@ -200,8 +200,6 @@ async function savePokemonChanges() {
   ) {
     evolutionChangeId = await updateEvolutionChange();
   }
-
-  console.log(pokemon);
 
   await $db
     .execute(
@@ -532,7 +530,10 @@ async function convertMovesetsToSqlite() {
         <PokemonDetailsTab bind:pokemon={pokemon} />
       {/if}
       {#if tabSet === 1}
-        <PokemonMovesTab bind:moveset={pokemonMoveset} pokemonId={pokemon.id} />
+        <PokemonMovesTab
+          bind:moveset={pokemonMoveset}
+          bind:pokemonId={pokemon.id}
+        />
       {/if}
     </svelte:fragment>
   </TabGroup>

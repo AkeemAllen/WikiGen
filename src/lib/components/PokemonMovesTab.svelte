@@ -5,13 +5,13 @@ import ThSort from "$lib/components/ThSort.svelte";
 import { IconEdit, IconTrash } from "@tabler/icons-svelte";
 import { DataHandler } from "@vincjo/datatables";
 import _ from "lodash";
-import type { Moveset } from "../../store/pokemon";
+import type { PokemonMove } from "../../store/pokemon";
 import TextInput from "./TextInput.svelte";
 import NumberInput from "./NumberInput.svelte";
 import Button from "./Button.svelte";
 import BaseModal from "./BaseModal.svelte";
 import AutoComplete from "./AutoComplete.svelte";
-import ModifyMovesetModal from "./modals/ModifyMovesetModal.svelte";
+import ModifyMoveset from "./ModifyMoveset.svelte";
 import { shortcut } from "@svelte-put/shortcut";
 import { moveList } from "../../store/moves";
 import MultiSelect from "svelte-multiselect";
@@ -26,7 +26,7 @@ export let pokemonId: number;
 let searchValue: string = "";
 let modifyMovesetModalOpen: boolean = false;
 let addMoveModalOpen: boolean = false;
-let newMove: Moveset = {
+let newMove: PokemonMove = {
   id: 0,
   name: "",
   learn_method: "",
@@ -35,7 +35,7 @@ let newMove: Moveset = {
 
 let editMoveModalOpen: boolean = false;
 let moveToEditLearnMethods: string[] = [];
-let moveToEdit: Moveset = {
+let moveToEdit: PokemonMove = {
   id: 0,
   name: "",
   learn_method: "",
@@ -44,7 +44,7 @@ let moveToEdit: Moveset = {
 
 let newLearnMethods: string[] = [];
 
-export let moveset: Moveset[] = [];
+export let moveset: PokemonMove[] = [];
 
 $: moveListOptions = $moveList
   .map(([id, name]) => ({
@@ -79,7 +79,9 @@ async function deleteMove(moveId: number) {
         background: "variant-filled-success",
       });
     });
-  const updatedMoves: Moveset[] = moveset.filter((move) => move.id !== moveId);
+  const updatedMoves: PokemonMove[] = moveset.filter(
+    (move) => move.id !== moveId,
+  );
   moveset = updatedMoves;
 }
 
@@ -227,11 +229,15 @@ async function editMove() {
   />
 </BaseModal>
 
-<div>
-  <!-- <ModifyMovesetModal
-    bind:open={modifyMovesetModalOpen}
+<BaseModal bind:open={modifyMovesetModalOpen}>
+  <ModifyMoveset
     bind:moveset={moveset}
-  /> -->
+    bind:pokemonId={pokemonId}
+    bind:open={modifyMovesetModalOpen}
+  />
+</BaseModal>
+
+<div>
   <div class="mt-4 space-y-4 overflow-x-auto px-4">
     <header class="flex items-center justify-between gap-4">
       <div class="flex gap-x-3">
@@ -241,15 +247,11 @@ async function editMove() {
           inputHandler={() => handler.search(searchValue)}
           placeholder="Search move name..."
         />
-        <!-- <button
-          on:click={() => (modifyMovesetModalOpen = true)}
-          class=" mt-2 w-40 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white
-        shadow-sm hover:bg-indigo-500 focus-visible:outline
-        focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
-        disabled:bg-indigo-400"
-        >
-          Modify Moveset</button
-        > -->
+        <Button
+          title="Modify Moveset"
+          onClick={() => (modifyMovesetModalOpen = true)}
+          class="mt-2"
+        />
         <Button
           title="Add Move"
           class="mt-2"
