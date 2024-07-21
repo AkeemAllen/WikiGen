@@ -2,14 +2,7 @@
 import Button from "$lib/components/Button.svelte";
 import NumberInput from "$lib/components/NumberInput.svelte";
 import PokemonPanel from "$lib/components/PokemonPanel.svelte";
-import {
-  Tab,
-  TabGroup,
-  getToastStore,
-  type ToastSettings,
-} from "@skeletonlabs/skeleton";
-import { readTextFile } from "@tauri-apps/api/fs";
-import { appDataDir } from "@tauri-apps/api/path";
+import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
 import { invoke } from "@tauri-apps/api/tauri";
 import { selectedWiki } from "../../store";
 

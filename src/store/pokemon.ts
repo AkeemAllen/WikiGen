@@ -9,20 +9,20 @@ export type Pokemon = {
   id: number;
   dex_number: number;
   name: string;
-  type_1: string | null;
-  type_2: string | null;
-  ability_1: number | null;
-  ability_2: number | null;
+  types: string;
+  ability_1: string | null;
+  ability_2: string | null;
   hp: number;
   attack: number;
   defense: number;
   sp_attack: number;
   sp_defense: number;
   speed: number;
-  evolution_change: number | null;
-  ability_1_name: string;
-  ability_2_name: string;
-  evolution_change_object: EvolutionChange;
+  evolution_method: "level_up" | "item" | "other" | "no_change";
+  evolution_level: number | null;
+  evolution_item: string | null;
+  evolution_other: string | null;
+  evolved_pokemon: string | null;
 };
 
 export type Ability = {
@@ -58,14 +58,7 @@ export enum Operation {
   // SWAP_MOVES = "swap_moves",
 }
 
-export type EvolutionChange = {
-  id: number;
-  level: number | null;
-  item: number | null;
-  other: string | null;
-  evolved_pokemon: { id: number; name: string };
-  method: "level_up" | "item" | "other" | "no_change";
-};
+export type EvolutionChange = {};
 
 export const PokemonTypes = [
   null,

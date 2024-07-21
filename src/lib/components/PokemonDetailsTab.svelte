@@ -12,29 +12,54 @@ export let pokemon: Pokemon = {} as Pokemon;
 
 let pokemonListOptions = $pokemonList.map(([id, name]) => ({
   label: _.capitalize(name),
-  value: id,
+  value: name,
 }));
 
 const abilitiesListOptions = $abilitiesList.map(([id, name]) => ({
   label: _.capitalize(name),
-  value: id,
+  value: name,
 }));
 
 const itemListOptions = $itemsList.map(([id, name]) => ({
-  label: name,
-  value: id,
+  label: _.capitalize(name),
+  value: name,
 }));
 
-let evolutionItemName: string = "";
-$: if (
-  pokemon.evolution_change_object.item ||
-  pokemon.evolution_change_object.item === null
-) {
-  let itemName =
-    itemListOptions.find(
-      (item) => item.value === pokemon.evolution_change_object.item,
-    )?.label || "";
-  evolutionItemName = _.capitalize(itemName);
+let types: (string | null)[];
+$: if (pokemon.types) setTypes();
+function setTypes() {
+  types = pokemon.types.split(",");
+  if (types.length === 1) {
+    types.push(null);
+  }
+}
+
+function onTypeChange(e: any, type_number: string) {
+  console.log(e);
+  if (type_number === "1") {
+    types[0] = e.target.value;
+  } else {
+    types[1] = e.target.value;
+  }
+
+  console.log(types);
+
+  if (types[0] === null && types[1] === null) {
+    pokemon.types = `null_type`;
+    return;
+  }
+
+  if (types[0] !== null && types[1] === null) {
+    pokemon.types = types[0];
+    return;
+  }
+
+  if (types[0] === null && types[1] !== null) {
+    pokemon.types = types[1];
+    return;
+  }
+
+  pokemon.types = `${types[0]},${types[1]}`;
 }
 </script>
 
@@ -42,7 +67,7 @@ $: if (
   <div class="mt-4 grid grid-cols-2 gap-x-10 gap-y-5">
     <SelectInput
       id="pokemon-type-1"
-      bind:value={pokemon.type_1}
+      bind:value={types[0]}
       label="Type 1"
       options={PokemonTypes.map(type => {
         if (type === null) {
@@ -54,10 +79,11 @@ $: if (
           value: type,
         }
       })}
+      onChange={(e) => onTypeChange(e, "1")}
     />
     <SelectInput
       id="pokemon-type-2"
-      bind:value={pokemon.type_2}
+      bind:value={types[1]}
       label="Type 2"
       options={PokemonTypes.map(type => {
         if (type === null) {
@@ -69,26 +95,25 @@ $: if (
           value: type,
         }
       })}
+      onChange={(e) => onTypeChange(e, "2")}
     />
     <AutoComplete
       label="Ability 1"
-      bind:value={pokemon.ability_1_name}
+      bind:value={pokemon.ability_1}
       options={abilitiesListOptions}
       popupId="ability-1-popup"
       onSelection={(e) => {
-        pokemon.ability_1 = e.detail.value;
-        pokemon.ability_1_name = e.detail.label;
+        pokemon.ability_1 = _.capitalize(e.detail.value);
       }}
       class="w-full"
     />
     <AutoComplete
       label="Ability 2"
-      bind:value={pokemon.ability_2_name}
+      bind:value={pokemon.ability_2}
       options={abilitiesListOptions}
       popupId="ability-2-popup"
       onSelection={(e) => {
-        pokemon.ability_2 = e.detail.value;
-        pokemon.ability_2_name = e.detail.label;
+        pokemon.ability_2 = _.capitalize(e.detail.value);
     }}
       class="w-full"
     />
@@ -98,7 +123,7 @@ $: if (
       <SelectInput
         id="evolution-method"
         label="Evolution Method"
-        bind:value={pokemon.evolution_change_object.method}
+        bind:value={pokemon.evolution_method}
         options={[
             { label: "No Change", value: "no_change" },
             { label: "Level Up", value: "level_up" },
@@ -107,44 +132,42 @@ $: if (
           ]}
       />
     </div>
-    {#if pokemon.evolution_change_object.method === "item"}
+    {#if pokemon.evolution_method === "item"}
       <AutoComplete
         label="Evolution Item"
-        bind:value={evolutionItemName}
+        bind:value={pokemon.evolution_item}
         options={itemListOptions}
         popupId="evolution-item-popup"
         onSelection={(e) => {
-                pokemon.evolution_change_object.item= e.detail.value;
-                evolutionItemName = e.detail.label;
+                pokemon.evolution_item = e.detail.label;
               }}
       />
     {/if}
-    {#if pokemon.evolution_change_object.method === "level_up"}
+    {#if pokemon.evolution_method === "level_up"}
       <NumberInput
         id="evolution-level"
-        bind:value={pokemon.evolution_change_object.level}
+        bind:value={pokemon.evolution_level}
         label="Evolution Level"
         max={100}
       />
     {/if}
-    {#if pokemon.evolution_change_object.method === "other"}
+    {#if pokemon.evolution_method === "other"}
       <TextInput
         id="evolution-other"
-        bind:value={pokemon.evolution_change_object.other}
+        bind:value={pokemon.evolution_other}
         label="Evolution Other"
       />
     {/if}
-    {#if pokemon.evolution_change_object.method !== "no_change"}
+    {#if pokemon.evolution_method !== "no_change"}
       <div class="w-44">
         <AutoComplete
           label="Evolves To"
-          bind:value={pokemon.evolution_change_object.evolved_pokemon.name}
+          bind:value={pokemon.evolved_pokemon}
           placeholder="Evolves To"
           options={pokemonListOptions}
-          popupId="ability-popup"
+          popupId="evolved-pokemon-popup"
           onSelection={(e) => {
-            pokemon.evolution_change_object.evolved_pokemon.id = e.detail.value;
-              pokemon.evolution_change_object.evolved_pokemon.name = _.capitalize(e.detail.label);
+              pokemon.evolved_pokemon = e.detail.label;
             }}
         />
       </div>
