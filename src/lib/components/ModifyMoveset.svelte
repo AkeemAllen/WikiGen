@@ -25,6 +25,7 @@ const toastStore = getToastStore();
 
 export let open: boolean = false;
 export let pokemonId: number;
+export let generatePokemonPage: Function;
 let moveSetChangeList: MoveSetChange[] = [];
 export let onClose: Function = () => {
   open = false;
@@ -81,6 +82,7 @@ async function saveChanges() {
     .then((res) => {
       moveset = res;
     })
+    .then(() => generatePokemonPage())
     .finally(() => {
       toastStore.trigger({
         message: "Moveset changes applied!",

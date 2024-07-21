@@ -16,7 +16,7 @@ let pokemonListOptions = $pokemonList.map(([id, name]) => ({
 }));
 
 const abilitiesListOptions = $abilitiesList.map(([id, name]) => ({
-  label: _.capitalize(name),
+  label: name,
   value: name,
 }));
 
@@ -103,7 +103,7 @@ function onTypeChange(e: any, type_number: string) {
       options={abilitiesListOptions}
       popupId="ability-1-popup"
       onSelection={(e) => {
-        pokemon.ability_1 = _.capitalize(e.detail.value);
+        pokemon.ability_1 = e.detail.value;
       }}
       class="w-full"
     />
@@ -113,7 +113,7 @@ function onTypeChange(e: any, type_number: string) {
       options={abilitiesListOptions}
       popupId="ability-2-popup"
       onSelection={(e) => {
-        pokemon.ability_2 = _.capitalize(e.detail.value);
+        pokemon.ability_2 = e.detail.value;
     }}
       class="w-full"
     />

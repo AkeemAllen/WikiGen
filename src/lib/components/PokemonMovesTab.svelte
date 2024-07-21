@@ -23,6 +23,8 @@ const toastStore = getToastStore();
 // export let pokemonDetails: PokemonDetails;
 // export let savePokemonChanges: Function;
 export let pokemonId: number;
+export let generatePokemonPage: Function;
+
 let searchValue: string = "";
 let modifyMovesetModalOpen: boolean = false;
 let addMoveModalOpen: boolean = false;
@@ -74,15 +76,16 @@ async function deleteMove(moveId: number) {
       moveId,
     ])
     .then(() => {
+      const updatedMoves: PokemonMove[] = moveset.filter(
+        (move) => move.id !== moveId,
+      );
+      moveset = updatedMoves;
       toastStore.trigger({
         message: "Move deleted successfully",
         background: "variant-filled-success",
       });
-    });
-  const updatedMoves: PokemonMove[] = moveset.filter(
-    (move) => move.id !== moveId,
-  );
-  moveset = updatedMoves;
+    })
+    .then(() => generatePokemonPage());
 }
 
 async function addMove() {
@@ -93,21 +96,22 @@ async function addMove() {
       [pokemonId, newMove.id, newLearnMethods.join(","), newMove.level_learned],
     )
     .then(() => {
+      moveset = [
+        ...moveset,
+        {
+          id: newMove.id,
+          name: newMove.name,
+          learn_method: newLearnMethods.join(","),
+          level_learned: newMove.level_learned,
+        },
+      ];
       addMoveModalOpen = false;
       toastStore.trigger({
         message: "Move added successfully",
         background: "variant-filled-success",
       });
-    });
-  moveset = [
-    ...moveset,
-    {
-      id: newMove.id,
-      name: newMove.name,
-      learn_method: newLearnMethods.join(","),
-      level_learned: newMove.level_learned,
-    },
-  ];
+    })
+    .then(() => generatePokemonPage());
 }
 
 async function editMove() {
@@ -124,24 +128,25 @@ async function editMove() {
       ],
     )
     .then(() => {
+      moveset = moveset.map((move) => {
+        if (move.id === moveToEdit.id) {
+          return {
+            ...move,
+            learn_method: moveToEdit.learn_method,
+            level_learned: moveToEdit.level_learned,
+          };
+        }
+        return move;
+      });
+      moveToEdit = { id: 0, name: "", learn_method: "", level_learned: 0 };
+      moveToEditLearnMethods = [];
       editMoveModalOpen = false;
       toastStore.trigger({
         message: "Move updated successfully",
         background: "variant-filled-success",
       });
-    });
-  moveset = moveset.map((move) => {
-    if (move.id === moveToEdit.id) {
-      return {
-        ...move,
-        learn_method: moveToEdit.learn_method,
-        level_learned: moveToEdit.level_learned,
-      };
-    }
-    return move;
-  });
-  moveToEdit = { id: 0, name: "", learn_method: "", level_learned: 0 };
-  moveToEditLearnMethods = [];
+    })
+    .then(() => generatePokemonPage());
 }
 </script>
 
@@ -234,6 +239,7 @@ async function editMove() {
     bind:moveset={moveset}
     bind:pokemonId={pokemonId}
     bind:open={modifyMovesetModalOpen}
+    generatePokemonPage={generatePokemonPage}
   />
 </BaseModal>
 

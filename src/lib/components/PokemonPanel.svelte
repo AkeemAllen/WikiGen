@@ -40,6 +40,18 @@ let pokemonListOptions = $pokemonList.map(([id, name]) => ({
   value: id,
 }));
 
+async function generatePokemonPage() {
+  await invoke("generate_pokemon_pages_from_list", {
+    wikiName: $selectedWiki.name,
+    pokemonIds: [pokemon.id],
+  }).then(() => {
+    toastStore.trigger({
+      message: "Pokemon page regenerated!",
+      background: "variant-filled-success",
+    });
+  });
+}
+
 async function getPokemon() {
   let retrievedPokemon = $pokemonList.find(
     ([__, name]) => name === pokemonSearch[1].toLowerCase(),
@@ -152,8 +164,8 @@ async function savePokemonChanges() {
         pokemon.dex_number,
         pokemon.name,
         pokemon.types,
-        pokemon.ability_1,
-        pokemon.ability_2,
+        pokemon.ability_1?.toLowerCase(),
+        pokemon.ability_2?.toLowerCase(),
         pokemon.hp,
         pokemon.attack,
         pokemon.defense,
@@ -174,10 +186,7 @@ async function savePokemonChanges() {
         message: "Pokemon changes saved!",
         background: "variant-filled-success",
       });
-      invoke("generate_pokemon_pages_from_list", {
-        wikiName: $selectedWiki.name,
-        dexNumbers: [pokemon.id],
-      });
+      generatePokemonPage();
     })
     .catch((err) => {
       toastStore.trigger({
@@ -340,6 +349,7 @@ async function convertMovesetsToSqlite() {
         <PokemonMovesTab
           bind:moveset={pokemonMoveset}
           bind:pokemonId={pokemon.id}
+          generatePokemonPage={generatePokemonPage}
         />
       {/if}
     </svelte:fragment>
