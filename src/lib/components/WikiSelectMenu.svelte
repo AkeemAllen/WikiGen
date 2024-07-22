@@ -16,16 +16,20 @@ import { itemsList, type SearchItem } from "../../store/items";
 import BaseModal from "./BaseModal.svelte";
 import MultiSelect from "svelte-multiselect";
 import Button from "./Button.svelte";
+import SelectInput from "$lib/components/SelectInput.svelte";
 import HotKeysModal from "$lib/components/modals/HotKeysModal.svelte";
 import { getToastStore } from "@skeletonlabs/skeleton";
 import { invoke } from "@tauri-apps/api";
 import { goto } from "$app/navigation";
 import Database from "tauri-plugin-sql-api";
 import { db } from "../../store/db";
+import TextInput from "./TextInput.svelte";
 
 const toastStore = getToastStore();
 
 let deleteWikiModalOpen: boolean = false;
+let migrateWikiModalOpen: boolean = false;
+let wikiToMigrate: string = "";
 let wikisToDelete: string[] = [];
 let directoriesRemoved: boolean = false;
 let wikiJsonUpdated: boolean = false;
@@ -128,6 +132,19 @@ async function loadDatabase(wiki: Wiki) {
     },
   );
 }
+
+async function migrateWiki() {
+  await invoke("migrate_wiki", {
+    wikiName: wikiToMigrate,
+  }).then(() => {
+    toastStore.trigger({
+      message: "Wiki Migrated Successfully",
+      background: "variant-filled-success",
+    });
+  });
+  migrateWikiModalOpen = false;
+  wikiToMigrate = "";
+}
 </script>
 
 <BaseModal bind:open={deleteWikiModalOpen}>
@@ -143,6 +160,26 @@ async function loadDatabase(wiki: Wiki) {
     />
   </div>
   <Button onClick={() => deleteWikis()} title="Delete Selected Wikis" />
+</BaseModal>
+
+<BaseModal bind:open={migrateWikiModalOpen}>
+  <div>
+    <label
+      for="wiki-to-migrate"
+      class="block text-sm font-medium leading-6 text-gray-900"
+      >Wikis To Migrate</label
+    >
+    <SelectInput
+      id="wiki-to-migrate"
+      bind:value={wikiToMigrate}
+      options={Object.keys($wikis).map(wiki => wiki)}
+    />
+  </div>
+  <Button
+    onClick={() => migrateWiki()}
+    title="Migrate Wiki Data"
+    disabled={wikiToMigrate === ""}
+  />
 </BaseModal>
 
 <HotKeysModal bind:open={hotKeysModalOpen} />
@@ -175,6 +212,10 @@ async function loadDatabase(wiki: Wiki) {
       on:click={backupWiki}>Backup Wiki</button
     >
   {/if}
+  <button
+    class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+    on:click={() => migrateWikiModalOpen = true}>Migrate Wiki</button
+  >
   <button
     class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
     on:click={() => hotKeysModalOpen = true}>View Hotkeys</button
