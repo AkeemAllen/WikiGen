@@ -233,13 +233,13 @@ export const setUniquePokemonId = (
   trainers: { [key: string]: TrainerInfo },
   trainerName: string,
   pokemonName: string,
-  pokemonList: [string, number][],
+  pokemonList: [number, string][],
 ) => {
   let teamLength = 0;
 
   if (isNullEmptyOrUndefined(trainers)) {
     return `${
-      pokemonList.find(([name, _]) => name === pokemonName)?.[1]
+      pokemonList.find(([id, name]) => name === pokemonName)?.[1]
     }_${teamLength}_${Math.floor(Math.random() * 9000 + 1000)}`;
   }
 
@@ -249,7 +249,7 @@ export const setUniquePokemonId = (
     }
   }
   return `${
-    pokemonList?.find(([name, _]) => name === pokemonName)?.[1]
+    pokemonList?.find(([id, name]) => name === pokemonName)?.[1]
   }_${teamLength}_${Math.floor(Math.random() * 9000 + 1000)}`;
 };
 
