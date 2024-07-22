@@ -1,23 +1,16 @@
 import { writable } from "svelte/store";
 
-export type Abilities = {
-  [key: string]: Ability;
-};
-
 export type Ability = {
+  id: number;
+  name: string;
   effect: string;
+  is_modified: number;
+  is_new: number;
 };
 
-export type ModifiedAbilities = {
-  [key: string]: ModifiedAbility;
+export type SearchAbility = {
+  id: number;
+  name: string;
 };
 
-export type ModifiedAbility = {
-  original: { effect: string };
-  modified: { effect: string };
-  is_new_ability: boolean;
-};
-
-export let abilities = writable<Abilities>();
-export let abilitiesList = writable<string[]>([]);
-export let modifiedAbilities = writable<ModifiedAbilities>({});
+export let abilitiesList = writable<[number, string][]>([]);

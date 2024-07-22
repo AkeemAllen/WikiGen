@@ -1,6 +1,6 @@
 {
   "name": "wikigen",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "private": true,
   "scripts": {
     "dev": "vite dev",
@@ -40,6 +40,7 @@
     "@tauri-apps/api": "^1.5.3",
     "@vincjo/datatables": "^1.14.5",
     "lodash": "^4.17.21",
-    "svelte-multiselect": "^10.3.0"
+    "svelte-multiselect": "^10.3.0",
+    "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql#v1"
   }
 }

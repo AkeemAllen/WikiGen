@@ -1,18 +1,21 @@
 import { writable } from "svelte/store";
 
-export type MoveDetails = {
-  accuracy: number;
-  pp: number;
-  power: number;
+export type Move = {
+  id: number;
+  name: string;
+  accuracy: number | null;
+  pp: number | null;
+  power: number | null;
   type: string;
   damage_class: string;
-  past_values: any[];
-  machine_name: string;
+  machine_name: string | null;
+  is_modified: number;
+  is_new: number;
 };
 
-type Moves = {
-  moves: { [key: string]: MoveDetails };
+export type SearchMove = {
+  id: number;
+  name: string;
 };
 
-export let moves = writable<Moves>();
-export let moveList = writable<string[]>([]);
+export let moveList = writable<[number, string][]>([]);

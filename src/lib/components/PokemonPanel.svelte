@@ -1,210 +1,339 @@
 <script lang="ts">
+import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
 import {
-  Tab,
-  TabGroup,
-  getToastStore,
-  type AutocompleteOption,
-} from "@skeletonlabs/skeleton";
-import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+  BaseDirectory,
+  readBinaryFile,
+  writeBinaryFile,
+} from "@tauri-apps/api/fs";
 import _ from "lodash";
 import { selectedWiki } from "../../store";
 import {
-  pokemon,
   pokemonList,
-  modifiedPokemon,
-  type PokemonDetails,
+  type Pokemon,
+  type PokemonMove,
+  type EvolutionChange,
 } from "../../store/pokemon";
 import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
 import PokemonMovesTab from "./PokemonMovesTab.svelte";
 import { invoke } from "@tauri-apps/api";
-import {
-  convertToTitle,
-  extractPokemonRange,
-  getShardToWrite,
-} from "$lib/utils";
+import { base64ToArray } from "$lib/utils";
 import { shortcut } from "@svelte-put/shortcut";
 import Button from "./Button.svelte";
 import AutoComplete from "./AutoComplete.svelte";
-import { updatePokemonModifications } from "$lib/utils/modificationHelpers";
+import { db } from "../../store/db";
 
 const toastStore = getToastStore();
 
-let pokemonName: string = "";
-let formName: string = "";
-let pokemonId: number = 0;
-let pokemonDetails: PokemonDetails = {} as PokemonDetails;
-let originalPokemonDetails: PokemonDetails = {} as PokemonDetails;
+let pokemonSearch: [number, string] = [0, ""];
+
 let pokemonNameInput: HTMLInputElement;
-let currentPokemonName: string = "";
+
+let pokemon = {} as Pokemon;
+let originalPokemonDetails: Pokemon = {} as Pokemon;
+let pokemonMoveset: PokemonMove[] = [];
+let pokemonSprite: string = "";
 
 let tabSet: number = 0;
-let formTabSet: number = 0;
 
-let pokemonListOptions: AutocompleteOption<string | number>[] =
-  $pokemonList.map(([name, id]) => ({ label: name, value: id }));
+let pokemonListOptions = $pokemonList.map(([id, name]) => ({
+  label: _.capitalize(name),
+  value: id,
+}));
 
-function onPokemonNameSelected(
-  event: CustomEvent<AutocompleteOption<string | number>>,
-): void {
-  pokemonName = event.detail.label;
-  pokemonId = event.detail.value as number;
-}
-
-function setPokemonDetails(id: number) {
-  pokemonId = id;
-  pokemonName = $pokemon.pokemon[pokemonId].name;
-  currentPokemonName = pokemonName;
-  pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
-  originalPokemonDetails = _.cloneDeep(pokemonDetails);
-  formTabSet = 0;
-}
-
-async function savePokemonChanges() {
-  if (_.isEqual(originalPokemonDetails, pokemonDetails)) {
-    return;
-  }
-  if (formTabSet !== 0) {
-    $pokemon.pokemon[pokemonId].forms[formName] = {
-      types: pokemonDetails.types,
-      abilities: pokemonDetails.abilities,
-      stats: pokemonDetails.stats,
-      moves: pokemonDetails.moves,
-      sprite: pokemonDetails.sprite,
-    };
-    formName = "";
-  } else {
-    $pokemon.pokemon[pokemonId] = pokemonDetails;
-  }
-
-  updatePokemonModifications(
-    $modifiedPokemon,
-    originalPokemonDetails,
-    pokemonDetails,
-  );
-
-  let shard_index = getShardToWrite(pokemonId);
-
-  await writeTextFile(
-    `${$selectedWiki.name}/data/pokemon_data/shard_${shard_index}.json`,
-    JSON.stringify(extractPokemonRange($pokemon, shard_index)),
-    { dir: BaseDirectory.AppData },
-  ).then(() => {
-    originalPokemonDetails = _.cloneDeep(pokemonDetails);
+async function generatePokemonPage() {
+  await invoke("generate_pokemon_pages_from_list", {
+    wikiName: $selectedWiki.name,
+    pokemonIds: [pokemon.id],
+  }).then(() => {
     toastStore.trigger({
-      message: "Pokemon Changes Saved",
-      timeout: 3000,
+      message: "Pokemon page regenerated!",
       background: "variant-filled-success",
-    });
-    invoke("generate_pokemon_pages_from_list", {
-      wikiName: $selectedWiki.name,
-      dexNumbers: [pokemonId],
     });
   });
 }
 
-function nextPokemon() {
-  if (pokemonId === 1025) {
+async function getPokemon() {
+  let retrievedPokemon = $pokemonList.find(
+    ([__, name]) => name === pokemonSearch[1].toLowerCase(),
+  );
+
+  if (!retrievedPokemon) {
     toastStore.trigger({
-      message: "No more Pokemon",
-      timeout: 3000,
+      message: "Pokemon not found!",
       background: "variant-filled-error",
     });
     return;
   }
-  setPokemonDetails(pokemonId + 1);
+
+  await $db
+    .select<Pokemon[]>(`SELECT * FROM pokemon WHERE id = $1;`, [
+      pokemonSearch[0],
+    ])
+    .then(async (res) => {
+      pokemon = res[0];
+
+      // Gather moveset
+      await $db
+        .select<PokemonMove[]>(
+          `SELECT moves.id as id, moves.name as name, learn_method, level_learned FROM pokemon_movesets
+            INNER JOIN moves on moves.id = pokemon_movesets.move
+            WHERE pokemon = $1;`,
+          [res[0].id],
+        )
+        .then((res) => {
+          pokemonMoveset = res;
+        })
+        .catch((err) => {
+          toastStore.trigger({
+            message: `Error loading Pokemon moveset!: \n ${err}`,
+            background: "variant-filled-error",
+          });
+        });
+
+      // Reading in image separately
+      pokemonSprite = await readBinaryFile(
+        `${$selectedWiki.name}/dist/docs/img/pokemon/${res[0].name}.png`,
+        { dir: BaseDirectory.AppData },
+      )
+        .then((res) => {
+          const blob = new Blob([res], { type: "image/png" });
+          return URL.createObjectURL(blob);
+        })
+        .catch((err) => {
+          console.log(err);
+          if (err.includes("No such file or directory")) {
+            return "404";
+          }
+          return "Error loading image";
+        });
+      return res[0];
+    })
+    .then((res) => {
+      originalPokemonDetails = _.cloneDeep(res);
+    })
+    .catch((err) => {
+      toastStore.trigger({
+        message: `Error loading Pokemon!: \n ${err}`,
+        background: "variant-filled-error",
+      });
+    });
 }
 
-function prevPokemon() {
-  if (pokemonId === 1) {
-    toastStore.trigger({
-      message: "No more Pokemon",
-      timeout: 3000,
-      background: "variant-filled-error",
-    });
+async function savePokemonChanges() {
+  if (_.isEqual(pokemon, originalPokemonDetails)) {
     return;
   }
-  setPokemonDetails(pokemonId - 1);
+
+  if (pokemon.evolution_method === "no_change") {
+    pokemon.evolution_item = null;
+    pokemon.evolution_level = null;
+    pokemon.evolution_other = null;
+    pokemon.evolved_pokemon = null;
+  } else if (pokemon.evolution_method === "level_up") {
+    pokemon.evolution_item = null;
+    pokemon.evolution_other = null;
+  } else if (pokemon.evolution_method === "other") {
+    pokemon.evolution_item = null;
+    pokemon.evolution_level = null;
+  } else if (pokemon.evolution_method === "item") {
+    pokemon.evolution_level = null;
+    pokemon.evolution_other = null;
+  }
+
+  await $db
+    .execute(
+      `UPDATE pokemon SET
+          dex_number = $1,
+          name = $2,
+          types = $3,
+          ability_1 = $4,
+          ability_2 = $5,
+          hp = $6,
+          attack = $7,
+          defense = $8,
+          sp_attack = $9,
+          sp_defense = $10,
+          speed = $11,
+          evolution_method = $12,
+          evolution_item = $13,
+          evolution_level = $14,
+          evolution_other = $15,
+          evolved_pokemon = $16
+        WHERE id = $17;`,
+      [
+        pokemon.dex_number,
+        pokemon.name,
+        pokemon.types,
+        pokemon.ability_1?.toLowerCase(),
+        pokemon.ability_2?.toLowerCase(),
+        pokemon.hp,
+        pokemon.attack,
+        pokemon.defense,
+        pokemon.sp_attack,
+        pokemon.sp_defense,
+        pokemon.speed,
+        pokemon.evolution_method,
+        pokemon.evolution_item,
+        pokemon.evolution_level,
+        pokemon.evolution_other,
+        pokemon.evolved_pokemon,
+        pokemon.id,
+      ],
+    )
+    .then(() => {
+      originalPokemonDetails = _.cloneDeep(pokemon);
+      toastStore.trigger({
+        message: "Pokemon changes saved!",
+        background: "variant-filled-success",
+      });
+      generatePokemonPage();
+    })
+    .catch((err) => {
+      toastStore.trigger({
+        message: `Error saving pokemon changes!: ${err}`,
+        background: "variant-filled-error",
+      });
+    });
 }
+
+// function nextPokemon() {
+//   if (pokemonId === 1025) {
+//     toastStore.trigger({
+//       message: "No more Pokemon",
+//       timeout: 3000,
+//       background: "variant-filled-error",
+//     });
+//     return;
+//   }
+//   setPokemonDetails(pokemonId + 1);
+// }
+
+// function prevPokemon() {
+//   if (pokemonId === 1) {
+//     toastStore.trigger({
+//       message: "No more Pokemon",
+//       timeout: 3000,
+//       background: "variant-filled-error",
+//     });
+//     return;
+//   }
+//   setPokemonDetails(pokemonId - 1);
+// }
+
+async function convertPokemonToSqlite() {
+  await invoke("convert_pokemon_to_sqlite", {
+    wikiName: $selectedWiki.name,
+  })
+    .then(() => {
+      toastStore.trigger({
+        message: "Pokemon converted!",
+        background: "variant-filled-success",
+      });
+    })
+    .catch((err) => {
+      toastStore.trigger({
+        message: "Error converting pokemon!",
+        background: "variant-filled-error",
+      });
+    });
+}
+
+async function convertMovesetsToSqlite() {
+  await invoke("convert_pokemon_movesets_to_sqlite", {
+    wikiName: $selectedWiki.name,
+  })
+    .then(() => {
+      toastStore.trigger({
+        message: "Moveset converted!",
+        background: "variant-filled-success",
+      });
+    })
+    .catch((err) => {
+      toastStore.trigger({
+        message: "Error converting moveset!",
+        background: "variant-filled-error",
+      });
+    });
+}
+
+// async function updateSpriteNames() {
+//   for (const entry of $pokemonList) {
+//     let id: string | number = entry[1];
+
+//     if (id < 10) {
+//       id = `00${id}`;
+//     } else if (id < 100) {
+//       id = `0${id}`;
+//     }
+
+//     let sprite = await readBinaryFile(
+//       `${$selectedWiki.name}/dist/docs/img/pokemon/${id}.png`,
+//       { dir: BaseDirectory.AppData },
+//     )
+//       .then((res) => {
+//         const blob = new Blob([res], { type: "image/png" });
+//         return URL.createObjectURL(blob);
+//       })
+//       .catch((err) => {
+//         console.log(err);
+//         if (err.includes("No such file or directory")) {
+//           return "404";
+//         }
+//         return "Error loading image";
+//       });
+//     if (sprite === "404" || sprite === "Error loading image") {
+//       continue;
+//     }
+
+//     let reader = new FileReader();
+//     reader.onloadend = (e) => {
+//       let imageBytes = base64ToArray(
+//         (e.target?.result as string).replace("data:image/png;base64,", ""),
+//         "image/png",
+//       );
+//       writeBinaryFile(
+//         `${$selectedWiki.name}/dist/docs/img/temp_pokemon/${entry[0]}.png`,
+//         imageBytes,
+//         { dir: BaseDirectory.AppData },
+//       );
+//     };
+//     reader.readAsDataURL(await fetch(sprite).then((res) => res.blob()));
+//   }
+// }
 </script>
 
 <div class="flex flex-row gap-7">
   <AutoComplete
-    bind:value={pokemonName}
+    bind:value={pokemonSearch[1]}
     placeholder="Search Pokemon"
     options={pokemonListOptions}
     popupId="pokemon-search"
-    onSelection={onPokemonNameSelected}
+    onSelection={(e) => {
+      pokemonSearch = [e.detail.value, e.detail.label]
+    }}
     bind:inputNode={pokemonNameInput}
     showChevron={false}
-    onKeydown={(e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          let id = Object.entries($pokemon.pokemon).find(([_, value]) => value.name === pokemonName)?.[1].id;
-          if (id === undefined) {
-            toastStore.trigger({
-              message: "Pokemon not found",
-              timeout: 3000,
-              background: "variant-filled-error",
-            });
-            return;
-          }
-          setPokemonDetails(id);
-        }
-      }}
   />
   <Button
     title="Search"
-    onClick={() => {
-        setPokemonDetails(pokemonId);
-      }}
-    disabled={pokemonName === ""}
+    onClick={getPokemon}
+    disabled={pokemonSearch[0] === 0}
     class="mt-2 w-32"
   />
   <Button
     title="Save Changes"
     onClick={savePokemonChanges}
-    disabled={_.isEqual(pokemonDetails, originalPokemonDetails)}
+    disabled={_.isEqual(pokemon, originalPokemonDetails)}
     class="mt-2 w-32"
   />
 </div>
 
-{#if pokemonDetails.id !== undefined}
-  {#if Object.keys(pokemonDetails.forms).length !== 0}
-    <TabGroup class="mb-4 mt-4">
-      <Tab
-        bind:group={formTabSet}
-        name="pokemon-details"
-        value={0}
-        class="text-sm"
-        on:click={() => {
-          pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
-          originalPokemonDetails = _.cloneDeep(pokemonDetails);
-          formName = "";
-        }}
-        >{convertToTitle(currentPokemonName)}</Tab
-      >
-      {#each Object.keys(pokemonDetails.forms) as form, index}
-        <Tab
-          bind:group={formTabSet}
-          name={form}
-          value={index + 1}
-          class="text-sm"
-          on:click={() => {
-            pokemonDetails = {
-              ...pokemonDetails,
-              ...pokemonDetails.forms[form],
-              name: form,
-            };
-            originalPokemonDetails = _.cloneDeep(pokemonDetails);
-            formName = form;
-          }}
-          >{convertToTitle(form)}</Tab
-        >
-      {/each}
-    </TabGroup>
+{#if !_.isEmpty(pokemon)}
+  {#if pokemonSprite === "404"}
+    <p>No sprite found for {pokemon.name}</p>
+  {:else}
+    <img src={pokemonSprite} alt={pokemon.name} width="100" />
   {/if}
-
-  <img src={pokemonDetails.sprite} alt={pokemonDetails.name} width="100" />
   <TabGroup>
     <Tab bind:group={tabSet} name="pokemon-details" value={0} class="text-sm"
       >Details</Tab
@@ -214,36 +343,23 @@ function prevPokemon() {
     >
     <svelte:fragment slot="panel">
       {#if tabSet === 0}
-        <PokemonDetailsTab
-          bind:pokemonDetails={pokemonDetails}
-          bind:formTabSet={formTabSet}
-        />
+        <PokemonDetailsTab bind:pokemon={pokemon} />
       {/if}
       {#if tabSet === 1}
         <PokemonMovesTab
-          bind:pokemonDetails={pokemonDetails}
-          savePokemonChanges={savePokemonChanges}
+          bind:moveset={pokemonMoveset}
+          bind:pokemonId={pokemon.id}
+          generatePokemonPage={generatePokemonPage}
         />
       {/if}
     </svelte:fragment>
   </TabGroup>
 {/if}
+<!-- <Button title="Convert Pokemon to SQLite" onClick={convertPokemonToSqlite} /> -->
+<!-- <Button title="Update Sprite Names" onClick={updateSpriteNames} /> -->
+<!-- <Button title="Convert Movesets to SQLite" onClick={convertMovesetsToSqlite} /> -->
 
 <svelte:window
-  use:shortcut={{
-    trigger: {
-      key: ']',
-      modifier:["ctrl", "meta"],
-      callback: nextPokemon,
-    },
-  }}
-  use:shortcut={{
-    trigger: {
-      key: '[',
-      modifier:["ctrl", "meta"],
-      callback: prevPokemon,
-    },
-  }}
   use:shortcut={{
     trigger: {
       key: 'k',

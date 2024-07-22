@@ -424,27 +424,27 @@ fn create_trainer_table(
 }
 
 fn get_markdown_entry_for_pokemon(wiki_name: &str, pokemon: &WildEncounter) -> String {
-    let dex_number_file_name = get_pokemon_dex_formatted_name(pokemon.id);
+    let dex_number_file_name = get_pokemon_dex_formatted_name(pokemon.id.try_into().unwrap());
     return format!(
         "![{}](../../img/pokemon/{}.png)<br/> [{}](/{}/pokemon/{})<br/> {}%",
         pokemon.name,
-        dex_number_file_name,
+        pokemon.name,
         capitalize(&pokemon.name),
         wiki_name,
-        dex_number_file_name,
+        format!("{}-{}", dex_number_file_name, pokemon.name),
         pokemon.encounter_rate
     );
 }
 
 fn get_markdown_entry_for_trainer_pokemon(wiki_name: &str, pokemon: &TrainerPokemon) -> String {
-    let dex_number_file_name = get_pokemon_dex_formatted_name(pokemon.id);
+    let dex_number_file_name = get_pokemon_dex_formatted_name(pokemon.id.try_into().unwrap());
     return format!(
         "![{}](../../img/pokemon/{}.png)<br/> [{}](/{}/pokemon/{})",
         pokemon.name,
-        dex_number_file_name,
+        pokemon.name,
         capitalize(&pokemon.name),
         wiki_name,
-        dex_number_file_name,
+        format!("{}-{}", dex_number_file_name, pokemon.name),
     );
 }
 

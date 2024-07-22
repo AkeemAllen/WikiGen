@@ -15,15 +15,15 @@ pub struct ModifiedPokemonDetails {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Types {
-    original: Vec<String>,
-    modified: Vec<String>,
+    pub original: Vec<String>,
+    pub modified: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-struct ModifiedItemsNaturesAbilities {
-    items: HashMap<String, ModifiedItem>,
-    natures: HashMap<String, ModifiedNature>,
-    abilities: HashMap<String, ModifiedAbility>,
+pub struct ModifiedItemsNaturesAbilities {
+    pub items: HashMap<String, ModifiedItem>,
+    pub natures: HashMap<String, ModifiedNature>,
+    pub abilities: HashMap<String, ModifiedAbility>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

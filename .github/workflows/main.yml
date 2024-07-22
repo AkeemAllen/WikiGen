@@ -72,7 +72,17 @@ jobs:
         with:
           tagName: wikigen-v__VERSION__-alpha
           releaseName: "WikiGen v__VERSION__ Alpha"
-          releaseBody: "See the assets to download this version and install."
+          releaseBody: "
+            Changelog:
+            - Switched to using sqlite database as data store for everything except routes.
+            - Removed pokemon form tabs, all forms are now treated as separate pokemon.
+            - Removed the creation of type and evolution change pages. This will be added back in a future release.
+            - Removed 'Swap' and 'Replace by Level' opertions in modify moveset modal.
+            - Included 'Add' and 'Edit' buttons on pokemon move page to allow for easier editing of moves.
+
+            Breaking Changes:
+            - Wikis created before this version will not be loaded. The json data will need to be transitioned to a db. I'll be working on a migration tool to automate this process.
+            "
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.settings.args }}

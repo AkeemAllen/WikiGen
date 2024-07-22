@@ -4,34 +4,47 @@ use std::{
 };
 
 use serde_yaml::{Mapping, Value};
+use sqlx::{migrate::MigrateDatabase, FromRow, Sqlite, SqlitePool};
 use tauri::AppHandle;
 
-use crate::{helpers::capitalize_and_remove_hyphens, structs::mkdocs_structs::MKDocsConfig};
+use crate::{
+    helpers::{capitalize_and_remove_hyphens, FALSE, TRUE},
+    structs::mkdocs_structs::MKDocsConfig,
+};
 
-use super::ModifiedItem;
+#[derive(Debug, Clone, FromRow)]
+struct Item {
+    name: String,
+    effect: String,
+    is_modified: i32,
+    is_new: i32,
+}
 
 #[tauri::command]
-pub fn generate_item_page(wiki_name: &str, app_handle: AppHandle) -> Result<String, String> {
+pub async fn generate_item_page(wiki_name: &str, app_handle: AppHandle) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
 
-    let modified_items_natures_abilities_json_file_path = base_path
-        .join(wiki_name)
-        .join("data")
-        .join("modifications")
-        .join("modified_items_natures_abilities.json");
-    let modified_items_natures_abilities_file =
-        File::open(&modified_items_natures_abilities_json_file_path).unwrap();
-    let modified_items_natures_abilities: super::ModifiedItemsNaturesAbilities =
-        match serde_json::from_reader(modified_items_natures_abilities_file) {
-            Ok(file) => file,
-            Err(err) => {
-                return Err(format!(
-                    "Failed to read modified items, natures, and abilities json file: {}",
-                    err
-                ))
-            }
-        };
-    let modified_items = modified_items_natures_abilities.items;
+    let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
+    let sqlite_connection_string = format!("sqlite:{}", sqlite_path.to_str().unwrap());
+    if !Sqlite::database_exists(&sqlite_connection_string)
+        .await
+        .unwrap_or(false)
+    {
+        return Err("Database does not exist".to_string());
+    }
+    let conn = match SqlitePool::connect(&sqlite_connection_string).await {
+        Ok(conn) => conn,
+        Err(err) => {
+            return Err(format!("Failed to connect to database: {}", err));
+        }
+    };
+
+    let items = sqlx::query_as::<_, Item>("SELECT * FROM items")
+        .fetch_all(&conn)
+        .await
+        .unwrap();
+
+    conn.close().await;
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
     let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
@@ -67,18 +80,22 @@ pub fn generate_item_page(wiki_name: &str, app_handle: AppHandle) -> Result<Stri
     let mut item_new = String::new();
     let mut item_modified = String::new();
 
-    for (item_name, item_details) in modified_items.iter() {
+    for item in items {
+        if item.is_new == FALSE && item.is_modified == FALSE {
+            continue;
+        }
+
         let entry = format!(
             "| {} | {} |\n",
             format!(
                 "{}<br/>{}",
-                get_item_image(item_name, item_details),
-                capitalize_and_remove_hyphens(item_name)
+                format!("![{}](img/items/{}.png)", &item.name, &item.name),
+                capitalize_and_remove_hyphens(&item.name)
             ),
-            item_details.modified.effect.replace("\n", "")
+            &item.effect.replace("\n", "")
         );
 
-        if item_details.is_new_item {
+        if item.is_new == TRUE {
             if item_new.is_empty() {
                 item_new.push_str(&format!(
                     "| New Items | Effect |
@@ -87,7 +104,9 @@ pub fn generate_item_page(wiki_name: &str, app_handle: AppHandle) -> Result<Stri
                 ))
             }
             item_new.push_str(&entry);
-        } else {
+        }
+
+        if item.is_modified == TRUE {
             if item_modified.is_empty() {
                 item_modified.push_str(&format!(
                     "| Modified Items | Effect |
@@ -171,11 +190,4 @@ pub fn generate_item_page(wiki_name: &str, app_handle: AppHandle) -> Result<Stri
     }
 
     Ok("Items Page Generated".to_string())
-}
-
-fn get_item_image(item_name: &str, item_details: &ModifiedItem) -> String {
-    if item_details.is_new_item {
-        return format!("![{}]({})", item_name, item_details.modified.sprite);
-    }
-    return format!("![{}](img/items/{}.png)", item_name, item_name);
 }

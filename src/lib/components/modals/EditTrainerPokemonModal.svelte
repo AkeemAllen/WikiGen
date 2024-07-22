@@ -28,20 +28,22 @@ export let savePokemonChanges = (trainerToUpdate: string) => {};
 export let nextTrainerPokemon = () => {};
 export let prevTrainerPokemon = () => {};
 
-let abilityListOptions = $abilitiesList.map((ability) => ({
-  label: ability,
-  value: ability,
+let abilityListOptions = $abilitiesList.map(([id, name]) => ({
+  label: name,
+  value: name,
 }));
 
-let natureListOptions = $naturesList.map((nature) => ({
-  label: nature,
-  value: nature,
+let natureListOptions = $naturesList.map(([id, name]) => ({
+  label: name,
+  value: name,
 }));
 
-let itemListOptions = $itemsList.map((item) => ({
-  label: item,
-  value: item,
+let itemListOptions = $itemsList.map(([id, name]) => ({
+  label: name,
+  value: name,
 }));
+
+let moveListOptions = $moveList.map(([id, name]) => name);
 </script>
 
 <BaseModal bind:open={open} class="grid w-[40rem] grid-cols-2 gap-5">
@@ -79,7 +81,7 @@ let itemListOptions = $itemsList.map((item) => ({
     <MultiSelect
       id="moveSet"
       bind:selected={pokemon.moves}
-      options={$moveList}
+      options={moveListOptions}
       maxSelect={4}
       maxOptions={5}
       style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"

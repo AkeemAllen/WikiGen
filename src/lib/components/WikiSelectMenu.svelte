@@ -7,22 +7,20 @@ import {
 } from "@tauri-apps/api/fs";
 import { selectedWiki, wikis, type Wiki } from "../../store";
 import { routes } from "../../store/gameRoutes";
-import { moveList, moves } from "../../store/moves";
-import { modifiedPokemon, pokemon, pokemonList } from "../../store/pokemon";
+import { moveList, type SearchMove } from "../../store/moves";
+import { pokemonList, type SearchPokemon } from "../../store/pokemon";
 import { sortRoutesByPosition } from "$lib/utils";
-import {
-  abilities,
-  abilitiesList,
-  modifiedAbilities,
-} from "../../store/abilities";
-import { modifiedNatures, natures, naturesList } from "../../store/natures";
-import { items, itemsList, modifiedItems } from "../../store/items";
+import { abilitiesList, type SearchAbility } from "../../store/abilities";
+import { naturesList, type SearchNature } from "../../store/natures";
+import { itemsList, type SearchItem } from "../../store/items";
 import BaseModal from "./BaseModal.svelte";
 import MultiSelect from "svelte-multiselect";
 import Button from "./Button.svelte";
 import { getToastStore } from "@skeletonlabs/skeleton";
 import { invoke } from "@tauri-apps/api";
 import { goto } from "$app/navigation";
+import Database from "tauri-plugin-sql-api";
+import { db } from "../../store/db";
 
 const toastStore = getToastStore();
 
@@ -37,78 +35,8 @@ $: wikiListOptions = Object.keys($wikis).filter(
   (wiki) => wiki !== $selectedWiki.name,
 );
 
-async function loadPokemonData() {
-  for (let i = 1; i <= 10; i++) {
-    const shard = await readTextFile(
-      `${$selectedWiki.name}/data/pokemon_data/shard_${i}.json`,
-      { dir: BaseDirectory.AppData },
-    );
-    let parsedShard = JSON.parse(shard);
-    $pokemon.pokemon = {
-      ...$pokemon.pokemon,
-      ...parsedShard.pokemon,
-    };
-  }
-
-  pokemonList.set(
-    Object.entries($pokemon.pokemon).map(([key, value]) => [
-      value.name,
-      parseInt(key),
-    ]),
-  );
-}
-
 async function loadWikiData(wiki: Wiki) {
   $selectedWiki = wiki;
-
-  const abilitiesFromFile = await readTextFile(
-    `${$selectedWiki.name}/data/abilities.json`,
-    { dir: BaseDirectory.AppData },
-  );
-  abilities.set(JSON.parse(abilitiesFromFile));
-  abilitiesList.set(Object.keys($abilities));
-
-  const naturesFromFile = await readTextFile(
-    `${$selectedWiki.name}/data/natures.json`,
-    { dir: BaseDirectory.AppData },
-  );
-  natures.set(JSON.parse(naturesFromFile));
-  naturesList.set(Object.keys($natures));
-
-  const itemsFromFile = await readTextFile(
-    `${$selectedWiki.name}/data/items.json`,
-    { dir: BaseDirectory.AppData },
-  );
-  items.set(JSON.parse(itemsFromFile));
-  itemsList.set(Object.keys($items));
-
-  loadPokemonData();
-
-  const modifiedPokemonFromFile = await readTextFile(
-    `${$selectedWiki.name}/data/modifications/modified_pokemon.json`,
-    { dir: BaseDirectory.AppData },
-  );
-  modifiedPokemon.set(JSON.parse(modifiedPokemonFromFile));
-
-  const modifiedItemsNaturesAbilitiesFromFile = await readTextFile(
-    `${$selectedWiki.name}/data/modifications/modified_items_natures_abilities.json`,
-    { dir: BaseDirectory.AppData },
-  );
-  modifiedItems.set(JSON.parse(modifiedItemsNaturesAbilitiesFromFile).items);
-  modifiedNatures.set(
-    JSON.parse(modifiedItemsNaturesAbilitiesFromFile).natures,
-  );
-  modifiedAbilities.set(
-    JSON.parse(modifiedItemsNaturesAbilitiesFromFile).abilities,
-  );
-
-  const movesFromFile = await readTextFile(
-    `${$selectedWiki.name}/data/moves.json`,
-    { dir: BaseDirectory.AppData },
-  );
-  moves.set(JSON.parse(movesFromFile));
-  moveList.set(Object.keys($moves.moves));
-
   const routesFromFile = await readTextFile(
     `${$selectedWiki.name}/data/routes.json`,
     { dir: BaseDirectory.AppData },
@@ -159,6 +87,45 @@ async function backupWiki() {
       background: "variant-filled-success",
     });
   });
+}
+
+async function loadDatabase(wiki: Wiki) {
+  $selectedWiki = wiki;
+  await Database.load(`sqlite:${wiki.name}/${wiki.name}.db`).then(
+    (database) => {
+      db.set(database);
+      // Load Pokemon
+      $db
+        .select("SELECT id, name FROM pokemon ORDER BY dex_number")
+        .then((pokemon: any) => {
+          pokemonList.set(pokemon.map((p: SearchPokemon) => [p.id, p.name]));
+        });
+
+      // Load Items
+      $db.select("SELECT id, name FROM items").then((items: any) => {
+        itemsList.set(items.map((item: SearchItem) => [item.id, item.name]));
+      });
+
+      // Load Abilities
+      $db.select("SELECT id, name FROM abilities").then((abilities: any) => {
+        abilitiesList.set(
+          abilities.map((ability: SearchAbility) => [ability.id, ability.name]),
+        );
+      });
+
+      // Load Natures
+      $db.select("SELECT id, name FROM natures").then((natures: any) => {
+        naturesList.set(
+          natures.map((nature: SearchNature) => [nature.id, nature.name]),
+        );
+      });
+
+      // Load Moves
+      $db.select("SELECT id, name FROM moves").then((moves: any) => {
+        moveList.set(moves.map((move: SearchMove) => [move.id, move.name]));
+      });
+    },
+  );
 }
 </script>
 
@@ -238,7 +205,7 @@ async function backupWiki() {
     {#each Object.entries($wikis) as [_, value]}
       {#if value.name !== $selectedWiki.name}
         <button
-          on:click={() => {loadWikiData(value); goto("/")}}
+          on:click={() => {loadWikiData(value); loadDatabase(value); goto("/")}}
           class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
           >{value.site_name}</button
         >

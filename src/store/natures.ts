@@ -1,23 +1,25 @@
 import { writable } from "svelte/store";
 
-export type Natures = {
-  [key: string]: Nature;
-};
 export type Nature = {
-  increased_stat: string | null;
-  decreased_stat: string | null;
+  id: number;
+  name: string;
+  increased_stat: Stat | null;
+  decreased_stat: Stat | null;
+  is_modified: number;
+  is_new: number;
 };
 
-export type ModifiedNatures = {
-  [key: string]: ModifiedNature;
+export enum Stat {
+  "attack",
+  "defense",
+  "special-attack",
+  "special-defense",
+  "speed",
+}
+
+export type SearchNature = {
+  id: number;
+  name: string;
 };
 
-export type ModifiedNature = {
-  original: Nature;
-  modified: Nature;
-  is_new_nature: boolean;
-};
-
-export let natures = writable<Natures>();
-export let naturesList = writable<string[]>([]);
-export let modifiedNatures = writable<ModifiedNatures>({});
+export let naturesList = writable<[number, string][]>([]);

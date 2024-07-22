@@ -2,17 +2,9 @@
 import Button from "$lib/components/Button.svelte";
 import NumberInput from "$lib/components/NumberInput.svelte";
 import PokemonPanel from "$lib/components/PokemonPanel.svelte";
-import {
-  Tab,
-  TabGroup,
-  getToastStore,
-  type ToastSettings,
-} from "@skeletonlabs/skeleton";
-import { readTextFile } from "@tauri-apps/api/fs";
-import { appDataDir } from "@tauri-apps/api/path";
+import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
 import { invoke } from "@tauri-apps/api/tauri";
 import { selectedWiki } from "../../store";
-import { pokemon, pokemonList } from "../../store/pokemon";
 
 const toastStore = getToastStore();
 
@@ -20,49 +12,6 @@ let tabSet: number = 0;
 let rangeStart: number = 0;
 let rangeEnd: number = 0;
 let loading: boolean = false;
-
-const dataPreparedToast: ToastSettings = {
-  message: "Data Prepared",
-  timeout: 5000,
-  hoverable: true,
-  background: "variant-filled-success",
-};
-
-async function downloadAndPrepPokemonData() {
-  const directory = await appDataDir();
-  loading = true;
-  await invoke("download_and_prep_pokemon_data", {
-    wikiName: $selectedWiki.name,
-    rangeStart,
-    rangeEnd,
-  }).then(async () => {
-    const pokemonFromFile = await readTextFile(
-      `${directory}${$selectedWiki.name}/data/pokemon.json`,
-    );
-    pokemon.set(JSON.parse(pokemonFromFile));
-    pokemonList.set(
-      Object.entries($pokemon.pokemon).map(([key, value]) => [
-        value.name,
-        parseInt(key),
-      ]),
-    );
-    loading = false;
-    toastStore.trigger(dataPreparedToast);
-  });
-
-  await invoke("download_pokemon_sprites", {
-    wikiName: $selectedWiki.name,
-    rangeStart,
-    rangeEnd,
-  }).then(() => {
-    toastStore.trigger({
-      message: "Sprites prepared",
-      timeout: 5000,
-      hoverable: true,
-      background: "variant-filled-success",
-    });
-  });
-}
 
 async function generatePokemonPagesInRange() {
   loading = true;

@@ -1,7 +1,7 @@
 use crate::helpers::{capitalize, copy_recursively};
 use crate::wiki_preparation::yaml_declaration;
 use serde::{Deserialize, Serialize};
-use std::fs;
+use std::fs::{self, File};
 use tauri::AppHandle;
 
 #[derive(Serialize, Deserialize)]
@@ -76,6 +76,14 @@ pub async fn create_wiki(
     let _ = copy_recursively(starting_data_folder, wiki_data_folder);
 
     let generator_assets_path = resource_path.join("generator_assets");
+
+    let sqlite_db_path = generator_assets_path.join("initial.db");
+    match fs::copy(sqlite_db_path, base_path.join(format!("{}.db", wiki_name))) {
+        Ok(_) => {}
+        Err(err) => {
+            return Err(format!("Failed to copy initial database: {:?}", err));
+        }
+    }
 
     let items_folder = generator_assets_path.join("items");
     let dist_items_folder = docs_folder.join("img").join("items");
