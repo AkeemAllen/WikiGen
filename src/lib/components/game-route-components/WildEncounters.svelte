@@ -4,11 +4,15 @@ import {
   popup,
   type AutocompleteOption,
 } from "@skeletonlabs/skeleton";
-import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+import {
+  BaseDirectory,
+  readBinaryFile,
+  writeTextFile,
+} from "@tauri-apps/api/fs";
 import _ from "lodash";
 import { selectedWiki } from "../../../store";
 import { routes, type WildEncounter } from "../../../store/gameRoutes";
-import { pokemonList, pokemon } from "../../../store/pokemon";
+import { pokemonList } from "../../../store/pokemon";
 import Button from "../Button.svelte";
 import NumberInput from "../NumberInput.svelte";
 import SelectInput from "../SelectInput.svelte";
@@ -35,7 +39,7 @@ let routeWildEncounters = _.cloneDeep(
 );
 let originalRouteWildEncounters = _.cloneDeep(routeWildEncounters);
 let pokemonListOptions: AutocompleteOption<string | number>[] =
-  $pokemonList.map(([name, id]) => ({ label: name, value: id }));
+  $pokemonList.map(([id, name]) => ({ label: name, value: id }));
 
 const encounterTypes = $routes.encounter_types.map((type) => ({
   label: type,
@@ -56,8 +60,8 @@ async function addEncounter() {
       ...(routeWildEncounters[encounterType] ?? []),
       {
         id: $pokemonList.find(
-          ([name, _]) => name === pokemonName,
-        )?.[1] as number,
+          ([_, name]) => name === pokemonName,
+        )?.[0] as number,
         name: pokemonName,
         encounter_rate: encounterRate,
       },
@@ -127,6 +131,28 @@ async function saveChanges() {
       });
   });
 }
+
+async function getSpriteImage(pokemonName: string): Promise<string> {
+  let sprite = "";
+  await readBinaryFile(
+    `${$selectedWiki.name}/dist/docs/img/pokemon/${pokemonName}.png`,
+    { dir: BaseDirectory.AppData },
+  )
+    .then((res) => {
+      const blob = new Blob([res], { type: "image/png" });
+      sprite = URL.createObjectURL(blob);
+    })
+    .catch((err) => {
+      console.log(err);
+      if (err.includes("No such file or directory")) {
+        sprite = "Image Not Found";
+      }
+      sprite = "Error loading image";
+    });
+  return sprite;
+}
+
+$: console.log(getSpriteImage(pokemonName));
 </script>
 
 <BaseModal bind:open={editEncounterModalOpen}>
@@ -209,11 +235,13 @@ async function saveChanges() {
                 currentWildEncounterIndex = index;
               }}
           >
-            <img
-              src={$pokemon.pokemon[encounter.id].sprite}
-              alt={encounter.name}
-              class="m-0 justify-self-center"
-            />
+            {#await getSpriteImage(encounter.name) then spriteUrl}
+              <img
+                src={spriteUrl}
+                alt={encounter.name}
+                class="m-0 justify-self-center"
+              />
+            {/await}
             <div class="w-full rounded-md border-2">
               <p class="text-center">
                 {_.capitalize(encounter.name)}

@@ -1,20 +1,37 @@
 <script lang="ts">
 import { IconTrash } from "@tabler/icons-svelte";
 import { type TrainerPokemon } from "../../store/gameRoutes";
-import { pokemon as storePokemon } from "../../store/pokemon";
 import _ from "lodash";
+import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
+import { selectedWiki } from "../../store";
 
 export let pokemon: TrainerPokemon = {} as TrainerPokemon;
 export let trainerName: string;
 
 export let deletePokemon = (id: string, name: string) => {};
+
+async function getSpriteImage(pokemonName: string): Promise<string> {
+  return await readBinaryFile(
+    `${$selectedWiki.name}/dist/docs/img/pokemon/${pokemonName}.png`,
+    { dir: BaseDirectory.AppData },
+  )
+    .then((res) => {
+      const blob = new Blob([res], { type: "image/png" });
+      return URL.createObjectURL(blob);
+    })
+    .catch((err) => {
+      console.log(err);
+      if (err.includes("No such file or directory")) {
+        return "Image Not Found";
+      }
+      return "Error loading image";
+    });
+}
 </script>
 
-<img
-  src={$storePokemon.pokemon[pokemon.id].sprite}
-  alt={pokemon.name}
-  class="m-0 justify-self-center"
-/>
+{#await getSpriteImage(pokemon.name) then spriteUrl}
+  <img src={spriteUrl} alt={pokemon.name} class="m-0 justify-self-center" />
+{/await}
 <div class="w-full rounded-md border-2">
   <p class="text-center">
     {_.capitalize(pokemon.name)}

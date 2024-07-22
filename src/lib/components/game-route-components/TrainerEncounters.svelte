@@ -50,7 +50,7 @@ $: trainerOptions = Object.keys(routeTrainers).map((trainer) => ({
 $: console.log({ routeTrainers });
 
 let pokemonListOptions: AutocompleteOption<string | number>[] =
-  $pokemonList.map(([name, id]) => ({ label: name, value: id }));
+  $pokemonList.map(([id, name]) => ({ label: name, value: id }));
 
 function onPokemonNameSelected(
   event: CustomEvent<AutocompleteOption<string | number>>,
@@ -69,8 +69,8 @@ function addPokemonToTrainer() {
   }
 
   let id = $pokemonList.find(
-    ([name, _]) => name === pokemonSearchName,
-  )?.[1] as number;
+    ([id, name]) => name === pokemonSearchName,
+  )?.[0] as number;
   let uniqueId = setUniquePokemonId(
     routeTrainers as {
       [key: string]: TrainerInfo;
