@@ -7,7 +7,7 @@ pub mod json_conversion;
 pub mod matchups;
 pub mod mkdocs_process;
 
-pub fn get_pokemon_dex_formatted_name(dex_number: usize) -> String {
+pub fn get_pokemon_dex_formatted_name(dex_number: u32) -> String {
     let mut pokedex_markdown_file_name = format!("00{}", dex_number);
     if dex_number >= 10 {
         pokedex_markdown_file_name = format!("0{}", dex_number);
