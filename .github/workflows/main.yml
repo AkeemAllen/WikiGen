@@ -72,7 +72,17 @@ jobs:
         with:
           tagName: wikigen-v__VERSION__-alpha
           releaseName: "WikiGen v__VERSION__ Alpha"
-          releaseBody: "See the assets to download this version and install."
+          releaseBody: "
+            Changelog:
+            - Switched to using sqlite database as data store for everything except routes.
+            - Removed the automatic creation of type and evolution change pages. This will be added back in a future release.
+            - Removed 'Swap' and 'Replace by Level' opertions in modify moveset modal.
+            - Included 'Add' and 'Edit' buttons on pokemon move page to allow for easier editing of moves.
+
+            Breaking Changes:
+            - Data from wikis created before this version will not be loaded and may break the app.
+            - Any updates will need to be entered in the database. I'll be working on a migration tool to make this easier.
+            "
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.settings.args }}
