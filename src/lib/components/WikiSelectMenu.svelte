@@ -16,6 +16,7 @@ import { itemsList, type SearchItem } from "../../store/items";
 import BaseModal from "./BaseModal.svelte";
 import MultiSelect from "svelte-multiselect";
 import Button from "./Button.svelte";
+import HotKeysModal from "$lib/components/modals/HotKeysModal.svelte";
 import { getToastStore } from "@skeletonlabs/skeleton";
 import { invoke } from "@tauri-apps/api";
 import { goto } from "$app/navigation";
@@ -144,57 +145,7 @@ async function loadDatabase(wiki: Wiki) {
   <Button onClick={() => deleteWikis()} title="Delete Selected Wikis" />
 </BaseModal>
 
-<BaseModal bind:open={hotKeysModalOpen} class="w-[40rem]">
-  <h2 class="text-lg font-medium leading-6 text-gray-900">Hot Keys</h2>
-  <div class="grid grid-cols-2 gap-3">
-    <div>
-      <h4 class="mb-2 leading-3">On Pokemon Page</h4>
-      <div class="flex flex-col gap-2 text-sm">
-        <p>
-          <span class="code font-semibold">Ctrl + k</span> - Search Pokemon
-        </p>
-        <p>
-          <span class="code font-semibold">Ctrl + ]</span> - Next Pokemon
-        </p>
-        <p>
-          <span class="code font-semibold">Ctrl + [</span> - Previous Pokemon
-        </p>
-        <p>
-          <span class="code font-semibold">Ctrl + Enter</span> - Save Changes
-        </p>
-        <p>
-          <span class="code font-semibold">Ctrl + m</span> - Switch to Moves tab
-        </p>
-        <p class="mt-2 italic">While on Moves tab:</p>
-        <p>
-          <span class="code font-semibold">Ctrl + m</span> - Open Moveset Change
-          Modal
-        </p>
-        <p>
-          <span class="code font-semibold">Ctrl + l</span> - Add Row to Moveset Modal
-        </p>
-        <p>
-          <span class="code font-semibold">Ctrl + Enter</span> - Save Moveset Changes
-        </p>
-      </div>
-    </div>
-    <div>
-      <h4 class="mb-2 leading-3">On Game Routes Page</h4>
-      <div class="flex flex-col gap-2 text-sm">
-        <p>
-          <span class="code font-semibold">Ctrl + Enter</span> - Save Changes
-        </p>
-        <p class="mt-2 italic">Trainer Encounter tab in Pokemon Edit Modal:</p>
-        <p>
-          <span class="code font-semibold">Ctrl + ]</span> - Next Trainer Pokemon
-        </p>
-        <p>
-          <span class="code font-semibold">Ctrl + [</span> - Previous Trainer Pokemon
-        </p>
-      </div>
-    </div>
-  </div>
-</BaseModal>
+<HotKeysModal bind:open={hotKeysModalOpen} />
 
 <div
   class="card z-10 max-w-52 grid-cols-1 p-4 shadow-xl"
