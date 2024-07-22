@@ -30,9 +30,6 @@ fn main() {
         .setup(|app| {
             let base_path = app.path_resolver().app_data_dir().unwrap();
             match base_path.join("initial.db").try_exists() {
-                Ok(true) => {
-                    println!("Database already exists");
-                }
                 Ok(false) => {
                     println!("Creating initial database");
                     match File::create(base_path.join("initial.db")) {
@@ -47,6 +44,7 @@ fn main() {
                 Err(_) => {
                     println!("Error Checking for initial.db");
                 }
+                _ => {}
             }
             Ok(())
         })
