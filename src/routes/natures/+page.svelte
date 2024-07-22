@@ -277,4 +277,4 @@ async function convertNatureToSqlite() {
     </label>
   {/if}
 {/if}
-<Button title="Convert Natures to SQLite" onClick={convertNatureToSqlite} />
+<!-- <Button title="Convert Natures to SQLite" onClick={convertNatureToSqlite} /> -->

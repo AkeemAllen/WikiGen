@@ -332,4 +332,4 @@ async function convertItemToSqlite() {
     {/if}
   </div>
 {/if}
-<Button title="Convert Items to SQLite" onClick={convertItemToSqlite} />
+<!-- <Button title="Convert Items to SQLite" onClick={convertItemToSqlite} /> -->

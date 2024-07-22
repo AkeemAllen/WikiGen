@@ -185,4 +185,4 @@ async function convertMovesToSqlite() {
     </label>
   {/if}
 {/if}
-<Button title="Convert Moves to SQLite" onClick={convertMovesToSqlite} />
+<!-- <Button title="Convert Moves to SQLite" onClick={convertMovesToSqlite} /> -->
