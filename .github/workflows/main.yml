@@ -75,13 +75,13 @@ jobs:
           releaseBody: "
             Changelog:
             - Switched to using sqlite database as data store for everything except routes.
-            - Removed the automatic creation of type and evolution change pages. This will be added back in a future release.
+            - Removed pokemon form tabs, all forms are now treated as separate pokemon.
+            - Removed the creation of type and evolution change pages. This will be added back in a future release.
             - Removed 'Swap' and 'Replace by Level' opertions in modify moveset modal.
             - Included 'Add' and 'Edit' buttons on pokemon move page to allow for easier editing of moves.
 
             Breaking Changes:
-            - Data from wikis created before this version will not be loaded and may break the app.
-            - Any updates will need to be entered in the database. I'll be working on a migration tool to make this easier.
+            - Wikis created before this version will not be loaded. The json data will need to be transitioned to a db. I'll be working on a migration tool to automate this process.
             "
           releaseDraft: false
           prerelease: false
