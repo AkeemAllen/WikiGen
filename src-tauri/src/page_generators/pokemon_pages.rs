@@ -5,12 +5,12 @@ use std::{
     path::PathBuf,
 };
 
-use indexmap::IndexMap;
 use serde_yaml::{Mapping, Value};
+use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
 use tauri::AppHandle;
 
 use crate::{
-    helpers::{capitalize, capitalize_and_remove_hyphens},
+    helpers::capitalize,
     page_generators::pokemon_page_generator_functions::{
         create_ability_table, create_defenses_table, create_evolution_table,
         create_learnable_moves_table, create_level_up_moves_table, create_stats_table,
@@ -19,88 +19,96 @@ use crate::{
     structs::{
         matchup_models::TypeEffectiveness,
         mkdocs_structs::MKDocsConfig,
-        move_structs::Moves,
-        pokemon_structs::{Ability, EvolutionMethod, Pokemon, PokemonData, PokemonForm},
+        pokemon_structs::{DBPokemon, PokemonMove},
     },
 };
-
-use super::{evolution_page::generate_evolution_page, type_page::generate_type_page};
 
 #[tauri::command]
 pub async fn generate_pokemon_pages_from_list(
     wiki_name: &str,
-    dex_numbers: Vec<usize>,
+    pokemon_ids: Vec<usize>,
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
 
-    let result = generate_pokemon_pages(dex_numbers, wiki_name, base_path.clone());
-    generate_type_page(wiki_name, base_path.clone())?;
-    generate_evolution_page(wiki_name, base_path)?;
+    let result = generate_pokemon_pages(pokemon_ids, wiki_name, base_path.clone()).await;
+    // generate_type_page(wiki_name, base_path.clone())?;
+    // generate_evolution_page(wiki_name, base_path)?;
     return result;
 }
 
-pub fn generate_pokemon_pages(
-    dex_numbers: Vec<usize>,
+pub async fn generate_pokemon_pages(
+    pokemon_ids: Vec<usize>,
     wiki_name: &str,
     base_path: PathBuf,
 ) -> Result<String, String> {
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
-    let mut pokemon: Pokemon = Pokemon {
-        pokemon: IndexMap::new(),
-    };
-
-    for i in 1..=10 {
-        let shard_json_file_path = base_path
-            .join(wiki_name)
-            .join("data")
-            .join("pokemon_data")
-            .join(format!("shard_{}.json", i));
-        let shard_file = match File::open(&shard_json_file_path) {
-            Ok(file) => file,
-            Err(err) => {
-                return Err(format!("Failed to open shard {} file: {}", i, err));
-            }
-        };
-        let shard: Pokemon = match serde_json::from_reader(shard_file) {
-            Ok(shard) => shard,
-            Err(err) => {
-                return Err(format!("Failed to parse shard {}: {}", i, err));
-            }
-        };
-
-        pokemon.pokemon.extend(shard.pokemon.into_iter());
+    let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
+    let sqlite_connection_string = format!("sqlite:{}", sqlite_path.to_str().unwrap());
+    if !Sqlite::database_exists(&sqlite_connection_string)
+        .await
+        .unwrap_or(false)
+    {
+        return Err("Database does not exist".to_string());
     }
-
-    let moves_json_file_path = base_path.join(wiki_name).join("data").join("moves.json");
-    let moves_file = match File::open(&moves_json_file_path) {
-        Ok(file) => file,
+    let conn = match SqlitePool::connect(&sqlite_connection_string).await {
+        Ok(conn) => conn,
         Err(err) => {
-            return Err(format!("Failed to open moves file: {}", err));
-        }
-    };
-    let moves: Moves = match serde_json::from_reader(moves_file) {
-        Ok(moves) => moves,
-        Err(err) => {
-            return Err(format!("Failed to parse moves file: {}", err));
+            return Err(format!("Failed to connect to database: {}", err));
         }
     };
 
-    let abilities_json_file_path = base_path
-        .join(wiki_name)
-        .join("data")
-        .join("abilities.json");
-    let abilities_file = match File::open(&abilities_json_file_path) {
-        Ok(file) => file,
+    let id_list = &pokemon_ids
+        .iter()
+        .map(|n| n.to_string())
+        .collect::<Vec<_>>()
+        .join(",");
+
+    let pokemon_query = format!(
+        "SELECT
+            pokemon.*,
+            a1.effect as a1_effect,
+            a2.effect as a2_effect
+        FROM pokemon
+        LEFT JOIN abilities a1 on a1.name = pokemon.ability_1
+        LEFT JOIN abilities a2 on a2.name = pokemon.ability_2
+        WHERE pokemon.id IN ({}) ORDER BY dex_number ASC",
+        id_list
+    );
+    let pokemon_list = match sqlx::query_as::<_, DBPokemon>(&pokemon_query)
+        .fetch_all(&conn)
+        .await
+    {
+        Ok(pokemon_list) => pokemon_list,
         Err(err) => {
-            return Err(format!("Failed to open abilities file: {}", err));
+            return Err(format!("Failed to fetch pokemon from database: {}", err));
         }
     };
-    let abilities: HashMap<String, Ability> = match serde_json::from_reader(abilities_file) {
-        Ok(abilities) => abilities,
+
+    let moveset_query = format!(
+        "SELECT
+            pokemon_movesets.*,
+            pokemon_movesets.move as move_id,
+            m.name as move_name, m.type as move_type,
+            m.power as power, m.accuracy as accuracy, m.pp as pp,
+            m.damage_class as damage_class, m.machine_name as machine_name
+        FROM pokemon_movesets
+        LEFT JOIN moves m on m.id = pokemon_movesets.move
+        WHERE pokemon_movesets.pokemon IN ({})",
+        id_list
+    );
+
+    let movesets = match sqlx::query_as::<_, PokemonMove>(&moveset_query)
+        .fetch_all(&conn)
+        .await
+    {
+        Ok(pokemon_movesets) => pokemon_movesets,
         Err(err) => {
-            return Err(format!("Failed to parse abilities file: {}", err));
+            return Err(format!(
+                "Failed to fetch pokemon movesets from database: {}",
+                err
+            ));
         }
     };
 
@@ -149,30 +157,21 @@ pub fn generate_pokemon_pages(
         }
     }
 
-    for dex_number in dex_numbers {
-        let pokemon_data = match pokemon.pokemon.get(&(dex_number as u32)) {
-            Some(pokemon_data) => pokemon_data,
-            None => {
-                println!("Pokemon Data not found for dex number: {:?}", dex_number);
-                continue;
-            }
-        };
+    for pokemon in pokemon_list {
+        println!("Rendering page for {}", &pokemon.name);
 
-        println!("Rendering page for {}", pokemon_data.name);
-
-        let mut pokedex_markdown_file_name = format!("00{}", dex_number);
-        if dex_number >= 10 {
-            pokedex_markdown_file_name = format!("0{}", dex_number);
+        let mut pokedex_markdown_file_name = format!("00{}", pokemon.dex_number);
+        if pokemon.dex_number >= 10 {
+            pokedex_markdown_file_name = format!("0{}", pokemon.dex_number);
         }
-        if dex_number >= 100 {
-            pokedex_markdown_file_name = format!("{}", dex_number);
+        if pokemon.dex_number >= 100 {
+            pokedex_markdown_file_name = format!("{}", pokemon.dex_number);
         }
 
-        let mut markdown_file = match File::create(
-            docs_path
-                .join("pokemon")
-                .join(format!("{}.md", pokedex_markdown_file_name)),
-        ) {
+        let mut markdown_file = match File::create(docs_path.join("pokemon").join(format!(
+            "{}-{}.md",
+            pokedex_markdown_file_name, &pokemon.name
+        ))) {
             Ok(file) => file,
             Err(e) => {
                 println!("Error creating file: {:?}", e);
@@ -180,60 +179,21 @@ pub fn generate_pokemon_pages(
             }
         };
 
-        let initial_form = PokemonForm {
-            types: pokemon_data.types.clone(),
-            abilities: pokemon_data.abilities.clone(),
-            stats: pokemon_data.stats.clone(),
-            moves: pokemon_data.moves.clone(),
-            sprite: pokemon_data.sprite.clone(),
-        };
-        let mut forms_to_render: IndexMap<String, PokemonForm> = IndexMap::new();
-        forms_to_render.insert(pokemon_data.name.clone(), initial_form);
+        let current_pokemon_movset = movesets
+            .iter()
+            .cloned()
+            .filter(|m| m.pokemon == pokemon.id)
+            .collect::<Vec<_>>();
 
-        for form in pokemon_data.forms.clone() {
-            forms_to_render.insert(form.0, form.1);
-        }
+        let pokemon_markdown_string =
+            generate_pokemon_page(&calculated_defenses, &pokemon, current_pokemon_movset);
 
-        let mut tab_string = String::new();
-        for (form_name, form_details) in forms_to_render.iter() {
-            let mut tabbed = false;
-            if forms_to_render.len() > 1 {
-                tab_string.push_str(&format!(
-                    "\n=== \"{}\"\n",
-                    capitalize_and_remove_hyphens(form_name)
-                ));
-                tabbed = true;
-            }
-
-            let mut sprite_image_name = pokedex_markdown_file_name.clone();
-
-            if &pokemon_data.name != form_name {
-                let form_image_name = format!("{}-{}", pokedex_markdown_file_name, form_name);
-                sprite_image_name = form_image_name;
-            }
-
-            let pokemon_markdown_string = generate_pokemon_page(
-                wiki_name,
-                &base_path,
-                &calculated_defenses,
-                form_name,
-                form_details,
-                &sprite_image_name,
-                moves.clone(),
-                pokemon_data,
-                tabbed,
-                &abilities,
-            );
-
-            tab_string.push_str(&pokemon_markdown_string);
-        }
-
-        match markdown_file.write_all(format!("{}", tab_string).as_bytes()) {
+        match markdown_file.write_all(format!("{}", pokemon_markdown_string).as_bytes()) {
             Ok(_) => {}
             Err(err) => {
                 return Err(format!(
                     "Failed to write to pokemon markdown file for {}: {}",
-                    dex_number, err
+                    pokemon.dex_number, err
                 ))
             }
         };
@@ -242,11 +202,14 @@ pub fn generate_pokemon_pages(
         let entry_key = format!(
             "{} - {}",
             pokedex_markdown_file_name,
-            capitalize(&pokemon_data.name)
+            capitalize(&pokemon.name)
         );
         pokemon_page_entry.insert(
             Value::String(entry_key.clone()),
-            Value::String(format!("pokemon/{}.md", pokedex_markdown_file_name)),
+            Value::String(format!(
+                "pokemon/{}-{}.md",
+                pokedex_markdown_file_name, &pokemon.name
+            )),
         );
 
         let mut page_entry_exists = false;
@@ -295,89 +258,64 @@ fn extract_pokemon_id(key: Option<&str>) -> i32 {
 }
 
 fn generate_pokemon_page(
-    wiki_name: &str,
-    base_path: &PathBuf,
     calculated_defenses: &HashMap<String, TypeEffectiveness>,
-    pokemon_name: &str,
-    pokemon_details: &PokemonForm,
-    sprite_image_name: &str,
-    moves: Moves,
-    pokemon_data: &PokemonData,
-    tabbed: bool,
-    abilities: &HashMap<String, Ability>,
+    pokemon: &DBPokemon,
+    movesets: Vec<PokemonMove>,
 ) -> String {
     let mut markdown_string = String::new();
-    let mut tab = "";
-    if tabbed {
-        tab = "\t"
-    }
     markdown_string.push_str(&format!(
-        "{}![{}](../img/pokemon/{}.png)\n\n",
-        tab, &pokemon_name, sprite_image_name
+        "![{}](../img/pokemon/{}.png)\n\n",
+        &pokemon.name, &pokemon.name
     ));
 
-    markdown_string.push_str(&format!("{}## Types\n\n", tab));
+    markdown_string.push_str(&format!("## Types\n\n"));
+    markdown_string.push_str(&format!("{}", create_type_table(pokemon.types.clone())));
+    markdown_string.push_str("\n\n");
+
+    markdown_string.push_str(&format!("## Defenses\n\n"));
     markdown_string.push_str(&format!(
-        "{}{}",
-        tab,
-        create_type_table(&pokemon_details.types)
+        "{}",
+        create_defenses_table(pokemon.types.clone(), &calculated_defenses,)
     ));
     markdown_string.push_str("\n\n");
 
-    markdown_string.push_str(&format!("{}## Defenses\n\n", tab));
-    markdown_string.push_str(&format!(
-        "{}{}",
-        tab,
-        create_defenses_table(
-            &pokemon_details.types,
-            wiki_name,
-            &calculated_defenses,
-            &base_path,
-        )
-    ));
+    markdown_string.push_str(&format!("## Abilities\n\n"));
+    markdown_string.push_str(&format!("{}", create_ability_table(pokemon)));
     markdown_string.push_str("\n\n");
 
-    markdown_string.push_str(&format!("{}## Abilities\n\n", tab));
-    markdown_string.push_str(&format!(
-        "{}{}",
-        tab,
-        create_ability_table(&pokemon_details.abilities, &abilities)
-    ));
+    markdown_string.push_str(&format!("## Stats\n\n"));
+    markdown_string.push_str(&format!("{}", create_stats_table(pokemon)));
     markdown_string.push_str("\n\n");
 
-    markdown_string.push_str(&format!("{}## Stats\n\n", tab));
-    markdown_string.push_str(&format!(
-        "{}{}",
-        tab,
-        create_stats_table(&pokemon_details.stats)
-    ));
-    markdown_string.push_str("\n\n");
-
-    if &pokemon_data.evolution.method != &EvolutionMethod::NoChange
-        && &pokemon_name == &pokemon_data.name
-    {
-        markdown_string.push_str(&format!("{}## Evolution\n\n", tab));
-        markdown_string.push_str(&format!(
-            "{}{}",
-            tab,
-            create_evolution_table(pokemon_data.evolution.clone())
-        ));
+    if pokemon.evolution_method != "no_change" {
+        markdown_string.push_str(&format!("## Evolution\n\n"));
+        markdown_string.push_str(&format!("{}", create_evolution_table(pokemon)));
         markdown_string.push_str("\n\n");
     }
 
-    markdown_string.push_str(&format!("{}## Level Up Moves\n\n", tab));
+    let level_up_moveset = movesets
+        .iter()
+        .cloned()
+        .filter(|m| m.learn_method == "level-up")
+        .collect::<Vec<_>>();
+
+    markdown_string.push_str(&format!("## Level Up Moves\n\n"));
     markdown_string.push_str(&format!(
-        "{}{}",
-        tab,
-        create_level_up_moves_table(pokemon_details.moves.clone(), moves.clone(), tabbed)
+        "{}",
+        create_level_up_moves_table(level_up_moveset)
     ));
     markdown_string.push_str("\n\n");
 
-    markdown_string.push_str(&format!("{}## Learnable Moves\n\n", tab));
+    let learnable_moveset = movesets
+        .iter()
+        .cloned()
+        .filter(|m| m.learn_method == "machine")
+        .collect::<Vec<_>>();
+
+    markdown_string.push_str(&format!("## Learnable Moves\n\n"));
     markdown_string.push_str(&format!(
-        "{}{}",
-        tab,
-        create_learnable_moves_table(pokemon_details.moves.clone(), moves.clone(), tabbed)
+        "{}",
+        create_learnable_moves_table(learnable_moveset)
     ));
     markdown_string.push_str("\n\n");
     return markdown_string;
