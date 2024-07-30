@@ -17,6 +17,8 @@ let newRouteName: string = "";
 let routeBeingEdited: string;
 
 async function renameRoute(originalRouteName: string, newName: string) {
+  if (originalRouteName === newName) return;
+
   let updatedRoutes = { ...$routes };
   updatedRoutes.routes[newName] = updatedRoutes.routes[originalRouteName];
   delete updatedRoutes.routes[originalRouteName];
