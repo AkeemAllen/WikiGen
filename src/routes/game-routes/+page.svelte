@@ -2,11 +2,11 @@
 import BaseModal from "$lib/components/BaseModal.svelte";
 import Button from "$lib/components/Button.svelte";
 import TextInput from "$lib/components/TextInput.svelte";
-import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
+import { getToastStore } from "@skeletonlabs/skeleton";
 import { IconTrash } from "@tabler/icons-svelte";
 import { invoke } from "@tauri-apps/api";
 import { selectedWiki } from "../../store";
-import { routes, type Routes } from "../../store/gameRoutes";
+import { routes } from "../../store/gameRoutes";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
 import _ from "lodash";
 import { sortRoutesByPosition } from "$lib/utils";
@@ -23,7 +23,6 @@ let positionModalOpen: boolean = false;
 let newEncounterType: string = "";
 let oldRoutePosition: number = 0;
 let loading = false;
-let tabSet = 0;
 
 async function createNewRoute() {
   $routes.routes[routeName.trim()] = {
@@ -160,36 +159,26 @@ async function generateRoutePages() {
   </div>
 </BaseModal>
 
-<TabGroup>
-  <Tab bind:group={tabSet} name="routes" value={0}>Routes</Tab>
-  <Tab bind:group={tabSet} name="routes" value={1}>Generation</Tab>
-  <svelte:fragment slot="panel">
-    {#if tabSet === 0}
-      <div class="flex flex-row gap-3">
-        <Button
-          class="w-40"
-          title="Create New Route"
-          onClick={() => (newRouteModalOpen = true)}
-        />
-        <Button
-          class="w-48"
-          title="Modify Encounter Types"
-          onClick={() => (encounterTypeModalOpen = true)}
-        />
-      </div>
-      <GameRoutes
-        bind:positionModalOpen={positionModalOpen}
-        bind:routeToUpdate={routeToUpdate}
-        bind:oldRoutePosition={oldRoutePosition}
-      />
-    {/if}
-    {#if tabSet === 1}
-      <Button
-        class="w-40"
-        title="Generate Pages"
-        onClick={generateRoutePages}
-        loading={loading}
-      />
-    {/if}
-  </svelte:fragment>
-</TabGroup>
+<div class="mt-2 flex flex-row gap-3">
+  <Button
+    class="w-40"
+    title="Create New Route"
+    onClick={() => (newRouteModalOpen = true)}
+  />
+  <Button
+    class="w-48"
+    title="Modify Encounter Types"
+    onClick={() => (encounterTypeModalOpen = true)}
+  />
+  <Button
+    class="w-42"
+    title="Generate Route Pages"
+    onClick={generateRoutePages}
+    loading={loading}
+  />
+</div>
+<GameRoutes
+  bind:positionModalOpen={positionModalOpen}
+  bind:routeToUpdate={routeToUpdate}
+  bind:oldRoutePosition={oldRoutePosition}
+/>
