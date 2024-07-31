@@ -140,6 +140,7 @@ fn group_matchups_by_effectiveness(
     return mapped_matchups;
 }
 
+#[allow(dead_code)]
 pub fn get_defensive_matchups(
     types: &Vec<String>,
     wiki_name: &str,

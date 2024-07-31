@@ -1,7 +1,7 @@
 use crate::helpers::{capitalize, copy_recursively};
 use crate::wiki_preparation::yaml_declaration;
 use serde::{Deserialize, Serialize};
-use std::fs::{self, File};
+use std::fs::{self};
 use tauri::AppHandle;
 
 #[derive(Serialize, Deserialize)]
