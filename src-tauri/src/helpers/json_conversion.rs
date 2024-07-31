@@ -2,7 +2,7 @@ use std::{collections::HashMap, fs::File};
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use sqlx::{prelude::FromRow, types, SqlitePool};
+use sqlx::{prelude::FromRow, SqlitePool};
 use tauri::AppHandle;
 
 use crate::structs::pokemon_structs::Pokemon;
@@ -529,6 +529,7 @@ pub async fn convert_pokemon_movesets_to_sqlite(
             .execute(&conn)
             .await
             .unwrap();
+            println!("{:?}", result);
         }
 
         for (name, form) in pokemon.forms {
@@ -585,6 +586,7 @@ pub async fn convert_pokemon_movesets_to_sqlite(
                 .execute(&conn)
                 .await
                 .unwrap();
+                println!("{:?}", result);
             }
         }
     }
