@@ -53,6 +53,12 @@ async function duplicateRoute(routeName: string) {
     { dir: BaseDirectory.AppData },
   );
 }
+
+function capitalizeWords(event: any) {
+  newRouteName = event.target.value.replace(/\b\w/g, (char: string) =>
+    char.toUpperCase(),
+  );
+}
 </script>
 
 <div class="mt-6 grid grid-cols-5 gap-x-4 gap-y-3">
@@ -69,6 +75,7 @@ async function duplicateRoute(routeName: string) {
               routeBeingEdited = "";
             }
           }}
+          inputHandler={capitalizeWords}
         />
       {:else}
         <a href="/game-routes/{routeName}" class="w-full hover:cursor-pointer">

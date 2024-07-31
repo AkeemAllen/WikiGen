@@ -106,11 +106,20 @@ async function generateRoutePages() {
     });
   });
 }
+function capitalizeWords(event: any) {
+  routeName = event.target.value.replace(/\b\w/g, (char: string) =>
+    char.toUpperCase(),
+  );
+}
 </script>
 
 <!-- New Route Modal -->
 <BaseModal bind:open={newRouteModalOpen}>
-  <TextInput bind:value={routeName} label="Route Name" />
+  <TextInput
+    bind:value={routeName}
+    label="Route Name"
+    inputHandler={capitalizeWords}
+  />
   <Button
     title="Save New Route"
     onClick={() => {
