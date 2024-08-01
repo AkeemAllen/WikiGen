@@ -141,6 +141,9 @@ async function createNewPokemon() {
         });
       });
 
+      // Add new pokemon to pokemonList
+      $pokemonList.push([res.lastInsertId, newPokemon.name]);
+
       toastStore.trigger({
         message: "New Pokemon created!",
         background: "variant-filled-success",
