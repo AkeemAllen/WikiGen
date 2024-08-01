@@ -257,7 +257,7 @@ fn extract_pokemon_id(key: Option<&str>) -> i32 {
         .unwrap();
 }
 
-fn generate_pokemon_page(
+pub fn generate_pokemon_page(
     calculated_defenses: &HashMap<String, TypeEffectiveness>,
     pokemon: &DBPokemon,
     movesets: Vec<PokemonMove>,

@@ -8,7 +8,7 @@ import type Database from "tauri-plugin-sql-api";
 import type { QueryResult } from "tauri-plugin-sql-api";
 import _ from "lodash";
 
-async function addMoves(
+export async function addMoves(
   moveAdditions: MoveSetChange[],
   pokemonId: number,
   database: Database,

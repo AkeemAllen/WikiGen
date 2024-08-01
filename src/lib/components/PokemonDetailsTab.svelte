@@ -9,6 +9,7 @@ import { abilitiesList } from "../../store/abilities";
 import { itemsList } from "../../store/items";
 
 export let pokemon: Pokemon = {} as Pokemon;
+export let isNewPokemon: boolean = false;
 
 let pokemonListOptions = $pokemonList.map(([id, name]) => ({
   label: _.capitalize(name),
@@ -118,61 +119,63 @@ function onTypeChange(e: any, type_number: string) {
       class="w-full"
     />
   </div>
-  <div class="mt-5 flex flex-row gap-x-10">
-    <div class="w-44">
-      <SelectInput
-        id="evolution-method"
-        label="Evolution Method"
-        bind:value={pokemon.evolution_method}
-        options={[
+  {#if !isNewPokemon}
+    <div class="mt-5 flex flex-row gap-x-10">
+      <div class="w-44">
+        <SelectInput
+          id="evolution-method"
+          label="Evolution Method"
+          bind:value={pokemon.evolution_method}
+          options={[
             { label: "No Change", value: "no_change" },
             { label: "Level Up", value: "level_up" },
             { label: "Other", value: "other" },
             { label: "Use Item", value: "item" },
           ]}
-      />
-    </div>
-    {#if pokemon.evolution_method === "item"}
-      <AutoComplete
-        label="Evolution Item"
-        bind:value={pokemon.evolution_item}
-        options={itemListOptions}
-        popupId="evolution-item-popup"
-        onSelection={(e) => {
-                pokemon.evolution_item = e.detail.label;
-              }}
-      />
-    {/if}
-    {#if pokemon.evolution_method === "level_up"}
-      <NumberInput
-        id="evolution-level"
-        bind:value={pokemon.evolution_level}
-        label="Evolution Level"
-        max={100}
-      />
-    {/if}
-    {#if pokemon.evolution_method === "other"}
-      <TextInput
-        id="evolution-other"
-        bind:value={pokemon.evolution_other}
-        label="Evolution Other"
-      />
-    {/if}
-    {#if pokemon.evolution_method !== "no_change"}
-      <div class="w-44">
-        <AutoComplete
-          label="Evolves To"
-          bind:value={pokemon.evolved_pokemon}
-          placeholder="Evolves To"
-          options={pokemonListOptions}
-          popupId="evolved-pokemon-popup"
-          onSelection={(e) => {
-              pokemon.evolved_pokemon = e.detail.label;
-            }}
         />
       </div>
-    {/if}
-  </div>
+      {#if pokemon.evolution_method === "item"}
+        <AutoComplete
+          label="Evolution Item"
+          bind:value={pokemon.evolution_item}
+          options={itemListOptions}
+          popupId="evolution-item-popup"
+          onSelection={(e) => {
+                pokemon.evolution_item = e.detail.label;
+              }}
+        />
+      {/if}
+      {#if pokemon.evolution_method === "level_up"}
+        <NumberInput
+          id="evolution-level"
+          bind:value={pokemon.evolution_level}
+          label="Evolution Level"
+          max={100}
+        />
+      {/if}
+      {#if pokemon.evolution_method === "other"}
+        <TextInput
+          id="evolution-other"
+          bind:value={pokemon.evolution_other}
+          label="Evolution Other"
+        />
+      {/if}
+      {#if pokemon.evolution_method !== "no_change"}
+        <div class="w-44">
+          <AutoComplete
+            label="Evolves To"
+            bind:value={pokemon.evolved_pokemon}
+            placeholder="Evolves To"
+            options={pokemonListOptions}
+            popupId="evolved-pokemon-popup"
+            onSelection={(e) => {
+              pokemon.evolved_pokemon = e.detail.label;
+            }}
+          />
+        </div>
+      {/if}
+    </div>
+  {/if}
   <p class="mt-10 text-lg">Stats</p>
   <div class="mb-2 mt-2 grid grid-cols-2 gap-x-10 gap-y-5">
     <NumberInput id="pokemon-hp" bind:value={pokemon.hp} label="HP" max={255} />

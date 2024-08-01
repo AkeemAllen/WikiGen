@@ -29,7 +29,10 @@ pub fn create_defenses_table(
     types: String,
     calculated_defenses: &HashMap<String, TypeEffectiveness>,
 ) -> String {
-    let types = types.split(",").collect::<Vec<&str>>();
+    let mut types = types.split(",").collect::<Vec<&str>>();
+    if types.len() == 1 {
+        types.push("none")
+    }
     // Get Defensive Matchups from file before calculating them
     let defensive_matchups = match calculated_defenses.get(&types.join("-").to_string()) {
         Some(matchup) => matchup.0.clone(),
