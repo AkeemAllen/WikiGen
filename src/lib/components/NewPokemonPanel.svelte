@@ -1,14 +1,23 @@
 <script lang="ts">
 import Button from "$lib/components/Button.svelte";
+import AutoComplete from "$lib/components/AutoComplete.svelte";
 import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
 import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
-import { type Pokemon } from "../../store/pokemon";
+import {
+  type MoveSetChange,
+  type LearnMethod,
+  type Pokemon,
+  pokemonList,
+  type PokemonMove,
+} from "../../store/pokemon";
 import { db } from "../../store/db";
 import NumberInput from "./NumberInput.svelte";
 import TextInput from "./TextInput.svelte";
+import PokemonMovesetTab from "$lib/components/PokemonMovesTab.svelte";
 import { BaseDirectory, writeBinaryFile } from "@tauri-apps/api/fs";
 import { selectedWiki } from "../../store";
-import { base64ToArray } from "$lib/utils";
+import { addMoves, base64ToArray } from "$lib/utils";
+import _ from "lodash";
 
 const toastStore = getToastStore();
 
@@ -27,6 +36,13 @@ let newPokemon: Pokemon = {
   sp_defense: 0,
   speed: 0,
 } as Pokemon;
+let copiedMoveset: PokemonMove[] = [];
+
+let pokemonSearch: [number, string] = [0, ""];
+let pokemonListOptions = $pokemonList.map(([id, name]) => ({
+  label: _.capitalize(name),
+  value: id,
+}));
 
 function onImageUpload(e: any) {
   let file = e.target.files[0];
@@ -43,6 +59,25 @@ function onImageUpload(e: any) {
     newSpriteImage = e.target?.result as string;
   };
   reader.readAsDataURL(file);
+}
+
+async function copyPokemonMoveset() {
+  await $db
+    .select<PokemonMove[]>(
+      `SELECT moves.id as id, moves.name as name, learn_method, level_learned FROM pokemon_movesets
+              INNER JOIN moves on moves.id = pokemon_movesets.move
+              WHERE pokemon = $1;`,
+      [pokemonSearch[0]],
+    )
+    .then((res) => {
+      copiedMoveset = res;
+    })
+    .catch((err) => {
+      toastStore.trigger({
+        message: `Error loading Pokemon moveset!: \n ${err}`,
+        background: "variant-filled-error",
+      });
+    });
 }
 
 async function createNewPokemon() {
@@ -72,7 +107,7 @@ async function createNewPokemon() {
         "no_change",
       ],
     )
-    .then(() => {
+    .then((res) => {
       // Write image to file
       const imageBytes = base64ToArray(
         newSpriteImage.replace("data:image/png;base64,", ""),
@@ -86,6 +121,23 @@ async function createNewPokemon() {
         toastStore.trigger({
           message: "Error writing image to file!",
           background: "variant-filled-error",
+        });
+      });
+
+      // Add moves to pokemon moveset
+      const moveset: MoveSetChange[] = copiedMoveset.map((move) => ({
+        id: move.id,
+        operation: "add",
+        move: move.name,
+        method: move.learn_method.split(",") as LearnMethod[],
+        level: move.level_learned,
+        secondaryMoveId: null,
+        secondaryMove: "",
+      }));
+      addMoves(moveset, res.lastInsertId, $db).then(() => {
+        toastStore.trigger({
+          message: "Moves added!",
+          background: "variant-filled-success",
         });
       });
 
@@ -142,12 +194,31 @@ async function createNewPokemon() {
     {#if tabSet === 0}
       <PokemonDetailsTab bind:pokemon={newPokemon} isNewPokemon={true} />
     {/if}
-    <!-- {#if tabSet === 1}
-      <PokemonMovesTab
-        bind:moveset={pokemonMoveset}
-        bind:pokemonId={pokemon.id}
-        generatePokemonPage={generatePokemonPage}
+    {#if tabSet === 1}
+      <AutoComplete
+        bind:value={pokemonSearch[1]}
+        placeholder="Search Pokemon"
+        options={pokemonListOptions}
+        popupId="pokemon-search"
+        onSelection={(e) => {
+              pokemonSearch = [e.detail.value, e.detail.label]
+            }}
+        showChevron={false}
+        class="w-48"
       />
-    {/if} -->
+      <Button
+        title="Copy Moveset from existing pokemon"
+        class="mt-2 w-48"
+        disabled={pokemonSearch[0] === 0}
+        onClick={copyPokemonMoveset}
+      />
+      {#if copiedMoveset.length > 0}
+        <PokemonMovesetTab
+          moveset={copiedMoveset}
+          pokemonId={0}
+          generatePokemonPage={() => {}}
+        />
+      {/if}
+    {/if}
   </svelte:fragment>
 </TabGroup>
