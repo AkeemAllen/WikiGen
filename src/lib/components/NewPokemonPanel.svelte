@@ -155,12 +155,17 @@ async function createNewPokemon() {
 }
 </script>
 
-<Button title="Save New Pokemon" class="mt-2 w-40" onClick={createNewPokemon} />
+<Button
+  title="Save New Pokemon"
+  class="mt-2 w-40"
+  onClick={createNewPokemon}
+  disabled={newPokemon.dex_number === 0 || newPokemon.name === "" || newSpriteImage === ""}
+/>
 <div class="mb-4 mt-4">
   <label
     for="sprite-image"
     class="block text-sm font-medium leading-6 text-gray-900"
-    >Pokemon Sprite</label
+    >Pokemon Sprite*</label
   >
   {#if newSpriteImage !== ""}
     <img src={newSpriteImage} alt="Sprite" />
@@ -176,7 +181,7 @@ async function createNewPokemon() {
 
 <div class="mb-5 mt-5 flex flex-row gap-5">
   <TextInput
-    label="Pokemon Name"
+    label="Pokemon Name*"
     bind:value={newPokemon.name}
     class="w-40"
     inputHandler={(e) => {
@@ -184,7 +189,7 @@ async function createNewPokemon() {
       }}
   />
   <NumberInput
-    label="Dex Number"
+    label="Dex Number*"
     bind:value={newPokemon.dex_number}
     class="w-40"
   />
