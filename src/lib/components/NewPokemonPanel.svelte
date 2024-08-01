@@ -94,7 +94,7 @@ async function createNewPokemon() {
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);`,
       [
         newPokemon.dex_number,
-        newPokemon.name,
+        newPokemon.name.toLowerCase(),
         newPokemon.types,
         newPokemon.ability_1,
         newPokemon.ability_2,
@@ -175,7 +175,14 @@ async function createNewPokemon() {
 </div>
 
 <div class="mb-5 mt-5 flex flex-row gap-5">
-  <TextInput label="Pokemon Name" bind:value={newPokemon.name} class="w-40" />
+  <TextInput
+    label="Pokemon Name"
+    bind:value={newPokemon.name}
+    class="w-40"
+    inputHandler={(e) => {
+        newPokemon.name = e.target.value.toLowerCase().replaceAll(" ", "-");
+      }}
+  />
   <NumberInput
     label="Dex Number"
     bind:value={newPokemon.dex_number}
