@@ -3,6 +3,7 @@ import NumberInput from "$lib/components/NumberInput.svelte";
 import SelectInput from "$lib/components/SelectInput.svelte";
 import Button from "$lib/components/Button.svelte";
 import AutoComplete from "$lib/components/AutoComplete.svelte";
+import TextInput from "$lib/components/TextInput.svelte";
 import { getToastStore } from "@skeletonlabs/skeleton";
 import _ from "lodash";
 import { selectedWiki } from "../../store";
@@ -11,15 +12,24 @@ import { PokemonTypes } from "../../store/pokemon";
 import { invoke } from "@tauri-apps/api/tauri";
 import { db } from "../../store/db";
 import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
+    import BaseModal from "$lib/components/BaseModal.svelte";
 
 const toastStore = getToastStore();
 
 let moveSearch: [number, string] = [0, ""];
+let newMoveModalOpen: boolean = false;
 
-let move: Move = {} as Move;
+let newMove: Move = {
+  damage_class: "status",
+  type: "normal"
+
+} as Move;
+
+let move: Move = {
+} as Move;
 let originalMoveDetails: Move = {} as Move;
 
-const moveListOptions = $moveList.map(([id, name]) => ({
+let moveListOptions = $moveList.map(([id, name]) => ({
   label: name,
   value: id,
 }));
@@ -89,6 +99,54 @@ async function saveMoveChanges() {
     });
 }
 
+
+async function createNewMove() {
+  if (newMove.power === 0) {
+    newMove.power = null;
+  }
+  if (newMove.accuracy === 0) {
+    newMove.accuracy = null;
+  }
+  await $db
+    .execute(
+      `INSERT INTO moves (name, power, accuracy, pp, type, damage_class, machine_name)
+        VALUES ($1, $2, $3, $4, $5, $6, $7);`,
+      [
+        newMove.name.toLowerCase(),
+        newMove.power,
+        newMove.accuracy,
+        newMove.pp,
+        newMove.type,
+        newMove.damage_class,
+        newMove.machine_name,
+      ],
+    )
+    .then((res) => {
+      toastStore.trigger({
+        message: "Move created!",
+        background: "variant-filled-success",
+      });
+      newMoveModalOpen = false;
+      $moveList.push([res.lastInsertId, newMove.name]);
+
+      newMove = {
+        damage_class: "status",
+        type: "normal"
+      } as Move;
+
+      moveListOptions = $moveList.map(([id, name]) => ({
+        label: name,
+        value: id,
+      }));
+    })
+    .catch(() => {
+      toastStore.trigger({
+        message: "Error creating new move!",
+        background: "variant-filled-error",
+      });
+    });
+}
+
 function setModified(e: any) {
   move.is_modified = e.target?.checked ? TRUE : FALSE;
 }
@@ -111,6 +169,51 @@ async function convertMovesToSqlite() {
     });
 }
 </script>
+
+<BaseModal class="w-[30rem]" bind:open={newMoveModalOpen}>
+    <h2 class="text-lg font-medium leading-6 text-gray-900">Create New Move</h2>
+      <TextInput label="New Move Name" bind:value={newMove.name}
+          inputHandler={(e) => {
+              newMove.name = e.target.value.toLowerCase().replaceAll(" ", "-");
+          }}
+            />
+      <NumberInput label="Power" bind:value={newMove.power}/>
+      <NumberInput label="Accuracy" bind:value={newMove.accuracy}/>
+      <NumberInput label="PP" bind:value={newMove.pp}/>
+      <SelectInput
+              label="Type"
+              id="type"
+              bind:value={newMove.type}
+              options={PokemonTypes.map((type) => {
+                if (type === null) {
+                  return {
+                    label: "None",
+                    value: null,
+                  };
+                }
+                return {
+                label: _.capitalize(type),
+                value: type,
+              }})}
+            />
+      <SelectInput
+              label="Damage Class"
+              id="damage-class"
+              bind:value={newMove.damage_class}
+              options={[
+                { label: "status", value: "status" },
+                { label: "physical", value: "physical" },
+                { label: "special", value: "special" },
+              ]}
+            />
+      <TextInput label="Machine Name" bind:value={newMove.machine_name}/>
+      <Button
+          title="Create Move"
+          class="w-32"
+          disabled={newMove.name === ""}
+          onClick={createNewMove}
+        />
+    </BaseModal>
 
 <div class="flex flex-row gap-7">
   <AutoComplete
@@ -135,6 +238,11 @@ async function convertMovesToSqlite() {
     disabled={_.isEqual(move, originalMoveDetails)}
     class="mt-2 w-32"
   />
+  <Button
+      title="Create New Move"
+      class="ml-auto mr-3 mt-2 w-36"
+      onClick={() => newMoveModalOpen = true}
+    />
 </div>
 
 {#if !_.isEmpty(move)}
