@@ -43,16 +43,20 @@ async function getMove() {
     });
 }
 
-// async function updatePagesForPokemonWithMove() {
-//   let pokemonToUpdate = Object.values($pokemon.pokemon)
-//     .filter((p) => Object.keys(p.moves).includes(move.name))
-//     .map((p) => p.id);
-
-//   await invoke("generate_pokemon_pages_from_list", {
-//     dexNumbers: pokemonToUpdate,
-//     wikiName: $selectedWiki.name,
-//   });
-// }
+async function updatePagesForPokemonWithMove() {
+  await $db
+    .select<{pokemon: number}[]>(
+      "SELECT DISTINCT pokemon FROM pokemon_movesets WHERE move = $1;",
+      [move.id],
+    )
+    .then(async (res) => {
+      const ids = res.map((id) => id.pokemon);
+      await invoke("generate_pokemon_pages_from_list", {
+        pokemonIds: ids,
+        wikiName: $selectedWiki.name,
+      });
+    });
+}
 
 async function saveMoveChanges() {
   await $db
@@ -71,6 +75,7 @@ async function saveMoveChanges() {
     )
     .then(() => {
       originalMoveDetails = _.cloneDeep(move);
+      updatePagesForPokemonWithMove();
       toastStore.trigger({
         message: "Move changes saved!",
         background: "variant-filled-success",
