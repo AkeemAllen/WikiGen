@@ -10,7 +10,7 @@ import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
 import _ from "lodash";
 import { selectedWiki } from "../../store";
 import { moveList, type Move } from "../../store/moves";
-import { PokemonTypes } from "../../store/pokemon";
+import { PokemonTypes, pokemonList } from "../../store/pokemon";
 import { invoke } from "@tauri-apps/api/tauri";
 import { db } from "../../store/db";
 import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
@@ -18,6 +18,7 @@ import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
     import { DataHandler } from "@vincjo/datatables";
     import { IconTrash } from "@tabler/icons-svelte";
     import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
+    import MultiSelect from "svelte-multiselect";
 
 const toastStore = getToastStore();
 let tabSet: number = 0;
@@ -33,10 +34,24 @@ let newMove: Move = {
 let move: Move = {} as Move;
 let originalMoveDetails: Move = {} as Move;
 
+let addMoveModalOpen: boolean = false;
+let newMoveLearner: MoveLearner = {
+  pokemonId: 0,
+  name: "",
+  learn_method: "",
+  level_learned: 0
+};
+
 let moveListOptions = $moveList.map(([id, name]) => ({
   label: name,
   value: id,
 }));
+
+let pokemonListOptions = $pokemonList.map(([id, name]) => ({
+  label: _.capitalize(name),
+  value: id,
+}));
+
 type MoveLearner = {
   pokemonId: number,
   name: string,
@@ -44,6 +59,7 @@ type MoveLearner = {
   level_learned: number
 }
 let pokemonWhoCanLearnMove: MoveLearner[] = [];
+let newLearnMethods: string[] = [];
 
 const rowsPerPageOptions = [
   { label: "5", value: 5 },
@@ -229,6 +245,34 @@ async function deleteMoveFromPokemon(pokemonId: number) {
     })
     .then(() => generatePokemonPage(pokemonId));
 }
+
+async function addMoveToPokemon() {
+  await $db
+    .execute(
+      `INSERT INTO pokemon_movesets (pokemon, move, learn_method, level_learned)
+    VALUES ($1, $2, $3, $4)`,
+      [newMoveLearner.pokemonId, move.id, newMoveLearner.learn_method, newMoveLearner.level_learned],
+    )
+    .then(() => {
+      pokemonWhoCanLearnMove = [
+        newMoveLearner,
+        ...pokemonWhoCanLearnMove,
+      ]
+      toastStore.trigger({
+        message: "Move added successfully",
+        background: "variant-filled-success",
+      });
+    })
+    .then(() => generatePokemonPage(newMoveLearner.pokemonId)).then(() => {
+      newMoveLearner = {
+        pokemonId: 0,
+        name: "",
+        learn_method: "",
+        level_learned: 0,
+      };
+    });
+}
+
 async function getSpriteImage(pokemonName: string): Promise<string> {
   let sprite = "";
   await readBinaryFile(
@@ -294,6 +338,50 @@ async function getSpriteImage(pokemonName: string): Promise<string> {
           onClick={createNewMove}
         />
     </BaseModal>
+
+<BaseModal bind:open={addMoveModalOpen}>
+    <h2 class="text-lg font-medium leading-6 text-gray-900">Move Learner</h2>
+      <AutoComplete
+        bind:value={newMoveLearner.name}
+        label="Pokemon Name"
+        popupId="newMovePopup"
+        class="z-10 w-full text-sm"
+        options={pokemonListOptions}
+        onSelection={(event) => {
+            newMoveLearner.pokemonId = event.detail.value;
+            newMoveLearner.name = event.detail.label;
+        }}
+      />
+      <div>
+        <label
+          for="methods"
+          class="mb-2 block text-sm font-medium leading-6 text-gray-900"
+          >Learn Method(s)</label
+        >
+        <MultiSelect
+          id="methods"
+          bind:selected={newLearnMethods}
+          options={["level-up", "machine"]}
+          on:change={(e) => {
+              newMoveLearner.learn_method = newLearnMethods.join(",");
+            }}
+          style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
+        />
+      </div>
+      {#if newLearnMethods.includes("level-up")}
+        <NumberInput
+          id="level-learned"
+          bind:value={newMoveLearner.level_learned}
+          label="Learn Level"
+          class="w-full"
+        />
+      {/if}
+      <Button
+        title="Add Move"
+        disabled={newMoveLearner.name === "" ||  newMoveLearner.learn_method === ""}
+        onClick={() => addMoveToPokemon()}
+      />
+</BaseModal>
 
 <div class="flex flex-row gap-7">
   <AutoComplete
@@ -396,6 +484,9 @@ async function getSpriteImage(pokemonName: string): Promise<string> {
                     <Button
                     title="Add Move To Pokemon"
                     class="mt-2 w-48"
+                    onClick={() => {
+                      addMoveModalOpen = true;
+                    }}
                     />
                 </div>
                 <aside class="flex items-center gap-x-3">
