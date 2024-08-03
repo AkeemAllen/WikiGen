@@ -346,7 +346,9 @@ async function getSpriteImage(pokemonName: string): Promise<string> {
         label="Pokemon Name"
         popupId="newMovePopup"
         class="z-10 w-full text-sm"
-        options={pokemonListOptions}
+        options={pokemonListOptions.filter((p) => {
+          return !pokemonWhoCanLearnMove.some((_p) => _p.pokemonId === p.value);
+        })}
         onSelection={(event) => {
             newMoveLearner.pokemonId = event.detail.value;
             newMoveLearner.name = event.detail.label;
