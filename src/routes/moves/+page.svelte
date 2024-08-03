@@ -16,7 +16,7 @@ import { db } from "../../store/db";
 import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
     import BaseModal from "$lib/components/BaseModal.svelte";
     import { DataHandler } from "@vincjo/datatables";
-    import { IconTrash } from "@tabler/icons-svelte";
+    import { IconEdit, IconTrash } from "@tabler/icons-svelte";
     import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
     import MultiSelect from "svelte-multiselect";
 
@@ -35,6 +35,7 @@ let move: Move = {} as Move;
 let originalMoveDetails: Move = {} as Move;
 
 let addMoveModalOpen: boolean = false;
+let editMoveModalOpen: boolean = false;
 let newMoveLearner: MoveLearner = {
   pokemonId: 0,
   name: "",
@@ -273,6 +274,43 @@ async function addMoveToPokemon() {
     });
 }
 
+async function editMove() {
+  await $db
+    .execute(
+      `UPDATE pokemon_movesets
+    SET learn_method = $1, level_learned = $2
+    WHERE pokemon = $3 AND move = $4`,
+      [
+        newMoveLearner.learn_method,
+        newMoveLearner.level_learned,
+        newMoveLearner.pokemonId,
+        move.id,
+      ],
+    )
+    .then(() => {
+      pokemonWhoCanLearnMove = pokemonWhoCanLearnMove.map((pokemon) => {
+        if (pokemon.pokemonId === newMoveLearner.pokemonId) {
+          return {
+            ...pokemon,
+            learn_method: newMoveLearner.learn_method,
+            level_learned: newMoveLearner.level_learned,
+          };
+        }
+        return pokemon;
+      });
+      editMoveModalOpen = false;
+      toastStore.trigger({
+        message: "Move updated successfully",
+        background: "variant-filled-success",
+      });
+    })
+    .then(() => generatePokemonPage(newMoveLearner.pokemonId)).then(() => {
+
+      newMoveLearner = { pokemonId: 0, name: "", learn_method: "", level_learned: 0 };
+      newLearnMethods = [];
+    });
+}
+
 async function getSpriteImage(pokemonName: string): Promise<string> {
   let sprite = "";
   await readBinaryFile(
@@ -339,7 +377,7 @@ async function getSpriteImage(pokemonName: string): Promise<string> {
         />
     </BaseModal>
 
-<BaseModal bind:open={addMoveModalOpen}>
+<BaseModal class="w-[20rem]" bind:open={addMoveModalOpen}>
     <h2 class="text-lg font-medium leading-6 text-gray-900">Move Learner</h2>
       <AutoComplete
         bind:value={newMoveLearner.name}
@@ -383,6 +421,40 @@ async function getSpriteImage(pokemonName: string): Promise<string> {
         disabled={newMoveLearner.name === "" ||  newMoveLearner.learn_method === ""}
         onClick={() => addMoveToPokemon()}
       />
+</BaseModal>
+
+<BaseModal bind:open={editMoveModalOpen}>
+  <h2 class="text-lg font-medium leading-6 text-gray-900">Edit Move</h2>
+  <TextInput value={newMoveLearner.name} disabled={true} />
+  <div>
+    <label
+      for="methods"
+      class="mb-2 block text-sm font-medium leading-6 text-gray-900"
+      >Learn Method(s)</label
+    >
+    <MultiSelect
+      id="methods"
+      bind:selected={newLearnMethods}
+      options={["level-up", "machine"]}
+      on:change={(e) => {
+          newMoveLearner.learn_method = newLearnMethods.join(",");
+        }}
+      style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
+    />
+  </div>
+  {#if newMoveLearner.learn_method.includes("level-up")}
+    <NumberInput
+      id="level-learned"
+      bind:value={newMoveLearner.level_learned}
+      label="Learn Level"
+      class="w-full"
+    />
+  {/if}
+  <Button
+    title="Edit Move"
+    disabled={newMoveLearner.name === "" ||  newMoveLearner.learn_method === ""}
+    onClick={editMove}
+  />
 </BaseModal>
 
 <div class="flex flex-row gap-7">
@@ -523,6 +595,16 @@ async function getSpriteImage(pokemonName: string): Promise<string> {
                         </td>
                         <td>{row.learn_method}</td>
                         <td>{row.level_learned}</td>
+                        <td
+                                      class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
+                                      on:click={() => {
+                                      newMoveLearner = row;
+                                        editMoveModalOpen = true;
+                                        newLearnMethods = row.learn_method.split(",");
+                                      }}
+                                    >
+                                      <IconEdit size={18} class="text-gray-500" />
+                                    </td>
                         <td
                         class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
                         on:click={() => deleteMoveFromPokemon(row.pokemonId)}
