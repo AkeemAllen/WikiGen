@@ -36,10 +36,10 @@ async function generatePokemonPagesInRange() {
 </script>
 
 <TabGroup>
-  <Tab bind:group={tabSet} name="pokemon" value={0}>Pokemon</Tab>
-  <Tab bind:group={tabSet} name="prepare-pokemon-data" value={1}>Generation</Tab
+  <Tab bind:group={tabSet} name="pokemon" value={0} class="text-sm">Pokemon</Tab>
+  <Tab bind:group={tabSet} name="prepare-pokemon-data" value={1} class="text-sm">Generation</Tab
   >
-  <Tab bind:group={tabSet} name="new-pokemon" value={2}>Create New Pokemon</Tab>
+  <Tab bind:group={tabSet} name="new-pokemon" value={2} class="text-sm">Create New Pokemon</Tab>
   <svelte:fragment slot="panel">
     {#if tabSet === 0}
       <PokemonPanel />
