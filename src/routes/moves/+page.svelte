@@ -33,6 +33,17 @@ let moveListOptions = $moveList.map(([id, name]) => ({
   label: name,
   value: id,
 }));
+let pokemonWhoCanLearnMove: number[] = [];
+
+async function gatherPokemonWhoCanLearnMove() {
+  return await $db
+    .select<{pokemon: number}[]>(
+      "SELECT DISTINCT pokemon FROM pokemon_movesets WHERE move = $1;",
+      [move.id],
+    ).then((res) => {
+      pokemonWhoCanLearnMove = res.map((r) => r.pokemon);
+    })
+}
 
 async function getMove() {
   let retrievedMove = $moveList.find(([_, name]) => name === moveSearch[1]);
@@ -50,20 +61,9 @@ async function getMove() {
     .then(async (res) => {
       move = res[0];
       originalMoveDetails = _.cloneDeep(move);
-    });
-}
-
-async function updatePagesForPokemonWithMove() {
-  await $db
-    .select<{pokemon: number}[]>(
-      "SELECT DISTINCT pokemon FROM pokemon_movesets WHERE move = $1;",
-      [move.id],
-    )
-    .then(async (res) => {
-      const ids = res.map((id) => id.pokemon);
-      await invoke("generate_pokemon_pages_from_list", {
-        pokemonIds: ids,
-        wikiName: $selectedWiki.name,
+    }).then(async () => {
+      await gatherPokemonWhoCanLearnMove().then(() => {
+        console.log(pokemonWhoCanLearnMove);
       });
     });
 }
@@ -85,7 +85,11 @@ async function saveMoveChanges() {
     )
     .then(() => {
       originalMoveDetails = _.cloneDeep(move);
-      updatePagesForPokemonWithMove();
+      invoke("generate_pokemon_pages_from_list", {
+              pokemonIds: pokemonWhoCanLearnMove,
+              wikiName: $selectedWiki.name,
+              });
+
       toastStore.trigger({
         message: "Move changes saved!",
         background: "variant-filled-success",
