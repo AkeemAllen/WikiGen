@@ -4,7 +4,9 @@ import SelectInput from "$lib/components/SelectInput.svelte";
 import Button from "$lib/components/Button.svelte";
 import AutoComplete from "$lib/components/AutoComplete.svelte";
 import TextInput from "$lib/components/TextInput.svelte";
-import { getToastStore } from "@skeletonlabs/skeleton";
+import Pagination from "$lib/components/Pagination.svelte";
+import ThSort from "$lib/components/ThSort.svelte";
+import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
 import _ from "lodash";
 import { selectedWiki } from "../../store";
 import { moveList, type Move } from "../../store/moves";
@@ -13,35 +15,72 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { db } from "../../store/db";
 import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
     import BaseModal from "$lib/components/BaseModal.svelte";
+    import { DataHandler } from "@vincjo/datatables";
+    import { IconTrash } from "@tabler/icons-svelte";
+    import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
 
 const toastStore = getToastStore();
+let tabSet: number = 0;
 
 let moveSearch: [number, string] = [0, ""];
-let newMoveModalOpen: boolean = false;
+let pokemonSearch: string = "";
 
+let newMoveModalOpen: boolean = false;
 let newMove: Move = {
   damage_class: "status",
   type: "normal"
-
 } as Move;
-
-let move: Move = {
-} as Move;
+let move: Move = {} as Move;
 let originalMoveDetails: Move = {} as Move;
 
 let moveListOptions = $moveList.map(([id, name]) => ({
   label: name,
   value: id,
 }));
-let pokemonWhoCanLearnMove: number[] = [];
+type MoveLearner = {
+  pokemonId: number,
+  name: string,
+  learn_method: string,
+  level_learned: number
+}
+let pokemonWhoCanLearnMove: MoveLearner[] = [];
 
+const rowsPerPageOptions = [
+  { label: "5", value: 5 },
+  { label: "10", value: 10 },
+  { label: "20", value: 20 },
+  { label: "50", value: 50 },
+  { label: "100", value: 100 },
+];
+
+$: handler = new DataHandler(pokemonWhoCanLearnMove, {
+  rowsPerPage: 5,
+});
+$: rows = handler.getRows();
+$: rowsPerPage = handler.getRowsPerPage();
+
+
+async function generatePokemonPage(pokemonId: number) {
+  await invoke("generate_pokemon_pages_from_list", {
+    wikiName: $selectedWiki.name,
+    pokemonIds: [pokemonId],
+  }).then(() => {
+    toastStore.trigger({
+      message: "Pokemon page regenerated!",
+      background: "variant-filled-success",
+    });
+  });
+}
 async function gatherPokemonWhoCanLearnMove() {
   return await $db
-    .select<{pokemon: number}[]>(
-      "SELECT DISTINCT pokemon FROM pokemon_movesets WHERE move = $1;",
+    .select<MoveLearner[]>(
+      `SELECT DISTINCT pokemon as pokemonId, p.name, learn_method, level_learned
+      FROM pokemon_movesets
+      INNER JOIN pokemon p on p.id = pokemon
+      WHERE move=$1;`,
       [move.id],
     ).then((res) => {
-      pokemonWhoCanLearnMove = res.map((r) => r.pokemon);
+      pokemonWhoCanLearnMove = res;
     })
 }
 
@@ -86,10 +125,9 @@ async function saveMoveChanges() {
     .then(() => {
       originalMoveDetails = _.cloneDeep(move);
       invoke("generate_pokemon_pages_from_list", {
-              pokemonIds: pokemonWhoCanLearnMove,
-              wikiName: $selectedWiki.name,
-              });
-
+            pokemonIds: pokemonWhoCanLearnMove.map((p) => p.pokemonId),
+            wikiName: $selectedWiki.name,
+        });
       toastStore.trigger({
         message: "Move changes saved!",
         background: "variant-filled-success",
@@ -172,6 +210,44 @@ async function convertMovesToSqlite() {
       });
     });
 }
+
+async function deleteMoveFromPokemon(pokemonId: number) {
+  await $db
+    .execute(`DELETE FROM pokemon_movesets WHERE pokemon = $1 AND move = $2`, [
+      pokemonId,
+      move.id,
+    ])
+    .then(() => {
+      const updatedMoveLearners = pokemonWhoCanLearnMove.filter(
+        (p) => p.pokemonId !== pokemonId,
+      );
+      pokemonWhoCanLearnMove = updatedMoveLearners;
+      toastStore.trigger({
+        message: "Move deleted successfully",
+        background: "variant-filled-success",
+      });
+    })
+    .then(() => generatePokemonPage(pokemonId));
+}
+async function getSpriteImage(pokemonName: string): Promise<string> {
+  let sprite = "";
+  await readBinaryFile(
+    `${$selectedWiki.name}/dist/docs/img/pokemon/${pokemonName}.png`,
+    { dir: BaseDirectory.AppData },
+  )
+    .then((res) => {
+      const blob = new Blob([res], { type: "image/png" });
+      sprite = URL.createObjectURL(blob);
+    })
+    .catch((err) => {
+      console.log(err);
+      if (err.includes("No such file or directory")) {
+        sprite = "Image Not Found";
+      }
+      sprite = "Error loading image";
+    });
+  return sprite;
+}
 </script>
 
 <BaseModal class="w-[30rem]" bind:open={newMoveModalOpen}>
@@ -224,7 +300,7 @@ async function convertMovesToSqlite() {
     bind:value={moveSearch[1]}
     placeholder="Search Moves"
     options={moveListOptions}
-    popupId="abilities-search"
+    popupId="move-search"
     onSelection={(e) => {
           moveSearch = [e.detail.value, e.detail.label];
         }}
@@ -250,56 +326,126 @@ async function convertMovesToSqlite() {
 </div>
 
 {#if !_.isEmpty(move)}
-  <p class="ml-2 mt-4 text-lg">{_.capitalize(move.name)}</p>
-  <div class="ml-2 mt-4">
-    <div class="grid grid-cols-2 gap-x-10 gap-y-5 pr-4">
-      <NumberInput label="Power" id="power" bind:value={move.power} max={255} />
-      <SelectInput
-        label="Type"
-        id="type"
-        bind:value={move.type}
-        options={PokemonTypes.map((type) => {
-          if (type === null) {
-            return {
-              label: "None",
-              value: null,
-            };
-          }
-          return {
-          label: _.capitalize(type),
-          value: type,
-        }})}
-      />
-      <NumberInput
-        label="Accuracy"
-        id="accuracy"
-        bind:value={move.accuracy}
-        max={100}
-      />
-      <!-- Highest PP move is 40, but setting it to 100 for future proofing -->
-      <NumberInput label="PP" id="pp" bind:value={move.pp} max={100} />
-      <SelectInput
-        label="Damage Class"
-        id="damage-class"
-        bind:value={move.damage_class}
-        options={[
-          { label: "status", value: "status" },
-          { label: "physical", value: "physical" },
-          { label: "special", value: "special" },
-        ]}
-      />
-    </div>
-  </div>
-  {#if !move.is_new}
-    <label class="block text-sm font-medium leading-6 text-gray-900">
-      <input
-        type="checkbox"
-        checked={Boolean(move.is_modified)}
-        on:change={setModified}
-        class="text-sm font-medium leading-6 text-gray-900"
-      />
-      Mark Move as Modified
-    </label>
-  {/if}
+  <p class="ml-2 mt-4 mb-4 text-lg">{_.capitalize(move.name).replaceAll("-", " ")}</p>
+  <TabGroup>
+        <Tab bind:group={tabSet} value={0} name="details" class="text-sm">Details</Tab>
+        <Tab bind:group={tabSet} value={1} name="pokemon"class="text-sm">Pokemon</Tab>
+    <svelte:fragment slot="panel">
+        {#if tabSet === 0}
+            <div class="ml-2 mt-4">
+                <div class="grid grid-cols-2 gap-x-10 gap-y-5 pr-4">
+                <NumberInput label="Power" id="power" bind:value={move.power} max={255} />
+                <SelectInput
+                    label="Type"
+                    id="type"
+                    bind:value={move.type}
+                    options={PokemonTypes.map((type) => {
+                    if (type === null) {
+                        return {
+                        label: "None",
+                        value: null,
+                        };
+                    }
+                    return {
+                    label: _.capitalize(type),
+                    value: type,
+                    }})}
+                />
+                <NumberInput
+                    label="Accuracy"
+                    id="accuracy"
+                    bind:value={move.accuracy}
+                    max={100}
+                />
+                <!-- Highest PP move is 40, but setting it to 100 for future proofing -->
+                <NumberInput label="PP" id="pp" bind:value={move.pp} max={100} />
+                <SelectInput
+                    label="Damage Class"
+                    id="damage-class"
+                    bind:value={move.damage_class}
+                    options={[
+                    { label: "status", value: "status" },
+                    { label: "physical", value: "physical" },
+                    { label: "special", value: "special" },
+                    ]}
+                />
+                </div>
+            </div>
+            {#if !move.is_new}
+              <label class="block text-sm font-medium leading-6 text-gray-900">
+                <input
+                  type="checkbox"
+                  checked={Boolean(move.is_modified)}
+                  on:change={setModified}
+                  class="text-sm font-medium leading-6 text-gray-900"
+                />
+                Mark Move as Modified
+              </label>
+            {/if}
+        {/if}
+        {#if tabSet === 1}
+            <div class="mt-4 space-y-4 overflow-x-auto px-4">
+                <header class="flex items-center justify-between gap-4">
+                <div class="flex gap-x-3">
+                    <TextInput
+                    id="pokemon"
+                    bind:value={pokemonSearch}
+                    inputHandler={() => handler.search(pokemonSearch)}
+                    placeholder="Search pokemon"
+                    />
+                    <Button
+                    title="Add Move To Pokemon"
+                    class="mt-2 w-48"
+                    />
+                </div>
+                <aside class="flex items-center gap-x-3">
+                    <p class="mt-2">Show</p>
+                    <SelectInput bind:value={$rowsPerPage} options={rowsPerPageOptions} />
+                </aside>
+                </header>
+                <table class="table table-hover table-compact w-full table-auto bg-white">
+                <thead>
+                    <tr class="bg-white">
+                    <ThSort handler={handler} orderBy="name">Pokemon Name</ThSort>
+                    <ThSort handler={handler} orderBy="learn_method">Learn Method</ThSort>
+                    <ThSort handler={handler} orderBy="level_learned">Learn Level</ThSort>
+                    </tr>
+                </thead>
+                <tbody>
+                    {#each $rows as row}
+                    <tr>
+                        <td class="flex flex-row gap-1 self-center">
+                        {#await getSpriteImage(row.name) then spriteUrl}
+                                                      <img
+                                                        src={spriteUrl}
+                                                        alt={row.name}
+                                                        class="m-0 justify-self-center"
+                                                        width="30"
+                                                        height="30"
+                                                      />
+                        {/await}
+                        <span class="self-center">
+                        {_.capitalize(row.name.replace("-", " "))}
+                        </span>
+                        </td>
+                        <td>{row.learn_method}</td>
+                        <td>{row.level_learned}</td>
+                        <td
+                        class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
+                        on:click={() => deleteMoveFromPokemon(row.pokemonId)}
+                        >
+                          <IconTrash size={18} class="text-gray-500" />
+                        </td>
+                    </tr>
+                    {/each}
+                </tbody>
+                </table>
+                <footer class="flex">
+                <Pagination handler={handler} />
+                </footer>
+            </div>
+        {/if}
+        </svelte:fragment>
+    </TabGroup>
 {/if}
 <!-- <Button title="Convert Moves to SQLite" onClick={convertMovesToSqlite} /> -->
