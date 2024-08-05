@@ -23,6 +23,7 @@
   import BaseModal from "../BaseModal.svelte";
   import { shortcut } from "@svelte-put/shortcut";
   import { cloneDeep } from "$lib/utils/cloneDeep";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
 
   export let routeName: string = "";
   let pokemonName: string = "";
@@ -35,7 +36,7 @@
     $routes.routes[routeName].wild_encounter_area_levels,
   );
   let originalAreaLevels = cloneDeep(areaLevels);
-  let routeWildEncounters = cloneDeep(
+  let routeWildEncounters: { [key: string]: WildEncounter[] } = cloneDeep(
     $routes.routes[routeName].wild_encounters,
   );
   let originalRouteWildEncounters = cloneDeep(routeWildEncounters);
@@ -228,7 +229,7 @@
   {#each Object.entries(routeWildEncounters) as [_encounterType, encounters]}
     <div>
       <strong>
-        {_.capitalize(_encounterType)} Encounters
+        {capitalizeWords(_encounterType)} Encounters
       </strong>
       <TextInput
         bind:value={areaLevels[_encounterType]}
@@ -254,7 +255,7 @@
             {/await}
             <div class="w-full rounded-md border-2">
               <p class="text-center">
-                {_.capitalize(encounter.name)}
+                {capitalizeWords(encounter.name)}
               </p>
               <p class="text-center">
                 {encounter.encounter_rate}%

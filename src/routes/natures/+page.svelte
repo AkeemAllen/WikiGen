@@ -16,6 +16,7 @@
   import { db } from "../../store/db";
   import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
   import { cloneDeep } from "$lib/utils/cloneDeep";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
 
   const toastStore = getToastStore();
 
@@ -252,7 +253,7 @@
 
 {#if !_.isEmpty(nature)}
   <p class="mt-4 text-lg">
-    {_.capitalize(nature.name.replaceAll("-", " "))}
+    {capitalizeWords(nature.name.replaceAll("-", " "))}
   </p>
   <div class="grid grid-cols-2 gap-5">
     <SelectInput

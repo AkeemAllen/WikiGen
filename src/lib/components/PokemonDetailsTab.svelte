@@ -1,67 +1,68 @@
 <script lang="ts">
-import SelectInput from "$lib/components/SelectInput.svelte";
-import AutoComplete from "$lib/components/AutoComplete.svelte";
-import TextInput from "$lib/components/TextInput.svelte";
-import _ from "lodash";
-import { PokemonTypes, type Pokemon, pokemonList } from "../../store/pokemon";
-import NumberInput from "./NumberInput.svelte";
-import { abilitiesList } from "../../store/abilities";
-import { itemsList } from "../../store/items";
+  import SelectInput from "$lib/components/SelectInput.svelte";
+  import AutoComplete from "$lib/components/AutoComplete.svelte";
+  import TextInput from "$lib/components/TextInput.svelte";
+  import _ from "lodash";
+  import { PokemonTypes, type Pokemon, pokemonList } from "../../store/pokemon";
+  import NumberInput from "./NumberInput.svelte";
+  import { abilitiesList } from "../../store/abilities";
+  import { itemsList } from "../../store/items";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
 
-export let pokemon: Pokemon = {} as Pokemon;
-export let isNewPokemon: boolean = false;
+  export let pokemon: Pokemon = {} as Pokemon;
+  export let isNewPokemon: boolean = false;
 
-let pokemonListOptions = $pokemonList.map(([id, name]) => ({
-  label: _.capitalize(name),
-  value: name,
-}));
+  let pokemonListOptions = $pokemonList.map(([id, name]) => ({
+    label: capitalizeWords(name),
+    value: name,
+  }));
 
-const abilitiesListOptions = $abilitiesList.map(([id, name]) => ({
-  label: name,
-  value: name,
-}));
+  const abilitiesListOptions = $abilitiesList.map(([id, name]) => ({
+    label: name,
+    value: name,
+  }));
 
-const itemListOptions = $itemsList.map(([id, name]) => ({
-  label: _.capitalize(name),
-  value: name,
-}));
+  const itemListOptions = $itemsList.map(([id, name]) => ({
+    label: capitalizeWords(name),
+    value: name,
+  }));
 
-let types: (string | null)[];
-$: if (pokemon.types) setTypes();
-function setTypes() {
-  types = pokemon.types.split(",");
-  if (types.length === 1) {
-    types.push(null);
-  }
-}
-
-function onTypeChange(e: any, type_number: string) {
-  console.log(e);
-  if (type_number === "1") {
-    types[0] = e.target.value;
-  } else {
-    types[1] = e.target.value;
+  let types: (string | null)[];
+  $: if (pokemon.types) setTypes();
+  function setTypes() {
+    types = pokemon.types.split(",");
+    if (types.length === 1) {
+      types.push(null);
+    }
   }
 
-  console.log(types);
+  function onTypeChange(e: any, type_number: string) {
+    console.log(e);
+    if (type_number === "1") {
+      types[0] = e.target.value;
+    } else {
+      types[1] = e.target.value;
+    }
 
-  if (types[0] === null && types[1] === null) {
-    pokemon.types = `null_type`;
-    return;
+    console.log(types);
+
+    if (types[0] === null && types[1] === null) {
+      pokemon.types = `null_type`;
+      return;
+    }
+
+    if (types[0] !== null && types[1] === null) {
+      pokemon.types = types[0];
+      return;
+    }
+
+    if (types[0] === null && types[1] !== null) {
+      pokemon.types = types[1];
+      return;
+    }
+
+    pokemon.types = `${types[0]},${types[1]}`;
   }
-
-  if (types[0] !== null && types[1] === null) {
-    pokemon.types = types[0];
-    return;
-  }
-
-  if (types[0] === null && types[1] !== null) {
-    pokemon.types = types[1];
-    return;
-  }
-
-  pokemon.types = `${types[0]},${types[1]}`;
-}
 </script>
 
 <div class="scroll-smooth px-4">
@@ -70,15 +71,15 @@ function onTypeChange(e: any, type_number: string) {
       id="pokemon-type-1"
       bind:value={types[0]}
       label="Type 1"
-      options={PokemonTypes.map(type => {
+      options={PokemonTypes.map((type) => {
         if (type === null) {
           return { label: "None", value: null };
         }
 
         return {
-          label: _.capitalize(type),
+          label: capitalizeWords(type),
           value: type,
-        }
+        };
       })}
       onChange={(e) => onTypeChange(e, "1")}
     />
@@ -86,15 +87,15 @@ function onTypeChange(e: any, type_number: string) {
       id="pokemon-type-2"
       bind:value={types[1]}
       label="Type 2"
-      options={PokemonTypes.map(type => {
+      options={PokemonTypes.map((type) => {
         if (type === null) {
           return { label: "None", value: null };
         }
 
         return {
-          label: _.capitalize(type),
+          label: capitalizeWords(type),
           value: type,
-        }
+        };
       })}
       onChange={(e) => onTypeChange(e, "2")}
     />
@@ -115,7 +116,7 @@ function onTypeChange(e: any, type_number: string) {
       popupId="ability-2-popup"
       onSelection={(e) => {
         pokemon.ability_2 = e.detail.value;
-    }}
+      }}
       class="w-full"
     />
   </div>
@@ -141,8 +142,8 @@ function onTypeChange(e: any, type_number: string) {
           options={itemListOptions}
           popupId="evolution-item-popup"
           onSelection={(e) => {
-                pokemon.evolution_item = e.detail.label;
-              }}
+            pokemon.evolution_item = e.detail.label;
+          }}
         />
       {/if}
       {#if pokemon.evolution_method === "level_up"}

@@ -22,6 +22,7 @@
   import AutoComplete from "./AutoComplete.svelte";
   import { db } from "../../store/db";
   import { cloneDeep } from "$lib/utils/cloneDeep";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
 
   const toastStore = getToastStore();
 
@@ -37,7 +38,7 @@
   let tabSet: number = 0;
 
   let pokemonListOptions = $pokemonList.map(([id, name]) => ({
-    label: _.capitalize(name),
+    label: capitalizeWords(name),
     value: id,
   }));
 

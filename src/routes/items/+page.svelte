@@ -17,6 +17,7 @@
   import { base64ToArray, isNullEmptyOrUndefined } from "$lib/utils";
   import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
   import { cloneDeep } from "$lib/utils/cloneDeep";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
 
   const toastStore = getToastStore();
 
@@ -293,7 +294,7 @@
 {#if !_.isEmpty(item)}
   <div class="mt-4 flex flex-col gap-4">
     <p class="text-lg">
-      {_.capitalize(item.name.replaceAll("-", " "))}
+      {capitalizeWords(item.name.replaceAll("-", " "))}
     </p>
     {#if spriteImage === "404"}
       <p class="text-sm">No sprite available</p>

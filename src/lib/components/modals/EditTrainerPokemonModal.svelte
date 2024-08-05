@@ -13,6 +13,7 @@
   import { moveList } from "../../../store/moves";
   import { shortcut } from "@svelte-put/shortcut";
   import { cloneDeep } from "$lib/utils/cloneDeep";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
 
   export let pokemon: TrainerPokemon = {} as TrainerPokemon;
   let originalPokemonAttributes = cloneDeep(pokemon);
@@ -49,7 +50,7 @@
 
 <BaseModal bind:open class="grid w-[40rem] grid-cols-2 gap-5">
   <div class="col-span-2 text-lg font-bold">
-    {_.capitalize(pokemon.name)}
+    {capitalizeWords(pokemon.name)}
   </div>
   <NumberInput label="Level" bind:value={pokemon.level} />
   <AutoComplete

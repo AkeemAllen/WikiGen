@@ -20,6 +20,7 @@
   import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
   import MultiSelect from "svelte-multiselect";
   import { cloneDeep } from "$lib/utils/cloneDeep";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
 
   const toastStore = getToastStore();
   let tabSet: number = 0;
@@ -50,7 +51,7 @@
   }));
 
   let pokemonListOptions = $pokemonList.map(([id, name]) => ({
-    label: _.capitalize(name),
+    label: capitalizeWords(name),
     value: id,
   }));
 
@@ -365,7 +366,7 @@
         };
       }
       return {
-        label: _.capitalize(type),
+        label: capitalizeWords(type),
         value: type,
       };
     })}
@@ -501,7 +502,7 @@
 
 {#if !_.isEmpty(move)}
   <p class="ml-2 mt-4 mb-4 text-lg">
-    {_.capitalize(move.name).replaceAll("-", " ")}
+    {capitalizeWords(move.name).replaceAll("-", " ")}
   </p>
   <TabGroup>
     <Tab bind:group={tabSet} value={0} name="details" class="text-sm"
@@ -532,7 +533,7 @@
                   };
                 }
                 return {
-                  label: _.capitalize(type),
+                  label: capitalizeWords(type),
                   value: type,
                 };
               })}
@@ -619,7 +620,7 @@
                       />
                     {/await}
                     <span class="self-center">
-                      {_.capitalize(row.name.replace("-", " "))}
+                      {capitalizeWords(row.name.replace("-", " "))}
                     </span>
                   </td>
                   <td>{row.learn_method}</td>

@@ -16,6 +16,7 @@
   import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
   import { isNullEmptyOrUndefined } from "$lib/utils";
   import { cloneDeep } from "$lib/utils/cloneDeep";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
 
   const toastStore = getToastStore();
 
@@ -239,7 +240,7 @@
 {#if !_.isEmpty(ability)}
   <div class="mt-4 flex flex-col gap-4">
     <p class="mt-4 text-lg">
-      {_.capitalize(ability.name.replaceAll("-", " "))}
+      {capitalizeWords(ability.name.replaceAll("-", " "))}
     </p>
     <div>
       <label

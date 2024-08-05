@@ -26,6 +26,7 @@
   import EditTrainerPokemonModal from "../modals/EditTrainerPokemonModal.svelte";
   import { shortcut } from "@svelte-put/shortcut";
   import { cloneDeep } from "$lib/utils/cloneDeep";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
 
   const toastStore = getToastStore();
 
@@ -44,7 +45,9 @@
   let positionModalOpen: boolean = false;
   let spriteName: string = "";
 
-  let routeTrainers = cloneDeep($routes.routes[routeName].trainers);
+  let routeTrainers: { [key: string]: TrainerInfo } = cloneDeep(
+    $routes.routes[routeName].trainers,
+  );
   let originalTrainers = cloneDeep(routeTrainers);
   $: trainerOptions = Object.keys(routeTrainers).map((trainer) => ({
     label: trainer,
@@ -323,7 +326,7 @@
   {#each Object.entries(routeTrainers) as [name, trainerInfo], index}
     <div>
       <strong class="flex flex-row items-center gap-x-4">
-        {_.capitalize(name)}
+        {capitalizeWords(name)}
         <TrainerMenu
           {index}
           trainerName={name}
