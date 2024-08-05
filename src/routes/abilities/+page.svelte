@@ -18,6 +18,7 @@
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
+  import objectIsEmpty from "$lib/utils/objectIsEmpty";
 
   const toastStore = getToastStore();
 
@@ -233,12 +234,12 @@
   <Button
     title="Delete Ability"
     class="mr-5 mt-2 w-32"
-    disabled={_.isEmpty(ability)}
+    disabled={objectIsEmpty(ability)}
     onClick={deleteAbility}
   />
 </div>
 
-{#if !_.isEmpty(ability)}
+{#if !objectIsEmpty(ability)}
   <div class="mt-4 flex flex-col gap-4">
     <p class="mt-4 text-lg">
       {capitalizeWords(ability.name.replaceAll("-", " "))}

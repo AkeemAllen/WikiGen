@@ -22,6 +22,7 @@
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
+  import objectIsEmpty from "$lib/utils/objectIsEmpty";
 
   const toastStore = getToastStore();
   let tabSet: number = 0;
@@ -501,7 +502,7 @@
   />
 </div>
 
-{#if !_.isEmpty(move)}
+{#if !objectIsEmpty(move)}
   <p class="ml-2 mt-4 mb-4 text-lg">
     {capitalizeWords(move.name).replaceAll("-", " ")}
   </p>

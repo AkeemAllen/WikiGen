@@ -334,7 +334,7 @@
   />
 </div>
 
-{#if !_.isEmpty(pokemon)}
+{#if !objectIsEmpty(pokemon)}
   {#if pokemonSprite === "404"}
     <p>No sprite found for {pokemon.name}</p>
   {:else}

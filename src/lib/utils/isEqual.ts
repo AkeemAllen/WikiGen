@@ -1,4 +1,4 @@
-export default function isEqual(value: any, other: any) {
+export default function isEqual(value: any, other: any): boolean {
   if (typeof value !== "object" && typeof other !== "object") {
     return Object.is(value, other);
   }

@@ -18,6 +18,7 @@
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
+  import objectIsEmpty from "$lib/utils/objectIsEmpty";
 
   const toastStore = getToastStore();
 
@@ -252,7 +253,7 @@
   />
 </div>
 
-{#if !_.isEmpty(nature)}
+{#if !objectIsEmpty(nature)}
   <p class="mt-4 text-lg">
     {capitalizeWords(nature.name.replaceAll("-", " "))}
   </p>
