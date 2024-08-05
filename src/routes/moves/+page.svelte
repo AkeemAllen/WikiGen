@@ -19,6 +19,7 @@
   import { IconEdit, IconTrash } from "@tabler/icons-svelte";
   import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
   import MultiSelect from "svelte-multiselect";
+  import { cloneDeep } from "$lib/utils/cloneDeep";
 
   const toastStore = getToastStore();
   let tabSet: number = 0;
@@ -116,7 +117,7 @@
       .select<Move[]>("SELECT * FROM moves WHERE id = $1;", [moveSearch[0]])
       .then(async (res) => {
         move = res[0];
-        originalMoveDetails = _.cloneDeep(move);
+        originalMoveDetails = cloneDeep(move);
       })
       .then(async () => {
         await gatherPokemonWhoCanLearnMove().then(() => {
@@ -141,7 +142,7 @@
         ],
       )
       .then(() => {
-        originalMoveDetails = _.cloneDeep(move);
+        originalMoveDetails = cloneDeep(move);
         invoke("generate_pokemon_pages_from_list", {
           pokemonIds: pokemonWhoCanLearnMove.map((p) => p.pokemonId),
           wikiName: $selectedWiki.name,

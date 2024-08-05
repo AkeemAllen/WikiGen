@@ -1,94 +1,74 @@
 <script lang="ts">
-import {
-  getToastStore,
-  popup,
-  type AutocompleteOption,
-} from "@skeletonlabs/skeleton";
-import {
-  BaseDirectory,
-  readBinaryFile,
-  writeTextFile,
-} from "@tauri-apps/api/fs";
-import _ from "lodash";
-import { selectedWiki } from "../../../store";
-import { routes, type WildEncounter } from "../../../store/gameRoutes";
-import { pokemonList } from "../../../store/pokemon";
-import Button from "../Button.svelte";
-import NumberInput from "../NumberInput.svelte";
-import SelectInput from "../SelectInput.svelte";
-import { IconTrash } from "@tabler/icons-svelte";
-import AutoComplete from "../AutoComplete.svelte";
-import { invoke } from "@tauri-apps/api";
-import TextInput from "../TextInput.svelte";
-import BaseModal from "../BaseModal.svelte";
-import { shortcut } from "@svelte-put/shortcut";
+  import {
+    getToastStore,
+    popup,
+    type AutocompleteOption,
+  } from "@skeletonlabs/skeleton";
+  import {
+    BaseDirectory,
+    readBinaryFile,
+    writeTextFile,
+  } from "@tauri-apps/api/fs";
+  import _ from "lodash";
+  import { selectedWiki } from "../../../store";
+  import { routes, type WildEncounter } from "../../../store/gameRoutes";
+  import { pokemonList } from "../../../store/pokemon";
+  import Button from "../Button.svelte";
+  import NumberInput from "../NumberInput.svelte";
+  import SelectInput from "../SelectInput.svelte";
+  import { IconTrash } from "@tabler/icons-svelte";
+  import AutoComplete from "../AutoComplete.svelte";
+  import { invoke } from "@tauri-apps/api";
+  import TextInput from "../TextInput.svelte";
+  import BaseModal from "../BaseModal.svelte";
+  import { shortcut } from "@svelte-put/shortcut";
+  import { cloneDeep } from "$lib/utils/cloneDeep";
 
-export let routeName: string = "";
-let pokemonName: string = "";
-let encounterType: string = "grass-normal";
-let currentWildEncounterIndex: number;
-let currentEncounterType: string;
-let editEncounterModalOpen: boolean = false;
-let encounterRate: number = 0;
-let areaLevels = _.cloneDeep(
-  $routes.routes[routeName].wild_encounter_area_levels,
-);
-let originalAreaLevels = _.cloneDeep(areaLevels);
-let routeWildEncounters = _.cloneDeep(
-  $routes.routes[routeName].wild_encounters,
-);
-let originalRouteWildEncounters = _.cloneDeep(routeWildEncounters);
-let pokemonListOptions: AutocompleteOption<string | number>[] =
-  $pokemonList.map(([id, name]) => ({ label: name, value: id }));
-
-const encounterTypes = $routes.encounter_types.map((type) => ({
-  label: type,
-  value: type,
-}));
-
-const toastStore = getToastStore();
-function onPokemonNameSelected(
-  event: CustomEvent<AutocompleteOption<string | number>>,
-): void {
-  pokemonName = event.detail.label;
-}
-
-async function addEncounter() {
-  routeWildEncounters = {
-    ...routeWildEncounters,
-    [encounterType]: [
-      ...(routeWildEncounters[encounterType] ?? []),
-      {
-        id: $pokemonList.find(
-          ([_, name]) => name === pokemonName,
-        )?.[0] as number,
-        name: pokemonName,
-        encounter_rate: encounterRate,
-      },
-    ],
-  };
-  routeWildEncounters[encounterType]
-    .sort(
-      (encounter1, encounter2) =>
-        encounter1.encounter_rate - encounter2.encounter_rate,
-    )
-    .reverse();
-}
-
-async function deleteEncounter(pokemonName: string, encounterType: string) {
-  editEncounterModalOpen = false;
-  let updatedEncounters = {
-    ...routeWildEncounters,
-  };
-  updatedEncounters[encounterType] = updatedEncounters[encounterType].filter(
-    (encounter) => encounter.name !== pokemonName,
+  export let routeName: string = "";
+  let pokemonName: string = "";
+  let encounterType: string = "grass-normal";
+  let currentWildEncounterIndex: number;
+  let currentEncounterType: string;
+  let editEncounterModalOpen: boolean = false;
+  let encounterRate: number = 0;
+  let areaLevels = cloneDeep(
+    $routes.routes[routeName].wild_encounter_area_levels,
   );
-  if (updatedEncounters[encounterType].length === 0) {
-    delete updatedEncounters[encounterType];
+  let originalAreaLevels = cloneDeep(areaLevels);
+  let routeWildEncounters = cloneDeep(
+    $routes.routes[routeName].wild_encounters,
+  );
+  let originalRouteWildEncounters = cloneDeep(routeWildEncounters);
+  let pokemonListOptions: AutocompleteOption<string | number>[] =
+    $pokemonList.map(([id, name]) => ({ label: name, value: id }));
+
+  const encounterTypes = $routes.encounter_types.map((type) => ({
+    label: type,
+    value: type,
+  }));
+
+  const toastStore = getToastStore();
+  function onPokemonNameSelected(
+    event: CustomEvent<AutocompleteOption<string | number>>,
+  ): void {
+    pokemonName = event.detail.label;
   }
 
-  if (updatedEncounters[encounterType] !== undefined) {
-    updatedEncounters[encounterType]
+  async function addEncounter() {
+    routeWildEncounters = {
+      ...routeWildEncounters,
+      [encounterType]: [
+        ...(routeWildEncounters[encounterType] ?? []),
+        {
+          id: $pokemonList.find(
+            ([_, name]) => name === pokemonName,
+          )?.[0] as number,
+          name: pokemonName,
+          encounter_rate: encounterRate,
+        },
+      ],
+    };
+    routeWildEncounters[encounterType]
       .sort(
         (encounter1, encounter2) =>
           encounter1.encounter_rate - encounter2.encounter_rate,
@@ -96,80 +76,109 @@ async function deleteEncounter(pokemonName: string, encounterType: string) {
       .reverse();
   }
 
-  routeWildEncounters = updatedEncounters;
-}
+  async function deleteEncounter(pokemonName: string, encounterType: string) {
+    editEncounterModalOpen = false;
+    let updatedEncounters = {
+      ...routeWildEncounters,
+    };
+    updatedEncounters[encounterType] = updatedEncounters[encounterType].filter(
+      (encounter) => encounter.name !== pokemonName,
+    );
+    if (updatedEncounters[encounterType].length === 0) {
+      delete updatedEncounters[encounterType];
+    }
 
-async function saveChanges() {
-  $routes.routes[routeName].wild_encounters = routeWildEncounters;
-  $routes.routes[routeName].wild_encounter_area_levels = areaLevels;
+    if (updatedEncounters[encounterType] !== undefined) {
+      updatedEncounters[encounterType]
+        .sort(
+          (encounter1, encounter2) =>
+            encounter1.encounter_rate - encounter2.encounter_rate,
+        )
+        .reverse();
+    }
 
-  routeWildEncounters = _.cloneDeep($routes.routes[routeName].wild_encounters);
-  originalRouteWildEncounters = _.cloneDeep(routeWildEncounters);
-  areaLevels = _.cloneDeep(
-    $routes.routes[routeName].wild_encounter_area_levels,
-  );
-  originalAreaLevels = _.cloneDeep(areaLevels);
+    routeWildEncounters = updatedEncounters;
+  }
 
-  await writeTextFile(
-    `${$selectedWiki.name}/data/routes.json`,
-    JSON.stringify($routes),
-    { dir: BaseDirectory.AppData },
-  ).then(() => {
-    invoke("generate_single_route_page_with_handle", {
-      wikiName: $selectedWiki.name,
-      routeName,
-    })
-      .then(() => {
-        toastStore.trigger({
-          message: "Changes saved successfully",
-          timeout: 3000,
-          background: "variant-filled-success",
-        });
+  async function saveChanges() {
+    $routes.routes[routeName].wild_encounters = routeWildEncounters;
+    $routes.routes[routeName].wild_encounter_area_levels = areaLevels;
+
+    routeWildEncounters = cloneDeep($routes.routes[routeName].wild_encounters);
+    originalRouteWildEncounters = cloneDeep(routeWildEncounters);
+    areaLevels = cloneDeep(
+      $routes.routes[routeName].wild_encounter_area_levels,
+    );
+    originalAreaLevels = cloneDeep(areaLevels);
+
+    await writeTextFile(
+      `${$selectedWiki.name}/data/routes.json`,
+      JSON.stringify($routes),
+      { dir: BaseDirectory.AppData },
+    ).then(() => {
+      invoke("generate_single_route_page_with_handle", {
+        wikiName: $selectedWiki.name,
+        routeName,
       })
-      .catch((e) => {
-        console.error(e);
-      });
-  });
-}
-
-async function getSpriteImage(pokemonName: string): Promise<string> {
-  let sprite = "";
-  await readBinaryFile(
-    `${$selectedWiki.name}/dist/docs/img/pokemon/${pokemonName}.png`,
-    { dir: BaseDirectory.AppData },
-  )
-    .then((res) => {
-      const blob = new Blob([res], { type: "image/png" });
-      sprite = URL.createObjectURL(blob);
-    })
-    .catch((err) => {
-      console.log(err);
-      if (err.includes("No such file or directory")) {
-        sprite = "Image Not Found";
-      }
-      sprite = "Error loading image";
+        .then(() => {
+          toastStore.trigger({
+            message: "Changes saved successfully",
+            timeout: 3000,
+            background: "variant-filled-success",
+          });
+        })
+        .catch((e) => {
+          console.error(e);
+        });
     });
-  return sprite;
-}
+  }
 
-$: console.log(getSpriteImage(pokemonName));
+  async function getSpriteImage(pokemonName: string): Promise<string> {
+    let sprite = "";
+    await readBinaryFile(
+      `${$selectedWiki.name}/dist/docs/img/pokemon/${pokemonName}.png`,
+      { dir: BaseDirectory.AppData },
+    )
+      .then((res) => {
+        const blob = new Blob([res], { type: "image/png" });
+        sprite = URL.createObjectURL(blob);
+      })
+      .catch((err) => {
+        console.log(err);
+        if (err.includes("No such file or directory")) {
+          sprite = "Image Not Found";
+        }
+        sprite = "Error loading image";
+      });
+    return sprite;
+  }
+
+  $: console.log(getSpriteImage(pokemonName));
 </script>
 
 <BaseModal bind:open={editEncounterModalOpen}>
   <NumberInput
     label="Encounter Rate"
-    bind:value={routeWildEncounters[currentEncounterType][currentWildEncounterIndex].encounter_rate}
+    bind:value={routeWildEncounters[currentEncounterType][
+      currentWildEncounterIndex
+    ].encounter_rate}
     class="w-32"
     max={100}
   />
   <Button
     title="Save Changes"
     onClick={() => {
-      routeWildEncounters[currentEncounterType].sort((encounter1, encounter2) => encounter1.encounter_rate - encounter2.encounter_rate).reverse();
-            saveChanges();
-            editEncounterModalOpen = false;
-        }}
-    disabled={_.isEqual(routeWildEncounters, originalRouteWildEncounters) && _.isEqual(areaLevels, originalAreaLevels)}
+      routeWildEncounters[currentEncounterType]
+        .sort(
+          (encounter1, encounter2) =>
+            encounter1.encounter_rate - encounter2.encounter_rate,
+        )
+        .reverse();
+      saveChanges();
+      editEncounterModalOpen = false;
+    }}
+    disabled={_.isEqual(routeWildEncounters, originalRouteWildEncounters) &&
+      _.isEqual(areaLevels, originalAreaLevels)}
   />
 </BaseModal>
 
@@ -209,7 +218,8 @@ $: console.log(getSpriteImage(pokemonName));
   <Button
     class="mt-8 w-32"
     title="Save Changes"
-    disabled={_.isEqual(routeWildEncounters, originalRouteWildEncounters) && _.isEqual(areaLevels, originalAreaLevels)}
+    disabled={_.isEqual(routeWildEncounters, originalRouteWildEncounters) &&
+      _.isEqual(areaLevels, originalAreaLevels)}
     onClick={saveChanges}
   />
 </div>
@@ -230,10 +240,10 @@ $: console.log(getSpriteImage(pokemonName));
           <button
             class="group card relative grid !bg-transparent p-2 shadow-md transition ease-in-out hover:scale-110 hover:cursor-pointer"
             on:click={() => {
-                editEncounterModalOpen = true;
-                currentEncounterType = _encounterType;
-                currentWildEncounterIndex = index;
-              }}
+              editEncounterModalOpen = true;
+              currentEncounterType = _encounterType;
+              currentWildEncounterIndex = index;
+            }}
           >
             {#await getSpriteImage(encounter.name) then spriteUrl}
               <img
@@ -252,7 +262,10 @@ $: console.log(getSpriteImage(pokemonName));
             </div>
             <button
               class="invisible absolute right-2 top-2 z-20 rounded-md bg-red-200 p-1 hover:scale-110 group-hover:visible"
-              on:click={(e) => {e.stopPropagation() ;deleteEncounter(encounter.name, _encounterType)}}
+              on:click={(e) => {
+                e.stopPropagation();
+                deleteEncounter(encounter.name, _encounterType);
+              }}
             >
               <IconTrash size={16} color="grey" />
             </button>
@@ -267,14 +280,17 @@ $: console.log(getSpriteImage(pokemonName));
 <svelte:window
   use:shortcut={{
     trigger: {
-      key: 'Enter',
+      key: "Enter",
       modifier: ["ctrl", "meta"],
       callback: () => {
-        if (_.isEqual(routeWildEncounters, originalRouteWildEncounters) && _.isEqual(areaLevels, originalAreaLevels)) {
+        if (
+          _.isEqual(routeWildEncounters, originalRouteWildEncounters) &&
+          _.isEqual(areaLevels, originalAreaLevels)
+        ) {
           return;
         }
         saveChanges();
-      }
+      },
     },
   }}
 />
