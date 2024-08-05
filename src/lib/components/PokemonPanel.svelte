@@ -24,6 +24,7 @@
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
+  import objectIsEmpty from "$lib/utils/objectIsEmpty";
 
   const toastStore = getToastStore();
 
@@ -32,6 +33,7 @@
   let pokemonNameInput: HTMLInputElement;
 
   let pokemon = {} as Pokemon;
+  $: console.log(Object.keys(pokemon).length === 0);
   let originalPokemonDetails: Pokemon = {} as Pokemon;
   let pokemonMoveset: PokemonMove[] = [];
   let pokemonSprite: string = "";
@@ -115,6 +117,7 @@
         originalPokemonDetails = cloneDeep(res);
       })
       .catch((err) => {
+        console.log(err);
         toastStore.trigger({
           message: `Error loading Pokemon!: \n ${err}`,
           background: "variant-filled-error",
