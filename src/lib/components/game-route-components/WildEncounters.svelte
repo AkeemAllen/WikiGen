@@ -24,6 +24,7 @@
   import { shortcut } from "@svelte-put/shortcut";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import isEqual from "$lib/utils/isEqual";
 
   export let routeName: string = "";
   let pokemonName: string = "";
@@ -178,8 +179,8 @@
       saveChanges();
       editEncounterModalOpen = false;
     }}
-    disabled={_.isEqual(routeWildEncounters, originalRouteWildEncounters) &&
-      _.isEqual(areaLevels, originalAreaLevels)}
+    disabled={isEqual(routeWildEncounters, originalRouteWildEncounters) &&
+      isEqual(areaLevels, originalAreaLevels)}
   />
 </BaseModal>
 
@@ -219,8 +220,8 @@
   <Button
     class="mt-8 w-32"
     title="Save Changes"
-    disabled={_.isEqual(routeWildEncounters, originalRouteWildEncounters) &&
-      _.isEqual(areaLevels, originalAreaLevels)}
+    disabled={isEqual(routeWildEncounters, originalRouteWildEncounters) &&
+      isEqual(areaLevels, originalAreaLevels)}
     onClick={saveChanges}
   />
 </div>
@@ -285,8 +286,8 @@
       modifier: ["ctrl", "meta"],
       callback: () => {
         if (
-          _.isEqual(routeWildEncounters, originalRouteWildEncounters) &&
-          _.isEqual(areaLevels, originalAreaLevels)
+          isEqual(routeWildEncounters, originalRouteWildEncounters) &&
+          isEqual(areaLevels, originalAreaLevels)
         ) {
           return;
         }

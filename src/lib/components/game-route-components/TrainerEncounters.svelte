@@ -27,6 +27,7 @@
   import { shortcut } from "@svelte-put/shortcut";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import isEqual from "$lib/utils/isEqual";
 
   const toastStore = getToastStore();
 
@@ -248,7 +249,7 @@
   <Button
     class="w-32"
     title="Save Versions"
-    disabled={_.isEqual(routeTrainers, originalTrainers)}
+    disabled={isEqual(routeTrainers, originalTrainers)}
     onClick={() => {
       saveChanges();
       trainerVersionsModalOpen = false;
@@ -265,7 +266,7 @@
   <Button
     class="w-32"
     title="Set Position"
-    disabled={_.isEqual(routeTrainers, originalTrainers)}
+    disabled={isEqual(routeTrainers, originalTrainers)}
     onClick={() => {
       routeTrainers = sortTrainersByPosition(routeTrainers);
       positionModalOpen = false;
@@ -317,7 +318,7 @@
   <Button
     class="mt-8 w-32"
     title="Save Changes"
-    disabled={_.isEqual(routeTrainers, originalTrainers)}
+    disabled={isEqual(routeTrainers, originalTrainers)}
     onClick={saveChanges}
   />
 </div>
@@ -373,7 +374,7 @@
       key: "Enter",
       modifier: ["ctrl", "meta"],
       callback: () => {
-        if (_.isEqual(routeTrainers, originalTrainers)) {
+        if (isEqual(routeTrainers, originalTrainers)) {
           return;
         }
         saveChanges();

@@ -17,6 +17,7 @@
   import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import isEqual from "$lib/utils/isEqual";
 
   const toastStore = getToastStore();
 
@@ -235,7 +236,7 @@
   <Button
     title="Save Changes"
     onClick={saveNatureChanges}
-    disabled={_.isEqual(nature, originalNatureDetails)}
+    disabled={isEqual(nature, originalNatureDetails)}
     class="mt-2 w-32"
   />
   <Button

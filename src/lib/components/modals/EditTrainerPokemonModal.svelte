@@ -14,6 +14,7 @@
   import { shortcut } from "@svelte-put/shortcut";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import isEqual from "$lib/utils/isEqual";
 
   export let pokemon: TrainerPokemon = {} as TrainerPokemon;
   let originalPokemonAttributes = cloneDeep(pokemon);
@@ -113,7 +114,7 @@
     <Button
       class="w-32"
       title="Save Changes"
-      disabled={_.isEqual(pokemon, originalPokemonAttributes)}
+      disabled={isEqual(pokemon, originalPokemonAttributes)}
       onClick={() => {
         savePokemonChanges(trainerToUpdate);
         originalPokemonAttributes = cloneDeep(pokemon);
@@ -156,7 +157,7 @@
       key: "Enter",
       modifier: ["ctrl", "meta"],
       callback: () => {
-        if (_.isEqual(pokemon, originalPokemonAttributes)) {
+        if (isEqual(pokemon, originalPokemonAttributes)) {
           return;
         }
         savePokemonChanges(trainerToUpdate);

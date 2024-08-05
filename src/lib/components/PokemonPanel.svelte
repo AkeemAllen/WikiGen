@@ -23,6 +23,7 @@
   import { db } from "../../store/db";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import isEqual from "$lib/utils/isEqual";
 
   const toastStore = getToastStore();
 
@@ -122,7 +123,7 @@
   }
 
   async function savePokemonChanges() {
-    if (_.isEqual(pokemon, originalPokemonDetails)) {
+    if (isEqual(pokemon, originalPokemonDetails)) {
       return;
     }
 
@@ -325,7 +326,7 @@
   <Button
     title="Save Changes"
     onClick={savePokemonChanges}
-    disabled={_.isEqual(pokemon, originalPokemonDetails)}
+    disabled={isEqual(pokemon, originalPokemonDetails)}
     class="mt-2 w-32"
   />
 </div>

@@ -21,6 +21,7 @@
   import MultiSelect from "svelte-multiselect";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import isEqual from "$lib/utils/isEqual";
 
   const toastStore = getToastStore();
   let tabSet: number = 0;
@@ -490,7 +491,7 @@
   <Button
     title="Save Changes"
     onClick={saveMoveChanges}
-    disabled={_.isEqual(move, originalMoveDetails)}
+    disabled={isEqual(move, originalMoveDetails)}
     class="mt-2 w-32"
   />
   <Button

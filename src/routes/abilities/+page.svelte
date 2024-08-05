@@ -17,6 +17,7 @@
   import { isNullEmptyOrUndefined } from "$lib/utils";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import isEqual from "$lib/utils/isEqual";
 
   const toastStore = getToastStore();
 
@@ -221,7 +222,7 @@
   <Button
     title="Save Changes"
     onClick={saveAbilityChanges}
-    disabled={_.isEqual(ability, originalAbilityDetails)}
+    disabled={isEqual(ability, originalAbilityDetails)}
     class="mt-2 w-32"
   />
   <Button

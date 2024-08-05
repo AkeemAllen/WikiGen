@@ -18,6 +18,7 @@
   import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import isEqual from "$lib/utils/isEqual";
 
   const toastStore = getToastStore();
 
@@ -276,7 +277,7 @@
     title="Save Changes"
     onClick={saveItemChanges}
     class="mt-2 w-32"
-    disabled={_.isEqual(item, originalItemDetails)}
+    disabled={isEqual(item, originalItemDetails)}
   />
   <Button
     title="Add New Item"
