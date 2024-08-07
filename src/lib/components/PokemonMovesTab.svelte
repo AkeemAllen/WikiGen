@@ -4,7 +4,6 @@
   import ThSort from "$lib/components/ThSort.svelte";
   import { IconEdit, IconTrash } from "@tabler/icons-svelte";
   import { DataHandler } from "@vincjo/datatables";
-  import _ from "lodash";
   import type { PokemonMove } from "../../store/pokemon";
   import TextInput from "./TextInput.svelte";
   import NumberInput from "./NumberInput.svelte";

@@ -17,7 +17,6 @@
   import { BaseDirectory, writeBinaryFile } from "@tauri-apps/api/fs";
   import { selectedWiki } from "../../store";
   import { addMoves, base64ToArray } from "$lib/utils";
-  import _ from "lodash";
   import capitalizeWords from "$lib/utils/capitalizeWords";
 
   const toastStore = getToastStore();

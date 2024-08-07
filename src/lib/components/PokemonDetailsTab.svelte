@@ -2,7 +2,6 @@
   import SelectInput from "$lib/components/SelectInput.svelte";
   import AutoComplete from "$lib/components/AutoComplete.svelte";
   import TextInput from "$lib/components/TextInput.svelte";
-  import _ from "lodash";
   import { PokemonTypes, type Pokemon, pokemonList } from "../../store/pokemon";
   import NumberInput from "./NumberInput.svelte";
   import { abilitiesList } from "../../store/abilities";

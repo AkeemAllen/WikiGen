@@ -4,7 +4,6 @@
   import { routes } from "../../../store/gameRoutes";
   import { selectedWiki } from "../../../store";
   import { sortRoutesByPosition } from "$lib/utils";
-  import _ from "lodash";
 
   import { popup } from "@skeletonlabs/skeleton";
   import { IconDotsVertical } from "@tabler/icons-svelte";

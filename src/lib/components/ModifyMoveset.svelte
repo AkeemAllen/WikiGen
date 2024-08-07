@@ -7,7 +7,6 @@
     type AutocompleteOption,
   } from "@skeletonlabs/skeleton";
   import { IconTrash } from "@tabler/icons-svelte";
-  import _, { includes } from "lodash";
   import { moveList } from "../../store/moves";
   import {
     type PokemonMove,
