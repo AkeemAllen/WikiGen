@@ -266,7 +266,6 @@ fn generate_route_entry(
     routes_directory: &PathBuf,
     route_properties: &RouteProperties,
 ) -> Mapping {
-    let formatted_route_name = capitalize(&route_name);
     let mut entries: Vec<Value> = Vec::new();
 
     if !route_properties.wild_encounters.is_empty() {
@@ -308,7 +307,7 @@ fn generate_route_entry(
     }
 
     route_entry.insert(
-        Value::String(formatted_route_name),
+        Value::String(route_name.to_string()),
         Value::Sequence(entries),
     );
     return route_entry;

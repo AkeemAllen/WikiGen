@@ -1,54 +1,57 @@
 <script lang="ts">
-import _ from "lodash";
-import { type TrainerPokemon } from "../../../store/gameRoutes";
-import BaseModal from "../BaseModal.svelte";
-import NumberInput from "../NumberInput.svelte";
-import AutoComplete from "../AutoComplete.svelte";
-import MultiSelect from "svelte-multiselect";
-import Button from "../Button.svelte";
-import { IconChevronLeft, IconChevronRight } from "@tabler/icons-svelte";
-import { abilitiesList } from "../../../store/abilities";
-import { naturesList } from "../../../store/natures";
-import { itemsList } from "../../../store/items";
-import { moveList } from "../../../store/moves";
-import { shortcut } from "@svelte-put/shortcut";
+  import _ from "lodash";
+  import { type TrainerPokemon } from "../../../store/gameRoutes";
+  import BaseModal from "../BaseModal.svelte";
+  import NumberInput from "../NumberInput.svelte";
+  import AutoComplete from "../AutoComplete.svelte";
+  import MultiSelect from "svelte-multiselect";
+  import Button from "../Button.svelte";
+  import { IconChevronLeft, IconChevronRight } from "@tabler/icons-svelte";
+  import { abilitiesList } from "../../../store/abilities";
+  import { naturesList } from "../../../store/natures";
+  import { itemsList } from "../../../store/items";
+  import { moveList } from "../../../store/moves";
+  import { shortcut } from "@svelte-put/shortcut";
+  import { cloneDeep } from "$lib/utils/cloneDeep";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
+  import isEqual from "$lib/utils/isEqual";
 
-export let pokemon: TrainerPokemon = {} as TrainerPokemon;
-let originalPokemonAttributes = _.cloneDeep(pokemon);
-export let open: boolean = false;
-export let trainerToUpdate: string;
-export let trainerVersions: string[] = [];
+  export let pokemon: TrainerPokemon = {} as TrainerPokemon;
+  let originalPokemonAttributes = cloneDeep(pokemon);
+  export let open: boolean = false;
+  export let trainerToUpdate: string;
+  export let trainerVersions: string[] = [];
 
-$: if (pokemon.unique_id !== originalPokemonAttributes.unique_id) {
-  originalPokemonAttributes = _.cloneDeep(pokemon);
-}
+  $: if (pokemon.unique_id !== originalPokemonAttributes.unique_id) {
+    originalPokemonAttributes = cloneDeep(pokemon);
+  }
 
-export let savePokemonChanges = (trainerToUpdate: string) => {};
+  export let savePokemonChanges = (trainerToUpdate: string) => {};
 
-export let nextTrainerPokemon = () => {};
-export let prevTrainerPokemon = () => {};
+  export let nextTrainerPokemon = () => {};
+  export let prevTrainerPokemon = () => {};
 
-let abilityListOptions = $abilitiesList.map(([id, name]) => ({
-  label: name,
-  value: name,
-}));
+  let abilityListOptions = $abilitiesList.map(([id, name]) => ({
+    label: name,
+    value: name,
+  }));
 
-let natureListOptions = $naturesList.map(([id, name]) => ({
-  label: name,
-  value: name,
-}));
+  let natureListOptions = $naturesList.map(([id, name]) => ({
+    label: name,
+    value: name,
+  }));
 
-let itemListOptions = $itemsList.map(([id, name]) => ({
-  label: name,
-  value: name,
-}));
+  let itemListOptions = $itemsList.map(([id, name]) => ({
+    label: name,
+    value: name,
+  }));
 
-let moveListOptions = $moveList.map(([id, name]) => name);
+  let moveListOptions = $moveList.map(([id, name]) => name);
 </script>
 
-<BaseModal bind:open={open} class="grid w-[40rem] grid-cols-2 gap-5">
+<BaseModal bind:open class="grid w-[40rem] grid-cols-2 gap-5">
   <div class="col-span-2 text-lg font-bold">
-    {_.capitalize(pokemon.name)}
+    {capitalizeWords(pokemon.name)}
   </div>
   <NumberInput label="Level" bind:value={pokemon.level} />
   <AutoComplete
@@ -56,21 +59,27 @@ let moveListOptions = $moveList.map(([id, name]) => name);
     bind:value={pokemon.item}
     options={itemListOptions}
     popupId="item-popup"
-    onSelection={async (e) => {pokemon.item = e.detail.value; }}
+    onSelection={async (e) => {
+      pokemon.item = e.detail.value;
+    }}
   />
   <AutoComplete
     label="Ability"
     bind:value={pokemon.ability}
     options={abilityListOptions}
     popupId="ability-popup"
-    onSelection={async (e) => {pokemon.ability = e.detail.value; }}
+    onSelection={async (e) => {
+      pokemon.ability = e.detail.value;
+    }}
   />
   <AutoComplete
     label="Nature"
     bind:value={pokemon.nature}
     options={natureListOptions}
     popupId="nature-popup"
-    onSelection={async (e) => {pokemon.nature = e.detail.value; }}
+    onSelection={async (e) => {
+      pokemon.nature = e.detail.value;
+    }}
   />
   <div class="col-span-2">
     <label
@@ -105,10 +114,11 @@ let moveListOptions = $moveList.map(([id, name]) => name);
     <Button
       class="w-32"
       title="Save Changes"
-      disabled={_.isEqual(pokemon, originalPokemonAttributes)}
-      onClick={() => {savePokemonChanges(trainerToUpdate);
-    originalPokemonAttributes = _.cloneDeep(pokemon);
-    }}
+      disabled={isEqual(pokemon, originalPokemonAttributes)}
+      onClick={() => {
+        savePokemonChanges(trainerToUpdate);
+        originalPokemonAttributes = cloneDeep(pokemon);
+      }}
     />
     <div class="flex flex-row gap-5">
       <button
@@ -130,28 +140,29 @@ let moveListOptions = $moveList.map(([id, name]) => name);
 <svelte:window
   use:shortcut={{
     trigger: {
-      key: ']',
-      modifier:["ctrl", "meta"],
+      key: "]",
+      modifier: ["ctrl", "meta"],
       callback: nextTrainerPokemon,
     },
   }}
   use:shortcut={{
     trigger: {
-      key: '[',
-      modifier:["ctrl", "meta"],
+      key: "[",
+      modifier: ["ctrl", "meta"],
       callback: prevTrainerPokemon,
     },
   }}
   use:shortcut={{
     trigger: {
-      key: 'Enter',
+      key: "Enter",
       modifier: ["ctrl", "meta"],
       callback: () => {
-        if (_.isEqual(pokemon, originalPokemonAttributes)) {
+        if (isEqual(pokemon, originalPokemonAttributes)) {
           return;
         }
         savePokemonChanges(trainerToUpdate);
-          originalPokemonAttributes = _.cloneDeep(pokemon);}
+        originalPokemonAttributes = cloneDeep(pokemon);
+      },
     },
   }}
 />

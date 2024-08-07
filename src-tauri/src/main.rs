@@ -3,6 +3,7 @@
 mod helpers;
 mod page_generators;
 mod structs;
+mod tests;
 mod wiki_preparation;
 
 use std::fs::File;

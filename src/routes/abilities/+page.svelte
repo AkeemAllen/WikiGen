@@ -1,169 +1,179 @@
 <script lang="ts">
-import _ from "lodash";
-import AutoComplete from "$lib/components/AutoComplete.svelte";
-import Button from "$lib/components/Button.svelte";
-import BaseModal from "$lib/components/BaseModal.svelte";
-import TextInput from "$lib/components/TextInput.svelte";
-import {
-  abilitiesList,
-  type Ability,
-  type SearchAbility,
-} from "../../store/abilities";
-import { selectedWiki } from "../../store";
-import { getToastStore } from "@skeletonlabs/skeleton";
-import { invoke } from "@tauri-apps/api";
-import { db } from "../../store/db";
-import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
-import { isNullEmptyOrUndefined } from "$lib/utils";
+  import _ from "lodash";
+  import AutoComplete from "$lib/components/AutoComplete.svelte";
+  import Button from "$lib/components/Button.svelte";
+  import BaseModal from "$lib/components/BaseModal.svelte";
+  import TextInput from "$lib/components/TextInput.svelte";
+  import {
+    abilitiesList,
+    type Ability,
+    type SearchAbility,
+  } from "../../store/abilities";
+  import { selectedWiki } from "../../store";
+  import { getToastStore } from "@skeletonlabs/skeleton";
+  import { invoke } from "@tauri-apps/api";
+  import { db } from "../../store/db";
+  import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
+  import { isNullEmptyOrUndefined } from "$lib/utils";
+  import { cloneDeep } from "$lib/utils/cloneDeep";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
+  import isEqual from "$lib/utils/isEqual";
+  import objectIsEmpty from "$lib/utils/objectIsEmpty";
 
-const toastStore = getToastStore();
+  const toastStore = getToastStore();
 
-let abilitySearch: [number, string] = [0, ""];
+  let abilitySearch: [number, string] = [0, ""];
 
-let ability: Ability = {} as Ability;
-let originalAbilityDetails: Ability = {} as Ability;
+  let ability: Ability = {} as Ability;
+  let originalAbilityDetails: Ability = {} as Ability;
 
-let newAbilityModalOpen: boolean = false;
-let newAbility: Ability = {} as Ability;
+  let newAbilityModalOpen: boolean = false;
+  let newAbility: Ability = {} as Ability;
 
-$: abilityListOptions = $abilitiesList.map(([id, name]) => ({
-  label: name,
-  value: id,
-}));
+  $: abilityListOptions = $abilitiesList.map(([id, name]) => ({
+    label: name,
+    value: id,
+  }));
 
-async function generateAbilityPage() {
-  await invoke("generate_ability_page", { wikiName: $selectedWiki.name }).then(
-    () => {
+  async function generateAbilityPage() {
+    await invoke("generate_ability_page", {
+      wikiName: $selectedWiki.name,
+    }).then(() => {
       toastStore.trigger({
         message: "Ability page regenerated!",
         background: "variant-filled-success",
       });
-    },
-  );
-}
-
-async function getAbility() {
-  let retrievedAbility = $abilitiesList.find(
-    ([_, name]) => name === abilitySearch[1],
-  );
-
-  if (!retrievedAbility) {
-    toastStore.trigger({
-      message: "Ability not found!",
-      background: "variant-filled-error",
     });
-    return;
   }
 
-  await $db
-    .select<
-      Ability[]
-    >("SELECT * FROM abilities WHERE id = $1;", [abilitySearch[0]])
-    .then(async (res) => {
-      ability = res[0];
-      originalAbilityDetails = _.cloneDeep(ability);
-    });
-}
+  async function getAbility() {
+    let retrievedAbility = $abilitiesList.find(
+      ([_, name]) => name === abilitySearch[1],
+    );
 
-async function saveAbilityChanges() {
-  await $db
-    .execute(
-      "UPDATE abilities SET effect = $1, is_modified = $2 WHERE id = $3;",
-      [ability.effect, ability.is_modified, abilitySearch[0]],
-    )
-    .then(() => {
-      originalAbilityDetails = _.cloneDeep(ability);
+    if (!retrievedAbility) {
       toastStore.trigger({
-        message: "Ability changes saved!",
-        background: "variant-filled-success",
-      });
-      generateAbilityPage();
-    })
-    .catch(() => {
-      toastStore.trigger({
-        message: "Error saving ability changes!",
+        message: "Ability not found!",
         background: "variant-filled-error",
       });
-    });
-}
+      return;
+    }
 
-async function createNewAbility() {
-  newAbility.is_new = TRUE;
-
-  await $db
-    .execute(
-      "INSERT INTO abilities (name, effect, is_new) VALUES ($1, $2, $3);",
-      [newAbility.name, newAbility.effect, newAbility.is_new],
-    )
-    .then(() => {
-      toastStore.trigger({
-        message: "Ability created!",
-        background: "variant-filled-success",
+    await $db
+      .select<
+        Ability[]
+      >("SELECT * FROM abilities WHERE id = $1;", [abilitySearch[0]])
+      .then(async (res) => {
+        ability = res[0];
+        originalAbilityDetails = cloneDeep(ability);
       });
-      newAbilityModalOpen = false;
-      newAbility = {} as Ability;
+  }
 
-      // Update the abilities list
-      $db.select("SELECT id, name FROM abilities").then((abilities: any) => {
-        abilitiesList.set(
-          abilities.map((ability: SearchAbility) => [ability.id, ability.name]),
-        );
+  async function saveAbilityChanges() {
+    await $db
+      .execute(
+        "UPDATE abilities SET effect = $1, is_modified = $2 WHERE id = $3;",
+        [ability.effect, ability.is_modified, abilitySearch[0]],
+      )
+      .then(() => {
+        originalAbilityDetails = cloneDeep(ability);
+        toastStore.trigger({
+          message: "Ability changes saved!",
+          background: "variant-filled-success",
+        });
+        generateAbilityPage();
+      })
+      .catch(() => {
+        toastStore.trigger({
+          message: "Error saving ability changes!",
+          background: "variant-filled-error",
+        });
       });
-      generateAbilityPage();
+  }
+
+  async function createNewAbility() {
+    newAbility.is_new = TRUE;
+
+    await $db
+      .execute(
+        "INSERT INTO abilities (name, effect, is_new) VALUES ($1, $2, $3);",
+        [newAbility.name, newAbility.effect, newAbility.is_new],
+      )
+      .then(() => {
+        toastStore.trigger({
+          message: "Ability created!",
+          background: "variant-filled-success",
+        });
+        newAbilityModalOpen = false;
+        newAbility = {} as Ability;
+
+        // Update the abilities list
+        $db.select("SELECT id, name FROM abilities").then((abilities: any) => {
+          abilitiesList.set(
+            abilities.map((ability: SearchAbility) => [
+              ability.id,
+              ability.name,
+            ]),
+          );
+        });
+        generateAbilityPage();
+      })
+      .catch(() => {
+        toastStore.trigger({
+          message: "Error creating new ability!",
+          background: "variant-filled-error",
+        });
+      });
+  }
+
+  async function deleteAbility() {
+    await $db
+      .execute("DELETE FROM abilities WHERE id = $1;", [ability.id])
+      .then(() => {
+        toastStore.trigger({
+          message: "Ability deleted!",
+          background: "variant-filled-success",
+        });
+        // Update the abilities list
+        $db.select("SELECT id, name FROM abilities").then((abilities: any) => {
+          abilitiesList.set(
+            abilities.map((ability: SearchAbility) => [
+              ability.id,
+              ability.name,
+            ]),
+          );
+        });
+        ability = {} as Ability;
+        originalAbilityDetails = {} as Ability;
+        generateAbilityPage();
+      })
+      .catch(() => {
+        toastStore.trigger({
+          message: "Error deleting ability!",
+          background: "variant-filled-error",
+        });
+      });
+  }
+  function setModified(e: any) {
+    ability.is_modified = e.target?.checked ? TRUE : FALSE;
+  }
+  async function convertAbilityToSqlite() {
+    await invoke("convert_abilities_to_sqlite", {
+      wikiName: $selectedWiki.name,
     })
-    .catch(() => {
-      toastStore.trigger({
-        message: "Error creating new ability!",
-        background: "variant-filled-error",
+      .then(() => {
+        toastStore.trigger({
+          message: "Abilities converted!",
+          background: "variant-filled-success",
+        });
+      })
+      .catch((err) => {
+        toastStore.trigger({
+          message: "Error converting abilities!",
+          background: "variant-filled-error",
+        });
       });
-    });
-}
-
-async function deleteAbility() {
-  await $db
-    .execute("DELETE FROM abilities WHERE id = $1;", [ability.id])
-    .then(() => {
-      toastStore.trigger({
-        message: "Ability deleted!",
-        background: "variant-filled-success",
-      });
-      // Update the abilities list
-      $db.select("SELECT id, name FROM abilities").then((abilities: any) => {
-        abilitiesList.set(
-          abilities.map((ability: SearchAbility) => [ability.id, ability.name]),
-        );
-      });
-      ability = {} as Ability;
-      originalAbilityDetails = {} as Ability;
-      generateAbilityPage();
-    })
-    .catch(() => {
-      toastStore.trigger({
-        message: "Error deleting ability!",
-        background: "variant-filled-error",
-      });
-    });
-}
-function setModified(e: any) {
-  ability.is_modified = e.target?.checked ? TRUE : FALSE;
-}
-async function convertAbilityToSqlite() {
-  await invoke("convert_abilities_to_sqlite", {
-    wikiName: $selectedWiki.name,
-  })
-    .then(() => {
-      toastStore.trigger({
-        message: "Abilities converted!",
-        background: "variant-filled-success",
-      });
-    })
-    .catch((err) => {
-      toastStore.trigger({
-        message: "Error converting abilities!",
-        background: "variant-filled-error",
-      });
-    });
-}
+  }
 </script>
 
 <BaseModal class="w-[30rem]" bind:open={newAbilityModalOpen}>
@@ -187,7 +197,8 @@ async function convertAbilityToSqlite() {
   <Button
     title="Create Ability"
     class="w-32"
-    disabled={isNullEmptyOrUndefined(newAbility.name)|| isNullEmptyOrUndefined(newAbility.effect)}
+    disabled={isNullEmptyOrUndefined(newAbility.name) ||
+      isNullEmptyOrUndefined(newAbility.effect)}
     onClick={createNewAbility}
   />
 </BaseModal>
@@ -212,26 +223,26 @@ async function convertAbilityToSqlite() {
   <Button
     title="Save Changes"
     onClick={saveAbilityChanges}
-    disabled={_.isEqual(ability, originalAbilityDetails)}
+    disabled={isEqual(ability, originalAbilityDetails)}
     class="mt-2 w-32"
   />
   <Button
     title="Add Ability"
     class="ml-auto mr-3 mt-2 w-32"
-    onClick={() => newAbilityModalOpen = true}
+    onClick={() => (newAbilityModalOpen = true)}
   />
   <Button
     title="Delete Ability"
     class="mr-5 mt-2 w-32"
-    disabled={_.isEmpty(ability)}
+    disabled={objectIsEmpty(ability)}
     onClick={deleteAbility}
   />
 </div>
 
-{#if !_.isEmpty(ability)}
+{#if !objectIsEmpty(ability)}
   <div class="mt-4 flex flex-col gap-4">
     <p class="mt-4 text-lg">
-      {_.capitalize(ability.name.replaceAll("-", " "))}
+      {capitalizeWords(ability.name.replaceAll("-", " "))}
     </p>
     <div>
       <label

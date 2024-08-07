@@ -1,216 +1,218 @@
 <script lang="ts">
-import _ from "lodash";
-import AutoComplete from "$lib/components/AutoComplete.svelte";
-import Button from "$lib/components/Button.svelte";
-import BaseModal from "$lib/components/BaseModal.svelte";
-import { type Item, itemsList, type SearchItem } from "../../store/items";
-import { selectedWiki } from "../../store";
-import { getToastStore } from "@skeletonlabs/skeleton";
-import { invoke } from "@tauri-apps/api";
-import {
-  writeBinaryFile,
-  BaseDirectory,
-  readBinaryFile,
-} from "@tauri-apps/api/fs";
-import TextInput from "$lib/components/TextInput.svelte";
-import { db } from "../../store/db";
-import { base64ToArray, isNullEmptyOrUndefined } from "$lib/utils";
-import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
+  import _ from "lodash";
+  import AutoComplete from "$lib/components/AutoComplete.svelte";
+  import Button from "$lib/components/Button.svelte";
+  import BaseModal from "$lib/components/BaseModal.svelte";
+  import { type Item, itemsList, type SearchItem } from "../../store/items";
+  import { selectedWiki } from "../../store";
+  import { getToastStore } from "@skeletonlabs/skeleton";
+  import { invoke } from "@tauri-apps/api";
+  import {
+    writeBinaryFile,
+    BaseDirectory,
+    readBinaryFile,
+  } from "@tauri-apps/api/fs";
+  import TextInput from "$lib/components/TextInput.svelte";
+  import { db } from "../../store/db";
+  import { base64ToArray, isNullEmptyOrUndefined } from "$lib/utils";
+  import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
+  import { cloneDeep } from "$lib/utils/cloneDeep";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
+  import isEqual from "$lib/utils/isEqual";
+  import objectIsEmpty from "$lib/utils/objectIsEmpty";
 
-const toastStore = getToastStore();
+  const toastStore = getToastStore();
 
-let itemSearch: [number, string] = [0, ""];
+  let itemSearch: [number, string] = [0, ""];
 
-let item: Item = {} as Item;
-let originalItemDetails: Item = {} as Item;
-let spriteImage: string = "";
+  let item: Item = {} as Item;
+  let originalItemDetails: Item = {} as Item;
+  let spriteImage: string = "";
 
-let newItem: Item = {} as Item;
-let newSpriteImage: string = "";
-let newItemModalOpen: boolean = false;
+  let newItem: Item = {} as Item;
+  let newSpriteImage: string = "";
+  let newItemModalOpen: boolean = false;
 
-$: itemListOptions = $itemsList.map(([id, name]) => ({
-  label: name,
-  value: id,
-}));
+  $: itemListOptions = $itemsList.map(([id, name]) => ({
+    label: name,
+    value: id,
+  }));
 
-async function generateItemPage() {
-  await invoke("generate_item_page", { wikiName: $selectedWiki.name }).then(
-    () => {
-      toastStore.trigger({
-        message: "Item page regenerated!",
-        background: "variant-filled-success",
-      });
-    },
-  );
-}
-
-async function getItem() {
-  let retrievedItem = $itemsList.find(([_, name]) => name === itemSearch[1]);
-
-  if (!retrievedItem) {
-    toastStore.trigger({
-      message: "Item not found!",
-      background: "variant-filled-error",
-    });
-    return;
+  async function generateItemPage() {
+    await invoke("generate_item_page", { wikiName: $selectedWiki.name }).then(
+      () => {
+        toastStore.trigger({
+          message: "Item page regenerated!",
+          background: "variant-filled-success",
+        });
+      },
+    );
   }
 
-  await $db
-    .select<Item[]>("SELECT * FROM items WHERE id = $1;", [itemSearch[0]])
-    .then(async (res) => {
-      item = res[0];
-      originalItemDetails = _.cloneDeep(item);
+  async function getItem() {
+    let retrievedItem = $itemsList.find(([_, name]) => name === itemSearch[1]);
 
-      // Reading in image separately
-      spriteImage = await readBinaryFile(
-        `${$selectedWiki.name}/dist/docs/img/items/${item.name}.png`,
-        { dir: BaseDirectory.AppData },
-      )
-        .then((res) => {
-          const blob = new Blob([res], { type: "image/png" });
-          return URL.createObjectURL(blob);
-        })
-        .catch((err) => {
-          console.log(err);
-          if (err.includes("No such file or directory")) {
-            return "404";
-          }
-          return "Error loading image";
-        });
-    });
-}
-
-async function saveItemChanges() {
-  await $db
-    .execute("UPDATE items SET effect = $1, is_modified = $2 WHERE id = $3;", [
-      item.effect,
-      item.is_modified,
-      itemSearch[0],
-    ])
-    .then(() => {
-      originalItemDetails = _.cloneDeep(item);
+    if (!retrievedItem) {
       toastStore.trigger({
-        message: "Item changes saved!",
-        background: "variant-filled-success",
-      });
-      generateItemPage();
-    })
-    .catch(() => {
-      toastStore.trigger({
-        message: "Error saving item changes!",
-        background: "variant-filled-error",
-      });
-    });
-}
-
-async function createItem() {
-  newItem.is_new = TRUE;
-  await $db
-    .execute("INSERT INTO items (name, effect, is_new) VALUES ($1, $2, $3);", [
-      newItem.name,
-      newItem.effect,
-      newItem.is_new,
-    ])
-    .then(() => {
-      // Write image to file
-      const imageBytes = base64ToArray(
-        newSpriteImage.replace("data:image/png;base64,", ""),
-        "image/png",
-      );
-      writeBinaryFile(
-        `${$selectedWiki.name}/dist/docs/img/items/${newItem.name}.png`,
-        imageBytes,
-        { dir: BaseDirectory.AppData },
-      ).then(() => {
-        newSpriteImage = "";
-      });
-
-      toastStore.trigger({
-        message: "New Item Created!",
-        background: "variant-filled-success",
-      });
-      newItemModalOpen = false;
-      newItem = {} as Item;
-
-      // Update the items list
-      $db.select("SELECT id, name FROM items").then((items: any) => {
-        let itemNames = items.map((item: SearchItem) => [item.id, item.name]);
-        itemsList.set(itemNames);
-      });
-      generateItemPage();
-    })
-    .catch((err) => {
-      toastStore.trigger({
-        message: "Error creating new item!",
-        background: "variant-filled-error",
-      });
-    });
-}
-
-async function deleteItem() {
-  await $db
-    .execute("DELETE FROM items WHERE id = $1;", [item.id])
-    .then(() => {
-      toastStore.trigger({
-        message: "Item deleted!",
-        background: "variant-filled-success",
-      });
-      // Update the items list
-      $db.select("SELECT id, name FROM items").then((items: any) => {
-        let itemNames = items.map((item: SearchItem) => [item.id, item.name]);
-        itemsList.set(itemNames);
-      });
-      item = {} as Item;
-      originalItemDetails = {} as Item;
-      generateItemPage();
-    })
-    .catch((err) => {
-      toastStore.trigger({
-        message: "Error deleting item!",
-        background: "variant-filled-error",
-      });
-    });
-}
-
-function onImageUpload(e: any) {
-  let file = e.target.files[0];
-  let reader = new FileReader();
-  reader.onloadend = (e) => {
-    let base64 = e.target?.result as string;
-    if (!base64.includes("data:image/png;base64,")) {
-      toastStore.trigger({
-        message: "Invalid image format!",
+        message: "Item not found!",
         background: "variant-filled-error",
       });
       return;
     }
-    newSpriteImage = e.target?.result as string;
-  };
-  reader.readAsDataURL(file);
-}
 
-function setModified(e: any) {
-  item.is_modified = e.target?.checked ? TRUE : FALSE;
-}
+    await $db
+      .select<Item[]>("SELECT * FROM items WHERE id = $1;", [itemSearch[0]])
+      .then(async (res) => {
+        item = res[0];
+        originalItemDetails = cloneDeep(item);
 
-async function convertItemToSqlite() {
-  await invoke("convert_items_to_sqlite", {
-    wikiName: $selectedWiki.name,
-  })
-    .then(() => {
-      toastStore.trigger({
-        message: "Items converted!",
-        background: "variant-filled-success",
+        // Reading in image separately
+        spriteImage = await readBinaryFile(
+          `${$selectedWiki.name}/dist/docs/img/items/${item.name}.png`,
+          { dir: BaseDirectory.AppData },
+        )
+          .then((res) => {
+            const blob = new Blob([res], { type: "image/png" });
+            return URL.createObjectURL(blob);
+          })
+          .catch((err) => {
+            console.log(err);
+            if (err.includes("No such file or directory")) {
+              return "404";
+            }
+            return "Error loading image";
+          });
       });
+  }
+
+  async function saveItemChanges() {
+    await $db
+      .execute(
+        "UPDATE items SET effect = $1, is_modified = $2 WHERE id = $3;",
+        [item.effect, item.is_modified, itemSearch[0]],
+      )
+      .then(() => {
+        originalItemDetails = cloneDeep(item);
+        toastStore.trigger({
+          message: "Item changes saved!",
+          background: "variant-filled-success",
+        });
+        generateItemPage();
+      })
+      .catch(() => {
+        toastStore.trigger({
+          message: "Error saving item changes!",
+          background: "variant-filled-error",
+        });
+      });
+  }
+
+  async function createItem() {
+    newItem.is_new = TRUE;
+    await $db
+      .execute(
+        "INSERT INTO items (name, effect, is_new) VALUES ($1, $2, $3);",
+        [newItem.name, newItem.effect, newItem.is_new],
+      )
+      .then(() => {
+        // Write image to file
+        const imageBytes = base64ToArray(
+          newSpriteImage.replace("data:image/png;base64,", ""),
+          "image/png",
+        );
+        writeBinaryFile(
+          `${$selectedWiki.name}/dist/docs/img/items/${newItem.name}.png`,
+          imageBytes,
+          { dir: BaseDirectory.AppData },
+        ).then(() => {
+          newSpriteImage = "";
+        });
+
+        toastStore.trigger({
+          message: "New Item Created!",
+          background: "variant-filled-success",
+        });
+        newItemModalOpen = false;
+        newItem = {} as Item;
+
+        // Update the items list
+        $db.select("SELECT id, name FROM items").then((items: any) => {
+          let itemNames = items.map((item: SearchItem) => [item.id, item.name]);
+          itemsList.set(itemNames);
+        });
+        generateItemPage();
+      })
+      .catch((err) => {
+        toastStore.trigger({
+          message: "Error creating new item!",
+          background: "variant-filled-error",
+        });
+      });
+  }
+
+  async function deleteItem() {
+    await $db
+      .execute("DELETE FROM items WHERE id = $1;", [item.id])
+      .then(() => {
+        toastStore.trigger({
+          message: "Item deleted!",
+          background: "variant-filled-success",
+        });
+        // Update the items list
+        $db.select("SELECT id, name FROM items").then((items: any) => {
+          let itemNames = items.map((item: SearchItem) => [item.id, item.name]);
+          itemsList.set(itemNames);
+        });
+        item = {} as Item;
+        originalItemDetails = {} as Item;
+        generateItemPage();
+      })
+      .catch((err) => {
+        toastStore.trigger({
+          message: "Error deleting item!",
+          background: "variant-filled-error",
+        });
+      });
+  }
+
+  function onImageUpload(e: any) {
+    let file = e.target.files[0];
+    let reader = new FileReader();
+    reader.onloadend = (e) => {
+      let base64 = e.target?.result as string;
+      if (!base64.includes("data:image/png;base64,")) {
+        toastStore.trigger({
+          message: "Invalid image format!",
+          background: "variant-filled-error",
+        });
+        return;
+      }
+      newSpriteImage = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function setModified(e: any) {
+    item.is_modified = e.target?.checked ? TRUE : FALSE;
+  }
+
+  async function convertItemToSqlite() {
+    await invoke("convert_items_to_sqlite", {
+      wikiName: $selectedWiki.name,
     })
-    .catch((err) => {
-      toastStore.trigger({
-        message: "Error converting items!",
-        background: "variant-filled-error",
+      .then(() => {
+        toastStore.trigger({
+          message: "Items converted!",
+          background: "variant-filled-success",
+        });
+      })
+      .catch((err) => {
+        toastStore.trigger({
+          message: "Error converting items!",
+          background: "variant-filled-error",
+        });
       });
-    });
-}
+  }
 </script>
 
 <BaseModal class="w-[30rem]" bind:open={newItemModalOpen}>
@@ -248,7 +250,9 @@ async function convertItemToSqlite() {
   <Button
     title="Create Item"
     class="w-32"
-    disabled={isNullEmptyOrUndefined(newItem.name) || isNullEmptyOrUndefined(newItem.effect) || newSpriteImage === ""}
+    disabled={isNullEmptyOrUndefined(newItem.name) ||
+      isNullEmptyOrUndefined(newItem.effect) ||
+      newSpriteImage === ""}
     onClick={createItem}
   />
 </BaseModal>
@@ -274,25 +278,25 @@ async function convertItemToSqlite() {
     title="Save Changes"
     onClick={saveItemChanges}
     class="mt-2 w-32"
-    disabled={_.isEqual(item, originalItemDetails)}
+    disabled={isEqual(item, originalItemDetails)}
   />
   <Button
     title="Add New Item"
     class="ml-auto mr-3 mt-2 w-32"
-    onClick={() => newItemModalOpen = true}
+    onClick={() => (newItemModalOpen = true)}
   />
   <Button
     title="Delete Item"
     class="mr-5 mt-2 w-32"
-    disabled={_.isEmpty(item)}
+    disabled={objectIsEmpty(item)}
     onClick={deleteItem}
   />
 </div>
 
-{#if !_.isEmpty(item)}
+{#if !objectIsEmpty(item)}
   <div class="mt-4 flex flex-col gap-4">
     <p class="text-lg">
-      {_.capitalize(item.name.replaceAll("-", " "))}
+      {capitalizeWords(item.name.replaceAll("-", " "))}
     </p>
     {#if spriteImage === "404"}
       <p class="text-sm">No sprite available</p>

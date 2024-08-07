@@ -47,7 +47,7 @@ export type MoveSetChange = {
   secondaryMove: string;
 };
 
-type LearnMethod = "level-up" | "machine" | "tutor" | "egg";
+export type LearnMethod = "level-up" | "machine" | "tutor" | "egg";
 
 export enum Operation {
   ADD = "add",
