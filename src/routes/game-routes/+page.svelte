@@ -1,116 +1,115 @@
 <script lang="ts">
-import BaseModal from "$lib/components/BaseModal.svelte";
-import Button from "$lib/components/Button.svelte";
-import TextInput from "$lib/components/TextInput.svelte";
-import { getToastStore } from "@skeletonlabs/skeleton";
-import { IconTrash } from "@tabler/icons-svelte";
-import { invoke } from "@tauri-apps/api";
-import { selectedWiki } from "../../store";
-import { routes } from "../../store/gameRoutes";
-import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
-import _ from "lodash";
-import { sortRoutesByPosition } from "$lib/utils";
-import NumberInput from "$lib/components/NumberInput.svelte";
-import GameRoutes from "$lib/components/game-route-components/GameRoutes.svelte";
+  import BaseModal from "$lib/components/BaseModal.svelte";
+  import Button from "$lib/components/Button.svelte";
+  import TextInput from "$lib/components/TextInput.svelte";
+  import { getToastStore } from "@skeletonlabs/skeleton";
+  import { IconTrash } from "@tabler/icons-svelte";
+  import { invoke } from "@tauri-apps/api";
+  import { selectedWiki } from "../../store";
+  import { routes } from "../../store/gameRoutes";
+  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+  import { sortRoutesByPosition } from "$lib/utils";
+  import NumberInput from "$lib/components/NumberInput.svelte";
+  import GameRoutes from "$lib/components/game-route-components/GameRoutes.svelte";
 
-const toastStore = getToastStore();
+  const toastStore = getToastStore();
 
-let routeName: string = "";
-let routeToUpdate: string = "";
-let newRouteModalOpen: boolean = false;
-let encounterTypeModalOpen: boolean = false;
-let positionModalOpen: boolean = false;
-let newEncounterType: string = "";
-let oldRoutePosition: number = 0;
-let loading = false;
+  let routeName: string = "";
+  let routeToUpdate: string = "";
+  let newRouteModalOpen: boolean = false;
+  let encounterTypeModalOpen: boolean = false;
+  let positionModalOpen: boolean = false;
+  let newEncounterType: string = "";
+  let oldRoutePosition: number = 0;
+  let loading = false;
 
-async function createNewRoute() {
-  $routes.routes[routeName.trim()] = {
-    position: Object.keys($routes.routes).length + 1,
-    trainers: {},
-    wild_encounters: {},
-    wild_encounter_area_levels: {},
-  };
-  await writeTextFile(
-    `${$selectedWiki.name}/data/routes.json`,
-    JSON.stringify($routes),
-    { dir: BaseDirectory.AppData },
-  );
-}
-
-async function addNewEncounterType() {
-  $routes.encounter_types = [...$routes.encounter_types, newEncounterType];
-  await writeTextFile(
-    `${$selectedWiki.name}/data/routes.json`,
-    JSON.stringify(sortRoutesByPosition($routes)),
-    { dir: BaseDirectory.AppData },
-  );
-}
-
-async function deleteEncounterType(encounterType: string) {
-  $routes.encounter_types = $routes.encounter_types.filter(
-    (type) => type !== encounterType,
-  );
-  await writeTextFile(
-    `${$selectedWiki.name}/data/routes.json`,
-    JSON.stringify($routes),
-    { dir: BaseDirectory.AppData },
-  );
-}
-
-async function updatePosition() {
-  let newRoutePosition = $routes.routes[routeToUpdate].position;
-  if (oldRoutePosition === newRoutePosition) {
-    return;
+  async function createNewRoute() {
+    $routes.routes[routeName.trim()] = {
+      position: Object.keys($routes.routes).length + 1,
+      trainers: {},
+      wild_encounters: {},
+      wild_encounter_area_levels: {},
+    };
+    await writeTextFile(
+      `${$selectedWiki.name}/data/routes.json`,
+      JSON.stringify($routes),
+      { dir: BaseDirectory.AppData },
+    );
   }
 
-  if (oldRoutePosition > newRoutePosition) {
-    for (const route in $routes.routes) {
-      if (
-        $routes.routes[route].position >= newRoutePosition &&
-        route !== routeToUpdate
-      ) {
-        $routes.routes[route].position += 1;
-      }
-    }
-  } else {
-    for (const route in $routes.routes) {
-      if (
-        $routes.routes[route].position <= newRoutePosition &&
-        route !== routeToUpdate
-      ) {
-        $routes.routes[route].position -= 1;
-      }
-    }
+  async function addNewEncounterType() {
+    $routes.encounter_types = [...$routes.encounter_types, newEncounterType];
+    await writeTextFile(
+      `${$selectedWiki.name}/data/routes.json`,
+      JSON.stringify(sortRoutesByPosition($routes)),
+      { dir: BaseDirectory.AppData },
+    );
   }
 
-  $routes = sortRoutesByPosition($routes);
-  await writeTextFile(
-    `${$selectedWiki.name}/data/routes.json`,
-    JSON.stringify($routes),
-    { dir: BaseDirectory.AppData },
-  );
-}
+  async function deleteEncounterType(encounterType: string) {
+    $routes.encounter_types = $routes.encounter_types.filter(
+      (type) => type !== encounterType,
+    );
+    await writeTextFile(
+      `${$selectedWiki.name}/data/routes.json`,
+      JSON.stringify($routes),
+      { dir: BaseDirectory.AppData },
+    );
+  }
 
-async function generateRoutePages() {
-  loading = true;
-  await invoke("generate_route_pages_with_handle", {
-    wikiName: $selectedWiki.name,
-  }).then((response: any) => {
-    loading = false;
-    toastStore.trigger({
-      message: response || "Route Pages generated",
-      timeout: 5000,
-      hoverable: true,
-      background: "variant-filled-success",
+  async function updatePosition() {
+    let newRoutePosition = $routes.routes[routeToUpdate].position;
+    if (oldRoutePosition === newRoutePosition) {
+      return;
+    }
+
+    if (oldRoutePosition > newRoutePosition) {
+      for (const route in $routes.routes) {
+        if (
+          $routes.routes[route].position >= newRoutePosition &&
+          route !== routeToUpdate
+        ) {
+          $routes.routes[route].position += 1;
+        }
+      }
+    } else {
+      for (const route in $routes.routes) {
+        if (
+          $routes.routes[route].position <= newRoutePosition &&
+          route !== routeToUpdate
+        ) {
+          $routes.routes[route].position -= 1;
+        }
+      }
+    }
+
+    $routes = sortRoutesByPosition($routes);
+    await writeTextFile(
+      `${$selectedWiki.name}/data/routes.json`,
+      JSON.stringify($routes),
+      { dir: BaseDirectory.AppData },
+    );
+  }
+
+  async function generateRoutePages() {
+    loading = true;
+    await invoke("generate_route_pages_with_handle", {
+      wikiName: $selectedWiki.name,
+    }).then((response: any) => {
+      loading = false;
+      toastStore.trigger({
+        message: response || "Route Pages generated",
+        timeout: 5000,
+        hoverable: true,
+        background: "variant-filled-success",
+      });
     });
-  });
-}
-function capitalizeWords(event: any) {
-  routeName = event.target.value.replace(/\b\w/g, (char: string) =>
-    char.toUpperCase(),
-  );
-}
+  }
+  function capitalizeWords(event: any) {
+    routeName = event.target.value.replace(/\b\w/g, (char: string) =>
+      char.toUpperCase(),
+    );
+  }
 </script>
 
 <!-- New Route Modal -->
@@ -138,7 +137,10 @@ function capitalizeWords(event: any) {
   />
   <Button
     title="Update Route Position"
-    onClick={() => {updatePosition(); positionModalOpen = false;}}
+    onClick={() => {
+      updatePosition();
+      positionModalOpen = false;
+    }}
   />
 </BaseModal>
 
@@ -183,11 +185,7 @@ function capitalizeWords(event: any) {
     class="w-42"
     title="Generate Route Pages"
     onClick={generateRoutePages}
-    loading={loading}
+    {loading}
   />
 </div>
-<GameRoutes
-  bind:positionModalOpen={positionModalOpen}
-  bind:routeToUpdate={routeToUpdate}
-  bind:oldRoutePosition={oldRoutePosition}
-/>
+<GameRoutes bind:positionModalOpen bind:routeToUpdate bind:oldRoutePosition />

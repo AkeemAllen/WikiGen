@@ -9,7 +9,6 @@
     readBinaryFile,
     writeTextFile,
   } from "@tauri-apps/api/fs";
-  import _ from "lodash";
   import { selectedWiki } from "../../../store";
   import { routes, type WildEncounter } from "../../../store/gameRoutes";
   import { pokemonList } from "../../../store/pokemon";

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import _ from "lodash";
   import AutoComplete from "$lib/components/AutoComplete.svelte";
   import Button from "$lib/components/Button.svelte";
   import BaseModal from "$lib/components/BaseModal.svelte";

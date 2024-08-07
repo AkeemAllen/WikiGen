@@ -1,5 +1,4 @@
 <script lang="ts">
-  import _ from "lodash";
   import { type TrainerPokemon } from "../../../store/gameRoutes";
   import BaseModal from "../BaseModal.svelte";
   import NumberInput from "../NumberInput.svelte";

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { IconTrash } from "@tabler/icons-svelte";
   import { type TrainerPokemon } from "../../store/gameRoutes";
-  import _ from "lodash";
   import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
   import { selectedWiki } from "../../store";
   import capitalizeWords from "$lib/utils/capitalizeWords";

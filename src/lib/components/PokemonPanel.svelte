@@ -5,7 +5,6 @@
     readBinaryFile,
     writeBinaryFile,
   } from "@tauri-apps/api/fs";
-  import _ from "lodash";
   import { selectedWiki } from "../../store";
   import {
     pokemonList,

@@ -7,7 +7,6 @@
   import Pagination from "$lib/components/Pagination.svelte";
   import ThSort from "$lib/components/ThSort.svelte";
   import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
-  import _ from "lodash";
   import { selectedWiki } from "../../store";
   import { moveList, type Move } from "../../store/moves";
   import { PokemonTypes, pokemonList } from "../../store/pokemon";
