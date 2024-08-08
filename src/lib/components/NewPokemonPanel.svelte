@@ -71,10 +71,30 @@
       )
       .then((res) => {
         copiedMoveset = res;
+        pokemonSearch = [0, ""];
       })
       .catch((err) => {
         toastStore.trigger({
           message: `Error loading Pokemon moveset!: \n ${err}`,
+          background: "variant-filled-error",
+        });
+      });
+  }
+
+  async function copyPokemonDetails() {
+    await $db
+      .select<Pokemon[]>(`SELECT * FROM pokemon WHERE id = $1;`, [
+        pokemonSearch[0],
+      ])
+      .then((res) => {
+        newPokemon = res[0];
+      })
+      .then(() => {
+        copyPokemonMoveset();
+      })
+      .catch((err) => {
+        toastStore.trigger({
+          message: `Error loading Pokemon details!: \n ${err}`,
           background: "variant-filled-error",
         });
       });
@@ -184,6 +204,26 @@
   />
 </div>
 
+<div class="flex flex-row gap-5">
+  <AutoComplete
+    bind:value={pokemonSearch[1]}
+    placeholder="Search Pokemon"
+    options={pokemonListOptions}
+    popupId="pokemon-search"
+    onSelection={(e) => {
+      pokemonSearch = [e.detail.value, e.detail.label];
+    }}
+    showChevron={false}
+    class="w-48"
+  />
+  <Button
+    title="Copy Pokemon Details"
+    class="mt-2 w-48"
+    disabled={pokemonSearch[0] === 0}
+    onClick={copyPokemonDetails}
+  />
+</div>
+
 <div class="mb-5 mt-5 flex flex-row gap-5">
   <TextInput
     label="Pokemon Name*"
@@ -212,30 +252,11 @@
       <PokemonDetailsTab bind:pokemon={newPokemon} isNewPokemon={true} />
     {/if}
     {#if tabSet === 1}
-      <AutoComplete
-        bind:value={pokemonSearch[1]}
-        placeholder="Search Pokemon"
-        options={pokemonListOptions}
-        popupId="pokemon-search"
-        onSelection={(e) => {
-          pokemonSearch = [e.detail.value, e.detail.label];
-        }}
-        showChevron={false}
-        class="w-48"
+      <PokemonMovesetTab
+        moveset={copiedMoveset}
+        pokemonId={0}
+        generatePokemonPage={() => {}}
       />
-      <Button
-        title="Copy Moveset from existing pokemon"
-        class="mt-2 w-48"
-        disabled={pokemonSearch[0] === 0}
-        onClick={copyPokemonMoveset}
-      />
-      {#if copiedMoveset.length > 0}
-        <PokemonMovesetTab
-          moveset={copiedMoveset}
-          pokemonId={0}
-          generatePokemonPage={() => {}}
-        />
-      {/if}
     {/if}
   </svelte:fragment>
 </TabGroup>
