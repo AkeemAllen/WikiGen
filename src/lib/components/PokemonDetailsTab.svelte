@@ -103,6 +103,10 @@
       options={abilitiesListOptions}
       popupId="ability-1-popup"
       onSelection={(e) => {
+        if (e.detail.value === "") {
+          pokemon.ability_1 = null;
+          return;
+        }
         pokemon.ability_1 = e.detail.value;
       }}
       class="w-full"
@@ -113,6 +117,10 @@
       options={abilitiesListOptions}
       popupId="ability-2-popup"
       onSelection={(e) => {
+        if (e.detail.value === "") {
+          pokemon.ability_2 = null;
+          return;
+        }
         pokemon.ability_2 = e.detail.value;
       }}
       class="w-full"
