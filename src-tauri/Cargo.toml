@@ -1,6 +1,6 @@
 [package]
 name = "wiki_gen"
-version = "0.14.1"
+version = "0.15.0"
 description = "A Desktop Application to generate wikis for Pokemon Rom Hacks"
 authors = ["Akeem Allen"]
 license = ""
