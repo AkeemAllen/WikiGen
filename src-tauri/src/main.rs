@@ -26,7 +26,7 @@ use wiki_preparation::create_wiki::create_wiki;
 use wiki_preparation::prepare_data::{download_and_prep_pokemon_data, download_pokemon_sprites};
 
 fn main() {
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .setup(|app| {
             let base_path = app.path_resolver().app_data_dir().unwrap();
             match base_path.join("initial.db").try_exists() {
@@ -70,6 +70,19 @@ fn main() {
             convert_pokemon_to_sqlite,
             convert_pokemon_movesets_to_sqlite
         ])
-        .run(tauri::generate_context!())
+        .build(tauri::generate_context!())
         .expect("error while running tauri application");
+
+    app.run(|_app_handle, event| match event {
+        tauri::RunEvent::Updater(updater_event) => match updater_event {
+            tauri::UpdaterEvent::Updated => {
+                let migrations = vec![
+                    include_str!("../migrations/0001_initial.sql"),
+                    include_str!("../migrations/0002_add_pokemon_movesets.sql"),
+                ];
+            }
+            _ => (),
+        },
+        _ => {}
+    })
 }
