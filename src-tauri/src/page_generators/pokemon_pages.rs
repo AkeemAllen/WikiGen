@@ -158,8 +158,6 @@ pub async fn generate_pokemon_pages(
     }
 
     for pokemon in pokemon_list {
-        println!("Rendering page for {}", &pokemon.name);
-
         let mut pokedex_markdown_file_name = format!("00{}", pokemon.dex_number);
         if pokemon.dex_number >= 10 {
             pokedex_markdown_file_name = format!("0{}", pokemon.dex_number);
@@ -167,6 +165,31 @@ pub async fn generate_pokemon_pages(
         if pokemon.dex_number >= 100 {
             pokedex_markdown_file_name = format!("{}", pokemon.dex_number);
         }
+        let entry_key = format!(
+            "{} - {}",
+            pokedex_markdown_file_name,
+            capitalize(&pokemon.name)
+        );
+        let mut page_entry_exists = false;
+        let mut page_position = 0;
+        for (index, page_entry) in mkdocs_pokemon.iter_mut().enumerate() {
+            if page_entry.as_mapping().unwrap().contains_key(&entry_key) {
+                page_entry_exists = true;
+                page_position = index;
+                break;
+            }
+        }
+        if pokemon.render == "false" && page_entry_exists {
+            mkdocs_pokemon.remove(page_position);
+            continue;
+        }
+
+        if pokemon.render == "false" {
+            println!("Skipping rendering page for {}", &pokemon.name);
+            continue;
+        }
+
+        println!("Rendering page for {}", &pokemon.name);
 
         let mut markdown_file = match File::create(docs_path.join("pokemon").join(format!(
             "{}-{}.md",
@@ -199,11 +222,6 @@ pub async fn generate_pokemon_pages(
         };
 
         let mut pokemon_page_entry = Mapping::new();
-        let entry_key = format!(
-            "{} - {}",
-            pokedex_markdown_file_name,
-            capitalize(&pokemon.name)
-        );
         pokemon_page_entry.insert(
             Value::String(entry_key.clone()),
             Value::String(format!(
@@ -211,14 +229,6 @@ pub async fn generate_pokemon_pages(
                 pokedex_markdown_file_name, &pokemon.name
             )),
         );
-
-        let mut page_entry_exists = false;
-        for page_entry in mkdocs_pokemon.clone() {
-            if page_entry.as_mapping().unwrap().contains_key(&entry_key) {
-                page_entry_exists = true;
-                break;
-            }
-        }
 
         if !page_entry_exists {
             mkdocs_pokemon.push(Value::Mapping(pokemon_page_entry));
@@ -235,8 +245,8 @@ pub async fn generate_pokemon_pages(
     }
 
     match fs::write(
-        mkdocs_yaml_file_path,
-        serde_yaml::to_string(&mkdocs_config).unwrap(),
+        &mkdocs_yaml_file_path,
+        serde_yaml::to_string(&mut mkdocs_config).unwrap(),
     ) {
         Ok(_) => {}
         Err(err) => return Err(format!("Failed to update mkdocs yaml: {}", err)),
