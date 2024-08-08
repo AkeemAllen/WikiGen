@@ -74,7 +74,6 @@
       ])
       .then(async (res) => {
         pokemon = res[0];
-        console.log(pokemon);
 
         // Gather moveset
         await $db
