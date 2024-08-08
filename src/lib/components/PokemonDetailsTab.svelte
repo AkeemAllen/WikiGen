@@ -7,6 +7,7 @@
   import { abilitiesList } from "../../store/abilities";
   import { itemsList } from "../../store/items";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
 
   export let pokemon: Pokemon = {} as Pokemon;
   export let isNewPokemon: boolean = false;
@@ -42,8 +43,6 @@
     } else {
       types[1] = e.target.value;
     }
-
-    console.log(types);
 
     if (types[0] === null && types[1] === null) {
       pokemon.types = `null_type`;
@@ -119,8 +118,17 @@
       class="w-full"
     />
   </div>
-  {#if !isNewPokemon}
-    <div class="mt-5 flex flex-row gap-x-10">
+  <div class="mt-5 flex flex-row gap-x-10">
+    <SelectInput
+      id="render-page"
+      label="Render Pokemon Page"
+      bind:value={pokemon.render}
+      options={[
+        { label: "True", value: "true" },
+        { label: "False", value: "false" },
+      ]}
+    />
+    {#if !isNewPokemon}
       <div class="w-44">
         <SelectInput
           id="evolution-method"
@@ -174,8 +182,8 @@
           />
         </div>
       {/if}
-    </div>
-  {/if}
+    {/if}
+  </div>
   <p class="mt-10 text-lg">Stats</p>
   <div class="mb-2 mt-2 grid grid-cols-2 gap-x-10 gap-y-5">
     <NumberInput id="pokemon-hp" bind:value={pokemon.hp} label="HP" max={255} />

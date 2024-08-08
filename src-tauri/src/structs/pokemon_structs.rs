@@ -42,6 +42,7 @@ pub struct DBPokemon {
     pub evolution_item: Option<String>,
     pub evolution_other: Option<String>,
     pub evolved_pokemon: Option<String>,
+    pub render: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, FromRow)]

@@ -32,7 +32,6 @@
   let pokemonNameInput: HTMLInputElement;
 
   let pokemon = {} as Pokemon;
-  $: console.log(Object.keys(pokemon).length === 0);
   let originalPokemonDetails: Pokemon = {} as Pokemon;
   let pokemonMoveset: PokemonMove[] = [];
   let pokemonSprite: string = "";
@@ -163,8 +162,9 @@
           evolution_item = $13,
           evolution_level = $14,
           evolution_other = $15,
-          evolved_pokemon = $16
-        WHERE id = $17;`,
+          evolved_pokemon = $16,
+          render = $17
+        WHERE id = $18;`,
         [
           pokemon.dex_number,
           pokemon.name,
@@ -182,6 +182,7 @@
           pokemon.evolution_level,
           pokemon.evolution_other,
           pokemon.evolved_pokemon,
+          pokemon.render,
           pokemon.id,
         ],
       )

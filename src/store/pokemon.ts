@@ -23,6 +23,7 @@ export type Pokemon = {
   evolution_item: string | null;
   evolution_other: string | null;
   evolved_pokemon: string | null;
+  render: "true" | "false";
 };
 
 export type Ability = {
