@@ -1,132 +1,141 @@
 <script lang="ts">
-import {
-  BaseDirectory,
-  readTextFile,
-  removeDir,
-  writeTextFile,
-} from "@tauri-apps/api/fs";
-import { selectedWiki, wikis, type Wiki } from "../../store";
-import { routes } from "../../store/gameRoutes";
-import { moveList, type SearchMove } from "../../store/moves";
-import { pokemonList, type SearchPokemon } from "../../store/pokemon";
-import { sortRoutesByPosition } from "$lib/utils";
-import { abilitiesList, type SearchAbility } from "../../store/abilities";
-import { naturesList, type SearchNature } from "../../store/natures";
-import { itemsList, type SearchItem } from "../../store/items";
-import BaseModal from "./BaseModal.svelte";
-import MultiSelect from "svelte-multiselect";
-import Button from "./Button.svelte";
-import { getToastStore } from "@skeletonlabs/skeleton";
-import { invoke } from "@tauri-apps/api";
-import { goto } from "$app/navigation";
-import Database from "tauri-plugin-sql-api";
-import { db } from "../../store/db";
+  import {
+    BaseDirectory,
+    readTextFile,
+    removeDir,
+    writeTextFile,
+  } from "@tauri-apps/api/fs";
+  import { selectedWiki, wikis, type Wiki } from "../../store";
+  import { routes } from "../../store/gameRoutes";
+  import { moveList, type SearchMove } from "../../store/moves";
+  import { pokemonList, type SearchPokemon } from "../../store/pokemon";
+  import { sortRoutesByPosition } from "$lib/utils";
+  import { abilitiesList, type SearchAbility } from "../../store/abilities";
+  import { naturesList, type SearchNature } from "../../store/natures";
+  import { itemsList, type SearchItem } from "../../store/items";
+  import BaseModal from "./BaseModal.svelte";
+  import MultiSelect from "svelte-multiselect";
+  import Button from "./Button.svelte";
+  import { getToastStore } from "@skeletonlabs/skeleton";
+  import { invoke } from "@tauri-apps/api";
+  import { goto } from "$app/navigation";
+  import Database from "tauri-plugin-sql-api";
+  import { db } from "../../store/db";
 
-const toastStore = getToastStore();
+  const toastStore = getToastStore();
 
-let deleteWikiModalOpen: boolean = false;
-let wikisToDelete: string[] = [];
-let directoriesRemoved: boolean = false;
-let wikiJsonUpdated: boolean = false;
+  let deleteWikiModalOpen: boolean = false;
+  let wikisToDelete: string[] = [];
+  let directoriesRemoved: boolean = false;
+  let wikiJsonUpdated: boolean = false;
 
-let hotKeysModalOpen: boolean = false;
+  let hotKeysModalOpen: boolean = false;
 
-$: wikiListOptions = Object.keys($wikis).filter(
-  (wiki) => wiki !== $selectedWiki.name,
-);
-
-async function loadWikiData(wiki: Wiki) {
-  $selectedWiki = wiki;
-  const routesFromFile = await readTextFile(
-    `${$selectedWiki.name}/data/routes.json`,
-    { dir: BaseDirectory.AppData },
+  $: wikiListOptions = Object.keys($wikis).filter(
+    (wiki) => wiki !== $selectedWiki.name,
   );
-  routes.set(sortRoutesByPosition(JSON.parse(routesFromFile)));
 
-  toastStore.trigger({
-    message: `${$selectedWiki.site_name} Wiki Loaded`,
-    timeout: 2000,
-    background: "variant-filled-success",
-  });
-}
+  async function loadWikiData(wiki: Wiki) {
+    $selectedWiki = wiki;
+    const routesFromFile = await readTextFile(
+      `${$selectedWiki.name}/data/routes.json`,
+      { dir: BaseDirectory.AppData },
+    );
+    routes.set(sortRoutesByPosition(JSON.parse(routesFromFile)));
 
-async function deleteWikis() {
-  for (const wiki of wikisToDelete) {
-    await removeDir(wiki, { dir: BaseDirectory.AppData, recursive: true }).then(
-      () => {
+    toastStore.trigger({
+      message: `${$selectedWiki.site_name} Wiki Loaded`,
+      timeout: 2000,
+      background: "variant-filled-success",
+    });
+  }
+
+  async function deleteWikis() {
+    for (const wiki of wikisToDelete) {
+      await removeDir(wiki, {
+        dir: BaseDirectory.AppData,
+        recursive: true,
+      }).then(() => {
         directoriesRemoved = true;
-      },
-    );
-    $wikis = Object.fromEntries(
-      Object.entries($wikis).filter(([key, _]) => key !== wiki),
-    );
-  }
-  await writeTextFile("wikis.json", JSON.stringify($wikis), {
-    dir: BaseDirectory.AppData,
-  }).then(() => {
-    wikiJsonUpdated = true;
-  });
-  if (directoriesRemoved && wikiJsonUpdated) {
-    toastStore.trigger({
-      message: "Wikis Deleted Successfully",
-      background: "variant-filled-success",
+      });
+      $wikis = Object.fromEntries(
+        Object.entries($wikis).filter(([key, _]) => key !== wiki),
+      );
+    }
+    await writeTextFile("wikis.json", JSON.stringify($wikis), {
+      dir: BaseDirectory.AppData,
+    }).then(() => {
+      wikiJsonUpdated = true;
     });
-    directoriesRemoved = false;
-    wikiJsonUpdated = false;
+    if (directoriesRemoved && wikiJsonUpdated) {
+      toastStore.trigger({
+        message: "Wikis Deleted Successfully",
+        background: "variant-filled-success",
+      });
+      directoriesRemoved = false;
+      wikiJsonUpdated = false;
+    }
+    deleteWikiModalOpen = false;
+    wikisToDelete = [];
   }
-  deleteWikiModalOpen = false;
-  wikisToDelete = [];
-}
 
-async function backupWiki() {
-  await invoke("backup_wiki", {
-    wikiName: $selectedWiki.name,
-  }).then(() => {
-    toastStore.trigger({
-      message: "Wiki Backed Up Successfully",
-      background: "variant-filled-success",
+  async function backupWiki() {
+    await invoke("backup_wiki", {
+      wikiName: $selectedWiki.name,
+    }).then(() => {
+      toastStore.trigger({
+        message: "Wiki Backed Up Successfully",
+        background: "variant-filled-success",
+      });
     });
-  });
-}
+  }
 
-async function loadDatabase(wiki: Wiki) {
-  $selectedWiki = wiki;
-  await Database.load(`sqlite:${wiki.name}/${wiki.name}.db`).then(
-    (database) => {
-      db.set(database);
-      // Load Pokemon
-      $db
-        .select("SELECT id, name FROM pokemon ORDER BY dex_number")
-        .then((pokemon: any) => {
-          pokemonList.set(pokemon.map((p: SearchPokemon) => [p.id, p.name]));
+  async function loadDatabase(wiki: Wiki) {
+    $selectedWiki = wiki;
+    await Database.load(`sqlite:${wiki.name}/${wiki.name}.db`).then(
+      (database) => {
+        db.set(database);
+        // Load Pokemon
+        $db
+          .select("SELECT id, name FROM pokemon ORDER BY dex_number")
+          .then((pokemon: any) => {
+            pokemonList.set(pokemon.map((p: SearchPokemon) => [p.id, p.name]));
+          });
+
+        // Load Items
+        $db.select("SELECT id, name FROM items").then((items: any) => {
+          itemsList.set(items.map((item: SearchItem) => [item.id, item.name]));
         });
 
-      // Load Items
-      $db.select("SELECT id, name FROM items").then((items: any) => {
-        itemsList.set(items.map((item: SearchItem) => [item.id, item.name]));
-      });
+        // Load Abilities
+        $db.select("SELECT id, name FROM abilities").then((abilities: any) => {
+          abilitiesList.set(
+            abilities.map((ability: SearchAbility) => [
+              ability.id,
+              ability.name,
+            ]),
+          );
+          // Add an empty ability for the search
+          abilitiesList.update((abilities) => {
+            abilities.unshift([0, "None"]);
+            return abilities;
+          });
+        });
 
-      // Load Abilities
-      $db.select("SELECT id, name FROM abilities").then((abilities: any) => {
-        abilitiesList.set(
-          abilities.map((ability: SearchAbility) => [ability.id, ability.name]),
-        );
-      });
+        // Load Natures
+        $db.select("SELECT id, name FROM natures").then((natures: any) => {
+          naturesList.set(
+            natures.map((nature: SearchNature) => [nature.id, nature.name]),
+          );
+        });
 
-      // Load Natures
-      $db.select("SELECT id, name FROM natures").then((natures: any) => {
-        naturesList.set(
-          natures.map((nature: SearchNature) => [nature.id, nature.name]),
-        );
-      });
-
-      // Load Moves
-      $db.select("SELECT id, name FROM moves").then((moves: any) => {
-        moveList.set(moves.map((move: SearchMove) => [move.id, move.name]));
-      });
-    },
-  );
-}
+        // Load Moves
+        $db.select("SELECT id, name FROM moves").then((moves: any) => {
+          moveList.set(moves.map((move: SearchMove) => [move.id, move.name]));
+        });
+      },
+    );
+  }
 </script>
 
 <BaseModal bind:open={deleteWikiModalOpen}>
@@ -205,7 +214,11 @@ async function loadDatabase(wiki: Wiki) {
     {#each Object.entries($wikis) as [_, value]}
       {#if value.name !== $selectedWiki.name}
         <button
-          on:click={() => {loadWikiData(value); loadDatabase(value); goto("/")}}
+          on:click={() => {
+            loadWikiData(value);
+            loadDatabase(value);
+            goto("/");
+          }}
           class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
           >{value.site_name}</button
         >
@@ -226,10 +239,10 @@ async function loadDatabase(wiki: Wiki) {
   {/if}
   <button
     class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-    on:click={() => hotKeysModalOpen = true}>View Hotkeys</button
+    on:click={() => (hotKeysModalOpen = true)}>View Hotkeys</button
   >
   <button
     class="w-full rounded-md p-2 text-left text-sm text-red-500 hover:bg-slate-300"
-    on:click={() => deleteWikiModalOpen = true}>Delete A Wiki</button
+    on:click={() => (deleteWikiModalOpen = true)}>Delete A Wiki</button
   >
 </div>
