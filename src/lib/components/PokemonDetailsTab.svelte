@@ -36,7 +36,7 @@
   }));
 
   let ability_1: string = "";
-  $: if (pokemon.ability_1) setAbility1();
+  $: if (pokemon.ability_1 || pokemon.ability_1 === null) setAbility1();
   function setAbility1() {
     if (pokemon.ability_1 === null) {
       ability_1 = "None";
@@ -46,7 +46,7 @@
   }
 
   let ability_2: string = "";
-  $: if (pokemon.ability_2) setAbility2();
+  $: if (pokemon.ability_2 || pokemon.ability_2 === null) setAbility2();
   function setAbility2() {
     if (pokemon.ability_2 === null) {
       ability_2 = "None";
