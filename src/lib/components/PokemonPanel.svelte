@@ -57,7 +57,8 @@
 
   async function getPokemon() {
     let retrievedPokemon = $pokemonList.find(
-      ([__, name]) => name === pokemonSearch[1].toLowerCase(),
+      ([__, name]) =>
+        name === pokemonSearch[1].toLowerCase().split(" ").join("-"),
     );
 
     if (!retrievedPokemon) {
@@ -169,8 +170,8 @@
           pokemon.dex_number,
           pokemon.name,
           pokemon.types,
-          pokemon.ability_1?.toLowerCase(),
-          pokemon.ability_2?.toLowerCase(),
+          pokemon.ability_1?.toLowerCase().split(" ").join("-"),
+          pokemon.ability_2?.toLowerCase().split(" ").join("-"),
           pokemon.hp,
           pokemon.attack,
           pokemon.defense,
