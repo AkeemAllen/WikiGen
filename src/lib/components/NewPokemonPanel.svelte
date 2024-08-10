@@ -186,23 +186,6 @@
     newPokemon.name === "" ||
     newSpriteImage === ""}
 />
-<div class="mb-4 mt-4">
-  <label
-    for="sprite-image"
-    class="block text-sm font-medium leading-6 text-gray-900"
-    >Pokemon Sprite*</label
-  >
-  {#if newSpriteImage !== ""}
-    <img src={newSpriteImage} alt="Sprite" />
-  {/if}
-  <input
-    id="sprite-image"
-    type="file"
-    accept="image/png"
-    class="mt-2"
-    on:change={onImageUpload}
-  />
-</div>
 
 <div class="flex flex-row gap-5">
   <AutoComplete
@@ -221,6 +204,24 @@
     class="mt-2 w-48"
     disabled={pokemonSearch[0] === 0}
     onClick={copyPokemonDetails}
+  />
+</div>
+
+<div class="mb-4 mt-4">
+  <label
+    for="sprite-image"
+    class="block text-sm font-medium leading-6 text-gray-900"
+    >Pokemon Sprite*</label
+  >
+  {#if newSpriteImage !== ""}
+    <img src={newSpriteImage} alt="Sprite" />
+  {/if}
+  <input
+    id="sprite-image"
+    type="file"
+    accept="image/png"
+    class="mt-2"
+    on:change={onImageUpload}
   />
 </div>
 
