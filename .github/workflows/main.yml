@@ -72,12 +72,7 @@ jobs:
         with:
           tagName: wikigen-v__VERSION__-alpha
           releaseName: "WikiGen v__VERSION__ Alpha"
-          releaseBody: "
-            Changelog:
-            /n- Now able to document New Moves.
-            /n- Able to now view the pokemon who can learn a specific move from the move page.
-            /n- Able to add, delete, and edit a pokemon move from the move page.
-            "
+          releaseBody: "Added all existing mega evolutions initial data."
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.settings.args }}
