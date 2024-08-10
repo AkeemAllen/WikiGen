@@ -17,15 +17,43 @@
     value: name,
   }));
 
-  const abilitiesListOptions = $abilitiesList.map(([id, name]) => ({
-    label: name,
-    value: name,
-  }));
+  const abilitiesListOptions = $abilitiesList.map(([id, name]) => {
+    if (name === "None") {
+      return {
+        label: "None",
+        value: null,
+      };
+    }
+    return {
+      label: capitalizeWords(name),
+      value: name,
+    };
+  });
 
   const itemListOptions = $itemsList.map(([id, name]) => ({
     label: capitalizeWords(name),
     value: name,
   }));
+
+  let ability_1: string = "";
+  $: if (pokemon.ability_1 || pokemon.ability_1 === null) setAbility1();
+  function setAbility1() {
+    if (pokemon.ability_1 === null) {
+      ability_1 = "None";
+      return;
+    }
+    ability_1 = capitalizeWords(pokemon.ability_1);
+  }
+
+  let ability_2: string = "";
+  $: if (pokemon.ability_2 || pokemon.ability_2 === null) setAbility2();
+  function setAbility2() {
+    if (pokemon.ability_2 === null) {
+      ability_2 = "None";
+      return;
+    }
+    ability_2 = capitalizeWords(pokemon.ability_2);
+  }
 
   let types: (string | null)[];
   $: if (pokemon.types) setTypes();
@@ -99,20 +127,22 @@
     />
     <AutoComplete
       label="Ability 1"
-      bind:value={pokemon.ability_1}
+      bind:value={ability_1}
       options={abilitiesListOptions}
       popupId="ability-1-popup"
       onSelection={(e) => {
+        ability_1 = e.detail.label;
         pokemon.ability_1 = e.detail.value;
       }}
       class="w-full"
     />
     <AutoComplete
       label="Ability 2"
-      bind:value={pokemon.ability_2}
+      bind:value={ability_2}
       options={abilitiesListOptions}
       popupId="ability-2-popup"
       onSelection={(e) => {
+        ability_2 = e.detail.label;
         pokemon.ability_2 = e.detail.value;
       }}
       class="w-full"
