@@ -97,6 +97,10 @@ pub async fn create_wiki(
     let dist_stylesheets_folder = docs_folder.join("stylesheets");
     let _ = copy_recursively(stylesheets_folder, dist_stylesheets_folder);
 
+    let templates_folder = generator_assets_path.join("templates");
+    let dist_templates_folder = docs_folder.join("templates");
+    let _ = copy_recursively(templates_folder, dist_templates_folder);
+
     let pokemon_sprites_folder = generator_assets_path.join("pokemon_sprites");
     let pokemon_images_folder = docs_folder.join("img").join("pokemon");
     let _ = copy_recursively(pokemon_sprites_folder, pokemon_images_folder);

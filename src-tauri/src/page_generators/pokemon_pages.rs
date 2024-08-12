@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    fs::{self, File},
+    fs::{self, read_to_string, File},
     io::Write,
     path::PathBuf,
 };
@@ -125,6 +125,16 @@ pub async fn generate_pokemon_pages(
             return Err(format!("Failed to parse mkdocs yaml file: {}", err));
         }
     };
+
+    let template = read_to_string(
+        base_path
+            .join(wiki_name)
+            .join("dist")
+            .join("docs")
+            .join("templates")
+            .join("pokemon_page_template.md"),
+    )
+    .expect("Failed to read template file");
 
     let mut mkdocs_pokemon: &mut Vec<Value> = &mut Vec::new();
 
