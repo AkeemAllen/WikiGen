@@ -126,24 +126,6 @@ pub async fn generate_pokemon_pages(
         }
     };
 
-    let calculated_defenses_path = base_path
-        .join(wiki_name)
-        .join("data")
-        .join("calculated_defenses.json");
-    let calculated_defenses_json_file = match File::open(&calculated_defenses_path) {
-        Ok(file) => file,
-        Err(err) => {
-            return Err(format!("Failed to open calculated defenses file: {}", err));
-        }
-    };
-    let calculated_defenses: HashMap<String, TypeEffectiveness> =
-        match serde_json::from_reader(calculated_defenses_json_file) {
-            Ok(calc_defenses) => calc_defenses,
-            Err(err) => {
-                return Err(format!("Failed to parse calculated defenses file: {}", err));
-            }
-        };
-
     let mut mkdocs_pokemon: &mut Vec<Value> = &mut Vec::new();
 
     let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
@@ -208,8 +190,7 @@ pub async fn generate_pokemon_pages(
             .filter(|m| m.pokemon == pokemon.id)
             .collect::<Vec<_>>();
 
-        let pokemon_markdown_string =
-            generate_pokemon_page(&calculated_defenses, &pokemon, current_pokemon_movset);
+        let pokemon_markdown_string = generate_pokemon_page(&pokemon, current_pokemon_movset);
 
         match markdown_file.write_all(format!("{}", pokemon_markdown_string).as_bytes()) {
             Ok(_) => {}
@@ -267,11 +248,7 @@ fn extract_pokemon_id(key: Option<&str>) -> i32 {
         .unwrap();
 }
 
-pub fn generate_pokemon_page(
-    calculated_defenses: &HashMap<String, TypeEffectiveness>,
-    pokemon: &DBPokemon,
-    movesets: Vec<PokemonMove>,
-) -> String {
+pub fn generate_pokemon_page(pokemon: &DBPokemon, movesets: Vec<PokemonMove>) -> String {
     let mut markdown_string = String::new();
     markdown_string.push_str(&format!(
         "![{}](../img/pokemon/{}.png)\n\n",
@@ -280,13 +257,6 @@ pub fn generate_pokemon_page(
 
     markdown_string.push_str(&format!("## Types\n\n"));
     markdown_string.push_str(&format!("{}", create_type_table(pokemon.types.clone())));
-    markdown_string.push_str("\n\n");
-
-    markdown_string.push_str(&format!("## Defenses\n\n"));
-    markdown_string.push_str(&format!(
-        "{}",
-        create_defenses_table(pokemon.types.clone(), &calculated_defenses,)
-    ));
     markdown_string.push_str("\n\n");
 
     markdown_string.push_str(&format!("## Abilities\n\n"));
