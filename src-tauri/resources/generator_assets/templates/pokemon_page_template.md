@@ -73,6 +73,8 @@
   </tbody>
 </table>
 
+{{evolution_change}}
+
 ## Moveset
 
 === "Level Up Moves"

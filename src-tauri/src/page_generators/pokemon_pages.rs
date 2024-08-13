@@ -396,19 +396,12 @@ pub fn generate_page_from_template(
         .replace("{{level_up_moves}}", &level_up_moves)
         .replace("{{machine_moves}}", &learnable_moves);
 
-    println!("{}", result);
-
-    // if pokemon.evolution_method != "no_change" {
-    //     markdown_string.push_str(&format!("## Evolution\n\n"));
-    //     markdown_string.push_str(&format!("{}", create_evolution_table(pokemon)));
-    //     markdown_string.push_str("\n\n");
-    // }
-
-    // markdown_string.push_str(&format!("## Learnable Moves\n\n"));
-    // markdown_string.push_str(&format!(
-    //     "{}",
-    // ));
-    // markdown_string.push_str("\n\n");
+    let mut evolution_change_string = String::new();
+    if pokemon.evolution_method != "no_change" {
+        evolution_change_string.push_str(&format!("## Evolution\n\n"));
+        evolution_change_string.push_str(&format!("{}", create_evolution_table(pokemon)));
+    }
+    let result = result.replace("{{evolution_change}}", &evolution_change_string);
     return result;
 }
 
