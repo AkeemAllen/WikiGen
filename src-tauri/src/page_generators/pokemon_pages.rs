@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     fs::{self, read_to_string, File},
     io::Write,
     path::PathBuf,
@@ -12,12 +11,9 @@ use tauri::AppHandle;
 use crate::{
     helpers::capitalize,
     page_generators::pokemon_page_generator_functions::{
-        create_ability_table, create_defenses_table, create_evolution_table,
-        create_learnable_moves_table, create_level_up_moves_table, create_stats_table,
-        create_type_table,
+        create_evolution_table, create_learnable_moves_table, create_level_up_moves_table,
     },
     structs::{
-        matchup_models::TypeEffectiveness,
         mkdocs_structs::MKDocsConfig,
         pokemon_structs::{DBPokemon, PokemonMove},
     },
