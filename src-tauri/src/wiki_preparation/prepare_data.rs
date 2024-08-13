@@ -261,7 +261,7 @@ pub async fn download_pokemon_sprites(
             }
         };
 
-        let sprite_image = image::io::Reader::new(Cursor::new(sprite_data))
+        let sprite_image = image::ImageReader::new(Cursor::new(sprite_data))
             .with_guessed_format()
             .unwrap()
             .decode()

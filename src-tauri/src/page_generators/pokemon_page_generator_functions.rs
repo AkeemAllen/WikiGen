@@ -8,6 +8,7 @@ use crate::{
     },
 };
 
+#[allow(dead_code)]
 pub fn create_type_table(types: String) -> String {
     let type_images: Vec<String> = types
         .split(",")
@@ -25,6 +26,7 @@ pub fn create_type_table(types: String) -> String {
 }
 
 // Find better way to implement this function
+#[allow(dead_code)]
 pub fn create_defenses_table(
     types: String,
     calculated_defenses: &HashMap<String, TypeEffectiveness>,
@@ -60,6 +62,7 @@ pub fn create_defenses_table(
     );
 }
 
+#[allow(dead_code)]
 pub fn create_ability_table(pokemon: &DBPokemon) -> String {
     let mut abilities_string = String::new();
     if pokemon.ability_1.is_some() {
@@ -91,6 +94,7 @@ pub fn create_ability_table(pokemon: &DBPokemon) -> String {
     );
 }
 
+#[allow(dead_code)]
 pub fn create_stats_table(pokemon: &DBPokemon) -> String {
     let base_stat_total: u32 = [
         pokemon.hp,
@@ -250,6 +254,7 @@ fn get_markdown_image_for_type(_type: &String) -> String {
     );
 }
 
+#[allow(dead_code)]
 fn get_markdown_for_effectiveness(
     matchups: &HashMap<String, Vec<String>>,
     effectiveness: &str,
