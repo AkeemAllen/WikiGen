@@ -72,7 +72,7 @@ jobs:
         with:
           tagName: wikigen-v__VERSION__-alpha
           releaseName: "WikiGen v__VERSION__ Alpha"
-          releaseBody: "Added all existing mega evolutions initial data."
+          releaseBody: "Improved Pokemon Page Design. Introduced templates to make page design and creation easier"
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.settings.args }}
