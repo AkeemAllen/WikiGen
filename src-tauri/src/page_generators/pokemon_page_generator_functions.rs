@@ -173,7 +173,7 @@ pub fn create_level_up_moves_table(mut level_up_moveset: Vec<PokemonMove>) -> St
         };
 
         let table_entry = format!(
-            "| {} | {} | {} | {} | {} | {} | {} |\n",
+            "\t| {} | {} | {} | {} | {} | {} | {} |\n",
             _move.level_learned.unwrap_or(0),
             capitalize(&_move.move_name),
             power,
@@ -221,7 +221,7 @@ pub fn create_learnable_moves_table(learnable_moveset: Vec<PokemonMove>) -> Stri
         }
 
         let table_entry = format!(
-            "| {} | {} | {} | {} | {} | {} | {} |\n",
+            "\t| {} | {} | {} | {} | {} | {} | {} |\n",
             &machine_name,
             capitalize(&_move.move_name),
             power,
