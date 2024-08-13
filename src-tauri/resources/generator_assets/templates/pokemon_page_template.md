@@ -1,17 +1,20 @@
 <div style="display: flex; flex-direction: row; column-gap: 3rem; align-content: center;">
-  <img src="{{sprite}}" width="100"/>
+  <img src="../../img/pokemon/{{pokemon_name}}.png" width="100"/>
 
   <div>
-    <div style="display: flex; flex-direction: row; column-gap: 3rem; alignt-items: center; margin-bottom: 1rem;">
+    <div style="display: flex; flex-direction: row; column-gap: 3rem; alignt-items: center; margin-bottom: 0.5rem;">
       <p style="color: #737373; margin: 0px; font-size: 16px; font-weight: normal;">Types</p>
       <div style="display: flex; flex-direction: row; align-items: center; column-gap: 1rem">
-        <img src="../../img/types/grass.png" style="width: 77px; height: 26px;"/>
-        <img src="../../img/types/poison.png" style="width: 77px; height: 26px;"/>
+        {{type_1_image}}
+        {{type_2_image}}
       </div>
     </div>
     <div style="display: flex; flex-direction: row; column-gap: 3rem; alignt-items: center; ">
-      <p style="color: #737373; margin: 0px; font-size: .875rem; font-weight: normal; font-size:16px;">Abilities</p>
-      <a href="" title="This Pokemon's Speed is doubled during strong sunlight.  This bonus does not count as a stat modifier.">Chlorophyll</a>
+      <p style="color: #737373; margin: 0px;  font-weight: normal; font-size:16px;">Abilities</p>
+      <div style="display: flex; flex-direction: row; align-items: center; font-size: 16px">
+        {{ability_1}}
+        {{ability_2}}
+      </div>
     </div>
   </div>
 </div>
@@ -70,8 +73,9 @@
   </tbody>
 </table>
 
-=== "Level Up Move"
-    ## Level Up
+## Moveset
+
+=== "Level Up Moves"
     | Level | Name | Power | Accuracy | PP | Type | Damage Class |
     | -- | -- | -- | -- | -- | -- | -- |
     | 1 | Tackle | 40 | 100 | 35 | ![normal](../img/types/normal.png) | ![physical](../img/types/physical.png) |
@@ -91,8 +95,7 @@
     | 33 | Synthesis | - | - | 5 | ![grass](../img/types/grass.png) | ![status](../img/types/status.png) |
     | 37 | Seed-bomb | 80 | 100 | 15 | ![grass](../img/types/grass.png) | ![physical](../img/types/physical.png) |
 
-=== "Learnable Moves"
-    ## Machine
+=== "Machine Moves"
     | Machine | Name | Power | Accuracy | PP | Type | Damage Class |
     | -- | -- | -- | -- | -- | -- | -- |
     | TM27 | Toxic | - | 90 | 10 | ![poison](../img/types/poison.png) | ![status](../img/types/status.png) |
