@@ -24,49 +24,49 @@
   <tbody style="width: 100%;">
     <tr style="display: flex; align-items: center;">
       <th style="color: #737373;" >HP</th>
-      <td style="border-top: none;">80</td>
+      <td style="border-top: none; width: 50px">{{hp}}</td>
       <td style="width: 100%; min-width: 450px; border-top: none;">
-        <div style="width: 80%; height: .75rem; border-radius: 4px; border: 1px solid #737373; background-color: #23cd5e">
+        <div style="width: {{hp_width}}%;" class="ranking-bar rank-{{hp_rank}}">
         </div>
       </td>
     </tr>
     <tr style="display: flex; align-items: center;">
-      <th>Attack</th>
-      <td style="border-top: none;">82</td>
+      <th style="color: #737373;">Attack</th>
+      <td style="border-top: none; width: 50px">{{attack}}</td>
       <td style="width: 100%; min-width: 450px; border-top: none;">
-        <div style="width: 70%; height: .75rem; border-radius: 4px; border: 1px solid #737373; background-color: #ffdd57">
+        <div style="width: {{atk_width}}%;" class="ranking-bar rank-{{atk_rank}}">
         </div>
       </td>
     </tr>
     <tr style="display: flex; align-items: center;">
-      <th>Defense</th>
-      <td style="border-top: none;">82</td>
+      <th style="color: #737373;">Defense</th>
+      <td style="border-top: none; width: 50px">{{defense}}</td>
       <td style="width: 100%; min-width: 450px; border-top: none;">
-        <div style="width: 70%; height: .75rem; border-radius: 4px; border: 1px solid #737373; background-color: #ffdd57">
+        <div style="width: {{def_width}}%;" class="ranking-bar rank-{{def_rank}}">
         </div>
       </td>
     </tr>
     <tr style="display: flex; align-items: center;">
-      <th>Special Attack</th>
-      <td style="border-top: none;">82</td>
+      <th style="color: #737373;">SP Attack</th>
+      <td style="border-top: none; width: 50px">{{special_attack}}</td>
       <td style="width: 100%; min-width: 450px; border-top: none;">
-        <div style="width: 70%; height: .75rem; border-radius: 4px; border: 1px solid #737373; background-color: #ffdd57">
+        <div style="width: {{sp_atk_width}}%;" class="ranking-bar rank-{{sp_atk_rank}}">
         </div>
       </td>
     </tr>
     <tr style="display: flex; align-items: center;">
-      <th>Special Defense</th>
-      <td style="border-top: none;">82</td>
+      <th style="color: #737373;">SP Defense</th>
+      <td style="border-top: none; width: 50px">{{special_defense}}</td>
       <td style="width: 100%; min-width: 450px; border-top: none;">
-        <div style="width: 70%; height: .75rem; border-radius: 4px; border: 1px solid #737373; background-color: #ffdd57">
+        <div style="width: {{sp_def_width}}%;" class="ranking-bar rank-{{sp_def_rank}}">
         </div>
       </td>
     </tr>
     <tr style="display: flex; align-items: center;">
-      <th>Speed</th>
-      <td style="border-top: none;">82</td>
+      <th style="color: #737373;">Speed</th>
+      <td style="border-top: none; width: 50px">{{speed}}</td>
       <td style="width: 100%; min-width: 450px; border-top: none;">
-        <div style="width: 70%; height: .75rem; border-radius: 4px; border: 1px solid #737373;border-color: rgba(0,0,0,.15); background-color: #ffdd57">
+        <div style="width: {{speed_width}}%;" class="ranking-bar rank-{{speed_rank}}">
         </div>
       </td>
     </tr>

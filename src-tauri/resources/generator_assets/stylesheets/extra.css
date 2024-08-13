@@ -7,3 +7,28 @@
   text-align: center;
   font-size: 14px;
 }
+
+.rank-1 {
+  background-color: #f34444;
+}
+.rank-2 {
+  background-color: #ff7f0f;
+}
+.rank-3 {
+  background-color: #ffdd57;
+}
+.rank-4 {
+  background-color: #a0e515;
+}
+.rank-5 {
+  background-color: #23cd5e;
+}
+.rank-6 {
+  background-color: #00c2b8;
+}
+.ranking-bar {
+  height: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #737373;
+  border-color: rgba(0, 0, 0, 0.15);
+}
