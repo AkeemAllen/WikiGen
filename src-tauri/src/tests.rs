@@ -2,8 +2,6 @@
 pub mod tests {
     use std::path::PathBuf;
 
-    use crate::page_generators::pokemon_pages::generate_pokemon_page;
-
     // #[test]
     // fn test_create_dir_all() {
     //     let base_path =
