@@ -333,6 +333,12 @@
     disabled={isEqual(pokemon, originalPokemonDetails)}
     class="mt-2 w-32"
   />
+  <Button
+    title="Generate Page"
+    onClick={generatePokemonPage}
+    disabled={objectIsEmpty(pokemon)}
+    class="mt-2 w-32"
+  />
 </div>
 
 {#if !objectIsEmpty(pokemon)}
