@@ -70,9 +70,9 @@ jobs:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
         with:
-          tagName: wikigen-v__VERSION__-alpha
-          releaseName: "WikiGen v__VERSION__ Alpha"
-          releaseBody: "Improved Pokemon Page Design. Introduced templates to make page design and creation easier"
+          tagName: wikigen-v__VERSION__
+          releaseName: "WikiGen v__VERSION__"
+          releaseBody: "Added logo"
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.settings.args }}
