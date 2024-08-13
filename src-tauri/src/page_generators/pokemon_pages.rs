@@ -30,8 +30,15 @@ pub async fn generate_pokemon_pages_from_list(
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    let resources_path = app_handle.path_resolver().resource_dir().unwrap();
 
-    let result = generate_pokemon_pages(pokemon_ids, wiki_name, base_path.clone()).await;
+    let result = generate_pokemon_pages(
+        pokemon_ids,
+        wiki_name,
+        base_path.clone(),
+        resources_path.clone(),
+    )
+    .await;
     // generate_type_page(wiki_name, base_path.clone())?;
     // generate_evolution_page(wiki_name, base_path)?;
     return result;
@@ -41,6 +48,7 @@ pub async fn generate_pokemon_pages(
     pokemon_ids: Vec<usize>,
     wiki_name: &str,
     base_path: PathBuf,
+    resources_path: PathBuf,
 ) -> Result<String, String> {
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
@@ -127,10 +135,9 @@ pub async fn generate_pokemon_pages(
     };
 
     let template = read_to_string(
-        base_path
-            .join(wiki_name)
-            .join("dist")
-            .join("docs")
+        resources_path
+            .join("resources")
+            .join("generator_assets")
             .join("templates")
             .join("pokemon_page_template.md"),
     )
@@ -200,7 +207,8 @@ pub async fn generate_pokemon_pages(
             .filter(|m| m.pokemon == pokemon.id)
             .collect::<Vec<_>>();
 
-        let pokemon_markdown_string = generate_pokemon_page(&pokemon, current_pokemon_movset);
+        let pokemon_markdown_string =
+            generate_page_from_template(template.clone(), &pokemon, current_pokemon_movset);
 
         match markdown_file.write_all(format!("{}", pokemon_markdown_string).as_bytes()) {
             Ok(_) => {}
@@ -258,29 +266,53 @@ fn extract_pokemon_id(key: Option<&str>) -> i32 {
         .unwrap();
 }
 
-pub fn generate_pokemon_page(pokemon: &DBPokemon, movesets: Vec<PokemonMove>) -> String {
-    let mut markdown_string = String::new();
-    markdown_string.push_str(&format!(
-        "![{}](../img/pokemon/{}.png)\n\n",
-        &pokemon.name, &pokemon.name
-    ));
+pub fn generate_page_from_template(
+    template: String,
+    pokemon: &DBPokemon,
+    movesets: Vec<PokemonMove>,
+) -> String {
+    let type_images: Vec<String> = pokemon
+        .types
+        .clone()
+        .split(",")
+        .map(|_type| {
+            format!(
+                "<img src='../../img/types/{}.png' style='width: 77px; height: 26px;'/>",
+                _type
+            )
+        })
+        .filter(|_type| !_type.contains("none"))
+        .collect();
 
-    markdown_string.push_str(&format!("## Types\n\n"));
-    markdown_string.push_str(&format!("{}", create_type_table(pokemon.types.clone())));
-    markdown_string.push_str("\n\n");
+    let type_1_image = type_images.get(0).unwrap();
+    let mut type_2_image = String::new();
+    if type_images.len() > 1 {
+        type_2_image.push_str(type_images.get(1).unwrap());
+    }
 
-    markdown_string.push_str(&format!("## Abilities\n\n"));
-    markdown_string.push_str(&format!("{}", create_ability_table(pokemon)));
-    markdown_string.push_str("\n\n");
+    let mut ability_1 = String::new();
+    let mut ability_2 = String::new();
 
-    markdown_string.push_str(&format!("## Stats\n\n"));
-    markdown_string.push_str(&format!("{}", create_stats_table(pokemon)));
-    markdown_string.push_str("\n\n");
+    if pokemon.ability_1.is_some() {
+        ability_1.push_str(
+            format!(
+                "<a href='' title='{}'>{}</a>",
+                &pokemon.a1_effect.as_ref().unwrap(),
+                capitalize(&pokemon.ability_1.as_ref().unwrap())
+            )
+            .as_str(),
+        );
+    }
 
-    if pokemon.evolution_method != "no_change" {
-        markdown_string.push_str(&format!("## Evolution\n\n"));
-        markdown_string.push_str(&format!("{}", create_evolution_table(pokemon)));
-        markdown_string.push_str("\n\n");
+    if pokemon.ability_2.is_some() {
+        ability_2.push_str(
+            format!(
+                "/<a href='' title=\"{}\">{}</a>",
+                &pokemon.a2_effect.as_ref().unwrap(),
+                capitalize(&pokemon.ability_2.as_ref().unwrap())
+            )
+            .as_str(),
+        );
     }
 
     let level_up_moveset = movesets
@@ -289,12 +321,7 @@ pub fn generate_pokemon_page(pokemon: &DBPokemon, movesets: Vec<PokemonMove>) ->
         .filter(|m| m.learn_method == "level-up")
         .collect::<Vec<_>>();
 
-    markdown_string.push_str(&format!("## Level Up Moves\n\n"));
-    markdown_string.push_str(&format!(
-        "{}",
-        create_level_up_moves_table(level_up_moveset)
-    ));
-    markdown_string.push_str("\n\n");
+    let level_up_moves = create_level_up_moves_table(level_up_moveset);
 
     let learnable_moveset = movesets
         .iter()
@@ -302,11 +329,96 @@ pub fn generate_pokemon_page(pokemon: &DBPokemon, movesets: Vec<PokemonMove>) ->
         .filter(|m| m.learn_method == "machine")
         .collect::<Vec<_>>();
 
-    markdown_string.push_str(&format!("## Learnable Moves\n\n"));
-    markdown_string.push_str(&format!(
-        "{}",
-        create_learnable_moves_table(learnable_moveset)
-    ));
-    markdown_string.push_str("\n\n");
-    return markdown_string;
+    let learnable_moves = create_learnable_moves_table(learnable_moveset);
+    let result = template
+        .replace("{{pokemon_name}}", &pokemon.name)
+        .replace("{{type_1_image}}", &type_1_image)
+        .replace("{{type_2_image}}", &type_2_image)
+        .replace("{{ability_1}}", &ability_1)
+        .replace("{{ability_2}}", &ability_2)
+        .replace("{{hp}}", pokemon.hp.to_string().as_str())
+        .replace(
+            "{{hp_width}}",
+            calculate_bar_width(pokemon.hp).to_string().as_str(),
+        )
+        .replace(
+            "{{hp_rank}}",
+            calculate_bar_rank(pokemon.hp).to_string().as_str(),
+        )
+        .replace("{{attack}}", pokemon.attack.to_string().as_str())
+        .replace(
+            "{{atk_width}}",
+            calculate_bar_width(pokemon.attack).to_string().as_str(),
+        )
+        .replace(
+            "{{atk_rank}}",
+            calculate_bar_rank(pokemon.attack).to_string().as_str(),
+        )
+        .replace("{{defense}}", pokemon.defense.to_string().as_str())
+        .replace(
+            "{{def_width}}",
+            calculate_bar_width(pokemon.defense).to_string().as_str(),
+        )
+        .replace(
+            "{{def_rank}}",
+            calculate_bar_rank(pokemon.defense).to_string().as_str(),
+        )
+        .replace("{{special_attack}}", pokemon.sp_attack.to_string().as_str())
+        .replace(
+            "{{sp_atk_width}}",
+            calculate_bar_width(pokemon.sp_attack).to_string().as_str(),
+        )
+        .replace(
+            "{{sp_atk_rank}}",
+            calculate_bar_rank(pokemon.sp_attack).to_string().as_str(),
+        )
+        .replace(
+            "{{special_defense}}",
+            pokemon.sp_defense.to_string().as_str(),
+        )
+        .replace(
+            "{{sp_def_width}}",
+            calculate_bar_width(pokemon.sp_defense).to_string().as_str(),
+        )
+        .replace(
+            "{{sp_def_rank}}",
+            calculate_bar_rank(pokemon.sp_defense).to_string().as_str(),
+        )
+        .replace("{{speed}}", pokemon.speed.to_string().as_str())
+        .replace(
+            "{{speed_width}}",
+            calculate_bar_width(pokemon.speed).to_string().as_str(),
+        )
+        .replace(
+            "{{speed_rank}}",
+            calculate_bar_rank(pokemon.speed).to_string().as_str(),
+        )
+        .replace("{{level_up_moves}}", &level_up_moves)
+        .replace("{{machine_moves}}", &learnable_moves);
+
+    println!("{}", result);
+
+    // if pokemon.evolution_method != "no_change" {
+    //     markdown_string.push_str(&format!("## Evolution\n\n"));
+    //     markdown_string.push_str(&format!("{}", create_evolution_table(pokemon)));
+    //     markdown_string.push_str("\n\n");
+    // }
+
+    // markdown_string.push_str(&format!("## Learnable Moves\n\n"));
+    // markdown_string.push_str(&format!(
+    //     "{}",
+    // ));
+    // markdown_string.push_str("\n\n");
+    return result;
+}
+
+fn calculate_bar_width(stat: u32) -> u32 {
+    return ((stat as f64 / 255f64) * 100f64) as u32;
+}
+fn calculate_bar_rank(stat: u32) -> u32 {
+    let rank = ((stat as f64 / 255f64) * 10f64).ceil() as u32;
+    if rank > 6 {
+        return 6;
+    }
+    return rank;
 }
