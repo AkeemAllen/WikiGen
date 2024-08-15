@@ -5,7 +5,9 @@
   import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
   import { invoke } from "@tauri-apps/api/tauri";
   import { selectedWiki } from "../../store";
+  import { pokemonList } from "../../store/pokemon";
   import NewPokemonPanel from "$lib/components/NewPokemonPanel.svelte";
+  import BaseModal from "$lib/components/BaseModal.svelte";
 
   const toastStore = getToastStore();
 
@@ -13,6 +15,8 @@
   let rangeStart: number = 0;
   let rangeEnd: number = 0;
   let loading: boolean = false;
+
+  let pageGenerationWarningModalOpen: boolean = false;
 
   async function generatePokemonPagesInRange() {
     loading = true;
@@ -23,17 +27,50 @@
     await invoke("generate_pokemon_pages_from_list", {
       pokemonIds: pokemonIds,
       wikiName: $selectedWiki.name,
-    }).then(() => {
-      loading = false;
-      toastStore.trigger({
-        message: "Pokemon Pages generated",
-        timeout: 5000,
-        hoverable: true,
-        background: "variant-filled-success",
+    })
+      .then(() => {
+        loading = false;
+        toastStore.trigger({
+          message: "Pokemon Pages generated",
+          timeout: 5000,
+          hoverable: true,
+          background: "variant-filled-success",
+        });
+      })
+      .catch((err) => {
+        loading = false;
+        toastStore.trigger({
+          message: "Failed to generate Pokemon Pages: " + err,
+          autohide: false,
+          hoverable: true,
+          background: "variant-filled-error",
+        });
       });
-    });
   }
 </script>
+
+<BaseModal bind:open={pageGenerationWarningModalOpen}>
+  <p class="italic">
+    NOTE: {Object.keys($pokemonList).length} pokemon pages will be rendered. Do you
+    wish to continue?
+  </p>
+  <div class="flex flex-row gap-2">
+    <Button
+      title="Cancel"
+      onClick={() => (pageGenerationWarningModalOpen = false)}
+      class="bg-gray-300"
+    />
+    <Button
+      title={`Generate ALL ${Object.entries($pokemonList).length} Pokemon Pages`}
+      onClick={() => {
+        rangeStart = 1;
+        rangeEnd = Object.entries($pokemonList).length;
+        generatePokemonPagesInRange();
+        pageGenerationWarningModalOpen = false;
+      }}
+    />
+  </div>
+</BaseModal>
 
 <TabGroup>
   <Tab bind:group={tabSet} name="pokemon" value={0} class="text-sm">Pokemon</Tab
@@ -49,6 +86,19 @@
       <PokemonPanel />
     {/if}
     {#if tabSet === 1}
+      <Button
+        title="Generate All Pokemon Pages"
+        onClick={() => (pageGenerationWarningModalOpen = true)}
+        disabled={loading === true}
+        {loading}
+        class="mb-3"
+      />
+      {#if loading}
+        <p class="text-sm italic text-gray-500 mb-3">
+          Generating {Object.keys($pokemonList).length} Pokemon Pages...This may
+          take a while
+        </p>
+      {/if}
       <div class="flex gap-16">
         <!-- Only 1025 pokemon exist in the game right now. But setting ranges to 2000 for future proofing -->
         <NumberInput
