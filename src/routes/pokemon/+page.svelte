@@ -8,22 +8,39 @@
   import { pokemonList } from "../../store/pokemon";
   import NewPokemonPanel from "$lib/components/NewPokemonPanel.svelte";
   import BaseModal from "$lib/components/BaseModal.svelte";
+  import AutoComplete from "$lib/components/AutoComplete.svelte";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
 
   const toastStore = getToastStore();
 
   let tabSet: number = 0;
-  let rangeStart: number = 0;
-  let rangeEnd: number = 0;
+  let startingPokemon: [number, number, string] = [0, 0, ""];
+  let endingPokemon: [number, number, string] = [0, 0, ""];
   let loading: boolean = false;
 
   let pageGenerationWarningModalOpen: boolean = false;
 
-  async function generatePokemonPagesInRange() {
+  $: rangeTotal = endingPokemon[1] - startingPokemon[1];
+
+  let pokemonListOptions = $pokemonList.map(([id, dex_number, name]) => ({
+    label: `${dex_number} - ${capitalizeWords(name)}`,
+    dex_number: dex_number,
+    value: id,
+  }));
+  async function generatePokemonPagesInRange(generateAll: boolean = false) {
     loading = true;
     let pokemonIds: number[] = [];
-    for (let i = rangeStart; i <= rangeEnd; i++) {
-      pokemonIds.push(i);
+    if (generateAll) {
+      pokemonIds = $pokemonList.map(([id, dex_number, name]) => id);
+    } else {
+      pokemonIds = $pokemonList
+        .filter(
+          ([id, dex_number, name]) =>
+            dex_number >= startingPokemon[1] && dex_number <= endingPokemon[1],
+        )
+        .map(([id, dex_number, name]) => id);
     }
+
     await invoke("generate_pokemon_pages_from_list", {
       pokemonIds: pokemonIds,
       wikiName: $selectedWiki.name,
@@ -63,9 +80,7 @@
     <Button
       title={`Generate ALL ${Object.entries($pokemonList).length} Pokemon Pages`}
       onClick={() => {
-        rangeStart = 1;
-        rangeEnd = Object.entries($pokemonList).length;
-        generatePokemonPagesInRange();
+        generatePokemonPagesInRange(true);
         pageGenerationWarningModalOpen = false;
       }}
     />
@@ -94,34 +109,55 @@
         class="mb-3"
       />
       {#if loading}
-        <p class="text-sm italic text-gray-500 mb-3">
+        <p class="text-sm italic text-gray-500 mb-3 align-middle">
           Generating {Object.keys($pokemonList).length} Pokemon Pages...This may
           take a while
         </p>
       {/if}
+      <p class="text-sm text-gray-500 italic">
+        Pages will be generated for all pokemon with pokedex number in this
+        range: {startingPokemon[1]}
+        - {endingPokemon[1]}
+      </p>
+      <p class="text-sm text-gray-500 italic mb-4">
+        Total Pages: {rangeTotal <= 0 ? 0 : `>=${rangeTotal + 1}`}
+      </p>
       <div class="flex gap-16">
         <!-- Only 1025 pokemon exist in the game right now. But setting ranges to 2000 for future proofing -->
-        <NumberInput
-          id="range-start"
-          label="Range Start"
-          bind:value={rangeStart}
-          max={2000}
+        <AutoComplete
+          label="Starting Pokemon"
+          bind:value={startingPokemon[2]}
+          placeholder="Search Pokemon"
+          options={pokemonListOptions}
+          popupId="starting-pokemon-search"
+          onSelection={(e) => {
+            startingPokemon = [
+              e.detail.value,
+              e.detail.dex_number,
+              e.detail.label,
+            ];
+          }}
         />
-        <NumberInput
-          id="range-end"
-          label="Range End"
-          bind:value={rangeEnd}
-          max={2000}
+        <AutoComplete
+          label="Ending Pokemon"
+          bind:value={endingPokemon[2]}
+          placeholder="Search Pokemon"
+          options={pokemonListOptions}
+          popupId="ending-pokemon-search"
+          onSelection={(e) => {
+            endingPokemon = [
+              e.detail.value,
+              e.detail.dex_number,
+              e.detail.label,
+            ];
+          }}
         />
       </div>
       <Button
         class=" mt-4 w-40"
-        disabled={rangeStart === 0 ||
-          rangeEnd === 0 ||
-          rangeStart > rangeEnd ||
-          loading === true}
         title="Generate Pages"
         onClick={generatePokemonPagesInRange}
+        disabled={loading}
         {loading}
       />
     {/if}
