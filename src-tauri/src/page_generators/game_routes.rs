@@ -25,8 +25,8 @@ pub struct Routes {
 pub struct RouteProperties {
     pub position: usize,
     pub trainers: IndexMap<String, TrainerInfo>,
-    pub wild_encounters: HashMap<String, Vec<WildEncounter>>,
-    pub wild_encounter_area_levels: HashMap<String, String>,
+    pub wild_encounters: IndexMap<String, Vec<WildEncounter>>,
+    pub wild_encounter_area_levels: IndexMap<String, String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -317,8 +317,8 @@ fn create_encounter_table(
     wiki_name: &str,
     route_name: &str,
     routes_directory: &PathBuf,
-    encounters: &HashMap<String, Vec<WildEncounter>>,
-    encounter_areas_levels: &HashMap<String, String>,
+    encounters: &IndexMap<String, Vec<WildEncounter>>,
+    encounter_areas_levels: &IndexMap<String, String>,
 ) -> Result<(), String> {
     let mut encounters_markdown_file =
         File::create(routes_directory.join("wild_encounters.md")).unwrap();
