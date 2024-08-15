@@ -263,26 +263,6 @@ export function getShardToWrite(pokemonId: number): number {
   return parseInt(roundedId.toString().charAt(0));
 }
 
-export function extractPokemonRange(pokemonObj: Pokemon, shard_index: number) {
-  let shard_end = shard_index * 100;
-  let shard_start = shard_end - 99;
-
-  if (shard_end === 1000) {
-    shard_end = 1025;
-  }
-
-  let allPokemon = pokemonObj.pokemon;
-
-  let result: Pokemon = { pokemon: {} };
-
-  for (let key = shard_start; key <= shard_end; key++) {
-    if (allPokemon[key]) {
-      result.pokemon[key] = allPokemon[key];
-    }
-  }
-  return result;
-}
-
 export function convertToTitle(input: string): string {
   return input
     .split("-") // Split the string by hyphens
