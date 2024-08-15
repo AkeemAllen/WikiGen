@@ -1,76 +1,76 @@
 <script lang="ts">
-import { onMount } from "svelte";
+  import { onMount } from "svelte";
 
-// import { getToastStore } from "@skeletonlabs/skeleton";
-import { type } from "@tauri-apps/api/os";
-import { appDataDir } from "@tauri-apps/api/path";
-// import { invoke } from "@tauri-apps/api/tauri";
-import { selectedWiki } from "../../store";
+  // import { getToastStore } from "@skeletonlabs/skeleton";
+  import { type } from "@tauri-apps/api/os";
+  import { appDataDir } from "@tauri-apps/api/path";
+  // import { invoke } from "@tauri-apps/api/tauri";
+  import { selectedWiki } from "../../store";
 
-// type Response = {
-//   process_id: number;
-//   message: string;
-//   status: string;
-// };
+  // type Response = {
+  //   process_id: number;
+  //   message: string;
+  //   status: string;
+  // };
 
-// const toastStore = getToastStore();
-let mkdocsFilePath: string = "";
-$: getMkdocsDirectory($selectedWiki.name).then((response) => {
-  mkdocsFilePath = response;
-});
+  // const toastStore = getToastStore();
+  let mkdocsFilePath: string = "";
+  $: getMkdocsDirectory($selectedWiki.name).then((response) => {
+    mkdocsFilePath = response;
+  });
 
-// let isProcessRunning: boolean = false;
+  // let isProcessRunning: boolean = false;
 
-// // onMount(async () => {
-// //   await invoke("check_process_status", {
-// //     processId: $processId,
-// //   }).then((response) => {
-// //     if ((response as Response).status === "Running") {
-// //       isProcessRunning = true;
-// //     }
-// //   });
-// // });
+  // // onMount(async () => {
+  // //   await invoke("check_process_status", {
+  // //     processId: $processId,
+  // //   }).then((response) => {
+  // //     if ((response as Response).status === "Running") {
+  // //       isProcessRunning = true;
+  // //     }
+  // //   });
+  // // });
 
-// async function spawnProcess() {
-//   const appData = await appDataDir();
-//   await invoke("spawn_mkdocs_process", {
-//     mkdocsFilePath: `${appData}${$selectedWiki.name}/dist/mkdocs.yml`,
-//     port: 4000,
-//   })
-//     .then((response) => {
-//       const typedResponse = response as Response;
-//       $processId = typedResponse.process_id;
-//       isProcessRunning = true;
-//     })
-//     .catch((error) => {
-//       const typedError = error as Response;
-//       if (typedError.status === "Occupied") {
-//         toastStore.trigger({
-//           message: typedError.message,
-//           background: "bg-red-500",
-//         });
-//       }
-//     });
-// }
+  // async function spawnProcess() {
+  //   const appData = await appDataDir();
+  //   await invoke("spawn_mkdocs_process", {
+  //     mkdocsFilePath: `${appData}${$selectedWiki.name}/dist/mkdocs.yml`,
+  //     port: 4000,
+  //   })
+  //     .then((response) => {
+  //       const typedResponse = response as Response;
+  //       $processId = typedResponse.process_id;
+  //       isProcessRunning = true;
+  //     })
+  //     .catch((error) => {
+  //       const typedError = error as Response;
+  //       if (typedError.status === "Occupied") {
+  //         toastStore.trigger({
+  //           message: typedError.message,
+  //           background: "bg-red-500",
+  //         });
+  //       }
+  //     });
+  // }
 
-// async function killProcess() {
-//   await invoke("kill_mkdocs_process", {
-//     processId: $processId,
-//   }).then((response) => {
-//     console.log(response);
-//     $processId = 0;
-//     isProcessRunning = false;
-//   });
-// }
-async function getMkdocsDirectory(wikiName: string): Promise<string> {
-  const appData = await appDataDir();
-  let mkdocsFilePath = `${appData}${wikiName}/dist`;
-  const osType = await type();
-  if (osType === "Windows_NT") {
-    mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
+  // async function killProcess() {
+  //   await invoke("kill_mkdocs_process", {
+  //     processId: $processId,
+  //   }).then((response) => {
+  //     console.log(response);
+  //     $processId = 0;
+  //     isProcessRunning = false;
+  //   });
+  // }
+  async function getMkdocsDirectory(wikiName: string): Promise<string> {
+    const appData = await appDataDir();
+    let mkdocsFilePath = `${appData}${wikiName}/dist`;
+    const osType = await type();
+    if (osType === "Windows_NT") {
+      mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
+    }
+    return mkdocsFilePath;
   }
-  return mkdocsFilePath;
-}
 </script>
 
 <!-- <div class="mt-6 ml-2">
@@ -122,10 +122,11 @@ async function getMkdocsDirectory(wikiName: string): Promise<string> {
     > in a terminal to install mkdocs and its material theme
   </p>
   <p class="text-sm">
-    3. In your terminal, navigate to the wiki's distribution directory <code
-      class="rounded-md bg-gray-200 px-1">{mkdocsFilePath}</code
+    3. In your terminal, navigate to the wiki's distribution directory with the
+    following command: <code class="rounded-md bg-gray-200 px-1"
+      >cd {mkdocsFilePath}</code
     >
-    and run the following command.
+    and then run
     <code class="rounded-md bg-gray-200 px-1">mkdocs serve</code>
   </p>
   <p class="text-sm">
