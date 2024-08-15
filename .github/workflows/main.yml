@@ -74,10 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Reimagined bulk page generation for Pokemon.
-            \n- Ensured that encounter tables maintaine their order.
-            \n- Added ability to edit dex numbers.
-            \n- Added small text note for route generation.
+            \n- Fixed moves pages issue
             "
           releaseDraft: false
           prerelease: false

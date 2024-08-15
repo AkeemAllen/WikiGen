@@ -51,7 +51,7 @@
     value: id,
   }));
 
-  let pokemonListOptions = $pokemonList.map(([id, name]) => ({
+  let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
     value: id,
   }));
