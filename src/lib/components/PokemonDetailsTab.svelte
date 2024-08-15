@@ -12,7 +12,7 @@
   export let pokemon: Pokemon = {} as Pokemon;
   export let isNewPokemon: boolean = false;
 
-  let pokemonListOptions = $pokemonList.map(([id, name]) => ({
+  let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
     value: name,
   }));

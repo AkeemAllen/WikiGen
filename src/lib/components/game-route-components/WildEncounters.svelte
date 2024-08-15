@@ -41,7 +41,7 @@
   );
   let originalRouteWildEncounters = cloneDeep(routeWildEncounters);
   let pokemonListOptions: AutocompleteOption<string | number>[] =
-    $pokemonList.map(([id, name]) => ({ label: name, value: id }));
+    $pokemonList.map(([id, _, name]) => ({ label: name, value: id }));
 
   const encounterTypes = $routes.encounter_types.map((type) => ({
     label: type,
@@ -62,7 +62,7 @@
         ...(routeWildEncounters[encounterType] ?? []),
         {
           id: $pokemonList.find(
-            ([_, name]) => name === pokemonName,
+            ([_, __, name]) => name === pokemonName,
           )?.[0] as number,
           name: pokemonName,
           encounter_rate: encounterRate,

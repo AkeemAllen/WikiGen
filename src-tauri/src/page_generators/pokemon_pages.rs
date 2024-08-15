@@ -130,14 +130,18 @@ pub async fn generate_pokemon_pages(
         }
     };
 
-    let template = read_to_string(
+    let template = match read_to_string(
         resources_path
             .join("resources")
             .join("generator_assets")
             .join("templates")
             .join("pokemon_page_template.md"),
-    )
-    .expect("Failed to read template file");
+    ) {
+        Ok(template) => template,
+        Err(err) => {
+            return Err(format!("Failed to read template file: {}", err));
+        }
+    };
 
     let mut mkdocs_pokemon: &mut Vec<Value> = &mut Vec::new();
 

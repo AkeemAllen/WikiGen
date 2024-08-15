@@ -39,7 +39,7 @@
   let copiedMoveset: PokemonMove[] = [];
 
   let pokemonSearch: [number, string] = [0, ""];
-  let pokemonListOptions = $pokemonList.map(([id, name]) => ({
+  let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
     value: id,
   }));
@@ -162,7 +162,11 @@
         });
 
         // Add new pokemon to pokemonList
-        $pokemonList.push([res.lastInsertId, newPokemon.name]);
+        $pokemonList.push([
+          res.lastInsertId,
+          newPokemon.dex_number,
+          newPokemon.name,
+        ]);
 
         toastStore.trigger({
           message: "New Pokemon created!",

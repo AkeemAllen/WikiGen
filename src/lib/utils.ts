@@ -232,13 +232,13 @@ export const setUniquePokemonId = (
   trainers: { [key: string]: TrainerInfo },
   trainerName: string,
   pokemonName: string,
-  pokemonList: [number, string][],
+  pokemonList: [number, number, string][],
 ) => {
   let teamLength = 0;
 
   if (isNullEmptyOrUndefined(trainers)) {
     return `${
-      pokemonList.find(([id, name]) => name === pokemonName)?.[1]
+      pokemonList.find(([id, _, name]) => name === pokemonName)?.[1]
     }_${teamLength}_${Math.floor(Math.random() * 9000 + 1000)}`;
   }
 
@@ -248,7 +248,7 @@ export const setUniquePokemonId = (
     }
   }
   return `${
-    pokemonList?.find(([id, name]) => name === pokemonName)?.[1]
+    pokemonList?.find(([id, _, name]) => name === pokemonName)?.[1]
   }_${teamLength}_${Math.floor(Math.random() * 9000 + 1000)}`;
 };
 
@@ -261,26 +261,6 @@ export function getShardToWrite(pokemonId: number): number {
 
   // The first number of the rounded ID indicates the shard to write to
   return parseInt(roundedId.toString().charAt(0));
-}
-
-export function extractPokemonRange(pokemonObj: Pokemon, shard_index: number) {
-  let shard_end = shard_index * 100;
-  let shard_start = shard_end - 99;
-
-  if (shard_end === 1000) {
-    shard_end = 1025;
-  }
-
-  let allPokemon = pokemonObj.pokemon;
-
-  let result: Pokemon = { pokemon: {} };
-
-  for (let key = shard_start; key <= shard_end; key++) {
-    if (allPokemon[key]) {
-      result.pokemon[key] = allPokemon[key];
-    }
-  }
-  return result;
 }
 
 export function convertToTitle(input: string): string {

@@ -188,4 +188,8 @@
     {loading}
   />
 </div>
+<p class="text-sm italic text-gray-600 mt-2">
+  <strong>Note: </strong>A route needs to have at least <strong>ONE</strong> wild
+  or trainer encounter to be rendered.
+</p>
 <GameRoutes bind:positionModalOpen bind:routeToUpdate bind:oldRoutePosition />
