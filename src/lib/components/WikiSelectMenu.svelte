@@ -97,9 +97,13 @@
         db.set(database);
         // Load Pokemon
         $db
-          .select("SELECT id, name FROM pokemon ORDER BY dex_number")
+          .select(
+            "SELECT id, dex_number, name FROM pokemon ORDER BY dex_number",
+          )
           .then((pokemon: any) => {
-            pokemonList.set(pokemon.map((p: SearchPokemon) => [p.id, p.name]));
+            pokemonList.set(
+              pokemon.map((p: SearchPokemon) => [p.id, p.dex_number, p.name]),
+            );
           });
 
         // Load Items

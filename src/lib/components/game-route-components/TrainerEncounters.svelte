@@ -57,7 +57,7 @@
   $: console.log({ routeTrainers });
 
   let pokemonListOptions: AutocompleteOption<string | number>[] =
-    $pokemonList.map(([id, name]) => ({ label: name, value: id }));
+    $pokemonList.map(([id, _, name]) => ({ label: name, value: id }));
 
   function onPokemonNameSelected(
     event: CustomEvent<AutocompleteOption<string | number>>,
@@ -76,7 +76,7 @@
     }
 
     let id = $pokemonList.find(
-      ([id, name]) => name === pokemonSearchName,
+      ([id, _, name]) => name === pokemonSearchName,
     )?.[0] as number;
     let uniqueId = setUniquePokemonId(
       routeTrainers as {

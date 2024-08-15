@@ -2,6 +2,7 @@ import { writable } from "svelte/store";
 
 export type SearchPokemon = {
   id: number;
+  dex_number: number;
   name: string;
 };
 
@@ -83,4 +84,4 @@ export const PokemonTypes = [
   "fairy",
 ];
 
-export let pokemonList = writable<[number, string][]>([]);
+export let pokemonList = writable<[number, number, string][]>([]);

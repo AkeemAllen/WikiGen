@@ -33,7 +33,7 @@
 
   let tabSet: number = 0;
 
-  let pokemonListOptions = $pokemonList.map(([id, name]) => ({
+  let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
     value: id,
   }));
@@ -52,7 +52,7 @@
 
   async function getPokemon() {
     let retrievedPokemon = $pokemonList.find(
-      ([__, name]) =>
+      ([__, ___, name]) =>
         name === pokemonSearch[1].toLowerCase().split(" ").join("-"),
     );
 
