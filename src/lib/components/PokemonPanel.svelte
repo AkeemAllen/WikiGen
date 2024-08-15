@@ -1,24 +1,19 @@
 <script lang="ts">
   import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
-  import {
-    BaseDirectory,
-    readBinaryFile,
-    writeBinaryFile,
-  } from "@tauri-apps/api/fs";
+  import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
   import { selectedWiki } from "../../store";
   import {
     pokemonList,
     type Pokemon,
     type PokemonMove,
-    type EvolutionChange,
   } from "../../store/pokemon";
   import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
   import PokemonMovesTab from "./PokemonMovesTab.svelte";
   import { invoke } from "@tauri-apps/api";
-  import { base64ToArray } from "$lib/utils";
   import { shortcut } from "@svelte-put/shortcut";
   import Button from "./Button.svelte";
   import AutoComplete from "./AutoComplete.svelte";
+  import NumberInput from "./NumberInput.svelte";
   import { db } from "../../store/db";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
@@ -346,6 +341,11 @@
     <p>No sprite found for {pokemon.name}</p>
   {:else}
     <img src={pokemonSprite} alt={pokemon.name} width="100" />
+    <NumberInput
+      label="Dex Number"
+      bind:value={pokemon.dex_number}
+      class="w-40 mb-5"
+    />
   {/if}
   <TabGroup>
     <Tab bind:group={tabSet} name="pokemon-details" value={0} class="text-sm"
