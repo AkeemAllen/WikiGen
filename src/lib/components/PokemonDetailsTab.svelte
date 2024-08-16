@@ -8,6 +8,7 @@
   import { itemsList } from "../../store/items";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
+  import { getToastStore } from "@skeletonlabs/skeleton";
 
   export let pokemon: Pokemon = {} as Pokemon;
   export let isNewPokemon: boolean = false;
@@ -55,12 +56,12 @@
     ability_2 = capitalizeWords(pokemon.ability_2);
   }
 
-  let types: (string | null)[];
+  let types: string[];
   $: if (pokemon.types) setTypes();
   function setTypes() {
     types = pokemon.types.split(",");
     if (types.length === 1) {
-      types.push(null);
+      types.push("none");
     }
   }
 
@@ -72,17 +73,22 @@
       types[1] = e.target.value;
     }
 
-    if (types[0] === null && types[1] === null) {
-      pokemon.types = `null_type`;
+    // This scenario should be unlikely. So default it to normal
+    if (types[0] === "none" && types[1] === "none") {
+      getToastStore().trigger({
+        message: "Both types cannot be none. Defaulting to normal",
+        background: "variant-filled-error",
+      });
+      pokemon.types = "normal";
       return;
     }
 
-    if (types[0] !== null && types[1] === null) {
+    if (types[0] !== "none" && types[1] === "none") {
       pokemon.types = types[0];
       return;
     }
 
-    if (types[0] === null && types[1] !== null) {
+    if (types[0] === "none" && types[1] !== "none") {
       pokemon.types = types[1];
       return;
     }
@@ -98,10 +104,6 @@
       bind:value={types[0]}
       label="Type 1"
       options={PokemonTypes.map((type) => {
-        if (type === null) {
-          return { label: "None", value: null };
-        }
-
         return {
           label: capitalizeWords(type),
           value: type,
@@ -114,10 +116,6 @@
       bind:value={types[1]}
       label="Type 2"
       options={PokemonTypes.map((type) => {
-        if (type === null) {
-          return { label: "None", value: null };
-        }
-
         return {
           label: capitalizeWords(type),
           value: type,

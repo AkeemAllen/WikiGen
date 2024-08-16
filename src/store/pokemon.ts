@@ -63,7 +63,7 @@ export enum Operation {
 export type EvolutionChange = {};
 
 export const PokemonTypes = [
-  null,
+  "none",
   "normal",
   "fire",
   "water",
