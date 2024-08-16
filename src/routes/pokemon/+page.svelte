@@ -1,6 +1,5 @@
 <script lang="ts">
   import Button from "$lib/components/Button.svelte";
-  import NumberInput from "$lib/components/NumberInput.svelte";
   import PokemonPanel from "$lib/components/PokemonPanel.svelte";
   import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
   import { invoke } from "@tauri-apps/api/tauri";
@@ -27,19 +26,19 @@
     dex_number: dex_number,
     value: id,
   }));
-  async function generatePokemonPagesInRange(generateAll: boolean = false) {
+
+  async function generatePokemonPagesInRange(
+    startingDexNumber: number,
+    endingDexNumber: number,
+  ) {
     loading = true;
     let pokemonIds: number[] = [];
-    if (generateAll) {
-      pokemonIds = $pokemonList.map(([id, dex_number, name]) => id);
-    } else {
-      pokemonIds = $pokemonList
-        .filter(
-          ([id, dex_number, name]) =>
-            dex_number >= startingPokemon[1] && dex_number <= endingPokemon[1],
-        )
-        .map(([id, dex_number, name]) => id);
-    }
+    pokemonIds = $pokemonList
+      .filter(
+        ([_, dex_number, __]) =>
+          dex_number >= startingDexNumber && dex_number <= endingDexNumber,
+      )
+      .map(([id, _, __]) => id);
 
     await invoke("generate_pokemon_pages_from_list", {
       pokemonIds: pokemonIds,
@@ -80,7 +79,7 @@
     <Button
       title={`Generate ALL ${Object.entries($pokemonList).length} Pokemon Pages`}
       onClick={() => {
-        generatePokemonPagesInRange(true);
+        generatePokemonPagesInRange(1, 1025);
         pageGenerationWarningModalOpen = false;
       }}
     />
@@ -156,8 +155,9 @@
       <Button
         class=" mt-4 w-40"
         title="Generate Pages"
-        onClick={generatePokemonPagesInRange}
-        disabled={loading}
+        onClick={() =>
+          generatePokemonPagesInRange(startingPokemon[1], endingPokemon[1])}
+        disabled={loading || startingPokemon[1] === 0 || endingPokemon[1] === 0}
         {loading}
       />
     {/if}
