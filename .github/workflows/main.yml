@@ -74,7 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Fixed bug causing all pokemon pages to be generated even when range is specified.
+            \n-Forcing new abilties to be lowercase and use (-) instead of spaces.
             "
           releaseDraft: false
           prerelease: false
