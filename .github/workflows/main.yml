@@ -74,8 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Fixed empty types causing missing type image in the generated wiki.
-            \n- Updated instructions for wiki-testing in the README.
+            \n- Fixed bug causing all pokemon pages to be generated even when range is specified.
             "
           releaseDraft: false
           prerelease: false
