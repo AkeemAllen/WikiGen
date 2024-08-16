@@ -96,7 +96,11 @@
     await $db
       .execute(
         "INSERT INTO abilities (name, effect, is_new) VALUES ($1, $2, $3);",
-        [newAbility.name, newAbility.effect, newAbility.is_new],
+        [
+          newAbility.name.toLowerCase().replaceAll(" ", "-"),
+          newAbility.effect,
+          newAbility.is_new,
+        ],
       )
       .then(() => {
         toastStore.trigger({
@@ -179,7 +183,13 @@
   <h2 class="text-lg font-medium leading-6 text-gray-900">
     Create New Ability
   </h2>
-  <TextInput label="New Ability Name" bind:value={newAbility.name} />
+  <TextInput
+    label="New Ability Name"
+    bind:value={newAbility.name}
+    inputHandler={(e) => {
+      newAbility.name = e.target.value.toLowerCase().replaceAll(" ", "-");
+    }}
+  />
   <div>
     <label
       for="effect"
