@@ -74,7 +74,8 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Fixed moves pages issue
+            \n- Fixed empty types causing missing type image in the generated wiki.
+            \n- Updated instructions for wiki-testing in the README.
             "
           releaseDraft: false
           prerelease: false
