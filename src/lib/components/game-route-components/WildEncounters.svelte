@@ -56,15 +56,26 @@
   }
 
   async function addEncounter() {
+    let searchedPokemon = $pokemonList.find(
+      ([_, __, name]) => name === pokemonName.toLowerCase(),
+    );
+
+    if (searchedPokemon === undefined) {
+      toastStore.trigger({
+        message: "Pokemon not found",
+        timeout: 3000,
+        background: "variant-filled-error",
+      });
+      return;
+    }
+
     routeWildEncounters = {
       ...routeWildEncounters,
       [encounterType]: [
         ...(routeWildEncounters[encounterType] ?? []),
         {
-          id: $pokemonList.find(
-            ([_, __, name]) => name === pokemonName,
-          )?.[0] as number,
-          name: pokemonName,
+          id: searchedPokemon[0],
+          name: pokemonName.toLowerCase(),
           encounter_rate: encounterRate,
         },
       ],

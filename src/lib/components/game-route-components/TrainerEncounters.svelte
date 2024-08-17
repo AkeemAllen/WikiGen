@@ -66,6 +66,19 @@
   }
 
   function addPokemonToTrainer() {
+    let searchedPokemon = $pokemonList.find(
+      ([_, __, name]) => name === pokemonSearchName.toLowerCase(),
+    );
+
+    if (searchedPokemon === undefined) {
+      toastStore.trigger({
+        message: "Pokemon not found",
+        timeout: 3000,
+        background: "variant-filled-error",
+      });
+      return;
+    }
+
     if (routeTrainers[trainerName] === undefined) {
       routeTrainers[trainerName] = {
         position: Object.keys(routeTrainers).length,
@@ -75,15 +88,13 @@
       };
     }
 
-    let id = $pokemonList.find(
-      ([id, _, name]) => name === pokemonSearchName,
-    )?.[0] as number;
+    let id = searchedPokemon[0];
     let uniqueId = setUniquePokemonId(
       routeTrainers as {
         [key: string]: TrainerInfo;
       },
       trainerName,
-      pokemonSearchName,
+      pokemonSearchName.toLowerCase(),
       $pokemonList,
     );
 
@@ -92,7 +103,7 @@
       {
         id: id,
         unique_id: uniqueId,
-        name: pokemonSearchName,
+        name: pokemonSearchName.toLowerCase(),
         level,
         item: "",
         nature: "",
