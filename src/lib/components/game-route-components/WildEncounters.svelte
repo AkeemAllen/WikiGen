@@ -77,6 +77,9 @@
           id: searchedPokemon[0],
           name: pokemonName.toLowerCase(),
           encounter_rate: encounterRate,
+          encounter_type: encounterType,
+          special_note: "",
+          route: routeName,
         },
       ],
     };
@@ -156,7 +159,6 @@
         sprite = URL.createObjectURL(blob);
       })
       .catch((err) => {
-        console.log(err);
         if (err.includes("No such file or directory")) {
           sprite = "Image Not Found";
         }
@@ -164,8 +166,6 @@
       });
     return sprite;
   }
-
-  $: console.log(getSpriteImage(pokemonName));
 </script>
 
 <BaseModal bind:open={editEncounterModalOpen}>

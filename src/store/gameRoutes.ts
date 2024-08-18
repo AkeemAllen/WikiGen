@@ -41,7 +41,11 @@ export type WildEncounter = {
   id: number;
   name: string;
   encounter_rate: number;
+  encounter_type: string;
+  route: string;
+  special_note: string;
 };
 
 export let routes = writable<Routes>();
+export let wildEncounters = writable<WildEncounter[]>();
 // export let routesList = writable<>()
