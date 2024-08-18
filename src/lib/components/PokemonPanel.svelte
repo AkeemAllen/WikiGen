@@ -2,6 +2,7 @@
   import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
   import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
   import { selectedWiki } from "../../store";
+  import { routes, type WildEncounter } from "../../store/gameRoutes";
   import {
     pokemonList,
     type Pokemon,
@@ -19,6 +20,7 @@
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
   import objectIsEmpty from "$lib/utils/objectIsEmpty";
+  import PokemonLocationTab from "./PokemonLocationTab.svelte";
 
   const toastStore = getToastStore();
 
@@ -30,6 +32,8 @@
   let originalPokemonDetails: Pokemon = {} as Pokemon;
   let pokemonMoveset: PokemonMove[] = [];
   let pokemonSprite: string = "";
+
+  let pokemonLocations: WildEncounter[] = [];
 
   let tabSet: number = 0;
 
@@ -109,6 +113,20 @@
       })
       .then((res) => {
         originalPokemonDetails = cloneDeep(res);
+        return res;
+      })
+      .then((res) => {
+        // Gather location
+        for (const [_, properties] of Object.entries($routes.routes)) {
+          for (const [_, encounters] of Object.entries(
+            properties.wild_encounters,
+          )) {
+            for (const encounter of encounters) {
+              if (encounter.name !== res.name) continue;
+              pokemonLocations.push(cloneDeep(encounter));
+            }
+          }
+        }
       })
       .catch((err) => {
         console.log(err);
@@ -257,51 +275,6 @@
         });
       });
   }
-
-  // async function updateSpriteNames() {
-  //   for (const entry of $pokemonList) {
-  //     let id: string | number = entry[1];
-
-  //     if (id < 10) {
-  //       id = `00${id}`;
-  //     } else if (id < 100) {
-  //       id = `0${id}`;
-  //     }
-
-  //     let sprite = await readBinaryFile(
-  //       `${$selectedWiki.name}/dist/docs/img/pokemon/${id}.png`,
-  //       { dir: BaseDirectory.AppData },
-  //     )
-  //       .then((res) => {
-  //         const blob = new Blob([res], { type: "image/png" });
-  //         return URL.createObjectURL(blob);
-  //       })
-  //       .catch((err) => {
-  //         console.log(err);
-  //         if (err.includes("No such file or directory")) {
-  //           return "404";
-  //         }
-  //         return "Error loading image";
-  //       });
-  //     if (sprite === "404" || sprite === "Error loading image") {
-  //       continue;
-  //     }
-
-  //     let reader = new FileReader();
-  //     reader.onloadend = (e) => {
-  //       let imageBytes = base64ToArray(
-  //         (e.target?.result as string).replace("data:image/png;base64,", ""),
-  //         "image/png",
-  //       );
-  //       writeBinaryFile(
-  //         `${$selectedWiki.name}/dist/docs/img/temp_pokemon/${entry[0]}.png`,
-  //         imageBytes,
-  //         { dir: BaseDirectory.AppData },
-  //       );
-  //     };
-  //     reader.readAsDataURL(await fetch(sprite).then((res) => res.blob()));
-  //   }
-  // }
 </script>
 
 <div class="flex flex-row gap-7">
@@ -354,6 +327,9 @@
     <Tab bind:group={tabSet} name="pokemon-moves" value={1} class="text-sm"
       >Moves</Tab
     >
+    <Tab bind:group={tabSet} name="location" value={2} class="text-sm"
+      >Location</Tab
+    >
     <svelte:fragment slot="panel">
       {#if tabSet === 0}
         <PokemonDetailsTab bind:pokemon />
@@ -363,6 +339,13 @@
           bind:moveset={pokemonMoveset}
           bind:pokemonId={pokemon.id}
           {generatePokemonPage}
+        />
+      {/if}
+      {#if tabSet === 2}
+        <PokemonLocationTab
+          {pokemonLocations}
+          pokemonId={pokemon.id}
+          pokemonName={pokemon.name}
         />
       {/if}
     </svelte:fragment>
