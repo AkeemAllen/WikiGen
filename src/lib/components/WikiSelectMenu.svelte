@@ -21,6 +21,7 @@
   import { goto } from "$app/navigation";
   import Database from "tauri-plugin-sql-api";
   import { db } from "../../store/db";
+  import { types } from "../../store/types";
 
   const toastStore = getToastStore();
 
@@ -42,6 +43,12 @@
       { dir: BaseDirectory.AppData },
     );
     routes.set(sortRoutesByPosition(JSON.parse(routesFromFile)));
+
+    const typesFromFile: any = await readTextFile(
+      `${$selectedWiki.name}/data/types.json`,
+      { dir: BaseDirectory.AppData },
+    );
+    types.set(JSON.parse(typesFromFile)["types"]);
 
     toastStore.trigger({
       message: `${$selectedWiki.site_name} Wiki Loaded`,
