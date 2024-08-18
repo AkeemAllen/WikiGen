@@ -12,14 +12,14 @@
 
   async function addType() {
     if (newType === "") return;
-    if ($types.includes(newType)) {
+    if ($types.includes(newType.toLowerCase().replaceAll(" ", "-"))) {
       toastStore.trigger({
         message: "Type already exists",
         background: "variant-filled-error",
       });
       return;
     }
-    types.update((t) => [...t, newType]);
+    types.update((t) => [...t, newType.toLowerCase().replaceAll(" ", "-")]);
     newType = "";
     await writeTextFile(
       `${$selectedWiki.name}/data/types.json`,
@@ -28,7 +28,9 @@
     );
   }
   async function deleteType(selectedType: string) {
-    $types = $types.filter((type) => type !== selectedType);
+    $types = $types.filter(
+      (type) => type !== selectedType.toLowerCase().replaceAll(" ", "-"),
+    );
     await writeTextFile(
       `${$selectedWiki.name}/data/types.json`,
       JSON.stringify({ types: $types }),
