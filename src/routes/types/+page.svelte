@@ -58,12 +58,14 @@
   {#each $types as type}
     <div class="card flex flex-row items-center justify-between px-2 py-1">
       {type}
-      <button
-        class="btn rounded-sm p-2 hover:cursor-pointer hover:bg-gray-300"
-        on:click={() => deleteType(type)}
-      >
-        <IconTrash size={16} />
-      </button>
+      {#if type !== "none"}
+        <button
+          class="btn rounded-sm p-2 hover:cursor-pointer hover:bg-gray-300"
+          on:click={() => deleteType(type)}
+        >
+          <IconTrash size={16} />
+        </button>
+      {/if}
     </div>
   {/each}
 </div>
