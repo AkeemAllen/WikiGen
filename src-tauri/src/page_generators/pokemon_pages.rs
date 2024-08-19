@@ -318,7 +318,7 @@ pub fn generate_page_from_template(
     let level_up_moveset = movesets
         .iter()
         .cloned()
-        .filter(|m| m.learn_method == "level-up")
+        .filter(|m| m.learn_method.contains("level-up"))
         .collect::<Vec<_>>();
 
     let level_up_moves = create_level_up_moves_table(level_up_moveset);
@@ -326,7 +326,7 @@ pub fn generate_page_from_template(
     let learnable_moveset = movesets
         .iter()
         .cloned()
-        .filter(|m| m.learn_method == "machine")
+        .filter(|m| m.learn_method.contains("machine"))
         .collect::<Vec<_>>();
 
     let learnable_moves = create_learnable_moves_table(learnable_moveset);
