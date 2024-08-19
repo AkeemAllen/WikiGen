@@ -1,6 +1,8 @@
 <script lang="ts">
   import {
     BaseDirectory,
+    copyFile,
+    exists,
     readTextFile,
     removeDir,
     writeTextFile,
@@ -22,6 +24,7 @@
   import Database from "tauri-plugin-sql-api";
   import { db } from "../../store/db";
   import { types } from "../../store/types";
+  import { resourceDir } from "@tauri-apps/api/path";
 
   const toastStore = getToastStore();
 
@@ -43,6 +46,20 @@
       { dir: BaseDirectory.AppData },
     );
     routes.set(sortRoutesByPosition(JSON.parse(routesFromFile)));
+
+    const typesJsonExists = await exists(
+      `${$selectedWiki.name}/data/types.json`,
+      { dir: BaseDirectory.AppData },
+    );
+    if (!typesJsonExists) {
+      const resourceDirectory = await resourceDir();
+      console.log({ resourceDirectory });
+      await copyFile(
+        `${resourceDirectory}/resources/generator_assets/starting_data/types.json`,
+        `${$selectedWiki.name}/data/types.json`,
+        { dir: BaseDirectory.AppData },
+      );
+    }
 
     const typesFromFile: any = await readTextFile(
       `${$selectedWiki.name}/data/types.json`,
