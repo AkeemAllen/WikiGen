@@ -74,7 +74,8 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Added better guardrails for adding new pokemon to wild and trainer encounters.
+            \n- Added support for custom types
+            \n- Fixed bug where both moves learnt by both level-up and machine were not being displayed
             "
           releaseDraft: false
           prerelease: false

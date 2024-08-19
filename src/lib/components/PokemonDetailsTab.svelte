@@ -2,10 +2,11 @@
   import SelectInput from "$lib/components/SelectInput.svelte";
   import AutoComplete from "$lib/components/AutoComplete.svelte";
   import TextInput from "$lib/components/TextInput.svelte";
-  import { PokemonTypes, type Pokemon, pokemonList } from "../../store/pokemon";
+  import { type Pokemon, pokemonList } from "../../store/pokemon";
   import NumberInput from "./NumberInput.svelte";
   import { abilitiesList } from "../../store/abilities";
   import { itemsList } from "../../store/items";
+  import { types as pokemonTypes } from "../../store/types";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
   import { getToastStore } from "@skeletonlabs/skeleton";
@@ -103,7 +104,7 @@
       id="pokemon-type-1"
       bind:value={types[0]}
       label="Type 1"
-      options={PokemonTypes.map((type) => {
+      options={$pokemonTypes.map((type) => {
         return {
           label: capitalizeWords(type),
           value: type,
@@ -115,7 +116,7 @@
       id="pokemon-type-2"
       bind:value={types[1]}
       label="Type 2"
-      options={PokemonTypes.map((type) => {
+      options={$pokemonTypes.map((type) => {
         return {
           label: capitalizeWords(type),
           value: type,
