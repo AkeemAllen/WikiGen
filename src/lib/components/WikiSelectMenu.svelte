@@ -19,12 +19,13 @@
   import MultiSelect from "svelte-multiselect";
   import Button from "./Button.svelte";
   import { getToastStore } from "@skeletonlabs/skeleton";
-  import { invoke } from "@tauri-apps/api";
+  import { invoke, os } from "@tauri-apps/api";
   import { goto } from "$app/navigation";
   import Database from "tauri-plugin-sql-api";
   import { db } from "../../store/db";
   import { types } from "../../store/types";
   import { resourceDir } from "@tauri-apps/api/path";
+  import { type as osTypeFunc } from "@tauri-apps/api/os";
 
   const toastStore = getToastStore();
 
@@ -53,12 +54,17 @@
     );
     if (!typesJsonExists) {
       const resourceDirectory = await resourceDir();
-      console.log({ resourceDirectory });
-      await copyFile(
-        `${resourceDirectory}/resources/generator_assets/starting_data/types.json`,
-        `${$selectedWiki.name}/data/types.json`,
-        { dir: BaseDirectory.AppData },
-      );
+      const osType = await osTypeFunc();
+
+      let typesDirectory = `${resourceDirectory}resources/generator_assets/starting_data/types.json`;
+
+      if (osType === "Windows_NT") {
+        typesDirectory = typesDirectory.replaceAll("/", "\\");
+      }
+
+      await copyFile(typesDirectory, `${$selectedWiki.name}/data/types.json`, {
+        dir: BaseDirectory.AppData,
+      });
     }
 
     const typesFromFile: any = await readTextFile(
