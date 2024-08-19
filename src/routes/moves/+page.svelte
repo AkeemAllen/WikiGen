@@ -546,6 +546,11 @@
                 { label: "special", value: "special" },
               ]}
             />
+            <TextInput
+              label="Machine Name"
+              id="machine-name"
+              bind:value={move.machine_name}
+            />
           </div>
         </div>
         {#if !move.is_new}
