@@ -9,7 +9,8 @@
   import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
   import { selectedWiki } from "../../store";
   import { moveList, type Move } from "../../store/moves";
-  import { PokemonTypes, pokemonList } from "../../store/pokemon";
+  import { pokemonList } from "../../store/pokemon";
+  import { types as pokemonTypes } from "../../store/types";
   import { invoke } from "@tauri-apps/api/tauri";
   import { db } from "../../store/db";
   import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
@@ -359,13 +360,7 @@
     label="Type"
     id="type"
     bind:value={newMove.type}
-    options={PokemonTypes.map((type) => {
-      if (type === null) {
-        return {
-          label: "None",
-          value: null,
-        };
-      }
+    options={$pokemonTypes.map((type) => {
       return {
         label: capitalizeWords(type),
         value: type,
@@ -526,13 +521,7 @@
               label="Type"
               id="type"
               bind:value={move.type}
-              options={PokemonTypes.map((type) => {
-                if (type === null) {
-                  return {
-                    label: "None",
-                    value: null,
-                  };
-                }
+              options={$pokemonTypes.map((type) => {
                 return {
                   label: capitalizeWords(type),
                   value: type,
