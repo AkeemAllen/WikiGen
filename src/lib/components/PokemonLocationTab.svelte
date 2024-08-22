@@ -161,7 +161,7 @@
     ).then(() => {
       invoke("generate_single_route_page_with_handle", {
         wikiName: $selectedWiki.name,
-        routeName: newLocation.route,
+        routeName,
       })
         .then(() => {
           toastStore.trigger({
