@@ -154,18 +154,15 @@
         .catch((e) => {
           console.error(e);
         });
-      let updatedLocations = [];
-      // Tried using .filter() but it didn' handle the && condition the way I wanted/expected
-      // So I'm using a for loop instead
-      console.log({ routeName, encounterType });
-      for (const [_, properties] of Object.entries($routes.routes)) {
-        for (const [_, encounters] of Object.entries(
-          properties.wild_encounters,
-        )) {
-          for (const encounter of encounters) {
-            if (encounter.name !== pokemonName) continue;
-            updatedLocations.push(cloneDeep(encounter));
-          }
+      let updatedLocations: WildEncounter[] = [];
+      for (let location of pokemonLocations) {
+        if (location.route !== routeName) {
+          updatedLocations.push(location);
+          continue;
+        }
+        if (location.encounter_type !== encounterType) {
+          updatedLocations.push(location);
+          continue;
         }
       }
       pokemonLocations = [...updatedLocations];
