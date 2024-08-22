@@ -123,7 +123,7 @@
           )) {
             for (const encounter of encounters) {
               if (encounter.name !== res.name) continue;
-              pokemonLocations.push(cloneDeep(encounter));
+              pokemonLocations = [...pokemonLocations, cloneDeep(encounter)];
             }
           }
         }
