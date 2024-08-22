@@ -1,6 +1,8 @@
 <script lang="ts">
   import {
     BaseDirectory,
+    copyFile,
+    exists,
     readTextFile,
     removeDir,
     writeTextFile,
@@ -17,10 +19,13 @@
   import MultiSelect from "svelte-multiselect";
   import Button from "./Button.svelte";
   import { getToastStore } from "@skeletonlabs/skeleton";
-  import { invoke } from "@tauri-apps/api";
+  import { invoke, os } from "@tauri-apps/api";
   import { goto } from "$app/navigation";
   import Database from "tauri-plugin-sql-api";
   import { db } from "../../store/db";
+  import { types } from "../../store/types";
+  import { resourceDir } from "@tauri-apps/api/path";
+  import { type as osTypeFunc } from "@tauri-apps/api/os";
 
   const toastStore = getToastStore();
 
@@ -42,6 +47,31 @@
       { dir: BaseDirectory.AppData },
     );
     routes.set(sortRoutesByPosition(JSON.parse(routesFromFile)));
+
+    const typesJsonExists = await exists(
+      `${$selectedWiki.name}/data/types.json`,
+      { dir: BaseDirectory.AppData },
+    );
+    if (!typesJsonExists) {
+      const resourceDirectory = await resourceDir();
+      const osType = await osTypeFunc();
+
+      let typesDirectory = `${resourceDirectory}resources/generator_assets/starting_data/types.json`;
+
+      if (osType === "Windows_NT") {
+        typesDirectory = typesDirectory.replaceAll("/", "\\");
+      }
+
+      await copyFile(typesDirectory, `${$selectedWiki.name}/data/types.json`, {
+        dir: BaseDirectory.AppData,
+      });
+    }
+
+    const typesFromFile: any = await readTextFile(
+      `${$selectedWiki.name}/data/types.json`,
+      { dir: BaseDirectory.AppData },
+    );
+    types.set(JSON.parse(typesFromFile)["types"]);
 
     toastStore.trigger({
       message: `${$selectedWiki.site_name} Wiki Loaded`,

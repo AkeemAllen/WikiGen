@@ -1,48 +1,49 @@
 <script lang="ts">
-import { page } from "$app/stores";
-import NavButton from "$lib/components/NavButton.svelte";
-import WikiSelectMenu from "$lib/components/WikiSelectMenu.svelte";
-import {
-  arrow,
-  autoUpdate,
-  computePosition,
-  flip,
-  offset,
-  shift,
-} from "@floating-ui/dom";
-import type { ModalComponent, PopupSettings } from "@skeletonlabs/skeleton";
-import {
-  AppShell,
-  Modal,
-  Toast,
-  initializeStores,
-  popup,
-  storePopup,
-} from "@skeletonlabs/skeleton";
-import {
-  IconAdjustmentsUp,
-  IconBallBasketball,
-  IconBottleFilled,
-  IconDisc,
-  IconDotsVertical,
-  IconRoute2,
-  IconTestPipe,
-  IconTree,
-} from "@tabler/icons-svelte";
-import "../app.pcss";
-import { selectedWiki } from "../store";
+  import { page } from "$app/stores";
+  import NavButton from "$lib/components/NavButton.svelte";
+  import WikiSelectMenu from "$lib/components/WikiSelectMenu.svelte";
+  import {
+    arrow,
+    autoUpdate,
+    computePosition,
+    flip,
+    offset,
+    shift,
+  } from "@floating-ui/dom";
+  import type { ModalComponent, PopupSettings } from "@skeletonlabs/skeleton";
+  import {
+    AppShell,
+    Modal,
+    Toast,
+    initializeStores,
+    popup,
+    storePopup,
+  } from "@skeletonlabs/skeleton";
+  import {
+    IconAdjustmentsUp,
+    IconBallBasketball,
+    IconBottleFilled,
+    IconDisc,
+    IconDotsVertical,
+    IconFlame,
+    IconRoute2,
+    IconTestPipe,
+    IconTree,
+  } from "@tabler/icons-svelte";
+  import "../app.pcss";
+  import { selectedWiki } from "../store";
 
-initializeStores();
+  initializeStores();
 
-storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
+  storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
-const wikiSelectPopup: PopupSettings = {
-  event: "click",
-  target: "wikiSelectPopup",
-  placement: "top",
-};
+  const wikiSelectPopup: PopupSettings = {
+    event: "click",
+    target: "wikiSelectPopup",
+    placement: "top",
+  };
 
-const modalRegistry: Record<string, ModalComponent> = {};
+  const modalRegistry: Record<string, ModalComponent> = {};
 </script>
 
 <Toast />
@@ -72,6 +73,13 @@ const modalRegistry: Record<string, ModalComponent> = {};
             active={$page.url.pathname.includes("moves")}
           >
             <IconDisc slot="icon" size={16} color="indigo" />
+          </NavButton>
+          <NavButton
+            name="Types"
+            route="/types"
+            active={$page.url.pathname.includes("types")}
+          >
+            <IconFlame slot="icon" size={16} color="indigo" />
           </NavButton>
           <NavButton
             name="Items"
