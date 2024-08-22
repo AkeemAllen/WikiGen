@@ -70,7 +70,17 @@
       return;
     }
 
-    console.log(location.route);
+    if (
+      $routes.routes[location.route].wild_encounters[
+        location.encounter_type
+      ]?.find((encounter) => encounter.name === location.name)
+    ) {
+      toastStore.trigger({
+        message: "This Pokemon is already in this location",
+        background: "variant-filled-error",
+      });
+      return;
+    }
 
     $routes.routes[location.route].wild_encounters = {
       ...$routes.routes[location.route].wild_encounters,
@@ -106,6 +116,15 @@
           console.error(e);
         });
       pokemonLocations = [...pokemonLocations, { ...location }];
+      addLocationModalOpen = false;
+      newLocation = {
+        id: 0,
+        name: "",
+        encounter_type: "",
+        encounter_rate: 0,
+        route: "",
+        special_note: "",
+      };
     });
   }
 
