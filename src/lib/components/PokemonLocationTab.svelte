@@ -19,11 +19,21 @@
 
   let searchValue: string = "";
   let addLocationModalOpen: boolean = false;
+  let editLocationModalOpen: boolean = false;
   export let pokemonId: number;
   export let pokemonName: string;
   export let pokemonLocations: WildEncounter[] = [];
 
   let newLocation: WildEncounter = {
+    id: 0,
+    name: "",
+    encounter_type: "",
+    encounter_rate: 0,
+    route: "",
+    special_note: "",
+  };
+
+  let locationToEdit: WildEncounter = {
     id: 0,
     name: "",
     encounter_type: "",
@@ -118,6 +128,61 @@
       pokemonLocations = [...pokemonLocations, { ...location }];
       addLocationModalOpen = false;
       newLocation = {
+        id: 0,
+        name: "",
+        encounter_type: "",
+        encounter_rate: 0,
+        route: "",
+        special_note: "",
+      };
+    });
+  }
+
+  async function editPokemonLocation() {
+    let location = cloneDeep(locationToEdit);
+
+    let index = $routes.routes[location.route].wild_encounters[
+      location.encounter_type
+    ].findIndex((encounter) => encounter.id === location.id);
+    $routes.routes[location.route].wild_encounters[
+      location.encounter_type
+    ].splice(index, 1, cloneDeep(location));
+
+    $routes.routes[location.route].wild_encounters[location.encounter_type]
+      .sort((a, b) => a.encounter_rate - b.encounter_rate)
+      .reverse();
+
+    await writeTextFile(
+      `${$selectedWiki.name}/data/routes.json`,
+      JSON.stringify($routes),
+      { dir: BaseDirectory.AppData },
+    ).then(() => {
+      invoke("generate_single_route_page_with_handle", {
+        wikiName: $selectedWiki.name,
+        routeName: location.route,
+      })
+        .then(() => {
+          toastStore.trigger({
+            message: "Changes saved successfully",
+            timeout: 3000,
+            background: "variant-filled-success",
+          });
+        })
+        .catch((e) => {
+          console.error(e);
+        });
+      let updatedLocations = [...pokemonLocations];
+      let locationIndex = updatedLocations.findIndex(
+        (loc) =>
+          loc.route === location.route &&
+          loc.encounter_type === location.encounter_type,
+      );
+      console.log(locationIndex);
+      updatedLocations[locationIndex] = cloneDeep(location);
+
+      pokemonLocations = [...updatedLocations];
+      editLocationModalOpen = false;
+      locationToEdit = {
         id: 0,
         name: "",
         encounter_type: "",
@@ -226,6 +291,45 @@
   />
 </BaseModal>
 
+<BaseModal bind:open={editLocationModalOpen} class="w-[20rem]">
+  <h2 class="text-lg font-medium leading-6 text-gray-900">Edit Location</h2>
+  <AutoComplete
+    bind:value={locationToEdit.route}
+    label="Routes"
+    popupId="newLocationPopup"
+    class="z-10 w-full text-sm"
+    disabled={true}
+    options={routeListOptions}
+    onSelection={(e) => {
+      locationToEdit.route = e.detail.value;
+    }}
+  />
+  <SelectInput
+    bind:value={locationToEdit.encounter_type}
+    label="Encounter Type"
+    disabled={true}
+    options={encounterTypeOptions}
+  />
+  <NumberInput
+    bind:value={locationToEdit.encounter_rate}
+    label="Encounter Rate"
+    placeholder="Encounter Rate"
+    max={100}
+  />
+  <TextInput
+    bind:value={locationToEdit.special_note}
+    label="Special Note"
+    placeholder="Special Note"
+  />
+  <Button
+    title="Save Changes"
+    disabled={locationToEdit.route === "" ||
+      locationToEdit.encounter_rate <= 0 ||
+      locationToEdit.encounter_type === ""}
+    onClick={editPokemonLocation}
+  />
+</BaseModal>
+
 <div class="mt-4 space-y-4 overflow-x-auto px-4">
   <header class="flex items-center justify-between gap-4">
     <div class="flex gap-x-3">
@@ -264,7 +368,10 @@
           <td>{row.special_note}</td>
           <td
             class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-            on:click={() => {}}
+            on:click={() => {
+              locationToEdit = { ...row };
+              editLocationModalOpen = true;
+            }}
           >
             <IconEdit size={18} class="text-gray-500" />
           </td>
