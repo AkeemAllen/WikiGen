@@ -214,24 +214,6 @@
     move.is_modified = e.target?.checked ? TRUE : FALSE;
   }
 
-  async function convertMovesToSqlite() {
-    await invoke("convert_moves_to_sqlite", {
-      wikiName: $selectedWiki.name,
-    })
-      .then(() => {
-        toastStore.trigger({
-          message: "Moves converted!",
-          background: "variant-filled-success",
-        });
-      })
-      .catch((err) => {
-        toastStore.trigger({
-          message: "Error converting moves!",
-          background: "variant-filled-error",
-        });
-      });
-  }
-
   async function deleteMoveFromPokemon(pokemonId: number) {
     await $db
       .execute(
@@ -648,4 +630,3 @@
     </svelte:fragment>
   </TabGroup>
 {/if}
-<!-- <Button title="Convert Moves to SQLite" onClick={convertMovesToSqlite} /> -->
