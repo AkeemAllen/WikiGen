@@ -50,17 +50,23 @@
     );
 
     // Backing up the routes.json file in case of failure
-    let routesDirectory = `${$selectedWiki.name}/data/routes.json`;
-    if (osType === "Windows_NT") {
-      routesDirectory = routesDirectory.replaceAll("/", "\\");
-    }
-    await copyFile(
+    const routesBackupExists = await exists(
       `${$selectedWiki.name}/data/routes_bkup.json`,
-      `${$selectedWiki.name}/data/routes_bkup.json`,
-      {
-        dir: BaseDirectory.AppData,
-      },
+      { dir: BaseDirectory.AppData },
     );
+    if (!routesBackupExists) {
+      let routesDirectory = `${$selectedWiki.name}/data/routes.json`;
+      if (osType === "Windows_NT") {
+        routesDirectory = routesDirectory.replaceAll("/", "\\");
+      }
+      await copyFile(
+        routesDirectory,
+        `${$selectedWiki.name}/data/routes_bkup.json`,
+        {
+          dir: BaseDirectory.AppData,
+        },
+      );
+    }
 
     // Update the routes.json file with the new format
     let updatedRoutes = updateWildEncounters(
