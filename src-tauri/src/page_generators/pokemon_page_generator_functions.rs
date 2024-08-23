@@ -1,12 +1,14 @@
 use std::collections::HashMap;
 
 use crate::{
-    helpers::capitalize,
+    helpers::{capitalize, capitalize_and_remove_hyphens},
     structs::{
         matchup_models::TypeEffectiveness,
         pokemon_structs::{DBPokemon, PokemonMove},
     },
 };
+
+use super::game_routes::WildEncounter;
 
 #[allow(dead_code)]
 pub fn create_type_table(types: String) -> String {
@@ -243,6 +245,32 @@ pub fn create_learnable_moves_table(learnable_moveset: Vec<PokemonMove>) -> Stri
         {}
         ",
         markdown_moves
+    );
+}
+
+pub fn create_locations_table(wild_encounters: Vec<WildEncounter>) -> String {
+    if wild_encounters.is_empty() {
+        return "".to_string();
+    }
+    let mut markdown_locations = String::new();
+    for encounter in wild_encounters {
+        let table_entry = format!(
+            "\t| {} | {} | {} | {} |\n",
+            encounter.route,
+            capitalize_and_remove_hyphens(&encounter.encounter_type),
+            encounter.encounter_rate,
+            encounter.special_note
+        );
+        markdown_locations.push_str(&table_entry); // markdown_locations.
+    }
+
+    return format!(
+        "## Locations
+        | Route | Area | Encounter Rate | Extra Instructions |
+        | -- | -- | -- | -- |
+        {}
+        ",
+        markdown_locations
     );
 }
 

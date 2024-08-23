@@ -19,6 +19,11 @@ use crate::{
     },
 };
 
+use super::{
+    game_routes::{Routes, WildEncounter},
+    pokemon_page_generator_functions::create_locations_table,
+};
+
 #[tauri::command]
 pub async fn generate_pokemon_pages_from_list(
     wiki_name: &str,
@@ -116,6 +121,28 @@ pub async fn generate_pokemon_pages(
         }
     };
 
+    let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
+    let routes_file = match File::open(&routes_json_file_path) {
+        Ok(file) => file,
+        Err(err) => return Err(format!("Failed to read routes file: {}", err)),
+    };
+    let routes: Routes = match serde_json::from_reader(routes_file) {
+        Ok(routes) => routes,
+        Err(err) => return Err(format!("Failed to parse routes file: {}", err)),
+    };
+
+    // Gather all wild encounters for the selected pokemon
+    let mut wild_encounters: Vec<WildEncounter> = Vec::new();
+    for (_, properties) in &routes.routes {
+        for (_, _wild_encounters) in &properties.wild_encounters {
+            for wild_encounter in _wild_encounters {
+                if pokemon_ids.contains(&wild_encounter.id) {
+                    wild_encounters.push(wild_encounter.clone());
+                }
+            }
+        }
+    }
+
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
     let mkdocs_yaml_file = match File::open(&mkdocs_yaml_file_path) {
         Ok(file) => file,
@@ -207,8 +234,18 @@ pub async fn generate_pokemon_pages(
             .filter(|m| m.pokemon == pokemon.id)
             .collect::<Vec<_>>();
 
-        let pokemon_markdown_string =
-            generate_page_from_template(template.clone(), &pokemon, current_pokemon_movset);
+        let current_pokemon_locations = wild_encounters
+            .iter()
+            .cloned()
+            .filter(|w| w.id == usize::try_from(pokemon.id).unwrap())
+            .collect::<Vec<_>>();
+
+        let pokemon_markdown_string = generate_page_from_template(
+            template.clone(),
+            &pokemon,
+            current_pokemon_movset,
+            current_pokemon_locations,
+        );
 
         match markdown_file.write_all(format!("{}", pokemon_markdown_string).as_bytes()) {
             Ok(_) => {}
@@ -270,6 +307,7 @@ pub fn generate_page_from_template(
     template: String,
     pokemon: &DBPokemon,
     movesets: Vec<PokemonMove>,
+    locations: Vec<WildEncounter>,
 ) -> String {
     let type_images: Vec<String> = pokemon
         .types
@@ -330,6 +368,9 @@ pub fn generate_page_from_template(
         .collect::<Vec<_>>();
 
     let learnable_moves = create_learnable_moves_table(learnable_moveset);
+
+    let location_table = create_locations_table(locations);
+
     let result = template
         .replace("{{pokemon_name}}", &pokemon.name)
         .replace("{{type_1_image}}", &type_1_image)
@@ -393,6 +434,7 @@ pub fn generate_page_from_template(
             "{{speed_rank}}",
             calculate_bar_rank(pokemon.speed).to_string().as_str(),
         )
+        .replace("{{locations}}", &location_table)
         .replace("{{level_up_moves}}", &level_up_moves)
         .replace("{{machine_moves}}", &learnable_moves);
 

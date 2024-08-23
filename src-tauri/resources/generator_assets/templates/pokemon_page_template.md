@@ -75,7 +75,6 @@
 
 {{evolution_change}}
 
-## Locations
 {{locations}}
 
 ## Moveset
