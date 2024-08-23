@@ -371,6 +371,8 @@ pub fn generate_page_from_template(
 
     let location_table = create_locations_table(locations);
 
+    let evolution_change = create_evolution_table(&pokemon);
+
     let result = template
         .replace("{{pokemon_name}}", &pokemon.name)
         .replace("{{type_1_image}}", &type_1_image)
@@ -434,6 +436,7 @@ pub fn generate_page_from_template(
             "{{speed_rank}}",
             calculate_bar_rank(pokemon.speed).to_string().as_str(),
         )
+        .replace("{{evolution_change}}", &evolution_change)
         .replace("{{locations}}", &location_table)
         .replace("{{level_up_moves}}", &level_up_moves)
         .replace("{{machine_moves}}", &learnable_moves);

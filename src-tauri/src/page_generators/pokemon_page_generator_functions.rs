@@ -129,6 +129,10 @@ pub fn create_evolution_table(pokemon: &DBPokemon) -> String {
 
     let method: String;
 
+    if &pokemon.evolution_method == "no_change" {
+        return "".to_string();
+    }
+
     if &pokemon.evolution_method == "level_up" {
         method = "Level Up".to_string();
     } else {
@@ -152,7 +156,7 @@ pub fn create_evolution_table(pokemon: &DBPokemon) -> String {
     };
 
     return format!(
-        "| Method | Item/Level/Note | Evolved Pokemon |
+        "##Evolution Change\n| Method | Item/Level/Note | Evolved Pokemon |
         | :--: | :--: | :--: |
         | {} | {} | {} |
         ",
@@ -265,8 +269,7 @@ pub fn create_locations_table(wild_encounters: Vec<WildEncounter>) -> String {
     }
 
     return format!(
-        "## Locations
-        | Route | Area | Encounter Rate | Extra Instructions |
+        "## Locations\n| Route | Area | Encounter Rate | Extra Instructions |
         | -- | -- | -- | -- |
         {}
         ",
