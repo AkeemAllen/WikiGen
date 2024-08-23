@@ -55,6 +55,9 @@ pub struct WildEncounter {
     pub id: usize,
     pub name: String,
     pub encounter_rate: usize,
+    pub encounter_type: String,
+    pub route: String,
+    pub special_note: String,
 }
 
 #[tauri::command]

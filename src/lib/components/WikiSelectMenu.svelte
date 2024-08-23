@@ -26,6 +26,7 @@
   import { types } from "../../store/types";
   import { resourceDir } from "@tauri-apps/api/path";
   import { type as osTypeFunc } from "@tauri-apps/api/os";
+  import updateWildEncounters from "$lib/utils/migration_helpers/updateWildEncounters";
 
   const toastStore = getToastStore();
 
@@ -42,11 +43,41 @@
 
   async function loadWikiData(wiki: Wiki) {
     $selectedWiki = wiki;
+    const osType = await osTypeFunc();
     const routesFromFile = await readTextFile(
       `${$selectedWiki.name}/data/routes.json`,
       { dir: BaseDirectory.AppData },
     );
-    routes.set(sortRoutesByPosition(JSON.parse(routesFromFile)));
+
+    // Backing up the routes.json file in case of failure
+    const routesBackupExists = await exists(
+      `${$selectedWiki.name}/data/routes_bkup.json`,
+      { dir: BaseDirectory.AppData },
+    );
+    if (!routesBackupExists) {
+      let routesDirectory = `${$selectedWiki.name}/data/routes.json`;
+      if (osType === "Windows_NT") {
+        routesDirectory = routesDirectory.replaceAll("/", "\\");
+      }
+      await copyFile(
+        routesDirectory,
+        `${$selectedWiki.name}/data/routes_bkup.json`,
+        {
+          dir: BaseDirectory.AppData,
+        },
+      );
+    }
+
+    // Update the routes.json file with the new format
+    let updatedRoutes = updateWildEncounters(
+      sortRoutesByPosition(JSON.parse(routesFromFile)),
+    );
+    await writeTextFile(
+      `${$selectedWiki.name}/data/routes.json`,
+      JSON.stringify(updatedRoutes),
+      { dir: BaseDirectory.AppData },
+    );
+    routes.set(updatedRoutes);
 
     const typesJsonExists = await exists(
       `${$selectedWiki.name}/data/types.json`,
@@ -54,7 +85,6 @@
     );
     if (!typesJsonExists) {
       const resourceDirectory = await resourceDir();
-      const osType = await osTypeFunc();
 
       let typesDirectory = `${resourceDirectory}resources/generator_assets/starting_data/types.json`;
 

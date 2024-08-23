@@ -74,7 +74,8 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Fixed incorrect pathing for windows
+            \n- Wild Encounter Locations are now reflected on the pokemon page.
+            \n- Added evolution change missing in template.
             "
           releaseDraft: false
           prerelease: false

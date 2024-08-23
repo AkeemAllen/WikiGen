@@ -75,6 +75,8 @@
 
 {{evolution_change}}
 
+{{locations}}
+
 ## Moveset
 
 === "Level Up Moves"
