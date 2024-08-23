@@ -21,10 +21,11 @@
   import isEqual from "$lib/utils/isEqual";
   import objectIsEmpty from "$lib/utils/objectIsEmpty";
   import PokemonLocationTab from "./PokemonLocationTab.svelte";
+  import { IconArrowLeft, IconArrowRight } from "@tabler/icons-svelte";
 
   const toastStore = getToastStore();
 
-  let pokemonSearch: [number, string] = [0, ""];
+  let pokemonSearch: [number, number, string] = [0, 0, ""];
 
   let pokemonNameInput: HTMLInputElement;
 
@@ -37,8 +38,9 @@
 
   let tabSet: number = 0;
 
-  let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
+  let pokemonListOptions = $pokemonList.map(([id, dex_number, name]) => ({
     label: capitalizeWords(name),
+    dex_number: dex_number,
     value: id,
   }));
 
@@ -57,7 +59,7 @@
   async function getPokemon() {
     let retrievedPokemon = $pokemonList.find(
       ([__, ___, name]) =>
-        name === pokemonSearch[1].toLowerCase().split(" ").join("-"),
+        name === pokemonSearch[2].toLowerCase().split(" ").join("-"),
     );
 
     if (!retrievedPokemon) {
@@ -217,15 +219,16 @@
   }
 
   // function nextPokemon() {
-  //   if (pokemonId === 1025) {
-  //     toastStore.trigger({
-  //       message: "No more Pokemon",
-  //       timeout: 3000,
-  //       background: "variant-filled-error",
-  //     });
-  //     return;
-  //   }
-  //   setPokemonDetails(pokemonId + 1);
+  // pokemonSearch = [pokemonSearch[0] + 1, "", ""];
+
+  // if (pokemonId === 1025) {
+  //   toastStore.trigger({
+  //     message: "No more Pokemon",
+  //     timeout: 3000,
+  //     background: "variant-filled-error",
+  //   });
+  //   return;
+  // }
   // }
 
   // function prevPokemon() {
@@ -243,12 +246,12 @@
 
 <div class="flex flex-row gap-7">
   <AutoComplete
-    bind:value={pokemonSearch[1]}
+    bind:value={pokemonSearch[2]}
     placeholder="Search Pokemon"
     options={pokemonListOptions}
     popupId="pokemon-search"
     onSelection={(e) => {
-      pokemonSearch = [e.detail.value, e.detail.label];
+      pokemonSearch = [e.detail.value, e.detail.dex_number, e.detail.label];
     }}
     bind:inputNode={pokemonNameInput}
     showChevron={false}
@@ -271,6 +274,16 @@
     disabled={objectIsEmpty(pokemon)}
     class="mt-2 w-32"
   />
+  <button
+    class="flex justify-center items-center rounded-md bg-gray-300 w-10 mt-2"
+  >
+    <IconArrowLeft size={16} />
+  </button>
+  <button
+    class="flex justify-center items-center rounded-md bg-gray-300 w-10 mt-2"
+  >
+    <IconArrowRight size={16} />
+  </button>
 </div>
 
 {#if !objectIsEmpty(pokemon)}
