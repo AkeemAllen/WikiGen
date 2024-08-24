@@ -24,6 +24,20 @@
   let loading = false;
 
   async function createNewRoute() {
+    if (routeName.trim() === "") {
+      return;
+    }
+
+    if ($routes.routes[routeName.trim()]) {
+      toastStore.trigger({
+        message: "Route already exists",
+        timeout: 5000,
+        hoverable: true,
+        background: "variant-filled-error",
+      });
+      return;
+    }
+
     $routes.routes[routeName.trim()] = {
       position: Object.keys($routes.routes).length + 1,
       trainers: {},
@@ -34,7 +48,10 @@
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
-    );
+    ).then(() => {
+      routeName = "";
+      newRouteModalOpen = false;
+    });
   }
 
   async function addNewEncounterType() {
@@ -125,7 +142,6 @@
     title="Save New Route"
     onClick={() => {
       createNewRoute();
-      newRouteModalOpen = false;
     }}
     disabled={routeName === ""}
   />
