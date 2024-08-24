@@ -63,120 +63,18 @@ pub struct WildEncounter {
 #[tauri::command]
 pub async fn generate_route_pages_with_handle(
     wiki_name: &str,
+    route_names: Vec<&str>,
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    return generate_route_pages(&wiki_name, base_path);
+    return generate_route_pages(&wiki_name, base_path, route_names);
 }
 
-#[tauri::command]
-pub async fn generate_single_route_page_with_handle(
-    wiki_name: &str,
-    route_name: &str,
-    app_handle: AppHandle,
-) -> Result<String, String> {
-    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    return generate_single_route(route_name, wiki_name, base_path);
-}
-
-pub fn generate_single_route(
-    route_name: &str,
+pub fn generate_route_pages(
     wiki_name: &str,
     base_path: PathBuf,
+    route_names: Vec<&str>,
 ) -> Result<String, String> {
-    let docs_path = base_path.join(wiki_name).join("dist").join("docs");
-
-    let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
-    let routes_file = match File::open(&routes_json_file_path) {
-        Ok(file) => file,
-        Err(err) => return Err(format!("Failed to read routes file: {}", err)),
-    };
-    let routes: Routes = match serde_json::from_reader(routes_file) {
-        Ok(routes) => routes,
-        Err(err) => return Err(format!("Failed to parse routes file: {}", err)),
-    };
-
-    let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mkdocs_yaml_file = match File::open(&mkdocs_yaml_file_path) {
-        Ok(mkdocs) => mkdocs,
-        Err(err) => return Err(format!("Failed to read Mkdocs yaml file: {}", err)),
-    };
-    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
-        Ok(config) => config,
-        Err(err) => return Err(format!("Failed to parse Mkdocs yaml file: {}", err)),
-    };
-
-    let mut mkdocs_routes: &mut Vec<Value> = &mut Vec::new();
-
-    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
-    for entry in nav_entries {
-        let map_entries = entry.as_mapping_mut().unwrap();
-        match map_entries.get_mut(Value::String("Routes".to_string())) {
-            Some(map_entry) => {
-                mkdocs_routes = map_entry.as_sequence_mut().unwrap();
-            }
-            None => {}
-        }
-    }
-
-    let mut page = &mut Mapping::new();
-    let mut page_position = 0;
-    for (index, page_entry) in mkdocs_routes.iter_mut().enumerate() {
-        if page_entry.as_mapping().unwrap().contains_key(&route_name) {
-            page = page_entry.as_mapping_mut().unwrap();
-            page_position = index;
-            break;
-        }
-    }
-
-    let routes_directory = docs_path.join("routes").join(route_name);
-    let route_properties = routes.routes.get(route_name).unwrap();
-
-    if route_properties.trainers.is_empty() && route_properties.wild_encounters.is_empty() {
-        if page.is_empty() {
-            return Ok("Route is empty".to_string());
-        }
-        mkdocs_routes.remove(page_position);
-        match fs::remove_dir_all(&routes_directory) {
-            Ok(_) => {}
-            Err(err) => return Err(format!("Failed to deleted routes directory: {}", err)),
-        };
-        match fs::write(
-            mkdocs_yaml_file_path,
-            serde_yaml::to_string(&mkdocs_config).unwrap(),
-        ) {
-            Ok(_) => {}
-            Err(err) => return Err(format!("Failed to update Mkdocs file: {}", err)),
-        };
-        return Ok("Route is empty. Removed empty route".to_string());
-    }
-
-    fs::create_dir_all(&routes_directory).unwrap();
-
-    let route_entry =
-        generate_route_entry(wiki_name, route_name, &routes_directory, route_properties);
-
-    if page.is_empty() {
-        mkdocs_routes.push(Value::Mapping(route_entry.clone()))
-    } else {
-        *page = Value::Mapping(route_entry.clone())
-            .as_mapping()
-            .unwrap()
-            .clone();
-    }
-
-    match fs::write(
-        mkdocs_yaml_file_path,
-        serde_yaml::to_string(&mkdocs_config).unwrap(),
-    ) {
-        Ok(_) => {}
-        Err(err) => return Err(format!("Failed to update Mkdocs file: {}", err)),
-    };
-
-    Ok("".to_string())
-}
-
-pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<String, String> {
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
     let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
@@ -213,7 +111,8 @@ pub fn generate_route_pages(wiki_name: &str, base_path: PathBuf) -> Result<Strin
     }
 
     mkdocs_routes.clear();
-    for (route_name, route_properties) in routes.routes.iter() {
+    for route_name in route_names {
+        let route_properties = routes.routes.get(route_name).unwrap();
         let routes_directory = docs_path.join("routes").join(route_name);
 
         match fs::create_dir_all(&routes_directory) {
