@@ -74,7 +74,7 @@
       [encounterType]: [
         ...(routeWildEncounters[encounterType] ?? []),
         {
-          id: searchedPokemon[0],
+          id: searchedPokemon[1],
           name: pokemonName.toLowerCase(),
           encounter_rate: encounterRate,
           encounter_type: encounterType,

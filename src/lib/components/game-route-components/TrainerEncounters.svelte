@@ -54,8 +54,6 @@
     value: trainer,
   }));
 
-  $: console.log({ routeTrainers });
-
   let pokemonListOptions: AutocompleteOption<string | number>[] =
     $pokemonList.map(([id, _, name]) => ({ label: name, value: id }));
 
@@ -88,7 +86,7 @@
       };
     }
 
-    let id = searchedPokemon[0];
+    let id = searchedPokemon[1];
     let uniqueId = setUniquePokemonId(
       routeTrainers as {
         [key: string]: TrainerInfo;
