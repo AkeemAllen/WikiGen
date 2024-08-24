@@ -192,9 +192,9 @@
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
     ).then(() => {
-      invoke("generate_single_route_page_with_handle", {
+      invoke("generate_route_pages_with_handle", {
         wikiName: $selectedWiki.name,
-        routeName,
+        routeNames: [routeName],
       })
         .then(() => {
           toastStore.trigger({
