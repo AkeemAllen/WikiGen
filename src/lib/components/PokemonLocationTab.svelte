@@ -66,6 +66,23 @@
   $: rows = handler.getRows();
   $: rowsPerPage = handler.getRowsPerPage();
 
+  async function generateRoutePage(routeName: string) {
+    invoke("generate_route_pages_with_handle", {
+      wikiName: $selectedWiki.name,
+      routeNames: [routeName],
+    })
+      .then(() => {
+        toastStore.trigger({
+          message: "Changes saved successfully",
+          timeout: 3000,
+          background: "variant-filled-success",
+        });
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+  }
+
   async function addPokemonToLocation() {
     newLocation.id = pokemonId;
     newLocation.name = pokemonName;
@@ -111,20 +128,7 @@
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
     ).then(() => {
-      invoke("generate_single_route_page_with_handle", {
-        wikiName: $selectedWiki.name,
-        routeName: location.route,
-      })
-        .then(() => {
-          toastStore.trigger({
-            message: "Changes saved successfully",
-            timeout: 3000,
-            background: "variant-filled-success",
-          });
-        })
-        .catch((e) => {
-          console.error(e);
-        });
+      generateRoutePage(location.route);
       pokemonLocations = [...pokemonLocations, { ...location }];
       addLocationModalOpen = false;
       newLocation = {
@@ -157,20 +161,7 @@
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
     ).then(() => {
-      invoke("generate_single_route_page_with_handle", {
-        wikiName: $selectedWiki.name,
-        routeName: location.route,
-      })
-        .then(() => {
-          toastStore.trigger({
-            message: "Changes saved successfully",
-            timeout: 3000,
-            background: "variant-filled-success",
-          });
-        })
-        .catch((e) => {
-          console.error(e);
-        });
+      generateRoutePage(location.route);
       let updatedLocations = [...pokemonLocations];
       let locationIndex = updatedLocations.findIndex(
         (loc) =>
@@ -224,20 +215,7 @@
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
     ).then(() => {
-      invoke("generate_single_route_page_with_handle", {
-        wikiName: $selectedWiki.name,
-        routeName,
-      })
-        .then(() => {
-          toastStore.trigger({
-            message: "Changes saved successfully",
-            timeout: 3000,
-            background: "variant-filled-success",
-          });
-        })
-        .catch((e) => {
-          console.error(e);
-        });
+      generateRoutePage(routeName);
       let updatedLocations: WildEncounter[] = [];
       for (let location of pokemonLocations) {
         if (location.route !== routeName) {
