@@ -93,8 +93,10 @@
 
   async function generateRoutePages() {
     loading = true;
+    let routeNames = Object.keys($routes.routes);
     await invoke("generate_route_pages_with_handle", {
       wikiName: $selectedWiki.name,
+      routeNames,
     }).then((response: any) => {
       loading = false;
       toastStore.trigger({
