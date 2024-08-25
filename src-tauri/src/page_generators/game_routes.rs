@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    fs::{self, File},
+    fs::{self, read_to_string, File},
     io::Write,
     path::PathBuf,
 };
@@ -67,12 +67,19 @@ pub async fn generate_route_pages_with_handle(
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    return generate_route_pages(&wiki_name, base_path, route_names);
+    let resources_path = app_handle.path_resolver().resource_dir().unwrap();
+    return generate_route_pages(
+        &wiki_name,
+        base_path.clone(),
+        resources_path.clone(),
+        route_names,
+    );
 }
 
 pub fn generate_route_pages(
     wiki_name: &str,
     base_path: PathBuf,
+    resources_path: PathBuf,
     route_names: Vec<&str>,
 ) -> Result<String, String> {
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
@@ -97,6 +104,19 @@ pub fn generate_route_pages(
         Err(err) => return Err(format!("Failed to parse Mkdocs yaml file: {}", err)),
     };
 
+    let template = match read_to_string(
+        resources_path
+            .join("resources")
+            .join("generator_assets")
+            .join("templates")
+            .join("route_page_template.md"),
+    ) {
+        Ok(template) => template,
+        Err(err) => {
+            return Err(format!("Failed to read template file: {}", err));
+        }
+    };
+
     let mut mkdocs_routes: &mut Vec<Value> = &mut Vec::new();
 
     let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
@@ -113,41 +133,45 @@ pub fn generate_route_pages(
     mkdocs_routes.clear();
     for route_name in route_names {
         let route_properties = routes.routes.get(route_name).unwrap();
-        let routes_directory = docs_path.join("routes").join(route_name);
 
-        match fs::create_dir_all(&routes_directory) {
-            Ok(_) => {}
-            Err(err) => return Err(format!("Failed to create routes directory: {}", err)),
-        };
-
-        let route_entry =
-            generate_route_entry(wiki_name, route_name, &routes_directory, route_properties);
-
-        if route_entry.is_empty() {
-            continue;
+        let mut page_entry_exists = false;
+        let mut page_position = 0;
+        for (index, page_entry) in mkdocs_routes.iter_mut().enumerate() {
+            if page_entry.as_mapping().unwrap().contains_key(route_name) {
+                page_entry_exists = true;
+                page_position = index;
+                break;
+            }
         }
 
-        mkdocs_routes.push(Value::Mapping(route_entry));
-    }
-
-    let paths = match fs::read_dir(&docs_path.join("routes")) {
-        Ok(directories) => directories,
-        Err(err) => return Err(format!("Failed to read routes directory: {}", err)),
-    };
-    for path in paths {
-        let path_name = path
-            .as_ref()
-            .ok()
-            .unwrap()
-            .file_name()
-            .into_string()
-            .unwrap();
-
-        if !routes.routes.contains_key(&path_name) {
-            match fs::remove_dir_all(&path.unwrap().path()) {
-                Ok(_) => {}
-                Err(err) => return Err(format!("Failed to move directory: {}", err)),
+        let mut markdown_file =
+            match File::create(docs_path.join("routes").join(format!("{}.md", route_name))) {
+                Ok(file) => file,
+                Err(e) => {
+                    println!("Error creating file: {:?}", e);
+                    continue;
+                }
             };
+
+        let route_page_markdown =
+            generate_route_page_from_template(wiki_name, route_properties, template.clone());
+
+        match markdown_file.write_all(route_page_markdown.as_bytes()) {
+            Ok(_) => {}
+            Err(e) => {
+                println!("Error writing to file: {:?}", e);
+                continue;
+            }
+        }
+
+        let mut route_page_entry = Mapping::new();
+        route_page_entry.insert(
+            Value::String(route_name.to_string()),
+            Value::String(format!("routes/{}.md", route_name)),
+        );
+
+        if !page_entry_exists {
+            mkdocs_routes.push(Value::Mapping(route_page_entry));
         }
     }
 
@@ -162,73 +186,50 @@ pub fn generate_route_pages(
     Ok("Generating Routes".to_string())
 }
 
-fn generate_route_entry(
+fn generate_route_page_from_template(
     wiki_name: &str,
-    route_name: &str,
-    routes_directory: &PathBuf,
     route_properties: &RouteProperties,
-) -> Mapping {
-    let mut entries: Vec<Value> = Vec::new();
+    template: String,
+) -> String {
+    let mut wild_encounter_tab = String::new();
+    let mut wild_encounters = String::new();
 
     if !route_properties.wild_encounters.is_empty() {
-        create_encounter_table(
+        wild_encounter_tab.push_str("=== \"Wild Encounters\"");
+        let encounter_table = create_encounter_table(
             wiki_name,
-            route_name,
-            &routes_directory,
             &route_properties.wild_encounters,
             &route_properties.wild_encounter_area_levels,
-        )
-        .unwrap();
-        let mut wild_encounters_entry = Mapping::new();
-        wild_encounters_entry.insert(
-            Value::String("Wild Encounter".to_string()),
-            Value::String(format!("routes/{}/wild_encounters.md", route_name)),
         );
-        entries.push(Value::Mapping(wild_encounters_entry));
+        wild_encounters.push_str(&encounter_table);
     }
+
+    let mut trainer_encounter_tab = String::new();
+    let mut trainer_encounters = String::new();
+
     if !route_properties.trainers.is_empty() {
-        create_trainer_table(
-            wiki_name,
-            route_name,
-            &routes_directory,
-            &route_properties.trainers,
-        )
-        .unwrap();
-        let mut trainers_entry = Mapping::new();
-        trainers_entry.insert(
-            Value::String("Trainers".to_string()),
-            Value::String(format!("routes/{}/trainers.md", route_name)),
-        );
-        entries.push(Value::Mapping(trainers_entry));
+        trainer_encounter_tab.push_str("=== \"Trainer Encounters\"");
+        let trainer_table = create_trainer_table(wiki_name, &route_properties.trainers);
+        trainer_encounters.push_str(&trainer_table);
     }
 
-    let mut route_entry = Mapping::new();
+    let route_image = String::new();
 
-    if entries.is_empty() {
-        return route_entry;
-    }
+    let result = template
+        .replace("{{route_image}}", &route_image)
+        .replace("{{wild_encounter_tab}}", &wild_encounter_tab)
+        .replace("{{wild_encounters}}", &wild_encounters)
+        .replace("{{trainer_encounter_tab}}", &trainer_encounter_tab)
+        .replace("{{trainer_encounters}}", &trainer_encounters);
 
-    route_entry.insert(
-        Value::String(route_name.to_string()),
-        Value::Sequence(entries),
-    );
-    return route_entry;
+    return result;
 }
 
 fn create_encounter_table(
     wiki_name: &str,
-    route_name: &str,
-    routes_directory: &PathBuf,
     encounters: &IndexMap<String, Vec<WildEncounter>>,
     encounter_areas_levels: &IndexMap<String, String>,
-) -> Result<(), String> {
-    let mut encounters_markdown_file =
-        File::create(routes_directory.join("wild_encounters.md")).unwrap();
-
-    encounters_markdown_file
-        .write_all(format!("# {}\n\n", capitalize(route_name)).as_bytes())
-        .unwrap();
-
+) -> String {
     let mut markdown_encounters = String::new();
     for (encounter_type, pokemon_encounter_list) in encounters {
         let mut pokemon_entries = String::new();
@@ -258,33 +259,16 @@ fn create_encounter_table(
         markdown_encounters.push_str(&encounter_entry);
     }
 
-    encounters_markdown_file
-        .write_all(
-            format!(
-                "| Area | Pokemon | | | | | |
+    return format!(
+        "| Area | Pokemon | | | | | |
         | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
         {}
         ",
-                markdown_encounters
-            )
-            .as_bytes(),
-        )
-        .unwrap();
-    Ok(())
+        markdown_encounters
+    );
 }
 
-fn create_trainer_table(
-    wiki_name: &str,
-    route_name: &str,
-    routes_directory: &PathBuf,
-    trainers: &IndexMap<String, TrainerInfo>,
-) -> Result<(), String> {
-    let mut trainers_markdown_file = File::create(routes_directory.join("trainers.md")).unwrap();
-
-    trainers_markdown_file
-        .write_all(format!("# {}\n\n", capitalize(route_name)).as_bytes())
-        .unwrap();
-
+fn create_trainer_table(wiki_name: &str, trainers: &IndexMap<String, TrainerInfo>) -> String {
     let mut markdown_trainers = String::new();
     for (name, trainer_info) in trainers {
         if trainer_info.versions.is_empty() {
@@ -311,17 +295,7 @@ fn create_trainer_table(
         }
         markdown_trainers.push_str("<br/>");
     }
-    trainers_markdown_file
-        .write_all(
-            format!(
-                "{}
-                ",
-                markdown_trainers
-            )
-            .as_bytes(),
-        )
-        .unwrap();
-    Ok(())
+    return format!("{}", markdown_trainers);
 }
 
 fn get_markdown_entry_for_pokemon(wiki_name: &str, pokemon: &WildEncounter) -> String {

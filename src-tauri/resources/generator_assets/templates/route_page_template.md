@@ -1,5 +1,3 @@
-{{route_name}}
-
 {{route_image}}
 
 {{wild_encounter_tab}}
