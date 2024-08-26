@@ -196,12 +196,12 @@ fn generate_route_page_from_template(
 
     if !route_properties.wild_encounters.is_empty() {
         wild_encounter_tab.push_str("=== \"Wild Encounters\"");
-        let encounter_table = create_encounter_table(
+        let wild_encounter_markdown = generate_wild_encounter_markdown(
             wiki_name,
             &route_properties.wild_encounters,
             &route_properties.wild_encounter_area_levels,
         );
-        wild_encounters.push_str(&encounter_table);
+        wild_encounters.push_str(&wild_encounter_markdown);
     }
 
     let mut trainer_encounter_tab = String::new();
@@ -225,7 +225,7 @@ fn generate_route_page_from_template(
     return result;
 }
 
-fn create_encounter_table(
+fn generate_wild_encounter_markdown(
     wiki_name: &str,
     encounters: &IndexMap<String, Vec<WildEncounter>>,
     encounter_areas_levels: &IndexMap<String, String>,
@@ -244,11 +244,17 @@ fn create_encounter_table(
         }
 
         let encounter_type_entry = match encounter_areas_levels.get(&encounter_type.clone()) {
-            Some(area_level) => format!(
-                "{} Lv. {}",
-                capitalize_and_remove_hyphens(&encounter_type),
-                area_level
-            ),
+            Some(area_level) => {
+                if area_level.is_empty() {
+                    encounter_type.to_string()
+                } else {
+                    format!(
+                        "{} Lv. {}",
+                        capitalize_and_remove_hyphens(&encounter_type),
+                        area_level
+                    )
+                }
+            }
             None => encounter_type.to_string(),
         };
         let encounter_area = capitalize_and_remove_hyphens(&encounter_type_entry);
