@@ -1,4 +1,12 @@
 {
-    "routes": {},
-    "encounter_types": ["grass-normal"]
+  "routes": {},
+  "encounter_types": [
+    "grass",
+    "cave",
+    "desert",
+    "surf",
+    "fishing",
+    "dive",
+    "snow"
+  ]
 }
