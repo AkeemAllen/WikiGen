@@ -18,7 +18,7 @@ use crate::{
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Routes {
     pub routes: IndexMap<String, RouteProperties>,
-    pub encounter_types: Vec<String>,
+    pub encounter_areas: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -55,7 +55,7 @@ pub struct WildEncounter {
     pub id: usize,
     pub name: String,
     pub encounter_rate: usize,
-    pub encounter_type: String,
+    pub encounter_area: String,
     pub route: String,
     pub special_note: String,
 }
@@ -231,7 +231,7 @@ fn generate_wild_encounter_markdown(
     encounter_areas_levels: &IndexMap<String, String>,
 ) -> String {
     let mut markdown_encounters = String::new();
-    for (encounter_type, pokemon_encounter_list) in encounters {
+    for (encounter_area, pokemon_encounter_list) in encounters {
         let mut pokemon_entries = String::new();
         for pokemon in pokemon_encounter_list.iter() {
             let entry = format!(
@@ -243,21 +243,21 @@ fn generate_wild_encounter_markdown(
             pokemon_entries.push_str(&entry);
         }
 
-        let encounter_type_entry = match encounter_areas_levels.get(&encounter_type.clone()) {
+        let encounter_area_entry = match encounter_areas_levels.get(&encounter_area.clone()) {
             Some(area_level) => {
                 if area_level.is_empty() {
-                    encounter_type.to_string()
+                    encounter_area.to_string()
                 } else {
                     format!(
                         "{} Lv. {}",
-                        capitalize_and_remove_hyphens(&encounter_type),
+                        capitalize_and_remove_hyphens(&encounter_area),
                         area_level
                     )
                 }
             }
-            None => encounter_type.to_string(),
+            None => encounter_area.to_string(),
         };
-        let encounter_area = capitalize_and_remove_hyphens(&encounter_type_entry);
+        let encounter_area = capitalize_and_remove_hyphens(&encounter_area_entry);
         let encounters = format!(
             "<div style=\"display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;\">{}</div>",
             pokemon_entries

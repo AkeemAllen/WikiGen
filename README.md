@@ -20,11 +20,11 @@ And have those changes immediately reflect in the wiki.
 
 2. Download and install the application binary for your operating system.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > On Mac, when you try to open the app, you might get this popup message. "'WikiGen' cannot be opened because the developer cannot be verified."
 > The app is currently unsigned but I plan on signing it in the future. For now, just follow the below instructions once to get past it.
 > - Open Finder
-> - Ctrl + click the app 
+> - Ctrl + click the app
 > - Click Open
 > - You might get one more popup. Click open again.
 
@@ -36,7 +36,7 @@ And have those changes immediately reflect in the wiki.
 
 2. Fill out the fields as instructed and click the "Create Wiki" button.
 
-> [!TIP]  
+> [!TIP]
 > Use your github username to make deployment to github pages easier.
 > However, you can use a different name if you prefer to host it elsewhere
 
@@ -50,7 +50,7 @@ Navigate to the Wiki Testing page and follow the instructions to get the local s
 
 The app comes preloaded with data for all 1025 Pokemon. As of this release, you can modify a Pokemon's types, abilities, stats, evolution details, and movesets.
 
-> [!NOTE]  
+> [!NOTE]
 > The data is currently missing mega-evolutions, regional variants, and some minor forms.
 
 On the Pokemon page, find, edit, and save any entry. Saved changes will be immediately reflected in the wiki. Give it a go!
@@ -65,15 +65,15 @@ On the Pokemon page, find, edit, and save any entry. Saved changes will be immed
 
 Open the Game Routes page and create a new route, eg, Nimbasa City, or Route 1. Open the newly created route by clicking its box. All changes to wild encounters and trainer encounters will be reflected in the wiki.
 
-> [!TIP]  
-> You'll also see an option to "Modify Encounter Types." Use this to add all the environments where a player can encounter wild pokemon on a route. Eg. Grass, Tall-Grass, Surfing, Fishing, Cave, etc.
+> [!TIP]
+> You'll also see an option to "Modify Encounter Areas." Use this to add all the environments where a player can encounter wild pokemon on a route. Eg. Grass, Tall-Grass, Surfing, Fishing, Cave, etc.
 >
 > You can add as many as you wish.
 
 **Documenting Wild Encounters**
 
 1. Select the "Wild Encounters" tab. (You should be here by default)
-2. Fill in the encounter type, Pokemon, and Encounter rate and click save.
+2. Fill in the encounter area, Pokemon, and Encounter rate and click save.
 3. The new route and wild encounter should be reflected in the wiki.
 4. Do this for all wild pokemon on the route.
 
@@ -109,7 +109,7 @@ For some trainers, such as gym leaders, you may want a sprite.
 1. Click the three horizontal dots beside the trainer name and select Add sprite.
 2. Type in the name of a sprite, such as blue and click Set Sprite.
 
-> [!NOTE]  
+> [!NOTE]
 > All trainer sprites are taken from the [Pokemon Showdown Trainer Sprites](https://play.pokemonshowdown.com/sprites/trainers/) page.
 > You can peruse this site if you're not sure what sprite name to use.
 >

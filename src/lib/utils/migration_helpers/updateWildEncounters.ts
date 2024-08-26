@@ -16,7 +16,7 @@ export default function updateWildEncounters(routes: Routes): Routes {
             ...encounter,
             route: routeName,
             special_note: "",
-            encounter_type: encounterArea,
+            encounter_area: encounterArea,
           };
       }
     }

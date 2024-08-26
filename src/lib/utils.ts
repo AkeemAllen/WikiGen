@@ -194,12 +194,12 @@ export function sortRoutesByPosition(routes: Routes): Routes {
   );
 
   // Reconstruct the sorted object
-  const sortedRoutes: Routes = { routes: {}, encounter_types: [] };
+  const sortedRoutes: Routes = { routes: {}, encounter_areas: [] };
   routesArray.forEach(([routeName, route]) => {
     sortedRoutes.routes[routeName] = route;
   });
 
-  sortedRoutes.encounter_types = routes.encounter_types;
+  sortedRoutes.encounter_areas = routes.encounter_areas;
 
   return sortedRoutes;
 }

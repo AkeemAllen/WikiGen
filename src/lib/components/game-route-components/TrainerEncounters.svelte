@@ -307,7 +307,7 @@
     class="w-40"
   />
   <AutoComplete
-    label="Pokemon for current encounter type"
+    label="Pokemon for current encounter area"
     placeholder="Pokemon Name"
     bind:value={pokemonSearchName}
     options={pokemonListOptions}

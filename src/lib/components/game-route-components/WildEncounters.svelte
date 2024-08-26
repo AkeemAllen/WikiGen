@@ -43,7 +43,7 @@
   let pokemonListOptions: AutocompleteOption<string | number>[] =
     $pokemonList.map(([id, _, name]) => ({ label: name, value: id }));
 
-  const encounterTypes = $routes.encounter_types.map((type) => ({
+  const encounterTypes = $routes.encounter_areas.map((type) => ({
     label: type,
     value: type,
   }));
@@ -77,7 +77,7 @@
           id: searchedPokemon[1],
           name: pokemonName.toLowerCase(),
           encounter_rate: encounterRate,
-          encounter_type: encounterType,
+          encounter_area: encounterType,
           special_note: "",
           route: routeName,
         },
@@ -200,14 +200,14 @@
   <div class="w-40">
     <SelectInput
       id="encounter-type"
-      label="Encounter Type"
+      label="Encounter Area"
       bind:value={encounterType}
       options={encounterTypes}
     />
   </div>
 
   <AutoComplete
-    label="Pokemon for current encounter type"
+    label="Pokemon for current encounter area"
     placeholder="Pokemon Name"
     bind:value={pokemonName}
     options={pokemonListOptions}

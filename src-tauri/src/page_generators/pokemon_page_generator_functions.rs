@@ -261,7 +261,7 @@ pub fn create_locations_table(wild_encounters: Vec<WildEncounter>) -> String {
         let table_entry = format!(
             "\t| {} | {} | {} | {} |\n",
             encounter.route,
-            capitalize_and_remove_hyphens(&encounter.encounter_type),
+            capitalize_and_remove_hyphens(&encounter.encounter_area),
             encounter.encounter_rate,
             encounter.special_note
         );

@@ -1,6 +1,6 @@
 {
   "routes": {},
-  "encounter_types": [
+  "encounter_areas": [
     "grass",
     "cave",
     "desert",

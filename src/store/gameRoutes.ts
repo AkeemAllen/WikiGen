@@ -2,7 +2,7 @@ import { writable } from "svelte/store";
 
 export type Routes = {
   routes: { [key: string]: RouteProperties };
-  encounter_types: string[];
+  encounter_areas: string[];
 };
 
 export type RouteProperties = {
@@ -41,7 +41,7 @@ export type WildEncounter = {
   id: number;
   name: string;
   encounter_rate: number;
-  encounter_type: string;
+  encounter_area: string;
   route: string;
   special_note: string;
 };

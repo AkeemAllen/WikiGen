@@ -55,7 +55,7 @@
   }
 
   async function addNewEncounterType() {
-    $routes.encounter_types = [...$routes.encounter_types, newEncounterType];
+    $routes.encounter_areas = [...$routes.encounter_areas, newEncounterType];
     await writeTextFile(
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify(sortRoutesByPosition($routes)),
@@ -64,7 +64,7 @@
   }
 
   async function deleteEncounterType(encounterType: string) {
-    $routes.encounter_types = $routes.encounter_types.filter(
+    $routes.encounter_areas = $routes.encounter_areas.filter(
       (type) => type !== encounterType,
     );
     await writeTextFile(
@@ -162,7 +162,7 @@
   />
 </BaseModal>
 
-<!-- Encounter Type Modal -->
+<!-- Encounter Area Modal -->
 <BaseModal bind:open={encounterTypeModalOpen}>
   <div class="flex flex-row gap-3">
     <Button
@@ -171,10 +171,10 @@
       onClick={addNewEncounterType}
       disabled={newEncounterType === ""}
     />
-    <TextInput bind:value={newEncounterType} placeholder="New Encounter Type" />
+    <TextInput bind:value={newEncounterType} placeholder="New Encounter Area" />
   </div>
   <div class="grid grid-cols-2 gap-3">
-    {#each $routes.encounter_types as encounterType}
+    {#each $routes.encounter_areas as encounterType}
       <div class="card flex flex-row items-center justify-between px-2 py-1">
         {encounterType}
         <button
@@ -196,7 +196,7 @@
   />
   <Button
     class="w-48"
-    title="Modify Encounter Types"
+    title="Modify Encounter Areas"
     onClick={() => (encounterTypeModalOpen = true)}
   />
   <Button
