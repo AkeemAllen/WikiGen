@@ -224,7 +224,7 @@
   <Button
     class="mt-8 w-32"
     title="Add Encounter"
-    disabled={pokemonName === "" || encounterRate === 0}
+    disabled={pokemonName === ""}
     onClick={addEncounter}
   />
   <Button

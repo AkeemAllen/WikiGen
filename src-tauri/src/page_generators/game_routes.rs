@@ -301,14 +301,18 @@ fn create_trainer_table(wiki_name: &str, trainers: &IndexMap<String, TrainerInfo
 
 fn get_markdown_entry_for_pokemon(wiki_name: &str, pokemon: &WildEncounter) -> String {
     let dex_number_file_name = get_pokemon_dex_formatted_name(pokemon.id.try_into().unwrap());
+    let encounter_rate = match pokemon.encounter_rate {
+        0 => "".to_string(),
+        _ => format!("{}%", &pokemon.encounter_rate),
+    };
     return format!(
-        "![{}](../../img/pokemon/{}.png) [{}](/{}/pokemon/{}) {}%",
+        "![{}](../../img/pokemon/{}.png) [{}](/{}/pokemon/{}) {}",
         pokemon.name,
         pokemon.name,
         capitalize(&pokemon.name),
         wiki_name,
         format!("{}-{}", dex_number_file_name, pokemon.name),
-        pokemon.encounter_rate
+        encounter_rate
     );
 }
 
