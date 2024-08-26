@@ -233,39 +233,34 @@ fn create_encounter_table(
     let mut markdown_encounters = String::new();
     for (encounter_type, pokemon_encounter_list) in encounters {
         let mut pokemon_entries = String::new();
-        for (index, pokemon) in pokemon_encounter_list.iter().enumerate() {
-            let mut entry = format!("| {} ", get_markdown_entry_for_pokemon(wiki_name, &pokemon));
-            // It's possible for a single route to have more than 6 pokemon
-            // We want break the entries into a new line at that 6th position.
-            if index != 0 && index % 6 == 0 {
-                entry = format!(
-                    "\n| | {} ",
-                    get_markdown_entry_for_pokemon(wiki_name, &pokemon)
-                );
-            }
+        for pokemon in pokemon_encounter_list.iter() {
+            let entry = format!(
+                "<div style=\"display: grid; justify-items: center\">
+                    {}
+                </div>",
+                get_markdown_entry_for_pokemon(wiki_name, &pokemon)
+            );
             pokemon_entries.push_str(&entry);
         }
-        pokemon_entries.push_str("|");
 
         let encounter_type_entry = match encounter_areas_levels.get(&encounter_type.clone()) {
             Some(area_level) => format!(
-                "{}<br/> Lv. {}",
+                "{} Lv. {}",
                 capitalize_and_remove_hyphens(&encounter_type),
                 area_level
             ),
             None => encounter_type.to_string(),
         };
-        let encounter_entry = format!("| {} {}\n", encounter_type_entry, pokemon_entries);
+        let encounter_area = capitalize_and_remove_hyphens(&encounter_type_entry);
+        let encounters = format!(
+            "<div style=\"display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;\">{}</div>",
+            pokemon_entries
+        );
+        let encounter_entry = format!("\n\n\t???+ note \"{}\"\n\t\t{}", encounter_area, encounters);
         markdown_encounters.push_str(&encounter_entry);
     }
 
-    return format!(
-        "| Area | Pokemon | | | | | |
-        | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
-        {}
-        ",
-        markdown_encounters
-    );
+    return markdown_encounters;
 }
 
 fn create_trainer_table(wiki_name: &str, trainers: &IndexMap<String, TrainerInfo>) -> String {
@@ -301,7 +296,7 @@ fn create_trainer_table(wiki_name: &str, trainers: &IndexMap<String, TrainerInfo
 fn get_markdown_entry_for_pokemon(wiki_name: &str, pokemon: &WildEncounter) -> String {
     let dex_number_file_name = get_pokemon_dex_formatted_name(pokemon.id.try_into().unwrap());
     return format!(
-        "![{}](../../img/pokemon/{}.png)<br/> [{}](/{}/pokemon/{})<br/> {}%",
+        "![{}](../../img/pokemon/{}.png) [{}](/{}/pokemon/{}) {}%",
         pokemon.name,
         pokemon.name,
         capitalize(&pokemon.name),
