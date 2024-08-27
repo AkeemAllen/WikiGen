@@ -4,4 +4,4 @@
 {{wild_encounters}}
 
 {{trainer_encounter_tab}}
-    {{trainer_encounters}}
+{{trainer_encounters}}

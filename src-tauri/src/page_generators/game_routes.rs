@@ -60,6 +60,8 @@ pub struct WildEncounter {
     pub special_note: String,
 }
 
+static mut TRAINER_POKEMON_TEMPLATE: String = String::new();
+
 #[tauri::command]
 pub async fn generate_route_pages_with_handle(
     wiki_name: &str,
@@ -68,6 +70,22 @@ pub async fn generate_route_pages_with_handle(
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
     let resources_path = app_handle.path_resolver().resource_dir().unwrap();
+
+    unsafe {
+        TRAINER_POKEMON_TEMPLATE = match read_to_string(
+            resources_path
+                .join("resources")
+                .join("generator_assets")
+                .join("templates")
+                .join("trainer_pokemon_template.md"),
+        ) {
+            Ok(template) => template,
+            Err(err) => {
+                return Err(format!("Failed to read template file: {}", err));
+            }
+        };
+    }
+
     return generate_route_pages(
         &wiki_name,
         base_path.clone(),
@@ -273,8 +291,14 @@ fn create_trainer_table(wiki_name: &str, trainers: &IndexMap<String, TrainerInfo
     let mut markdown_trainers = String::new();
     for (name, trainer_info) in trainers {
         if trainer_info.versions.is_empty() {
-            let trainer_entry = generate_trainer_entry(wiki_name, name, trainer_info, "");
-            markdown_trainers.push_str(&format!("\n{}", trainer_entry));
+            let trainer_entry = format!(
+                "<div style=\"display: grid; grid-template-columns: 1fr 1fr 1fr;column-gap: 1rem\">\n{}</div>",
+                generate_trainer_entry(wiki_name, name, trainer_info, "")
+            );
+            markdown_trainers.push_str(&format!(
+                "\n\n\t???+ note \"{}\"\n\t\t{}",
+                name, trainer_entry
+            ));
         } else {
             for version in &trainer_info.versions {
                 // This is to prevent rendering a trainer version that doesn't have a pokemon
@@ -294,7 +318,6 @@ fn create_trainer_table(wiki_name: &str, trainers: &IndexMap<String, TrainerInfo
                 markdown_trainers.push_str(&format!("\t{}", trainer_entry));
             }
         }
-        markdown_trainers.push_str("<br/>");
     }
     return format!("{}", markdown_trainers);
 }
@@ -340,8 +363,11 @@ fn get_trainer_sprite(name: &str, sprite: &str) -> String {
 
 fn extract_move(_move: Option<&String>) -> String {
     match _move.clone() {
-        Some(_move) => _move.to_string(),
-        None => return "-".to_string(),
+        Some(_move) => format!(
+            "<div class=\"trainer-pokemon-move\">{}</div>",
+            _move.to_string()
+        ),
+        None => return "<div class=\"trainer-pokemon-move\">-</div>".to_string(),
     }
 }
 
@@ -358,81 +384,60 @@ fn generate_trainer_entry(
     trainer_info: &TrainerInfo,
     version: &str,
 ) -> String {
-    let mut pokemon_team = format!("\n\t| {}", get_trainer_sprite(name, &trainer_info.sprite));
-    if version == "" {
-        pokemon_team = format!("\n| {}", get_trainer_sprite(name, &trainer_info.sprite))
-    }
-    let mut header_divider = format!("| :-- ");
-    let mut levels = format!("| <strong>Level</stong> ");
-    let mut items = format!("| <strong>Item</stong> ");
-    let mut natures = format!("| <strong>Nature</stong> ");
-    let mut abilities = format!("| <strong>Ability</stong> ");
-    let mut move1 = format!("| <strong>Move 1</stong> ");
-    let mut move2 = format!("| <strong>Move 2</stong> ");
-    let mut move3 = format!("| <strong>Move 3</stong> ");
-    let mut move4 = format!("| <strong>Move 4</stong> ");
-
+    let mut pokemon_team = String::new();
+    // if version == "" {
+    //     pokemon_team = format!("| {}", get_trainer_sprite(name, &trainer_info.sprite))
+    // }
     for pokemon in &trainer_info.pokemon_team {
         if !pokemon.trainer_versions.contains(&version.to_string()) && version != "" {
             continue;
         }
+        let mut pokemon_entry = String::new();
+        let mut item_image = String::new();
+        if !pokemon.item.is_empty() {
+            item_image.push_str(&format!(
+                "<img src=\"../../img/items/{}.png\" alt={} style=\"width: 25px;\"/>",
+                pokemon.item, pokemon.item
+            ))
+        } else {
+            item_image.push_str("-");
+        }
+        let mut ability = String::new();
+        if pokemon.ability != "" {
+            ability = pokemon.ability.to_string();
+        } else {
+            ability = "-".to_string();
+        }
+        let mut nature = String::new();
+        if pokemon.nature != "" {
+            nature = pokemon.nature.to_string();
+        } else {
+            nature = "-".to_string();
+        }
+        unsafe {
+            pokemon_entry = TRAINER_POKEMON_TEMPLATE
+                .clone()
+                .replace("{{pokemon_name}}", &pokemon.name)
+                .replace("{{cap_pokemon_name}}", &capitalize(&pokemon.name))
+                .replace("{{page_title}}", &format!("{}", pokemon.name))
+                .replace("{{level}}", pokemon.level.to_string().as_str())
+                .replace("{{ability}}", &ability)
+                .replace("{{nature}}", &nature)
+                .replace("{{item_image}}", &item_image)
+                .replace("{{item_name}}", &evaluate_attribute(&pokemon.item))
+                .replace("{{move_1}}", &extract_move(pokemon.moves.get(0)))
+                .replace("{{move_2}}", &extract_move(pokemon.moves.get(1)))
+                .replace("{{move_3}}", &extract_move(pokemon.moves.get(2)))
+                .replace("{{move_4}}", &extract_move(pokemon.moves.get(3)));
+        };
+        let indented_lines: Vec<String> = pokemon_entry
+            .lines()
+            .map(|line| format!("\t\t{}", line))
+            .collect();
+        let indented_pokemon_entry = indented_lines.join("\n");
 
-        let pokemon_entry = format!(
-            "| {} ",
-            get_markdown_entry_for_trainer_pokemon(wiki_name, pokemon)
-        );
-        let level_entry = format!("| {} ", pokemon.level);
-        let item_entry = format!("| {} ", evaluate_attribute(&pokemon.item));
-        let nature_entry = format!("| {} ", evaluate_attribute(&pokemon.nature));
-        let ability_entry = format!("| {} ", evaluate_attribute(&pokemon.ability));
-        let move1_entry = format!("| {} ", extract_move(pokemon.moves.get(0)));
-        let move2_entry = format!("| {} ", extract_move(pokemon.moves.get(1)));
-        let move3_entry = format!("| {} ", extract_move(pokemon.moves.get(2)));
-        let move4_entry = format!("| {} ", extract_move(pokemon.moves.get(3)));
-
-        pokemon_team.push_str(&pokemon_entry);
-        header_divider.push_str("| :-- ");
-        levels.push_str(&level_entry);
-        items.push_str(&item_entry);
-        natures.push_str(&nature_entry);
-        abilities.push_str(&ability_entry);
-        move1.push_str(&move1_entry);
-        move2.push_str(&move2_entry);
-        move3.push_str(&move3_entry);
-        move4.push_str(&move4_entry);
+        pokemon_team.push_str(&format!("{}", &indented_pokemon_entry))
     }
-    pokemon_team.push_str("|");
-    header_divider.push_str("|");
-    levels.push_str("|");
-    items.push_str("|");
-    natures.push_str("|");
-    abilities.push_str("|");
-    move1.push_str("|");
-    move2.push_str("|");
-    move3.push_str("|");
-    move4.push_str("|");
 
-    return format!(
-        "{}
-        {}
-        {}
-        {}
-        {}
-        {}
-        {}
-        {}
-        {}
-        {}
-        ",
-        &pokemon_team,
-        &header_divider,
-        &levels,
-        &items,
-        &natures,
-        &abilities,
-        &move1,
-        &move2,
-        &move3,
-        &move4
-    );
+    return pokemon_team;
 }
