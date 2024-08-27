@@ -334,7 +334,7 @@ pub fn generate_page_from_template(
     if pokemon.ability_1.is_some() {
         ability_1.push_str(
             format!(
-                "<a href='' title='{}'>{}</a>",
+                "<a href='' title=\"{}\">{}</a>",
                 &pokemon.a1_effect.as_ref().unwrap(),
                 capitalize(&pokemon.ability_1.as_ref().unwrap())
             )
