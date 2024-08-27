@@ -292,7 +292,7 @@ fn create_trainer_table(wiki_name: &str, trainers: &IndexMap<String, TrainerInfo
     for (name, trainer_info) in trainers {
         if trainer_info.versions.is_empty() {
             let trainer_entry = format!(
-                "<div style=\"display: grid; grid-template-columns: 1fr 1fr 1fr;column-gap: 1rem\">\n{}</div>",
+                "<div style=\"display: grid; grid-template-columns: 1fr 1fr 1fr;gap: 1rem\">\n{}</div>",
                 generate_trainer_entry(wiki_name, name, trainer_info, "")
             );
             markdown_trainers.push_str(&format!(

@@ -1,7 +1,7 @@
 <div class="trainer-pokemon-card">
   <div style="display: grid; row-gap: 0.5rem">
     <img src="../../img/pokemon/{{pokemon_name}}.png" alt={{pokemon_name}} style="border-radius: 10px; background-color: #fff; justify-self: center;"/>
-    <div style="display: flex; flex-direction: row; background-color: white; justify-content: space-between; border-radius: 10px; padding:2px;">
+    <div style="display: flex; flex-direction: row; background-color: white; justify-content: space-between; border-radius: 10px; padding:2px; align-items: center;">
       <a href="/route-testing/pokemon/{{page_title}}">{{cap_pokemon_name}}</a>
       Lv {{level}}
     </div>
