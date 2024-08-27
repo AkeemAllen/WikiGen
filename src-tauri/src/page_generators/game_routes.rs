@@ -419,7 +419,14 @@ fn generate_trainer_entry(
                 .clone()
                 .replace("{{pokemon_name}}", &pokemon.name)
                 .replace("{{cap_pokemon_name}}", &capitalize(&pokemon.name))
-                .replace("{{page_title}}", &format!("{}", pokemon.name))
+                .replace(
+                    "{{page_title}}",
+                    &format!(
+                        "{}-{}",
+                        get_pokemon_dex_formatted_name(u32::try_from(pokemon.id).unwrap()),
+                        pokemon.name
+                    ),
+                )
                 .replace("{{level}}", pokemon.level.to_string().as_str())
                 .replace("{{ability}}", &ability)
                 .replace("{{nature}}", &nature)
