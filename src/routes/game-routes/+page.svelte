@@ -39,6 +39,7 @@
     }
 
     $routes.routes[routeName.trim()] = {
+      render: true,
       position: Object.keys($routes.routes).length + 1,
       trainers: {},
       wild_encounters: {},

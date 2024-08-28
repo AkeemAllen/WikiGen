@@ -6,6 +6,7 @@ export type Routes = {
 };
 
 export type RouteProperties = {
+  render: boolean;
   position: number;
   trainers: {
     [key: string]: TrainerInfo;

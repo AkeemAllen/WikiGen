@@ -28,6 +28,7 @@
   import { type as osTypeFunc } from "@tauri-apps/api/os";
   import updateWildEncounters from "$lib/utils/migration_helpers/updateWildEncounters";
   import updateTrainerEncounters from "$lib/utils/migration_helpers/updateTrainerEncounters";
+  import updateRouteRender from "$lib/utils/migration_helpers/updateRouteRenderValue";
 
   const toastStore = getToastStore();
 
@@ -77,6 +78,8 @@
     await updateTrainerEncounters(updatedRoutes).then((newRoutes) => {
       updatedRoutes = newRoutes;
     });
+
+    updatedRoutes = updateRouteRender(updatedRoutes);
 
     await writeTextFile(
       `${$selectedWiki.name}/data/routes.json`,

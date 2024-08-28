@@ -23,6 +23,7 @@ pub struct Routes {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RouteProperties {
+    pub render: bool,
     pub position: usize,
     pub trainers: IndexMap<String, TrainerInfo>,
     pub wild_encounters: IndexMap<String, Vec<WildEncounter>>,
@@ -149,7 +150,6 @@ pub fn generate_route_pages(
         }
     }
 
-    mkdocs_routes.clear();
     for route_name in route_names {
         let route_properties = routes.routes.get(route_name).unwrap();
 
@@ -161,6 +161,16 @@ pub fn generate_route_pages(
                 page_position = index;
                 break;
             }
+        }
+
+        if route_properties.render == false && page_entry_exists {
+            mkdocs_routes.remove(page_position);
+            continue;
+        }
+
+        if route_properties.render == false {
+            println!("Skipping rendering route {}", route_name);
+            continue;
         }
 
         let mut markdown_file =
@@ -192,6 +202,23 @@ pub fn generate_route_pages(
         if !page_entry_exists {
             mkdocs_routes.push(Value::Mapping(route_page_entry));
         }
+        mkdocs_routes.sort_by(|a, b| {
+            let first = a.as_mapping().unwrap().keys().next().unwrap();
+            let second = b.as_mapping().unwrap().keys().next().unwrap();
+
+            routes
+                .routes
+                .get(first.as_str().unwrap())
+                .unwrap()
+                .position
+                .cmp(
+                    &routes
+                        .routes
+                        .get(second.as_str().unwrap())
+                        .unwrap()
+                        .position,
+                )
+        })
     }
 
     match fs::write(
