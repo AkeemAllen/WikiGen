@@ -292,15 +292,13 @@ fn create_trainer_table(wiki_name: &str, trainers: &IndexMap<String, TrainerInfo
     let mut markdown_trainers = String::new();
     for (name, trainer_info) in trainers {
         let trainer_sprite = get_trainer_sprite(name, &trainer_info.sprite);
+        let mut trainer_entry: String = String::new();
+
         if trainer_info.versions.is_empty() {
-            let trainer_entry = format!(
+            trainer_entry = format!(
                 "<div class=\"trainer-pokemon-container\">\n{}</div>",
                 generate_trainer_entry(wiki_name, name, trainer_info, "")
             );
-            markdown_trainers.push_str(&format!(
-                "\n\t{}\n\t???+ note \"{}\"\n\t\t{}",
-                trainer_sprite, name, trainer_entry
-            ));
         } else {
             for version in &trainer_info.versions {
                 // This is to prevent rendering a trainer version that doesn't have a pokemon
@@ -315,11 +313,19 @@ fn create_trainer_table(wiki_name: &str, trainers: &IndexMap<String, TrainerInfo
                 if !version_has_one_pokemon {
                     continue;
                 }
-                markdown_trainers.push_str(&format!("\n=== \"{}\"", version));
-                let trainer_entry = generate_trainer_entry(wiki_name, name, trainer_info, version);
-                markdown_trainers.push_str(&format!("\t{}", trainer_entry));
+
+                let version_title = format!("\n\n\t\t=== \"{}\"", version);
+                let entry = format!(
+                    "\t<div class=\"trainer-pokemon-container\">\n{}</div>",
+                    generate_trainer_entry(wiki_name, name, trainer_info, version)
+                );
+                trainer_entry.push_str(&format!("{}\n\t\t{}", version_title, entry));
             }
         }
+        markdown_trainers.push_str(&format!(
+            "\n\t{}\n\t???+ note \"{}\"\n\t\t{}",
+            trainer_sprite, name, trainer_entry
+        ));
     }
     return format!("{}", markdown_trainers);
 }
@@ -460,9 +466,13 @@ fn generate_trainer_entry(
                 .replace("{{move_3}}", &extract_move(pokemon.moves.get(2)))
                 .replace("{{move_4}}", &extract_move(pokemon.moves.get(3)));
         };
+        let mut tabs = "\t\t";
+        if !version.is_empty() {
+            tabs = "\t\t\t\t";
+        }
         let indented_lines: Vec<String> = pokemon_entry
             .lines()
-            .map(|line| format!("\t\t{}", line))
+            .map(|line| format!("{}{}", tabs, line))
             .collect();
         let indented_pokemon_entry = indented_lines.join("\n");
 
