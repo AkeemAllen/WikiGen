@@ -298,7 +298,7 @@ fn generate_wild_encounter_markdown(
         let encounter_area_entry = match encounter_areas_levels.get(&encounter_area.clone()) {
             Some(area_level) => {
                 if area_level.is_empty() {
-                    encounter_area.to_string()
+                    capitalize_and_remove_hyphens(encounter_area)
                 } else {
                     format!(
                         "{} Lv. {}",
@@ -307,9 +307,9 @@ fn generate_wild_encounter_markdown(
                     )
                 }
             }
-            None => encounter_area.to_string(),
+            None => capitalize_and_remove_hyphens(encounter_area),
         };
-        let encounter_area = capitalize_and_remove_hyphens(&encounter_area_entry);
+        let encounter_area = &encounter_area_entry;
         let encounters = format!(
             "<div style=\"display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;\">{}</div>",
             pokemon_entries
