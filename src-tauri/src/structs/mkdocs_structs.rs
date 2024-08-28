@@ -49,7 +49,7 @@ pub struct Search {
     pub lang: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum MarkdownExtension {
     String(String),
     /*
@@ -65,12 +65,12 @@ pub enum MarkdownExtension {
     PymdownxTabbed(PymdownxTabbed),
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct PymdownxTaskList {
     pub custom_checkbox: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct PymdownxTabbed {
     pub alternate_style: bool,
 }

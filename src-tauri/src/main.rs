@@ -23,6 +23,8 @@ use wiki_preparation::backup_wiki::backup_wiki;
 use wiki_preparation::create_wiki::create_wiki;
 use wiki_preparation::prepare_data::{download_and_prep_pokemon_data, download_pokemon_sprites};
 
+use wiki_preparation::yaml_declaration::update_yaml;
+
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
@@ -60,6 +62,7 @@ fn main() {
             generate_item_page,
             generate_nature_page,
             generate_ability_page,
+            update_yaml,
             convert_items_to_sqlite,
             convert_abilities_to_sqlite,
             convert_natures_to_sqlite,
