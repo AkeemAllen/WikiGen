@@ -1,5 +1,5 @@
 <div class="trainer-pokemon-card">
-  <div style="display: grid; row-gap: 0.5rem">
+  <div class="trainer-pokemon-image-name-container">
     <img src="../../img/pokemon/{{pokemon_name}}.png" alt={{pokemon_name}} style="border-radius: 10px; background-color: #fff; justify-self: center;"/>
     <div class="trainer-pokemon-name-level-container">
       <a href="/route-testing/pokemon/{{page_title}}">{{cap_pokemon_name}}</a>
