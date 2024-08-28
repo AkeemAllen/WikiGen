@@ -163,6 +163,12 @@ pub fn generate_route_pages(
             }
         }
 
+        if page_entry_exists && docs_path.join("routes").join(route_name).is_dir() {
+            fs::remove_dir_all(docs_path.join("routes").join(route_name)).unwrap();
+            mkdocs_routes.remove(page_position);
+            page_entry_exists = false;
+        }
+
         if route_properties.render == false && page_entry_exists {
             mkdocs_routes.remove(page_position);
             continue;
