@@ -26,7 +26,12 @@ export default function updateWildEncounters(routes: any): Routes {
     }
   }
   if (updatedRoutes.encounter_types === undefined) {
-    updatedRoutes.encounter_areas = [];
+    if (
+      updatedRoutes.encounter_areas === undefined ||
+      updatedRoutes.encounter_areas.length === 0
+    ) {
+      updatedRoutes.encounter_areas = [];
+    }
   } else {
     updatedRoutes.encounter_areas = [...updatedRoutes.encounter_types];
     delete updatedRoutes.encounter_types;
