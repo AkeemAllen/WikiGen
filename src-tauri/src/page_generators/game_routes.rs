@@ -228,7 +228,7 @@ fn generate_route_page_from_template(
 
     if !route_properties.trainers.is_empty() {
         trainer_encounter_tab.push_str("=== \"Trainer Encounters\"");
-        let trainer_table = create_trainer_table(wiki_name, &route_properties.trainers);
+        let trainer_table = generate_trainer_markdown(&route_properties.trainers);
         trainer_encounters.push_str(&trainer_table);
     }
 
@@ -288,7 +288,7 @@ fn generate_wild_encounter_markdown(
     return markdown_encounters;
 }
 
-fn create_trainer_table(wiki_name: &str, trainers: &IndexMap<String, TrainerInfo>) -> String {
+fn generate_trainer_markdown(trainers: &IndexMap<String, TrainerInfo>) -> String {
     let mut markdown_trainers = String::new();
     for (name, trainer_info) in trainers {
         let trainer_sprite = get_trainer_sprite(name, &trainer_info.sprite);
@@ -297,7 +297,7 @@ fn create_trainer_table(wiki_name: &str, trainers: &IndexMap<String, TrainerInfo
         if trainer_info.versions.is_empty() {
             trainer_entry = format!(
                 "<div class=\"trainer-pokemon-container\">\n{}</div>",
-                generate_trainer_entry(wiki_name, name, trainer_info, "")
+                generate_trainer_entry(trainer_info, "")
             );
         } else {
             for version in &trainer_info.versions {
@@ -317,7 +317,7 @@ fn create_trainer_table(wiki_name: &str, trainers: &IndexMap<String, TrainerInfo
                 let version_title = format!("\n\n\t\t=== \"{}\"", version);
                 let entry = format!(
                     "\t<div class=\"trainer-pokemon-container\">\n{}</div>",
-                    generate_trainer_entry(wiki_name, name, trainer_info, version)
+                    generate_trainer_entry(trainer_info, version)
                 );
                 trainer_entry.push_str(&format!("{}\n\t\t{}", version_title, entry));
             }
@@ -344,18 +344,6 @@ fn get_markdown_entry_for_pokemon(wiki_name: &str, pokemon: &WildEncounter) -> S
         wiki_name,
         format!("{}-{}", dex_number_file_name, pokemon.name),
         encounter_rate
-    );
-}
-
-fn get_markdown_entry_for_trainer_pokemon(wiki_name: &str, pokemon: &TrainerPokemon) -> String {
-    let dex_number_file_name = get_pokemon_dex_formatted_name(pokemon.id.try_into().unwrap());
-    return format!(
-        "![{}](../../img/pokemon/{}.png)<br/> [{}](/{}/pokemon/{})",
-        pokemon.name,
-        pokemon.name,
-        capitalize(&pokemon.name),
-        wiki_name,
-        format!("{}-{}", dex_number_file_name, pokemon.name),
     );
 }
 
@@ -386,41 +374,28 @@ fn evaluate_attribute(attribute: &str) -> String {
     }
 }
 
-fn generate_trainer_entry(
-    wiki_name: &str,
-    name: &str,
-    trainer_info: &TrainerInfo,
-    version: &str,
-) -> String {
+fn generate_trainer_entry(trainer_info: &TrainerInfo, version: &str) -> String {
     let mut pokemon_team = String::new();
-    // if version == "" {
-    //     pokemon_team = format!("| {}", get_trainer_sprite(name, &trainer_info.sprite))
-    // }
     for pokemon in &trainer_info.pokemon_team {
         if !pokemon.trainer_versions.contains(&version.to_string()) && version != "" {
             continue;
         }
-        let mut pokemon_entry = String::new();
-        let mut item_image = String::new();
+        let mut item_image = "<div></div>".to_string();
         if !pokemon.item.is_empty() {
-            item_image.push_str(&format!(
+            item_image = format!(
                 "<img src=\"../../img/items/{}.png\" alt={} style=\"width: 25px;\"/>",
                 pokemon.item, pokemon.item
-            ))
-        } else {
-            item_image.push_str("<div></div>");
+            );
         }
-        let mut ability = String::new();
+
+        let mut ability = "-".to_string();
         if pokemon.ability != "" {
             ability = capitalize_and_remove_hyphens(&pokemon.ability);
-        } else {
-            ability = "-".to_string();
         }
-        let mut nature = String::new();
+
+        let mut nature = "-".to_string();
         if pokemon.nature != "" {
             nature = capitalize_and_remove_hyphens(&pokemon.nature);
-        } else {
-            nature = "-".to_string();
         }
 
         let type_one = format!(
@@ -429,18 +404,16 @@ fn generate_trainer_entry(
             pokemon.types.get(0).unwrap()
         );
 
-        let type_two: String;
-
+        let mut type_two = "<div></div>".to_string();
         if pokemon.types.len() > 1 {
             type_two = format!(
                 "<img src=\"../../img/types/{}.png\" alt={} style=\"width: 50px;\"/>",
                 pokemon.types.get(1).unwrap(),
                 pokemon.types.get(1).unwrap()
             );
-        } else {
-            type_two = "<div></div>".to_string();
         }
 
+        let pokemon_entry: String;
         unsafe {
             pokemon_entry = TRAINER_POKEMON_TEMPLATE
                 .clone()
