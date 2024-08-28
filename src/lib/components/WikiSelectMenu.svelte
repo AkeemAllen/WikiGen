@@ -129,6 +129,10 @@
         dir: BaseDirectory.AppData,
       },
     );
+
+    await invoke("update_yaml", {
+      wikiName: $selectedWiki.name,
+    });
   }
 
   async function deleteWikis() {
