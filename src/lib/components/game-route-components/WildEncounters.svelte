@@ -27,7 +27,7 @@
 
   export let routeName: string = "";
   let pokemonName: string = "";
-  let encounterType: string = "grass-normal";
+  let encounterArea: string = "grass";
   let currentWildEncounterIndex: number;
   let currentEncounterType: string;
   let editEncounterModalOpen: boolean = false;
@@ -43,7 +43,7 @@
   let pokemonListOptions: AutocompleteOption<string | number>[] =
     $pokemonList.map(([id, _, name]) => ({ label: name, value: id }));
 
-  const encounterTypes = $routes.encounter_areas.map((type) => ({
+  const encounterAreas = $routes.encounter_areas.map((type) => ({
     label: type,
     value: type,
   }));
@@ -71,20 +71,20 @@
 
     routeWildEncounters = {
       ...routeWildEncounters,
-      [encounterType]: [
-        ...(routeWildEncounters[encounterType] ?? []),
+      [encounterArea]: [
+        ...(routeWildEncounters[encounterArea] ?? []),
         {
           id: searchedPokemon[1],
           name: pokemonName.toLowerCase(),
           encounter_rate: encounterRate,
-          encounter_area: encounterType,
+          encounter_area: encounterArea,
           special_note: "",
           route: routeName,
         },
       ],
     };
 
-    routeWildEncounters[encounterType]
+    routeWildEncounters[encounterArea]
       .sort(
         (encounter1, encounter2) =>
           encounter1.encounter_rate - encounter2.encounter_rate,
@@ -92,20 +92,20 @@
       .reverse();
   }
 
-  async function deleteEncounter(pokemonName: string, encounterType: string) {
+  async function deleteEncounter(pokemonName: string, encounterArea: string) {
     editEncounterModalOpen = false;
     let updatedEncounters = {
       ...routeWildEncounters,
     };
-    updatedEncounters[encounterType] = updatedEncounters[encounterType].filter(
+    updatedEncounters[encounterArea] = updatedEncounters[encounterArea].filter(
       (encounter) => encounter.name !== pokemonName,
     );
-    if (updatedEncounters[encounterType].length === 0) {
-      delete updatedEncounters[encounterType];
+    if (updatedEncounters[encounterArea].length === 0) {
+      delete updatedEncounters[encounterArea];
     }
 
-    if (updatedEncounters[encounterType] !== undefined) {
-      updatedEncounters[encounterType]
+    if (updatedEncounters[encounterArea] !== undefined) {
+      updatedEncounters[encounterArea]
         .sort(
           (encounter1, encounter2) =>
             encounter1.encounter_rate - encounter2.encounter_rate,
@@ -200,10 +200,10 @@
 >
   <div class="w-40">
     <SelectInput
-      id="encounter-type"
+      id="encounter-area"
       label="Encounter Area"
-      bind:value={encounterType}
-      options={encounterTypes}
+      bind:value={encounterArea}
+      options={encounterAreas}
     />
   </div>
 
