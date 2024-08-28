@@ -96,21 +96,13 @@
       $pokemonList,
     );
 
-    let type_one = searchedPokemon[3].split(",")[0];
-    let type_two =
-      searchedPokemon[3].split(",").length > 1
-        ? searchedPokemon[3].split(",")[1]
-        : "";
-
-    let types = type_two === "" ? [type_one] : [type_one, type_two];
-
     routeTrainers[trainerName].pokemon_team = [
       ...routeTrainers[trainerName].pokemon_team,
       {
         id: id,
         unique_id: uniqueId,
         name: pokemonSearchName.toLowerCase(),
-        types: types,
+        types: searchedPokemon[3].split(","),
         level,
         item: "",
         nature: "",

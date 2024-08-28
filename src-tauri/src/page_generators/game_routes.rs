@@ -41,6 +41,7 @@ pub struct TrainerInfo {
 pub struct TrainerPokemon {
     pub id: usize,
     pub unique_id: String,
+    pub types: Vec<String>,
     pub name: String,
     pub level: usize,
     pub moves: Vec<String>,
@@ -400,7 +401,7 @@ fn generate_trainer_entry(
                 pokemon.item, pokemon.item
             ))
         } else {
-            item_image.push_str("-");
+            item_image.push_str("<div></div>");
         }
         let mut ability = String::new();
         if pokemon.ability != "" {
@@ -414,6 +415,25 @@ fn generate_trainer_entry(
         } else {
             nature = "-".to_string();
         }
+
+        let type_one = format!(
+            "<img src=\"../../img/types/{}.png\" alt={} style=\"width: 50px;\"/>",
+            pokemon.types.get(0).unwrap(),
+            pokemon.types.get(0).unwrap()
+        );
+
+        let type_two: String;
+
+        if pokemon.types.len() > 1 {
+            type_two = format!(
+                "<img src=\"../../img/types/{}.png\" alt={} style=\"width: 50px;\"/>",
+                pokemon.types.get(1).unwrap(),
+                pokemon.types.get(1).unwrap()
+            );
+        } else {
+            type_two = "<div></div>".to_string();
+        }
+
         unsafe {
             pokemon_entry = TRAINER_POKEMON_TEMPLATE
                 .clone()
@@ -431,6 +451,8 @@ fn generate_trainer_entry(
                 .replace("{{ability}}", &ability)
                 .replace("{{nature}}", &nature)
                 .replace("{{item_image}}", &item_image)
+                .replace("{{type_one}}", &type_one)
+                .replace("{{type_two}}", &type_two)
                 .replace("{{item_name}}", &evaluate_attribute(&pokemon.item))
                 .replace("{{move_1}}", &extract_move(pokemon.moves.get(0)))
                 .replace("{{move_2}}", &extract_move(pokemon.moves.get(1)))

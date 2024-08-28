@@ -84,7 +84,6 @@
       ],
     };
 
-    console.log(routeWildEncounters[encounterType]);
     routeWildEncounters[encounterType]
       .sort(
         (encounter1, encounter2) =>

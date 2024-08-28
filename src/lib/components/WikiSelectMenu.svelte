@@ -27,6 +27,7 @@
   import { resourceDir } from "@tauri-apps/api/path";
   import { type as osTypeFunc } from "@tauri-apps/api/os";
   import updateWildEncounters from "$lib/utils/migration_helpers/updateWildEncounters";
+  import updateTrainerEncounters from "$lib/utils/migration_helpers/updateTrainerEncounters";
 
   const toastStore = getToastStore();
 
@@ -69,9 +70,14 @@
     }
 
     // Update the routes.json file with the new format
-    let updatedRoutes = updateWildEncounters(
-      sortRoutesByPosition(JSON.parse(routesFromFile)),
+    let updatedRoutes = sortRoutesByPosition(
+      updateWildEncounters(JSON.parse(routesFromFile)),
     );
+
+    await updateTrainerEncounters(updatedRoutes).then((newRoutes) => {
+      updatedRoutes = newRoutes;
+    });
+
     await writeTextFile(
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify(updatedRoutes),

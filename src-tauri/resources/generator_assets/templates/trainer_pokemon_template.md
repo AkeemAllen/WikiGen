@@ -8,8 +8,8 @@
   </div>
   <div class="trainer-pokemon-attributes">
     <div>
-      <img src="../../img/types/normal.png" alt=eevee style="width: 50px;"/>
-      <img src="../../img/types/water.png" alt=eevee style="width: 50px;"/>
+      {{type_one}}
+      {{type_two}}
     </div>
     <div>
       <p style="margin: 0px; font-size: 10px;">Ability:</p>
