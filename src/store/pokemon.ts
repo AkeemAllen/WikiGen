@@ -4,6 +4,7 @@ export type SearchPokemon = {
   id: number;
   dex_number: number;
   name: string;
+  types: string;
 };
 
 export type Pokemon = {
@@ -84,4 +85,4 @@ export const PokemonTypes = [
   "fairy",
 ];
 
-export let pokemonList = writable<[number, number, string][]>([]);
+export let pokemonList = writable<[number, number, string, string][]>([]);

@@ -28,6 +28,7 @@ export type TrainerInfo = {
 export type TrainerPokemon = {
   id: number;
   unique_id: string;
+  types: string[];
   name: string;
   level: number;
   moves: string[];

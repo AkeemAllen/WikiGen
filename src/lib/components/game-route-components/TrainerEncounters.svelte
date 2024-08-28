@@ -65,7 +65,7 @@
 
   function addPokemonToTrainer() {
     let searchedPokemon = $pokemonList.find(
-      ([_, __, name]) => name === pokemonSearchName.toLowerCase(),
+      ([_, __, name, ___]) => name === pokemonSearchName.toLowerCase(),
     );
 
     if (searchedPokemon === undefined) {
@@ -96,12 +96,21 @@
       $pokemonList,
     );
 
+    let type_one = searchedPokemon[3].split(",")[0];
+    let type_two =
+      searchedPokemon[3].split(",").length > 1
+        ? searchedPokemon[3].split(",")[1]
+        : "";
+
+    let types = type_two === "" ? [type_one] : [type_one, type_two];
+
     routeTrainers[trainerName].pokemon_team = [
       ...routeTrainers[trainerName].pokemon_team,
       {
         id: id,
         unique_id: uniqueId,
         name: pokemonSearchName.toLowerCase(),
+        types: types,
         level,
         item: "",
         nature: "",
@@ -110,6 +119,8 @@
         moves: [],
       },
     ];
+
+    console.log(routeTrainers[trainerName].pokemon_team);
 
     let sortedTrainers = sortTrainersByPosition(routeTrainers);
     routeTrainers = sortedTrainers;

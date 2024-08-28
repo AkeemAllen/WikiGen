@@ -158,11 +158,16 @@
         // Load Pokemon
         $db
           .select(
-            "SELECT id, dex_number, name FROM pokemon ORDER BY dex_number",
+            "SELECT id, dex_number, name, types FROM pokemon ORDER BY dex_number",
           )
           .then((pokemon: any) => {
             pokemonList.set(
-              pokemon.map((p: SearchPokemon) => [p.id, p.dex_number, p.name]),
+              pokemon.map((p: SearchPokemon) => [
+                p.id,
+                p.dex_number,
+                p.name,
+                p.types,
+              ]),
             );
           });
 
