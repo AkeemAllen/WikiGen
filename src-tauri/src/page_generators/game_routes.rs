@@ -291,14 +291,15 @@ fn generate_wild_encounter_markdown(
 fn create_trainer_table(wiki_name: &str, trainers: &IndexMap<String, TrainerInfo>) -> String {
     let mut markdown_trainers = String::new();
     for (name, trainer_info) in trainers {
+        let trainer_sprite = get_trainer_sprite(name, &trainer_info.sprite);
         if trainer_info.versions.is_empty() {
             let trainer_entry = format!(
                 "<div style=\"display: grid; grid-template-columns: 1fr 1fr 1fr;gap: 1rem\">\n{}</div>",
                 generate_trainer_entry(wiki_name, name, trainer_info, "")
             );
             markdown_trainers.push_str(&format!(
-                "\n\n\t???+ note \"{}\"\n\t\t{}",
-                name, trainer_entry
+                "\n\t{}\n\t???+ note \"{}\"\n\t\t{}",
+                trainer_sprite, name, trainer_entry
             ));
         } else {
             for version in &trainer_info.versions {
@@ -354,11 +355,11 @@ fn get_markdown_entry_for_trainer_pokemon(wiki_name: &str, pokemon: &TrainerPoke
 
 fn get_trainer_sprite(name: &str, sprite: &str) -> String {
     if sprite == "".to_string() {
-        return name.to_string();
+        return "".to_string();
     }
     return format!(
-        "{}<br/> ![{}](https://play.pokemonshowdown.com/sprites/trainers/{}.png)",
-        name, name, sprite
+        "![{}](https://play.pokemonshowdown.com/sprites/trainers/{}.png)",
+        name, sprite
     );
 }
 
@@ -366,7 +367,7 @@ fn extract_move(_move: Option<&String>) -> String {
     match _move.clone() {
         Some(_move) => format!(
             "<div class=\"trainer-pokemon-move\">{}</div>",
-            _move.to_string()
+            capitalize_and_remove_hyphens(_move)
         ),
         None => return "<div class=\"trainer-pokemon-move\">-</div>".to_string(),
     }
@@ -375,7 +376,7 @@ fn extract_move(_move: Option<&String>) -> String {
 fn evaluate_attribute(attribute: &str) -> String {
     match attribute {
         "" => return "-".to_string(),
-        _ => return attribute.to_string(),
+        _ => return capitalize_and_remove_hyphens(attribute),
     }
 }
 
@@ -405,13 +406,13 @@ fn generate_trainer_entry(
         }
         let mut ability = String::new();
         if pokemon.ability != "" {
-            ability = pokemon.ability.to_string();
+            ability = capitalize_and_remove_hyphens(&pokemon.ability);
         } else {
             ability = "-".to_string();
         }
         let mut nature = String::new();
         if pokemon.nature != "" {
-            nature = pokemon.nature.to_string();
+            nature = capitalize_and_remove_hyphens(&pokemon.nature);
         } else {
             nature = "-".to_string();
         }
