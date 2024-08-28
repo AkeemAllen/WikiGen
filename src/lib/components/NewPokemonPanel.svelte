@@ -166,6 +166,7 @@
           res.lastInsertId,
           newPokemon.dex_number,
           newPokemon.name,
+          newPokemon.types,
         ]);
 
         toastStore.trigger({

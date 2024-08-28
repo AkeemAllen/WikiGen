@@ -65,7 +65,7 @@
 
   function addPokemonToTrainer() {
     let searchedPokemon = $pokemonList.find(
-      ([_, __, name]) => name === pokemonSearchName.toLowerCase(),
+      ([_, __, name, ___]) => name === pokemonSearchName.toLowerCase(),
     );
 
     if (searchedPokemon === undefined) {
@@ -102,6 +102,7 @@
         id: id,
         unique_id: uniqueId,
         name: pokemonSearchName.toLowerCase(),
+        types: searchedPokemon[3].split(","),
         level,
         item: "",
         nature: "",
@@ -110,6 +111,8 @@
         moves: [],
       },
     ];
+
+    console.log(routeTrainers[trainerName].pokemon_team);
 
     let sortedTrainers = sortTrainersByPosition(routeTrainers);
     routeTrainers = sortedTrainers;
@@ -192,9 +195,9 @@
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
     ).then(() => {
-      invoke("generate_single_route_page_with_handle", {
+      invoke("generate_route_pages_with_handle", {
         wikiName: $selectedWiki.name,
-        routeName,
+        routeNames: [routeName],
       })
         .then(() => {
           toastStore.trigger({
@@ -307,7 +310,7 @@
     class="w-40"
   />
   <AutoComplete
-    label="Pokemon for current encounter type"
+    label="Pokemon for current encounter area"
     placeholder="Pokemon Name"
     bind:value={pokemonSearchName}
     options={pokemonListOptions}

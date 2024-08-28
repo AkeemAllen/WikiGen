@@ -27,7 +27,7 @@
 
   export let routeName: string = "";
   let pokemonName: string = "";
-  let encounterType: string = "grass-normal";
+  let encounterArea: string = "grass";
   let currentWildEncounterIndex: number;
   let currentEncounterType: string;
   let editEncounterModalOpen: boolean = false;
@@ -43,7 +43,7 @@
   let pokemonListOptions: AutocompleteOption<string | number>[] =
     $pokemonList.map(([id, _, name]) => ({ label: name, value: id }));
 
-  const encounterTypes = $routes.encounter_types.map((type) => ({
+  const encounterAreas = $routes.encounter_areas.map((type) => ({
     label: type,
     value: type,
   }));
@@ -71,19 +71,20 @@
 
     routeWildEncounters = {
       ...routeWildEncounters,
-      [encounterType]: [
-        ...(routeWildEncounters[encounterType] ?? []),
+      [encounterArea]: [
+        ...(routeWildEncounters[encounterArea] ?? []),
         {
           id: searchedPokemon[1],
           name: pokemonName.toLowerCase(),
           encounter_rate: encounterRate,
-          encounter_type: encounterType,
+          encounter_area: encounterArea,
           special_note: "",
           route: routeName,
         },
       ],
     };
-    routeWildEncounters[encounterType]
+
+    routeWildEncounters[encounterArea]
       .sort(
         (encounter1, encounter2) =>
           encounter1.encounter_rate - encounter2.encounter_rate,
@@ -91,20 +92,20 @@
       .reverse();
   }
 
-  async function deleteEncounter(pokemonName: string, encounterType: string) {
+  async function deleteEncounter(pokemonName: string, encounterArea: string) {
     editEncounterModalOpen = false;
     let updatedEncounters = {
       ...routeWildEncounters,
     };
-    updatedEncounters[encounterType] = updatedEncounters[encounterType].filter(
+    updatedEncounters[encounterArea] = updatedEncounters[encounterArea].filter(
       (encounter) => encounter.name !== pokemonName,
     );
-    if (updatedEncounters[encounterType].length === 0) {
-      delete updatedEncounters[encounterType];
+    if (updatedEncounters[encounterArea].length === 0) {
+      delete updatedEncounters[encounterArea];
     }
 
-    if (updatedEncounters[encounterType] !== undefined) {
-      updatedEncounters[encounterType]
+    if (updatedEncounters[encounterArea] !== undefined) {
+      updatedEncounters[encounterArea]
         .sort(
           (encounter1, encounter2) =>
             encounter1.encounter_rate - encounter2.encounter_rate,
@@ -131,9 +132,9 @@
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
     ).then(() => {
-      invoke("generate_single_route_page_with_handle", {
+      invoke("generate_route_pages_with_handle", {
         wikiName: $selectedWiki.name,
-        routeName,
+        routeNames: [routeName],
       })
         .then(() => {
           toastStore.trigger({
@@ -199,15 +200,15 @@
 >
   <div class="w-40">
     <SelectInput
-      id="encounter-type"
-      label="Encounter Type"
-      bind:value={encounterType}
-      options={encounterTypes}
+      id="encounter-area"
+      label="Encounter Area"
+      bind:value={encounterArea}
+      options={encounterAreas}
     />
   </div>
 
   <AutoComplete
-    label="Pokemon for current encounter type"
+    label="Pokemon for current encounter area"
     placeholder="Pokemon Name"
     bind:value={pokemonName}
     options={pokemonListOptions}
@@ -224,7 +225,7 @@
   <Button
     class="mt-8 w-32"
     title="Add Encounter"
-    disabled={pokemonName === "" || encounterRate === 0}
+    disabled={pokemonName === ""}
     onClick={addEncounter}
   />
   <Button

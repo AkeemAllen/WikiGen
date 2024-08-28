@@ -7,7 +7,7 @@
   };
   export let id = "";
   export let label = "";
-  export let value: string | undefined | null | number = "";
+  export let value: string | undefined | null | boolean | number = "";
   export let options: Option[] = [];
   export let onChange: EventHandler<Event, HTMLSelectElement> = () => {};
 </script>

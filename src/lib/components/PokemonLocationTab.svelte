@@ -27,7 +27,7 @@
   let newLocation: WildEncounter = {
     id: 0,
     name: "",
-    encounter_type: "",
+    encounter_area: "",
     encounter_rate: 0,
     route: "",
     special_note: "",
@@ -36,7 +36,7 @@
   let locationToEdit: WildEncounter = {
     id: 0,
     name: "",
-    encounter_type: "",
+    encounter_area: "",
     encounter_rate: 0,
     route: "",
     special_note: "",
@@ -47,9 +47,9 @@
     value: route,
   }));
 
-  let encounterTypeOptions = $routes.encounter_types.map((encounter_type) => ({
-    label: encounter_type,
-    value: encounter_type,
+  let encounterTypeOptions = $routes.encounter_areas.map((encounter_area) => ({
+    label: encounter_area,
+    value: encounter_area,
   }));
 
   const rowsPerPageOptions = [
@@ -65,6 +65,23 @@
   });
   $: rows = handler.getRows();
   $: rowsPerPage = handler.getRowsPerPage();
+
+  async function generateRoutePage(routeName: string) {
+    invoke("generate_route_pages_with_handle", {
+      wikiName: $selectedWiki.name,
+      routeNames: [routeName],
+    })
+      .then(() => {
+        toastStore.trigger({
+          message: "Changes saved successfully",
+          timeout: 3000,
+          background: "variant-filled-success",
+        });
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+  }
 
   async function addPokemonToLocation() {
     newLocation.id = pokemonId;
@@ -82,7 +99,7 @@
 
     if (
       $routes.routes[location.route].wild_encounters[
-        location.encounter_type
+        location.encounter_area
       ]?.find((encounter) => encounter.name === location.name)
     ) {
       toastStore.trigger({
@@ -94,15 +111,15 @@
 
     $routes.routes[location.route].wild_encounters = {
       ...$routes.routes[location.route].wild_encounters,
-      [location.encounter_type]: [
+      [location.encounter_area]: [
         ...($routes.routes[location.route].wild_encounters[
-          location.encounter_type
+          location.encounter_area
         ] ?? []),
         location,
       ],
     };
 
-    $routes.routes[location.route].wild_encounters[location.encounter_type]
+    $routes.routes[location.route].wild_encounters[location.encounter_area]
       .sort((a, b) => a.encounter_rate - b.encounter_rate)
       .reverse();
 
@@ -111,26 +128,13 @@
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
     ).then(() => {
-      invoke("generate_single_route_page_with_handle", {
-        wikiName: $selectedWiki.name,
-        routeName: location.route,
-      })
-        .then(() => {
-          toastStore.trigger({
-            message: "Changes saved successfully",
-            timeout: 3000,
-            background: "variant-filled-success",
-          });
-        })
-        .catch((e) => {
-          console.error(e);
-        });
+      generateRoutePage(location.route);
       pokemonLocations = [...pokemonLocations, { ...location }];
       addLocationModalOpen = false;
       newLocation = {
         id: 0,
         name: "",
-        encounter_type: "",
+        encounter_area: "",
         encounter_rate: 0,
         route: "",
         special_note: "",
@@ -142,13 +146,13 @@
     let location = cloneDeep(locationToEdit);
 
     let index = $routes.routes[location.route].wild_encounters[
-      location.encounter_type
+      location.encounter_area
     ].findIndex((encounter) => encounter.id === location.id);
     $routes.routes[location.route].wild_encounters[
-      location.encounter_type
+      location.encounter_area
     ].splice(index, 1, cloneDeep(location));
 
-    $routes.routes[location.route].wild_encounters[location.encounter_type]
+    $routes.routes[location.route].wild_encounters[location.encounter_area]
       .sort((a, b) => a.encounter_rate - b.encounter_rate)
       .reverse();
 
@@ -157,25 +161,12 @@
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
     ).then(() => {
-      invoke("generate_single_route_page_with_handle", {
-        wikiName: $selectedWiki.name,
-        routeName: location.route,
-      })
-        .then(() => {
-          toastStore.trigger({
-            message: "Changes saved successfully",
-            timeout: 3000,
-            background: "variant-filled-success",
-          });
-        })
-        .catch((e) => {
-          console.error(e);
-        });
+      generateRoutePage(location.route);
       let updatedLocations = [...pokemonLocations];
       let locationIndex = updatedLocations.findIndex(
         (loc) =>
           loc.route === location.route &&
-          loc.encounter_type === location.encounter_type,
+          loc.encounter_area === location.encounter_area,
       );
       console.log(locationIndex);
       updatedLocations[locationIndex] = cloneDeep(location);
@@ -185,7 +176,7 @@
       locationToEdit = {
         id: 0,
         name: "",
-        encounter_type: "",
+        encounter_area: "",
         encounter_rate: 0,
         route: "",
         special_note: "",
@@ -224,27 +215,14 @@
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
     ).then(() => {
-      invoke("generate_single_route_page_with_handle", {
-        wikiName: $selectedWiki.name,
-        routeName,
-      })
-        .then(() => {
-          toastStore.trigger({
-            message: "Changes saved successfully",
-            timeout: 3000,
-            background: "variant-filled-success",
-          });
-        })
-        .catch((e) => {
-          console.error(e);
-        });
+      generateRoutePage(routeName);
       let updatedLocations: WildEncounter[] = [];
       for (let location of pokemonLocations) {
         if (location.route !== routeName) {
           updatedLocations.push(location);
           continue;
         }
-        if (location.encounter_type !== encounterType) {
+        if (location.encounter_area !== encounterType) {
           updatedLocations.push(location);
           continue;
         }
@@ -267,8 +245,8 @@
     }}
   />
   <SelectInput
-    bind:value={newLocation.encounter_type}
-    label="Encounter Type"
+    bind:value={newLocation.encounter_area}
+    label="Encounter Area"
     options={encounterTypeOptions}
   />
   <NumberInput
@@ -286,7 +264,7 @@
     title="Add Location"
     disabled={newLocation.route === "" ||
       newLocation.encounter_rate <= 0 ||
-      newLocation.encounter_type === ""}
+      newLocation.encounter_area === ""}
     onClick={addPokemonToLocation}
   />
 </BaseModal>
@@ -305,8 +283,8 @@
     }}
   />
   <SelectInput
-    bind:value={locationToEdit.encounter_type}
-    label="Encounter Type"
+    bind:value={locationToEdit.encounter_area}
+    label="Encounter Area"
     disabled={true}
     options={encounterTypeOptions}
   />
@@ -325,7 +303,7 @@
     title="Save Changes"
     disabled={locationToEdit.route === "" ||
       locationToEdit.encounter_rate <= 0 ||
-      locationToEdit.encounter_type === ""}
+      locationToEdit.encounter_area === ""}
     onClick={editPokemonLocation}
   />
 </BaseModal>
@@ -354,7 +332,7 @@
     <thead>
       <tr class="bg-white">
         <ThSort {handler} orderBy="route">Route</ThSort>
-        <ThSort {handler} orderBy="encounter_type">Encounter Type</ThSort>
+        <ThSort {handler} orderBy="encounter_area">Encounter Area</ThSort>
         <ThSort {handler} orderBy="encounter_rate">Encounter Rate</ThSort>
         <ThSort {handler} orderBy="special_note">Special Note</ThSort>
       </tr>
@@ -363,7 +341,7 @@
       {#each $rows as row}
         <tr>
           <td>{row.route}</td>
-          <td>{row.encounter_type}</td>
+          <td>{row.encounter_area}</td>
           <td>{row.encounter_rate}</td>
           <td>{row.special_note}</td>
           <td
@@ -378,7 +356,7 @@
           <td
             class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
             on:click={() => {
-              deletePokemonFromLocation(row.route, row.encounter_type, row.id);
+              deletePokemonFromLocation(row.route, row.encounter_area, row.id);
             }}
           >
             <IconTrash size={18} class="text-gray-500" />

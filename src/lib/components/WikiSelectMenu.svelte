@@ -27,6 +27,8 @@
   import { resourceDir } from "@tauri-apps/api/path";
   import { type as osTypeFunc } from "@tauri-apps/api/os";
   import updateWildEncounters from "$lib/utils/migration_helpers/updateWildEncounters";
+  import updateTrainerEncounters from "$lib/utils/migration_helpers/updateTrainerEncounters";
+  import updateRouteRender from "$lib/utils/migration_helpers/updateRouteRenderValue";
 
   const toastStore = getToastStore();
 
@@ -69,9 +71,16 @@
     }
 
     // Update the routes.json file with the new format
-    let updatedRoutes = updateWildEncounters(
-      sortRoutesByPosition(JSON.parse(routesFromFile)),
+    let updatedRoutes = sortRoutesByPosition(
+      updateWildEncounters(JSON.parse(routesFromFile)),
     );
+
+    await updateTrainerEncounters(updatedRoutes).then((newRoutes) => {
+      updatedRoutes = newRoutes;
+    });
+
+    updatedRoutes = updateRouteRender(updatedRoutes);
+
     await writeTextFile(
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify(updatedRoutes),
@@ -83,9 +92,8 @@
       `${$selectedWiki.name}/data/types.json`,
       { dir: BaseDirectory.AppData },
     );
+    const resourceDirectory = await resourceDir();
     if (!typesJsonExists) {
-      const resourceDirectory = await resourceDir();
-
       let typesDirectory = `${resourceDirectory}resources/generator_assets/starting_data/types.json`;
 
       if (osType === "Windows_NT") {
@@ -108,6 +116,19 @@
       timeout: 2000,
       background: "variant-filled-success",
     });
+
+    // update css
+    let cssDirectory = `${resourceDirectory}resources/generator_assets/stylesheets/extra.css`;
+    if (osType === "Windows_NT") {
+      cssDirectory = cssDirectory.replaceAll("/", "\\");
+    }
+    await copyFile(
+      cssDirectory,
+      `${$selectedWiki.name}/dist/docs/stylesheets/extra.css`,
+      {
+        dir: BaseDirectory.AppData,
+      },
+    );
   }
 
   async function deleteWikis() {
@@ -158,11 +179,16 @@
         // Load Pokemon
         $db
           .select(
-            "SELECT id, dex_number, name FROM pokemon ORDER BY dex_number",
+            "SELECT id, dex_number, name, types FROM pokemon ORDER BY dex_number",
           )
           .then((pokemon: any) => {
             pokemonList.set(
-              pokemon.map((p: SearchPokemon) => [p.id, p.dex_number, p.name]),
+              pokemon.map((p: SearchPokemon) => [
+                p.id,
+                p.dex_number,
+                p.name,
+                p.types,
+              ]),
             );
           });
 

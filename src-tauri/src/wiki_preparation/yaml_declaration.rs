@@ -86,6 +86,7 @@ pub fn get_yaml(
             MarkdownExtension::String("attr_list".to_string()),
             MarkdownExtension::String("pymdownx.snippets".to_string()),
             MarkdownExtension::String("pymdownx.superfences".to_string()),
+            MarkdownExtension::String("pymdownx.details".to_string()),
             MarkdownExtension::PymdownxTaskList(PymdownxTaskList {
                 custom_checkbox: true,
             }),

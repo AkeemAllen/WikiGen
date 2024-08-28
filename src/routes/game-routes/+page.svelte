@@ -24,7 +24,22 @@
   let loading = false;
 
   async function createNewRoute() {
+    if (routeName.trim() === "") {
+      return;
+    }
+
+    if ($routes.routes[routeName.trim()]) {
+      toastStore.trigger({
+        message: "Route already exists",
+        timeout: 5000,
+        hoverable: true,
+        background: "variant-filled-error",
+      });
+      return;
+    }
+
     $routes.routes[routeName.trim()] = {
+      render: true,
       position: Object.keys($routes.routes).length + 1,
       trainers: {},
       wild_encounters: {},
@@ -34,11 +49,14 @@
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
-    );
+    ).then(() => {
+      routeName = "";
+      newRouteModalOpen = false;
+    });
   }
 
   async function addNewEncounterType() {
-    $routes.encounter_types = [...$routes.encounter_types, newEncounterType];
+    $routes.encounter_areas = [...$routes.encounter_areas, newEncounterType];
     await writeTextFile(
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify(sortRoutesByPosition($routes)),
@@ -47,7 +65,7 @@
   }
 
   async function deleteEncounterType(encounterType: string) {
-    $routes.encounter_types = $routes.encounter_types.filter(
+    $routes.encounter_areas = $routes.encounter_areas.filter(
       (type) => type !== encounterType,
     );
     await writeTextFile(
@@ -93,8 +111,10 @@
 
   async function generateRoutePages() {
     loading = true;
+    let routeNames = Object.keys($routes.routes);
     await invoke("generate_route_pages_with_handle", {
       wikiName: $selectedWiki.name,
+      routeNames,
     }).then((response: any) => {
       loading = false;
       toastStore.trigger({
@@ -123,7 +143,6 @@
     title="Save New Route"
     onClick={() => {
       createNewRoute();
-      newRouteModalOpen = false;
     }}
     disabled={routeName === ""}
   />
@@ -144,7 +163,7 @@
   />
 </BaseModal>
 
-<!-- Encounter Type Modal -->
+<!-- Encounter Area Modal -->
 <BaseModal bind:open={encounterTypeModalOpen}>
   <div class="flex flex-row gap-3">
     <Button
@@ -153,10 +172,10 @@
       onClick={addNewEncounterType}
       disabled={newEncounterType === ""}
     />
-    <TextInput bind:value={newEncounterType} placeholder="New Encounter Type" />
+    <TextInput bind:value={newEncounterType} placeholder="New Encounter Area" />
   </div>
   <div class="grid grid-cols-2 gap-3">
-    {#each $routes.encounter_types as encounterType}
+    {#each $routes.encounter_areas as encounterType}
       <div class="card flex flex-row items-center justify-between px-2 py-1">
         {encounterType}
         <button
@@ -178,7 +197,7 @@
   />
   <Button
     class="w-48"
-    title="Modify Encounter Types"
+    title="Modify Encounter Areas"
     onClick={() => (encounterTypeModalOpen = true)}
   />
   <Button

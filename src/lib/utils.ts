@@ -194,12 +194,12 @@ export function sortRoutesByPosition(routes: Routes): Routes {
   );
 
   // Reconstruct the sorted object
-  const sortedRoutes: Routes = { routes: {}, encounter_types: [] };
+  const sortedRoutes: Routes = { routes: {}, encounter_areas: [] };
   routesArray.forEach(([routeName, route]) => {
     sortedRoutes.routes[routeName] = route;
   });
 
-  sortedRoutes.encounter_types = routes.encounter_types;
+  sortedRoutes.encounter_areas = routes.encounter_areas;
 
   return sortedRoutes;
 }
@@ -232,13 +232,13 @@ export const setUniquePokemonId = (
   trainers: { [key: string]: TrainerInfo },
   trainerName: string,
   pokemonName: string,
-  pokemonList: [number, number, string][],
+  pokemonList: [number, number, string, string][],
 ) => {
   let teamLength = 0;
 
   if (isNullEmptyOrUndefined(trainers)) {
     return `${
-      pokemonList.find(([id, _, name]) => name === pokemonName)?.[1]
+      pokemonList.find(([id, _, name, __]) => name === pokemonName)?.[1]
     }_${teamLength}_${Math.floor(Math.random() * 9000 + 1000)}`;
   }
 
@@ -248,7 +248,7 @@ export const setUniquePokemonId = (
     }
   }
   return `${
-    pokemonList?.find(([id, _, name]) => name === pokemonName)?.[1]
+    pokemonList?.find(([id, _, name, __]) => name === pokemonName)?.[1]
   }_${teamLength}_${Math.floor(Math.random() * 9000 + 1000)}`;
 };
 
