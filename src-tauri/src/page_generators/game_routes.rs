@@ -294,7 +294,7 @@ fn create_trainer_table(wiki_name: &str, trainers: &IndexMap<String, TrainerInfo
         let trainer_sprite = get_trainer_sprite(name, &trainer_info.sprite);
         if trainer_info.versions.is_empty() {
             let trainer_entry = format!(
-                "<div style=\"display: grid; grid-template-columns: 1fr 1fr 1fr;gap: 1rem\">\n{}</div>",
+                "<div class=\"trainer-pokemon-container\">\n{}</div>",
                 generate_trainer_entry(wiki_name, name, trainer_info, "")
             );
             markdown_trainers.push_str(&format!(
