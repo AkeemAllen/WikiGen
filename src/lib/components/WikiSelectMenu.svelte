@@ -89,9 +89,8 @@
       `${$selectedWiki.name}/data/types.json`,
       { dir: BaseDirectory.AppData },
     );
+    const resourceDirectory = await resourceDir();
     if (!typesJsonExists) {
-      const resourceDirectory = await resourceDir();
-
       let typesDirectory = `${resourceDirectory}resources/generator_assets/starting_data/types.json`;
 
       if (osType === "Windows_NT") {
@@ -114,6 +113,19 @@
       timeout: 2000,
       background: "variant-filled-success",
     });
+
+    // update css
+    let cssDirectory = `${resourceDirectory}resources/generator_assets/stylesheets/extra.css`;
+    if (osType === "Windows_NT") {
+      cssDirectory = cssDirectory.replaceAll("/", "\\");
+    }
+    await copyFile(
+      cssDirectory,
+      `${$selectedWiki.name}/dist/docs/stylesheets/extra.css`,
+      {
+        dir: BaseDirectory.AppData,
+      },
+    );
   }
 
   async function deleteWikis() {
