@@ -101,6 +101,17 @@ pub async fn create_wiki(
     let pokemon_images_folder = docs_folder.join("img").join("pokemon");
     let _ = copy_recursively(pokemon_sprites_folder, pokemon_images_folder);
 
+    let route_image_folder = docs_folder.join("img").join("routes");
+    match fs::create_dir_all(&route_image_folder) {
+        Ok(_) => {}
+        Err(err) => {
+            return Err(format!(
+                "Failed to create route image directory path: {:?}",
+                err
+            ));
+        }
+    }
+
     let index_file_path = docs_folder.join("index.md");
     match fs::write(index_file_path, "# Index") {
         Ok(_) => {}
