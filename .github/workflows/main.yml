@@ -74,10 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Consolidated Wild and Trainer Encounters onto a single page.
-            \n- Updated Design of both Wild and Trainer Encounters.
-            \n- Added ability to determine whether or not a route gets rendered.
-            \n- Fixed issue where ability flavor text wasn't being displayed properly
+            \n- Added support for including 'Route Images' on routes.
             "
           releaseDraft: false
           prerelease: false

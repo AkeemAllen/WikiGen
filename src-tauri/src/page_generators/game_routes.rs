@@ -188,8 +188,13 @@ pub fn generate_route_pages(
                 }
             };
 
-        let route_page_markdown =
-            generate_route_page_from_template(wiki_name, route_properties, template.clone());
+        let route_page_markdown = generate_route_page_from_template(
+            wiki_name,
+            route_name,
+            route_properties,
+            template.clone(),
+            docs_path.clone(),
+        );
 
         match markdown_file.write_all(route_page_markdown.as_bytes()) {
             Ok(_) => {}
@@ -240,8 +245,10 @@ pub fn generate_route_pages(
 
 fn generate_route_page_from_template(
     wiki_name: &str,
+    route_name: &str,
     route_properties: &RouteProperties,
     template: String,
+    docs_path: PathBuf,
 ) -> String {
     let mut wild_encounter_tab = String::new();
     let mut wild_encounters = String::new();
@@ -265,7 +272,17 @@ fn generate_route_page_from_template(
         trainer_encounters.push_str(&trainer_table);
     }
 
-    let route_image = String::new();
+    let mut route_image = String::new();
+    let route_image_exists = docs_path
+        .join("img")
+        .join("routes")
+        .join(format!("{}.png", route_name));
+    if route_image_exists.exists() {
+        route_image = format!(
+            "<img src=\"../../img/routes/{}.png\" alt=\"{}\"/>",
+            route_name, route_name
+        );
+    }
 
     let result = template
         .replace("{{route_image}}", &route_image)
