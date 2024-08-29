@@ -4,7 +4,7 @@
   import SelectInput from "$lib/components/SelectInput.svelte";
   import Button from "$lib/components/Button.svelte";
   import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
-  import { IconArrowLeft } from "@tabler/icons-svelte";
+  import { IconArrowLeft, IconTrash } from "@tabler/icons-svelte";
   import { routes } from "../../../store/gameRoutes";
   import { selectedWiki } from "../../../store";
   import {
@@ -12,6 +12,7 @@
     createDir,
     exists,
     readBinaryFile,
+    removeFile,
     writeBinaryFile,
     writeTextFile,
   } from "@tauri-apps/api/fs";
@@ -55,12 +56,7 @@
     reader.readAsDataURL(file);
   }
 
-  async function saveChanges() {
-    const imageBytes = base64ToArray(
-      newRouteImage.replace("data:image/png;base64,", ""),
-      "image/png",
-    );
-
+  async function saveRouteImage() {
     const routeImagesDirectoryExists = await exists(
       `${$selectedWiki.name}/dist/docs/img/routes`,
       {
@@ -74,6 +70,31 @@
         recursive: true,
       });
     }
+
+    if (newRouteImage === "") {
+      const previousImageExists = await exists(
+        `${$selectedWiki.name}/dist/docs/img/routes/${data.title}.png`,
+        {
+          dir: BaseDirectory.AppData,
+        },
+      );
+
+      if (!previousImageExists) {
+        return;
+      }
+      await removeFile(
+        `${$selectedWiki.name}/dist/docs/img/routes/${data.title}.png`,
+        {
+          dir: BaseDirectory.AppData,
+        },
+      );
+      return;
+    }
+
+    const imageBytes = base64ToArray(
+      newRouteImage.replace("data:image/png;base64,", ""),
+      "image/png",
+    );
 
     await writeBinaryFile(
       `${$selectedWiki.name}/dist/docs/img/routes/${data.title}.png`,
@@ -90,7 +111,10 @@
       .catch((e) => {
         console.error(e);
       });
+  }
 
+  async function saveChanges() {
+    await saveRouteImage();
     await writeTextFile(
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify($routes),
@@ -147,6 +171,17 @@
         >
         {#if newRouteImage !== ""}
           <img src={newRouteImage} alt="Route" />
+        {/if}
+        {#if newRouteImage !== ""}
+          <button
+            class="flex flex-row items-center gap-2 text-white bg-[#111827] rounded-2xl text-[14px] pt-[4px] pb-[5px] pl-3 pr-3"
+            on:click={() => {
+              newRouteImage = "";
+            }}
+          >
+            <IconTrash size={14} />
+            Clear Image</button
+          >
         {/if}
         <input
           id="sprite-image"
