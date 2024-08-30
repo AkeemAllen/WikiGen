@@ -17,7 +17,6 @@ use page_generators::pokemon_pages::generate_pokemon_pages_from_list;
 use tauri_plugin_sql;
 use wiki_preparation::backup_wiki::backup_wiki;
 use wiki_preparation::create_wiki::create_wiki;
-use wiki_preparation::prepare_data::{download_and_prep_pokemon_data, download_pokemon_sprites};
 
 use wiki_preparation::yaml_declaration::update_yaml;
 
@@ -47,12 +46,10 @@ fn main() {
         .plugin(tauri_plugin_sql::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             create_wiki,
-            download_and_prep_pokemon_data,
             spawn_mkdocs_process,
             kill_mkdocs_process,
             check_process_status,
             generate_pokemon_pages_from_list,
-            download_pokemon_sprites,
             generate_route_pages_with_handle,
             backup_wiki,
             generate_item_page,
