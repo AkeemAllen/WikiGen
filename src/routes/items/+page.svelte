@@ -194,24 +194,6 @@
   function setModified(e: any) {
     item.is_modified = e.target?.checked ? TRUE : FALSE;
   }
-
-  async function convertItemToSqlite() {
-    await invoke("convert_items_to_sqlite", {
-      wikiName: $selectedWiki.name,
-    })
-      .then(() => {
-        toastStore.trigger({
-          message: "Items converted!",
-          background: "variant-filled-success",
-        });
-      })
-      .catch((err) => {
-        toastStore.trigger({
-          message: "Error converting items!",
-          background: "variant-filled-error",
-        });
-      });
-  }
 </script>
 
 <BaseModal class="w-[30rem]" bind:open={newItemModalOpen}>
@@ -335,4 +317,3 @@
     {/if}
   </div>
 {/if}
-<!-- <Button title="Convert Items to SQLite" onClick={convertItemToSqlite} /> -->

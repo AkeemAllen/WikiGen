@@ -176,23 +176,6 @@
   function setModified(e: any) {
     nature.is_modified = e.target?.checked ? TRUE : FALSE;
   }
-  async function convertNatureToSqlite() {
-    await invoke("convert_natures_to_sqlite", {
-      wikiName: $selectedWiki.name,
-    })
-      .then(() => {
-        toastStore.trigger({
-          message: "Natures converted!",
-          background: "variant-filled-success",
-        });
-      })
-      .catch((err) => {
-        toastStore.trigger({
-          message: "Error converting natures!",
-          background: "variant-filled-error",
-        });
-      });
-  }
 </script>
 
 <BaseModal class="w-[30rem]" bind:open={newNatureModalOpen}>
@@ -280,4 +263,3 @@
     </label>
   {/if}
 {/if}
-<!-- <Button title="Convert Natures to SQLite" onClick={convertNatureToSqlite} /> -->

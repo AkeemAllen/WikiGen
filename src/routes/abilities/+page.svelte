@@ -160,23 +160,6 @@
   function setModified(e: any) {
     ability.is_modified = e.target?.checked ? TRUE : FALSE;
   }
-  async function convertAbilityToSqlite() {
-    await invoke("convert_abilities_to_sqlite", {
-      wikiName: $selectedWiki.name,
-    })
-      .then(() => {
-        toastStore.trigger({
-          message: "Abilities converted!",
-          background: "variant-filled-success",
-        });
-      })
-      .catch((err) => {
-        toastStore.trigger({
-          message: "Error converting abilities!",
-          background: "variant-filled-error",
-        });
-      });
-  }
 </script>
 
 <BaseModal class="w-[30rem]" bind:open={newAbilityModalOpen}>
@@ -279,4 +262,3 @@
     {/if}
   </div>
 {/if}
-<!-- <Button title="Convert Abilities to SQLite" onClick={convertAbilityToSqlite} /> -->
