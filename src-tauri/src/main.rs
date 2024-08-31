@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod helpers;
+mod migrations;
 mod page_generators;
 mod structs;
 mod tests;
@@ -20,6 +21,7 @@ use tauri_plugin_sql;
 use wiki_preparation::backup_wiki::backup_wiki;
 use wiki_preparation::create_wiki::create_wiki;
 
+use migrations::file_migrations::run_file_migrations;
 use wiki_preparation::yaml_declaration::update_yaml;
 
 fn main() {
@@ -59,6 +61,7 @@ fn main() {
             generate_ability_page,
             update_yaml,
             delete_route_page_from_mkdocs,
+            run_file_migrations
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
