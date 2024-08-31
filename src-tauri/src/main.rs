@@ -14,7 +14,9 @@ use helpers::json_conversion::{
 };
 use helpers::mkdocs_process::{check_process_status, kill_mkdocs_process, spawn_mkdocs_process};
 use page_generators::ability_page::generate_ability_page;
-use page_generators::game_routes::generate_route_pages_with_handle;
+use page_generators::game_routes::{
+    delete_route_page_from_mkdocs, generate_route_pages_with_handle,
+};
 use page_generators::item_page::generate_item_page;
 use page_generators::nature_page::generate_nature_page;
 use page_generators::pokemon_pages::generate_pokemon_pages_from_list;
@@ -63,6 +65,7 @@ fn main() {
             generate_nature_page,
             generate_ability_page,
             update_yaml,
+            delete_route_page_from_mkdocs,
             convert_items_to_sqlite,
             convert_abilities_to_sqlite,
             convert_natures_to_sqlite,

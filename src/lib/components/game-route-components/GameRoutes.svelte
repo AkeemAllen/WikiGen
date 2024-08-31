@@ -5,9 +5,12 @@
   import { selectedWiki } from "../../../store";
   import { sortRoutesByPosition } from "$lib/utils";
 
-  import { popup } from "@skeletonlabs/skeleton";
+  import { getToastStore, popup } from "@skeletonlabs/skeleton";
   import { IconDotsVertical } from "@tabler/icons-svelte";
   import { cloneDeep } from "$lib/utils/cloneDeep";
+  import { invoke } from "@tauri-apps/api/tauri";
+
+  const toastStore = getToastStore();
 
   export let positionModalOpen: boolean = false;
   export let routeToUpdate: string = "";
@@ -39,7 +42,17 @@
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify(sortRoutesByPosition($routes)),
       { dir: BaseDirectory.AppData },
-    );
+    ).then(() => {
+      invoke("delete_route_page_from_mkdocs", {
+        routeName,
+        wikiName: $selectedWiki.name,
+      }).then(() => {
+        toastStore.trigger({
+          message: `Route ${routeName} deleted successfully`,
+          background: "variant-filled-success",
+        });
+      });
+    });
   }
 
   async function duplicateRoute(routeName: string) {
