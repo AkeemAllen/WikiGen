@@ -1,5 +1,7 @@
 use std::{
+    cmp::Ordering,
     collections::HashMap,
+    f32::consts::PI,
     fs::{self, read_to_string, File},
     io::Write,
     path::PathBuf,
@@ -96,6 +98,69 @@ pub async fn generate_route_pages_with_handle(
     );
 }
 
+#[tauri::command]
+pub async fn delete_route_page_from_mkdocs(
+    wiki_name: &str,
+    route_name: &str,
+    app_handle: AppHandle,
+) -> Result<String, String> {
+    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+
+    let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
+    let mkdocs_yaml_file = match File::open(&mkdocs_yaml_file_path) {
+        Ok(mkdocs) => mkdocs,
+        Err(err) => return Err(format!("Failed to read Mkdocs yaml file: {}", err)),
+    };
+    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
+        Ok(config) => config,
+        Err(err) => return Err(format!("Failed to parse Mkdocs yaml file: {}", err)),
+    };
+
+    let mut mkdocs_routes: &mut Vec<Value> = &mut Vec::new();
+
+    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
+    for entry in nav_entries {
+        let map_entries = entry.as_mapping_mut().unwrap();
+        match map_entries.get_mut(Value::String("Routes".to_string())) {
+            Some(map_entry) => {
+                mkdocs_routes = map_entry.as_sequence_mut().unwrap();
+            }
+            None => {}
+        }
+    }
+
+    let mut page_position = 0;
+    for (index, page_entry) in mkdocs_routes.iter_mut().enumerate() {
+        if page_entry.as_mapping().unwrap().contains_key(route_name) {
+            page_position = index;
+            break;
+        }
+    }
+
+    mkdocs_routes.remove(page_position);
+
+    let route_file_path = base_path
+        .join(wiki_name)
+        .join("dist")
+        .join("docs")
+        .join("routes")
+        .join(format!("{}.md", route_name));
+    match fs::remove_file(route_file_path) {
+        Ok(_) => {}
+        Err(err) => return Err(format!("Failed to delete route file: {}", err)),
+    }
+
+    match fs::write(
+        mkdocs_yaml_file_path,
+        serde_yaml::to_string(&mkdocs_config.clone()).unwrap(),
+    ) {
+        Ok(_) => {}
+        Err(err) => return Err(format!("Failed to update mkdocs yaml: {}", err)),
+    };
+
+    Ok("Page Deleted from Mkdocs".to_string())
+}
+
 pub fn generate_route_pages(
     wiki_name: &str,
     base_path: PathBuf,
@@ -163,6 +228,13 @@ pub fn generate_route_pages(
             }
         }
 
+        // Checking for deleted routes
+        if !routes.routes.contains_key(route_name) && page_entry_exists {
+            mkdocs_routes.remove(page_position);
+            println!("{:?}", mkdocs_routes);
+            continue;
+        }
+
         if page_entry_exists && docs_path.join("routes").join(route_name).is_dir() {
             fs::remove_dir_all(docs_path.join("routes").join(route_name)).unwrap();
             mkdocs_routes.remove(page_position);
@@ -217,18 +289,17 @@ pub fn generate_route_pages(
             let first = a.as_mapping().unwrap().keys().next().unwrap();
             let second = b.as_mapping().unwrap().keys().next().unwrap();
 
-            routes
-                .routes
-                .get(first.as_str().unwrap())
-                .unwrap()
-                .position
-                .cmp(
-                    &routes
-                        .routes
-                        .get(second.as_str().unwrap())
-                        .unwrap()
-                        .position,
-                )
+            let first_route = match routes.routes.get(first.as_str().unwrap()) {
+                Some(route) => route,
+                None => return Ordering::Equal,
+            };
+
+            let second_route = match routes.routes.get(second.as_str().unwrap()) {
+                Some(route) => route,
+                None => return Ordering::Equal,
+            };
+
+            first_route.position.cmp(&second_route.position)
         })
     }
 
