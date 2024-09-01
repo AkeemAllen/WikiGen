@@ -81,25 +81,17 @@
       return;
     }
 
-    if (oldRoutePosition > newRoutePosition) {
-      for (const route in $routes.routes) {
-        if (
-          $routes.routes[route].position >= newRoutePosition &&
-          route !== routeToUpdate
-        ) {
-          $routes.routes[route].position += 1;
-        }
-      }
-    } else {
-      for (const route in $routes.routes) {
-        if (
-          $routes.routes[route].position <= newRoutePosition &&
-          route !== routeToUpdate
-        ) {
-          $routes.routes[route].position -= 1;
-        }
-      }
+    let routeWithNewPosition = Object.keys($routes.routes).find(
+      (route) =>
+        $routes.routes[route].position === newRoutePosition &&
+        route !== routeToUpdate,
+    );
+
+    if (!routeWithNewPosition) {
+      return;
     }
+
+    $routes.routes[routeWithNewPosition].position = oldRoutePosition;
 
     $routes = sortRoutesByPosition($routes);
     await writeTextFile(
