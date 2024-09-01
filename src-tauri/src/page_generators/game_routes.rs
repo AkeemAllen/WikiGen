@@ -26,7 +26,7 @@ pub struct Routes {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RouteProperties {
     pub render: bool,
-    pub position: usize,
+    pub position: i32,
     pub trainers: IndexMap<String, TrainerInfo>,
     pub wild_encounters: IndexMap<String, Vec<WildEncounter>>,
     pub wild_encounter_area_levels: IndexMap<String, String>,
