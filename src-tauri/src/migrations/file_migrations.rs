@@ -3,10 +3,10 @@ use std::{collections::HashMap, fs::File};
 use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 
-type Wikis = HashMap<String, Wiki>;
+pub type Wikis = HashMap<String, Wiki>;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-struct Wiki {
+pub struct Wiki {
     name: String,
     description: String,
     author: String,
@@ -16,12 +16,11 @@ struct Wiki {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-struct Settings {
+pub struct Settings {
     deployment_url: String,
 }
 
-#[tauri::command]
-pub async fn run_file_migrations(app_handle: AppHandle) -> Result<(), String> {
+pub fn run_file_migrations(app_handle: &AppHandle) -> Result<(), String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
 
     let wiki_json_file_path = base_path.join("wikis.json");
@@ -34,6 +33,8 @@ pub async fn run_file_migrations(app_handle: AppHandle) -> Result<(), String> {
         Err(err) => return Err(format!("Failed to parse wikis file: {}", err)),
     };
 
-    for (wiki_name, wiki) in wikis.iter() {}
+    for (wiki_name, wiki) in wikis.iter() {
+        println!("Migrating wiki: {}", wiki_name);
+    }
     Ok(())
 }

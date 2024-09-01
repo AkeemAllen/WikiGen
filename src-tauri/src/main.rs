@@ -21,11 +21,11 @@ use tauri_plugin_sql;
 use wiki_preparation::backup_wiki::backup_wiki;
 use wiki_preparation::create_wiki::create_wiki;
 
-use migrations::file_migrations::run_file_migrations;
+use migrations::run_migrations;
 use wiki_preparation::yaml_declaration::update_yaml;
 
 fn main() {
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .setup(|app| {
             let base_path = app.path_resolver().app_data_dir().unwrap();
             match base_path.join("initial.db").try_exists() {
@@ -60,9 +60,26 @@ fn main() {
             generate_nature_page,
             generate_ability_page,
             update_yaml,
-            delete_route_page_from_mkdocs,
-            run_file_migrations
+            delete_route_page_from_mkdocs
         ])
-        .run(tauri::generate_context!())
+        .build(tauri::generate_context!())
         .expect("error while running tauri application");
+
+    app.run(|_app_handle, event| match event {
+        tauri::RunEvent::Updater(updater_event) => match updater_event {
+            // add event for updating so we can track progress.
+            tauri::UpdaterEvent::Updated => {
+                match tauri::async_runtime::block_on(run_migrations(_app_handle)) {
+                    Ok(_) => {
+                        println!("Database migrations ran successfully");
+                    }
+                    Err(err) => {
+                        println!("Error running database migrations: {}", err);
+                    }
+                }
+            }
+            _ => (),
+        },
+        _ => {}
+    });
 }
