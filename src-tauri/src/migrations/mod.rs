@@ -14,5 +14,5 @@ pub async fn run_migrations(app_handle: &tauri::AppHandle) -> Result<(), String>
             println!("Error running file migrations: {}", err);
         }
     }
-    Err("Error running migrations".to_string())
+    Ok(())
 }
