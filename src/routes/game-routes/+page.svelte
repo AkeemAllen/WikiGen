@@ -81,17 +81,29 @@
       return;
     }
 
-    let routeWithNewPosition = Object.keys($routes.routes).find(
-      (route) =>
-        $routes.routes[route].position === newRoutePosition &&
-        route !== routeToUpdate,
-    );
-
-    if (!routeWithNewPosition) {
-      return;
+    if (oldRoutePosition < newRoutePosition) {
+      Object.keys($routes.routes).forEach((routeName) => {
+        if (
+          $routes.routes[routeName].position > oldRoutePosition &&
+          $routes.routes[routeName].position <= newRoutePosition &&
+          routeName !== routeToUpdate
+        ) {
+          $routes.routes[routeName].position -= 1;
+        }
+      });
     }
 
-    $routes.routes[routeWithNewPosition].position = oldRoutePosition;
+    if (oldRoutePosition > newRoutePosition) {
+      Object.keys($routes.routes).forEach((routeName) => {
+        if (
+          $routes.routes[routeName].position < oldRoutePosition &&
+          $routes.routes[routeName].position >= newRoutePosition &&
+          routeName !== routeToUpdate
+        ) {
+          $routes.routes[routeName].position += 1;
+        }
+      });
+    }
 
     $routes = sortRoutesByPosition($routes);
     await writeTextFile(
