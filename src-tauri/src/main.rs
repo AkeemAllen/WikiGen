@@ -1,17 +1,14 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod helpers;
+mod migrations;
 mod page_generators;
 mod structs;
 mod tests;
 mod wiki_preparation;
 
-use std::fs::File;
+use std::fs::{self, File};
 
-use helpers::json_conversion::{
-    convert_abilities_to_sqlite, convert_items_to_sqlite, convert_moves_to_sqlite,
-    convert_natures_to_sqlite, convert_pokemon_movesets_to_sqlite, convert_pokemon_to_sqlite,
-};
 use helpers::mkdocs_process::{check_process_status, kill_mkdocs_process, spawn_mkdocs_process};
 use page_generators::ability_page::generate_ability_page;
 use page_generators::game_routes::{
@@ -23,12 +20,12 @@ use page_generators::pokemon_pages::generate_pokemon_pages_from_list;
 use tauri_plugin_sql;
 use wiki_preparation::backup_wiki::backup_wiki;
 use wiki_preparation::create_wiki::create_wiki;
-use wiki_preparation::prepare_data::{download_and_prep_pokemon_data, download_pokemon_sprites};
 
+use migrations::run_migrations;
 use wiki_preparation::yaml_declaration::update_yaml;
 
 fn main() {
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .setup(|app| {
             let base_path = app.path_resolver().app_data_dir().unwrap();
             match base_path.join("initial.db").try_exists() {
@@ -53,26 +50,43 @@ fn main() {
         .plugin(tauri_plugin_sql::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             create_wiki,
-            download_and_prep_pokemon_data,
             spawn_mkdocs_process,
             kill_mkdocs_process,
             check_process_status,
             generate_pokemon_pages_from_list,
-            download_pokemon_sprites,
             generate_route_pages_with_handle,
             backup_wiki,
             generate_item_page,
             generate_nature_page,
             generate_ability_page,
             update_yaml,
-            delete_route_page_from_mkdocs,
-            convert_items_to_sqlite,
-            convert_abilities_to_sqlite,
-            convert_natures_to_sqlite,
-            convert_moves_to_sqlite,
-            convert_pokemon_to_sqlite,
-            convert_pokemon_movesets_to_sqlite
+            delete_route_page_from_mkdocs
         ])
-        .run(tauri::generate_context!())
+        .build(tauri::generate_context!())
         .expect("error while running tauri application");
+
+    app.run(|_app_handle, event| match event {
+        tauri::RunEvent::Updater(updater_event) => match updater_event {
+            // add event for updating so we can track progress.
+            tauri::UpdaterEvent::Updated => {
+                match tauri::async_runtime::block_on(run_migrations(_app_handle)) {
+                    Ok(_) => {}
+                    Err(err) => {
+                        let migration_error_file = _app_handle
+                            .path_resolver()
+                            .app_data_dir()
+                            .unwrap()
+                            .join("migration_error.txt");
+                        fs::write(
+                            migration_error_file,
+                            format!("Error running database migrations: {}", err),
+                        )
+                        .expect("Unable to write file");
+                    }
+                }
+            }
+            _ => (),
+        },
+        _ => {}
+    });
 }

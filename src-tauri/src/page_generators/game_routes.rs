@@ -1,7 +1,5 @@
 use std::{
     cmp::Ordering,
-    collections::HashMap,
-    f32::consts::PI,
     fs::{self, read_to_string, File},
     io::Write,
     path::PathBuf,

@@ -29,6 +29,7 @@
   import updateWildEncounters from "$lib/utils/migration_helpers/updateWildEncounters";
   import updateTrainerEncounters from "$lib/utils/migration_helpers/updateTrainerEncounters";
   import updateRouteRender from "$lib/utils/migration_helpers/updateRouteRenderValue";
+  import HotKeysModal from "./modals/HotKeysModal.svelte";
 
   const toastStore = getToastStore();
 
@@ -43,96 +44,21 @@
     (wiki) => wiki !== $selectedWiki.name,
   );
 
-  async function loadWikiData(wiki: Wiki) {
-    $selectedWiki = wiki;
-    const osType = await osTypeFunc();
+  async function loadRoutes() {
     const routesFromFile = await readTextFile(
       `${$selectedWiki.name}/data/routes.json`,
       { dir: BaseDirectory.AppData },
     );
 
-    // Backing up the routes.json file in case of failure
-    const routesBackupExists = await exists(
-      `${$selectedWiki.name}/data/routes_bkup.json`,
-      { dir: BaseDirectory.AppData },
-    );
-    if (!routesBackupExists) {
-      let routesDirectory = `${$selectedWiki.name}/data/routes.json`;
-      if (osType === "Windows_NT") {
-        routesDirectory = routesDirectory.replaceAll("/", "\\");
-      }
-      await copyFile(
-        routesDirectory,
-        `${$selectedWiki.name}/data/routes_bkup.json`,
-        {
-          dir: BaseDirectory.AppData,
-        },
-      );
-    }
+    routes.set(sortRoutesByPosition(JSON.parse(routesFromFile)));
+  }
 
-    // Update the routes.json file with the new format
-    let updatedRoutes = sortRoutesByPosition(
-      updateWildEncounters(JSON.parse(routesFromFile)),
-    );
-
-    await updateTrainerEncounters(updatedRoutes).then((newRoutes) => {
-      updatedRoutes = newRoutes;
-    });
-
-    updatedRoutes = updateRouteRender(updatedRoutes);
-
-    await writeTextFile(
-      `${$selectedWiki.name}/data/routes.json`,
-      JSON.stringify(updatedRoutes),
-      { dir: BaseDirectory.AppData },
-    );
-    routes.set(updatedRoutes);
-
-    const typesJsonExists = await exists(
-      `${$selectedWiki.name}/data/types.json`,
-      { dir: BaseDirectory.AppData },
-    );
-    const resourceDirectory = await resourceDir();
-    if (!typesJsonExists) {
-      let typesDirectory = `${resourceDirectory}resources/generator_assets/starting_data/types.json`;
-
-      if (osType === "Windows_NT") {
-        typesDirectory = typesDirectory.replaceAll("/", "\\");
-      }
-
-      await copyFile(typesDirectory, `${$selectedWiki.name}/data/types.json`, {
-        dir: BaseDirectory.AppData,
-      });
-    }
-
+  async function loadTypes() {
     const typesFromFile: any = await readTextFile(
       `${$selectedWiki.name}/data/types.json`,
       { dir: BaseDirectory.AppData },
     );
     types.set(JSON.parse(typesFromFile)["types"]);
-
-    toastStore.trigger({
-      message: `${$selectedWiki.site_name} Wiki Loaded`,
-      timeout: 2000,
-      background: "variant-filled-success",
-    });
-
-    // update css
-    let cssDirectory = `${resourceDirectory}resources/generator_assets/stylesheets/extra.css`;
-    if (osType === "Windows_NT") {
-      cssDirectory = cssDirectory.replaceAll("/", "\\");
-    }
-    await copyFile(
-      cssDirectory,
-      `${$selectedWiki.name}/dist/docs/stylesheets/extra.css`,
-      {
-        dir: BaseDirectory.AppData,
-      },
-    );
-
-    await invoke("update_yaml", {
-      wikiName: $selectedWiki.name,
-    });
   }
 
   async function deleteWikis() {
@@ -175,60 +101,62 @@
     });
   }
 
-  async function loadDatabase(wiki: Wiki) {
-    $selectedWiki = wiki;
-    await Database.load(`sqlite:${wiki.name}/${wiki.name}.db`).then(
-      (database) => {
-        db.set(database);
-        // Load Pokemon
-        $db
-          .select(
-            "SELECT id, dex_number, name, types FROM pokemon ORDER BY dex_number",
-          )
-          .then((pokemon: any) => {
-            pokemonList.set(
-              pokemon.map((p: SearchPokemon) => [
-                p.id,
-                p.dex_number,
-                p.name,
-                p.types,
-              ]),
-            );
-          });
-
-        // Load Items
-        $db.select("SELECT id, name FROM items").then((items: any) => {
-          itemsList.set(items.map((item: SearchItem) => [item.id, item.name]));
-        });
-
-        // Load Abilities
-        $db.select("SELECT id, name FROM abilities").then((abilities: any) => {
-          abilitiesList.set(
-            abilities.map((ability: SearchAbility) => [
-              ability.id,
-              ability.name,
+  async function loadWikiData() {
+    await Database.load(
+      `sqlite:${$selectedWiki.name}/${$selectedWiki.name}.db`,
+    ).then((database) => {
+      db.set(database);
+      // Load Pokemon
+      $db
+        .select(
+          "SELECT id, dex_number, name, types FROM pokemon ORDER BY dex_number",
+        )
+        .then((pokemon: any) => {
+          pokemonList.set(
+            pokemon.map((p: SearchPokemon) => [
+              p.id,
+              p.dex_number,
+              p.name,
+              p.types,
             ]),
           );
-          // Add an empty ability for the search
-          abilitiesList.update((abilities) => {
-            abilities.unshift([0, "None"]);
-            return abilities;
-          });
         });
 
-        // Load Natures
-        $db.select("SELECT id, name FROM natures").then((natures: any) => {
-          naturesList.set(
-            natures.map((nature: SearchNature) => [nature.id, nature.name]),
-          );
-        });
+      // Load Items
+      $db.select("SELECT id, name FROM items").then((items: any) => {
+        itemsList.set(items.map((item: SearchItem) => [item.id, item.name]));
+      });
 
-        // Load Moves
-        $db.select("SELECT id, name FROM moves").then((moves: any) => {
-          moveList.set(moves.map((move: SearchMove) => [move.id, move.name]));
+      // Load Abilities
+      $db.select("SELECT id, name FROM abilities").then((abilities: any) => {
+        abilitiesList.set(
+          abilities.map((ability: SearchAbility) => [ability.id, ability.name]),
+        );
+        // Add an empty ability for the search
+        abilitiesList.update((abilities) => {
+          abilities.unshift([0, "None"]);
+          return abilities;
         });
-      },
-    );
+      });
+
+      // Load Natures
+      $db.select("SELECT id, name FROM natures").then((natures: any) => {
+        naturesList.set(
+          natures.map((nature: SearchNature) => [nature.id, nature.name]),
+        );
+      });
+
+      // Load Moves
+      $db.select("SELECT id, name FROM moves").then((moves: any) => {
+        moveList.set(moves.map((move: SearchMove) => [move.id, move.name]));
+      });
+
+      // Load Types
+      loadTypes();
+
+      // Load Routes
+      loadRoutes();
+    });
   }
 </script>
 
@@ -248,55 +176,7 @@
 </BaseModal>
 
 <BaseModal bind:open={hotKeysModalOpen} class="w-[40rem]">
-  <h2 class="text-lg font-medium leading-6 text-gray-900">Hot Keys</h2>
-  <div class="grid grid-cols-2 gap-3">
-    <div>
-      <h4 class="mb-2 leading-3">On Pokemon Page</h4>
-      <div class="flex flex-col gap-2 text-sm">
-        <p>
-          <span class="code font-semibold">Ctrl + k</span> - Search Pokemon
-        </p>
-        <p>
-          <span class="code font-semibold">Ctrl + ]</span> - Next Pokemon
-        </p>
-        <p>
-          <span class="code font-semibold">Ctrl + [</span> - Previous Pokemon
-        </p>
-        <p>
-          <span class="code font-semibold">Ctrl + Enter</span> - Save Changes
-        </p>
-        <p>
-          <span class="code font-semibold">Ctrl + m</span> - Switch to Moves tab
-        </p>
-        <p class="mt-2 italic">While on Moves tab:</p>
-        <p>
-          <span class="code font-semibold">Ctrl + m</span> - Open Moveset Change
-          Modal
-        </p>
-        <p>
-          <span class="code font-semibold">Ctrl + l</span> - Add Row to Moveset Modal
-        </p>
-        <p>
-          <span class="code font-semibold">Ctrl + Enter</span> - Save Moveset Changes
-        </p>
-      </div>
-    </div>
-    <div>
-      <h4 class="mb-2 leading-3">On Game Routes Page</h4>
-      <div class="flex flex-col gap-2 text-sm">
-        <p>
-          <span class="code font-semibold">Ctrl + Enter</span> - Save Changes
-        </p>
-        <p class="mt-2 italic">Trainer Encounter tab in Pokemon Edit Modal:</p>
-        <p>
-          <span class="code font-semibold">Ctrl + ]</span> - Next Trainer Pokemon
-        </p>
-        <p>
-          <span class="code font-semibold">Ctrl + [</span> - Previous Trainer Pokemon
-        </p>
-      </div>
-    </div>
-  </div>
+  <HotKeysModal />
 </BaseModal>
 
 <div
@@ -309,8 +189,8 @@
       {#if value.name !== $selectedWiki.name}
         <button
           on:click={() => {
-            loadWikiData(value);
-            loadDatabase(value);
+            $selectedWiki = value;
+            loadWikiData();
             goto("/");
           }}
           class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"

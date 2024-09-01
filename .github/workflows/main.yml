@@ -74,7 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Fixed bug where route positions with negative values would cause an error.
+            \n- Implemented base infrastructure to better handle updates to files and database structure.
             "
           releaseDraft: false
           prerelease: false

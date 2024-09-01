@@ -239,42 +239,6 @@
   //   }
   //   setPokemonDetails(pokemonId - 1);
   // }
-
-  async function convertPokemonToSqlite() {
-    await invoke("convert_pokemon_to_sqlite", {
-      wikiName: $selectedWiki.name,
-    })
-      .then(() => {
-        toastStore.trigger({
-          message: "Pokemon converted!",
-          background: "variant-filled-success",
-        });
-      })
-      .catch((err) => {
-        toastStore.trigger({
-          message: "Error converting pokemon!",
-          background: "variant-filled-error",
-        });
-      });
-  }
-
-  async function convertMovesetsToSqlite() {
-    await invoke("convert_pokemon_movesets_to_sqlite", {
-      wikiName: $selectedWiki.name,
-    })
-      .then(() => {
-        toastStore.trigger({
-          message: "Moveset converted!",
-          background: "variant-filled-success",
-        });
-      })
-      .catch((err) => {
-        toastStore.trigger({
-          message: "Error converting moveset!",
-          background: "variant-filled-error",
-        });
-      });
-  }
 </script>
 
 <div class="flex flex-row gap-7">
@@ -351,9 +315,6 @@
     </svelte:fragment>
   </TabGroup>
 {/if}
-<!-- <Button title="Convert Pokemon to SQLite" onClick={convertPokemonToSqlite} /> -->
-<!-- <Button title="Update Sprite Names" onClick={updateSpriteNames} /> -->
-<!-- <Button title="Convert Movesets to SQLite" onClick={convertMovesetsToSqlite} /> -->
 
 <svelte:window
   use:shortcut={{

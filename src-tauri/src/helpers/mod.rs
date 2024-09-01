@@ -3,7 +3,6 @@ pub const FALSE: i32 = 0;
 
 use std::{fs, io, path::Path};
 
-pub mod json_conversion;
 pub mod matchups;
 pub mod mkdocs_process;
 
@@ -54,12 +53,4 @@ pub fn copy_recursively(source: impl AsRef<Path>, destination: impl AsRef<Path>)
         }
     }
     Ok(())
-}
-
-pub fn round_up_to_nearest_100(num: u32) -> u32 {
-    if num % 100 == 0 {
-        num
-    } else {
-        ((num / 100) + 1) * 100
-    }
 }
