@@ -7,7 +7,7 @@ mod structs;
 mod tests;
 mod wiki_preparation;
 
-use std::fs::File;
+use std::fs::{self, File};
 
 use helpers::mkdocs_process::{check_process_status, kill_mkdocs_process, spawn_mkdocs_process};
 use page_generators::ability_page::generate_ability_page;
@@ -70,11 +70,18 @@ fn main() {
             // add event for updating so we can track progress.
             tauri::UpdaterEvent::Updated => {
                 match tauri::async_runtime::block_on(run_migrations(_app_handle)) {
-                    Ok(_) => {
-                        println!("Database migrations ran successfully");
-                    }
+                    Ok(_) => {}
                     Err(err) => {
-                        println!("Error running database migrations: {}", err);
+                        let migration_error_file = _app_handle
+                            .path_resolver()
+                            .app_data_dir()
+                            .unwrap()
+                            .join("migration_error.txt");
+                        fs::write(
+                            migration_error_file,
+                            format!("Error running database migrations: {}", err),
+                        )
+                        .expect("Unable to write file");
                     }
                 }
             }
