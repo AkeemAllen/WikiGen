@@ -67,9 +67,9 @@ fn main() {
 
     app.run(|_app_handle, event| match event {
         tauri::RunEvent::Updater(updater_event) => match updater_event {
-            // add event for updating so we can track progress.
             tauri::UpdaterEvent::Updated => {
-                match tauri::async_runtime::block_on(run_migrations(_app_handle)) {
+                let base_path = _app_handle.path_resolver().app_data_dir().unwrap();
+                match tauri::async_runtime::block_on(run_migrations(&base_path)) {
                     Ok(_) => {}
                     Err(err) => {
                         let migration_error_file = _app_handle
