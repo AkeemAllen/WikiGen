@@ -9,7 +9,7 @@
     type SearchItem,
   } from "../../store/items";
   import { selectedWiki } from "../../store";
-  import { getToastStore } from "@skeletonlabs/skeleton";
+  import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
   import { invoke } from "@tauri-apps/api";
   import {
     writeBinaryFile,
@@ -33,6 +33,8 @@
   let item: Item = {} as Item;
   let originalItemDetails: Item = {} as Item;
   let spriteImage: string = "";
+
+  let tabSet: number = 0;
 
   let itemLocations: ItemLocation[] = [];
 
@@ -340,12 +342,20 @@
         />
       </div>
     </div>
-    <p class="text-sm font-medium leading-6 text-gray-900">Item Locations</p>
-    <ItemLocationTable
-      {itemLocations}
-      itemName={item.name}
-      generatePage={generateItemLocationPage}
-    />
+    <TabGroup>
+      <Tab bind:group={tabSet} name="item-locations" value={0} class="text-sm"
+        >Item Locations</Tab
+      >
+      <svelte:fragment slot="panel">
+        {#if tabSet === 0}
+          <ItemLocationTable
+            {itemLocations}
+            itemName={item.name}
+            generatePage={generateItemLocationPage}
+          />
+        {/if}
+      </svelte:fragment>
+    </TabGroup>
     {#if !item.is_new}
       <label class="block text-sm font-medium leading-6 text-gray-900">
         <input
