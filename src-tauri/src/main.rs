@@ -14,7 +14,7 @@ use page_generators::ability_page::generate_ability_page;
 use page_generators::game_routes::{
     delete_route_page_from_mkdocs, generate_route_pages_with_handle,
 };
-use page_generators::item_page::generate_item_page;
+use page_generators::item_page::{generate_item_location_page, generate_item_page};
 use page_generators::nature_page::generate_nature_page;
 use page_generators::pokemon_pages::generate_pokemon_pages_from_list;
 use tauri_plugin_sql;
@@ -60,7 +60,8 @@ fn main() {
             generate_nature_page,
             generate_ability_page,
             update_yaml,
-            delete_route_page_from_mkdocs
+            delete_route_page_from_mkdocs,
+            generate_item_location_page
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application");

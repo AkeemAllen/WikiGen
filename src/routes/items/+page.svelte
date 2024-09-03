@@ -45,15 +45,28 @@
     value: id,
   }));
 
+  async function generateItemLocationPage() {
+    await invoke("generate_item_location_page", {
+      wikiName: $selectedWiki.name,
+    }).then(() => {
+      toastStore.trigger({
+        message: "Item location page regenerated!",
+        background: "variant-filled-success",
+      });
+    });
+  }
+
   async function generateItemPage() {
-    await invoke("generate_item_page", { wikiName: $selectedWiki.name }).then(
-      () => {
+    await invoke("generate_item_page", { wikiName: $selectedWiki.name })
+      .then(() => {
         toastStore.trigger({
           message: "Item page regenerated!",
           background: "variant-filled-success",
         });
-      },
-    );
+      })
+      .then(() => {
+        generateItemLocationPage();
+      });
   }
 
   async function getItem() {
@@ -328,7 +341,11 @@
       </div>
     </div>
     <p class="text-sm font-medium leading-6 text-gray-900">Item Locations</p>
-    <ItemLocationTable {itemLocations} itemName={item.name} />
+    <ItemLocationTable
+      {itemLocations}
+      itemName={item.name}
+      generatePage={generateItemLocationPage}
+    />
     {#if !item.is_new}
       <label class="block text-sm font-medium leading-6 text-gray-900">
         <input

@@ -19,6 +19,7 @@
   let addItemLocationModalOpen: boolean = false;
   let editItemLocationModalOpen: boolean = false;
   export let itemName: string = "";
+  export let generatePage: Function;
   export let itemLocations: ItemLocation[] = [];
 
   let newItemLocation: ItemLocation = {
@@ -80,6 +81,7 @@
         newItemLocation.item_name = itemName;
         itemLocations = [...itemLocations, newItemLocation];
         newItemLocation = {} as ItemLocation;
+        generatePage();
       })
       .catch((err) => {
         toastStore.trigger({
@@ -114,6 +116,7 @@
           return itemLocation;
         });
         itemLocationToEdit = {} as ItemLocation;
+        generatePage();
       })
       .catch((err) => {
         toastStore.trigger({
@@ -136,6 +139,7 @@
           (itemLocation) => itemLocation.id !== id,
         );
         itemLocationToEdit = {} as ItemLocation;
+        generatePage();
       })
       .catch((err) => {
         toastStore.trigger({
