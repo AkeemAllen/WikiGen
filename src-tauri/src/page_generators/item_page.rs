@@ -4,7 +4,7 @@ use std::{
 };
 
 use serde_yaml::{Mapping, Value};
-use sqlx::{migrate::MigrateDatabase, FromRow, Sqlite, SqlitePool};
+use sqlx::FromRow;
 use tauri::AppHandle;
 
 use crate::{
