@@ -261,7 +261,7 @@ pub async fn generate_item_location_page(
         item_location_entries.push_str(&entry);
     }
 
-    if item_locations_markdown.is_empty() {
+    if item_location_entries.is_empty() {
         if !item_location_page {
             return Ok("No Item changes to generate".to_string());
         }
