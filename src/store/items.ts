@@ -8,6 +8,15 @@ export type Item = {
   is_new: number;
 };
 
+export type ItemLocation = {
+  id: number;
+  item_name: string;
+  route: string;
+  specific_location: string | null;
+  method: string | null;
+  requirements: string | null;
+};
+
 export type SearchItem = {
   id: number;
   name: string;
