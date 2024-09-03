@@ -1,66 +1,6 @@
-use std::collections::HashMap;
+use std::path::PathBuf;
 
-use serde::{Deserialize, Serialize};
-
-use crate::structs::pokemon_structs::Evolution;
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ModifiedPokemonDetails {
-    pub id: usize,
-    pub types: Types,
-    pub evolution: Evolution,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Types {
-    pub original: Vec<String>,
-    pub modified: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ModifiedItemsNaturesAbilities {
-    pub items: HashMap<String, ModifiedItem>,
-    pub natures: HashMap<String, ModifiedNature>,
-    pub abilities: HashMap<String, ModifiedAbility>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ModifiedItem {
-    pub original: Item,
-    pub modified: Item,
-    pub is_new_item: bool,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ModifiedAbility {
-    pub original: Effect,
-    pub modified: Effect,
-    pub is_new_ability: bool,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ModifiedNature {
-    pub original: Nature,
-    pub modified: Nature,
-    pub is_new_nature: bool,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Nature {
-    pub increased_stat: Option<String>,
-    pub decreased_stat: Option<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Item {
-    pub effect: String,
-    pub sprite: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Effect {
-    pub effect: String,
-}
+use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 
 pub mod ability_page;
 // pub mod evolution_page;
@@ -70,3 +10,17 @@ pub mod nature_page;
 mod pokemon_page_generator_functions;
 pub mod pokemon_pages;
 // pub mod type_page;
+
+pub async fn get_sqlite_connection(sql_lite_file_path: PathBuf) -> Result<Pool<Sqlite>, String> {
+    let sqlite_connection_string = format!("sqlite:{}", sql_lite_file_path.to_str().unwrap());
+    if !Sqlite::database_exists(&sqlite_connection_string)
+        .await
+        .unwrap_or(false)
+    {
+        return Err("Database does not exist".to_string());
+    }
+    match SqlitePool::connect(&sqlite_connection_string).await {
+        Ok(conn) => Ok(conn),
+        Err(err) => Err(format!("Failed to connect to database: {}", err)),
+    }
+}

@@ -74,7 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Implemented base infrastructure to better handle updates to files and database structure.
+            \n- Users are now able to document item locations and generate item location page for the wiki.
             "
           releaseDraft: false
           prerelease: false

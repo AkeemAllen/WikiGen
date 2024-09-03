@@ -2,9 +2,14 @@
   import AutoComplete from "$lib/components/AutoComplete.svelte";
   import Button from "$lib/components/Button.svelte";
   import BaseModal from "$lib/components/BaseModal.svelte";
-  import { type Item, itemsList, type SearchItem } from "../../store/items";
+  import {
+    type Item,
+    type ItemLocation,
+    itemsList,
+    type SearchItem,
+  } from "../../store/items";
   import { selectedWiki } from "../../store";
-  import { getToastStore } from "@skeletonlabs/skeleton";
+  import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
   import { invoke } from "@tauri-apps/api";
   import {
     writeBinaryFile,
@@ -19,6 +24,7 @@
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
   import objectIsEmpty from "$lib/utils/objectIsEmpty";
+  import ItemLocationTable from "$lib/components/ItemLocationTable.svelte";
 
   const toastStore = getToastStore();
 
@@ -27,6 +33,10 @@
   let item: Item = {} as Item;
   let originalItemDetails: Item = {} as Item;
   let spriteImage: string = "";
+
+  let tabSet: number = 0;
+
+  let itemLocations: ItemLocation[] = [];
 
   let newItem: Item = {} as Item;
   let newSpriteImage: string = "";
@@ -37,15 +47,28 @@
     value: id,
   }));
 
+  async function generateItemLocationPage() {
+    await invoke("generate_item_location_page", {
+      wikiName: $selectedWiki.name,
+    }).then(() => {
+      toastStore.trigger({
+        message: "Item location page regenerated!",
+        background: "variant-filled-success",
+      });
+    });
+  }
+
   async function generateItemPage() {
-    await invoke("generate_item_page", { wikiName: $selectedWiki.name }).then(
-      () => {
+    await invoke("generate_item_page", { wikiName: $selectedWiki.name })
+      .then(() => {
         toastStore.trigger({
           message: "Item page regenerated!",
           background: "variant-filled-success",
         });
-      },
-    );
+      })
+      .then(() => {
+        generateItemLocationPage();
+      });
   }
 
   async function getItem() {
@@ -64,6 +87,21 @@
       .then(async (res) => {
         item = res[0];
         originalItemDetails = cloneDeep(item);
+
+        await $db
+          .select<ItemLocation[]>(
+            "SELECT * FROM item_location WHERE item_name = $1;",
+            [item.name],
+          )
+          .then((res) => {
+            itemLocations = res;
+          })
+          .catch((err) => {
+            toastStore.trigger({
+              message: `Error fetching item locations!: \n ${err}`,
+              background: "variant-filled-error",
+            });
+          });
 
         // Reading in image separately
         spriteImage = await readBinaryFile(
@@ -304,6 +342,20 @@
         />
       </div>
     </div>
+    <TabGroup>
+      <Tab bind:group={tabSet} name="item-locations" value={0} class="text-sm"
+        >Item Locations</Tab
+      >
+      <svelte:fragment slot="panel">
+        {#if tabSet === 0}
+          <ItemLocationTable
+            {itemLocations}
+            itemName={item.name}
+            generatePage={generateItemLocationPage}
+          />
+        {/if}
+      </svelte:fragment>
+    </TabGroup>
     {#if !item.is_new}
       <label class="block text-sm font-medium leading-6 text-gray-900">
         <input
