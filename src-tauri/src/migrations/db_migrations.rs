@@ -102,8 +102,9 @@ async fn create_item_location_table(conn: &Pool<Sqlite>) -> Result<SqliteQueryRe
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 item_name TEXT NOT NULL,
                 route TEXT NOT NULL,
-                specific_location TEXT NOT NULL,
-                method TEXT NOT NULL
+                specific_location TEXT,
+                method TEXT,
+                requirements TEXT
             );
         ",
         )
