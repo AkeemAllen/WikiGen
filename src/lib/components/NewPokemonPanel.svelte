@@ -29,6 +29,7 @@
     types: "normal",
     ability_1: null,
     ability_2: null,
+    hidden_ability: null,
     hp: 0,
     attack: 0,
     defense: 0,
@@ -109,15 +110,17 @@
           types,
           ability_1,
           ability_2,
+          hidden_ability,
           hp, attack, defense, sp_attack, sp_defense, speed, evolution_method
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);`,
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);`,
         [
           newPokemon.dex_number,
           newPokemon.name.toLowerCase(),
           newPokemon.types,
           newPokemon.ability_1?.toLowerCase().split(" ").join("-"),
           newPokemon.ability_2?.toLowerCase().split(" ").join("-"),
+          newPokemon.hidden_ability?.toLowerCase().split(" ").join("-"),
           newPokemon.hp,
           newPokemon.attack,
           newPokemon.defense,
