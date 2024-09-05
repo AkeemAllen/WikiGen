@@ -57,6 +57,17 @@
     ability_2 = capitalizeWords(pokemon.ability_2);
   }
 
+  let hidden_ability: string = "";
+  $: if (pokemon.hidden_ability || pokemon.hidden_ability === null)
+    setHiddenAbility();
+  function setHiddenAbility() {
+    if (pokemon.hidden_ability === null) {
+      hidden_ability = "None";
+      return;
+    }
+    hidden_ability = capitalizeWords(pokemon.hidden_ability);
+  }
+
   let types: string[];
   $: if (pokemon.types) setTypes();
   function setTypes() {
@@ -145,6 +156,17 @@
         pokemon.ability_2 = e.detail.value;
       }}
       class="w-full"
+    />
+    <AutoComplete
+      label="Hidden Ability"
+      bind:value={hidden_ability}
+      options={abilitiesListOptions}
+      popupId="hidden-ability-popup"
+      onSelection={(e) => {
+        hidden_ability = e.detail.label;
+        pokemon.hidden_ability = e.detail.value;
+      }}
+      class="w-full col-start-2"
     />
   </div>
   <div class="mt-5 flex flex-row gap-x-10">
