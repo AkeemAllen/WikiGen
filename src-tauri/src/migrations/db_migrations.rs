@@ -89,23 +89,6 @@ pub async fn run_db_migrations(base_path: &PathBuf) -> Result<(), String> {
             }
         };
 
-        match add_hidden_ability_column_pokemon(&conn).await {
-            Ok(_) => {},
-            Err(err) => {
-                println!("Error: {}", err);
-                wiki_error_file
-                    .write(
-                        format!(
-                            "Failed to create item_location table in wiki {}: {}",
-                            wiki_name, err
-                        )
-                        .as_bytes(),
-                    )
-                    .expect("Failed to write connection error to file");
-                continue;
-            }
-        };
-
         let mut hidden_ability_column_exists = false;
         match conn.execute("
            SELECT hidden_ability FROM pokemon;
