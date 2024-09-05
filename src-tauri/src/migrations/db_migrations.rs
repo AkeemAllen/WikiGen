@@ -53,11 +53,11 @@ pub async fn run_db_migrations(base_path: &PathBuf) -> Result<(), String> {
             .open(wiki_path.join("migration_errors.txt"))
             .expect("cannot open file");
 
-        let wiki_backup_file_path = wiki_path.join(format!("{}_pre_item_locations.db", wiki_name));
+        let wiki_backup_file_path = wiki_path.join(format!("{}_pre_hidden_ability.db", wiki_name));
         if !wiki_backup_file_path.exists() {
             fs::copy(
                 wiki_path.join(format!("{}.db", wiki_name)),
-                wiki_path.join(format!("{}_pre_item_locations.db", wiki_name)),
+                wiki_path.join(format!("{}_pre_hidden_ability.db", wiki_name)),
             )
             .expect("Failed to backup wiki's database");
         }
@@ -89,6 +89,48 @@ pub async fn run_db_migrations(base_path: &PathBuf) -> Result<(), String> {
             }
         };
 
+        match add_hidden_ability_column_pokemon(&conn).await {
+            Ok(_) => {},
+            Err(err) => {
+                println!("Error: {}", err);
+                wiki_error_file
+                    .write(
+                        format!(
+                            "Failed to create item_location table in wiki {}: {}",
+                            wiki_name, err
+                        )
+                        .as_bytes(),
+                    )
+                    .expect("Failed to write connection error to file");
+                continue;
+            }
+        };
+
+        let mut hidden_ability_column_exists = false;
+        match conn.execute("
+           SELECT hidden_ability FROM pokemon;
+           ").await {
+               Ok(_) => hidden_ability_column_exists = true,
+               Err(err) => hidden_ability_column_exists = false,
+           }
+        if !hidden_ability_column_exists {
+           match add_hidden_ability_column_pokemon(&conn).await {
+                Ok(_) => {}
+                Err(err) => {
+                     wiki_error_file
+                          .write(
+                            format!(
+                                 "Failed to add hidden_ability column to pokemon table in wiki {}: {}",
+                                 wiki_name, err
+                            )
+                            .as_bytes(),
+                          )
+                          .expect("Failed to write connection error to file");
+                     continue;
+                }
+           }
+        }
+
         conn.close().await;
     }
     Ok(())
@@ -106,6 +148,17 @@ async fn create_item_location_table(conn: &Pool<Sqlite>) -> Result<SqliteQueryRe
                 method TEXT,
                 requirements TEXT
             );
+        ",
+        )
+        .await;
+}
+
+async fn add_hidden_ability_column_pokemon(conn: &Pool<Sqlite>) -> Result<SqliteQueryResult, Error> {
+    return conn
+        .execute(
+            "
+            ALTER TABLE pokemon
+            ADD COLUMN hidden_ability TEXT;
         ",
         )
         .await;
