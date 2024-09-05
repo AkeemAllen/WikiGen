@@ -78,10 +78,12 @@ pub async fn generate_pokemon_pages(
         "SELECT
             pokemon.*,
             a1.effect as a1_effect,
-            a2.effect as a2_effect
+            a2.effect as a2_effect,
+            h3.effect as h3_effect
         FROM pokemon
         LEFT JOIN abilities a1 on a1.name = pokemon.ability_1
         LEFT JOIN abilities a2 on a2.name = pokemon.ability_2
+        LEFT JOIN abilities h3 on h3.name = pokemon.hidden_ability
         WHERE pokemon.id IN ({}) ORDER BY dex_number ASC",
         id_list
     );
@@ -330,6 +332,7 @@ pub fn generate_page_from_template(
 
     let mut ability_1 = String::new();
     let mut ability_2 = String::new();
+    let mut hidden_ability = String::new();
 
     if pokemon.ability_1.is_some() {
         ability_1.push_str(
@@ -348,6 +351,17 @@ pub fn generate_page_from_template(
                 "/<a href='' title=\"{}\">{}</a>",
                 &pokemon.a2_effect.as_ref().unwrap(),
                 capitalize(&pokemon.ability_2.as_ref().unwrap())
+            )
+            .as_str(),
+        );
+    }
+
+    if pokemon.hidden_ability.is_some() {
+        hidden_ability.push_str(
+            format!(
+                "/<a href='' title=\"{}\">Hidden: {}</a>",
+                &pokemon.h3_effect.as_ref().unwrap(),
+                capitalize(&pokemon.hidden_ability.as_ref().unwrap())
             )
             .as_str(),
         );
@@ -379,6 +393,7 @@ pub fn generate_page_from_template(
         .replace("{{type_2_image}}", &type_2_image)
         .replace("{{ability_1}}", &ability_1)
         .replace("{{ability_2}}", &ability_2)
+        .replace("{{hidden_ability}}", &hidden_ability)
         .replace("{{hp}}", pokemon.hp.to_string().as_str())
         .replace(
             "{{hp_width}}",

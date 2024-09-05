@@ -14,6 +14,7 @@ export type Pokemon = {
   types: string;
   ability_1: string | null;
   ability_2: string | null;
+  hidden_ability: string | null;
   hp: number;
   attack: number;
   defense: number;

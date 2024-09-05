@@ -74,7 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Users are now able to document item locations and generate item location page for the wiki.
+            \n- Users are now able to document hidden abilities on pokemon.
             "
           releaseDraft: false
           prerelease: false

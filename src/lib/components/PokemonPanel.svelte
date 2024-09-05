@@ -177,8 +177,9 @@
           evolution_level = $14,
           evolution_other = $15,
           evolved_pokemon = $16,
-          render = $17
-        WHERE id = $18;`,
+          render = $17,
+          hidden_ability = $18
+        WHERE id = $19;`,
         [
           pokemon.dex_number,
           pokemon.name,
@@ -197,6 +198,7 @@
           pokemon.evolution_other,
           pokemon.evolved_pokemon,
           pokemon.render,
+          pokemon.hidden_ability?.toLowerCase().split(" ").join("-"),
           pokemon.id,
         ],
       )

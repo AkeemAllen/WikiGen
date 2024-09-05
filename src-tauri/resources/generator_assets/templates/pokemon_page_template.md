@@ -14,6 +14,7 @@
       <div style="display: flex; flex-direction: row; align-items: center; font-size: 16px">
         {{ability_1}}
         {{ability_2}}
+        {{hidden_ability}}
       </div>
     </div>
   </div>
