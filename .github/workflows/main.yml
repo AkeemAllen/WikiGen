@@ -74,7 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Users are now able to document hidden abilities on pokemon.
+            \n- Added hidden_ability field missing in initial.db.
             "
           releaseDraft: false
           prerelease: false
