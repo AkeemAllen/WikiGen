@@ -25,6 +25,91 @@ use super::{
 };
 
 #[tauri::command]
+pub async fn remove_pokemon_page_with_old_dex_number(
+    wiki_name: &str,
+    pokemon_name: &str,
+    old_dex_number: u32,
+    app_handle: AppHandle,
+) -> Result<String, String> {
+    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+
+    let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
+    let mkdocs_yaml_file = match File::open(&mkdocs_yaml_file_path) {
+        Ok(file) => file,
+        Err(err) => {
+            return Err(format!("Failed to open mkdocs yaml file: {}", err));
+        }
+    };
+    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
+        Ok(mkdocs) => mkdocs,
+        Err(err) => {
+            return Err(format!("Failed to parse mkdocs yaml file: {}", err));
+        }
+    };
+
+    let mut mkdocs_pokemon: &mut Vec<Value> = &mut Vec::new();
+
+    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
+    for entry in nav_entries {
+        let map_entries = entry.as_mapping_mut().unwrap();
+        match map_entries.get_mut(Value::String("Pokemon".to_string())) {
+            Some(map_entry) => {
+                mkdocs_pokemon = map_entry.as_sequence_mut().unwrap();
+            }
+            None => {}
+        }
+    }
+
+    let mut pokedex_markdown_file_name = format!("00{}", old_dex_number);
+    if old_dex_number >= 10 {
+        pokedex_markdown_file_name = format!("0{}", old_dex_number);
+    }
+    if old_dex_number >= 100 {
+        pokedex_markdown_file_name = format!("{}", old_dex_number);
+    }
+    let entry_key = format!(
+        "{} - {}",
+        &pokedex_markdown_file_name,
+        capitalize(pokemon_name)
+    );
+
+    let mut page_entry_exists = false;
+    let mut page_position = 0;
+    for (index, page_entry) in mkdocs_pokemon.iter_mut().enumerate() {
+        if page_entry.as_mapping().unwrap().contains_key(&entry_key) {
+            page_entry_exists = true;
+            page_position = index;
+            break;
+        }
+    }
+
+    if !page_entry_exists {
+        return Ok("Page with old dex number not present".to_string());
+    }
+    mkdocs_pokemon.remove(page_position);
+    let pokemon_page_path = base_path
+        .join(wiki_name)
+        .join("dist")
+        .join("docs")
+        .join("pokemon")
+        .join(format!("{}-{}.md", &pokedex_markdown_file_name, pokemon_name));
+    if pokemon_page_path.try_exists().unwrap_or(false) {
+        match fs::remove_file(pokemon_page_path) {
+            Ok(_) => {}
+            Err(err) => return Err(format!("Failed to remove pokemon page: {}", err)),
+        }
+    }
+    match fs::write(
+        &mkdocs_yaml_file_path,
+        serde_yaml::to_string(&mut mkdocs_config).unwrap(),
+    ) {
+        Ok(_) => {}
+        Err(err) => return Err(format!("Failed to update mkdocs yaml: {}", err)),
+    };
+    Ok("".to_string())
+}
+
+#[tauri::command]
 pub async fn generate_pokemon_pages_from_list(
     wiki_name: &str,
     pokemon_ids: Vec<usize>,
@@ -395,7 +480,10 @@ pub fn generate_page_from_template(
         .replace("{{type_2_image}}", &type_2_image)
         .replace("{{ability_1}}", &ability_1)
         .replace("{{ability_2}}", &ability_2)
-        .replace("{{display_hidden_ability}}", &display_hidden_ability_section)
+        .replace(
+            "{{display_hidden_ability}}",
+            &display_hidden_ability_section,
+        )
         .replace("{{hidden_ability}}", &hidden_ability)
         .replace("{{hp}}", pokemon.hp.to_string().as_str())
         .replace(

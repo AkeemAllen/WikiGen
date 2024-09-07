@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
-  import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
+  import { BaseDirectory, exists, readBinaryFile } from "@tauri-apps/api/fs";
   import { selectedWiki } from "../../store";
   import { routes, type WildEncounter } from "../../store/gameRoutes";
   import {
@@ -204,6 +204,20 @@
         ],
       )
       .then(() => {
+        if (originalPokemonDetails.dex_number !== pokemon.dex_number) {
+          invoke("remove_pokemon_page_with_old_dex_number", {
+            wikiName: $selectedWiki.name,
+            oldDexNumber: originalPokemonDetails.dex_number,
+            pokemonName: pokemon.name,
+          }).catch((err) => {
+            toastStore.trigger({
+              message: `Error removing old pokemon page!: ${err}`,
+              background: "variant-filled-error",
+            });
+          });
+          // Update all references to this pokemon in the routes json file to use updated dex number
+          // and regenerate the routes
+        }
         originalPokemonDetails = cloneDeep(pokemon);
         toastStore.trigger({
           message: "Pokemon changes saved!",
