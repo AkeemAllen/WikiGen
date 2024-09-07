@@ -117,6 +117,7 @@
       })
       .then((res) => {
         // Gather location
+        pokemonLocations = [];
         for (const [_, properties] of Object.entries($routes.routes)) {
           for (const [_, encounters] of Object.entries(
             properties.wild_encounters,
