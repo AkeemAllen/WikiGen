@@ -74,7 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Fixed location tab by by resetting pokemonLocations when pokemon changes.
+            \n- All references to a pokemon in a route and on its page are now updated when its dex number changes.
             "
           releaseDraft: false
           prerelease: false
