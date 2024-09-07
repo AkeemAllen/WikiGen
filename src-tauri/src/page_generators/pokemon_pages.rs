@@ -356,10 +356,12 @@ pub fn generate_page_from_template(
         );
     }
 
+    let mut display_hidden_ability_section = "none";
     if pokemon.hidden_ability.is_some() {
+        display_hidden_ability_section = "grid";
         hidden_ability.push_str(
             format!(
-                "/<a href='' title=\"{}\">Hidden: {}</a>",
+                "<a href='' title=\"{}\">{}</a>",
                 &pokemon.h3_effect.as_ref().unwrap(),
                 capitalize(&pokemon.hidden_ability.as_ref().unwrap())
             )
@@ -393,6 +395,7 @@ pub fn generate_page_from_template(
         .replace("{{type_2_image}}", &type_2_image)
         .replace("{{ability_1}}", &ability_1)
         .replace("{{ability_2}}", &ability_2)
+        .replace("{{display_hidden_ability}}", &display_hidden_ability_section)
         .replace("{{hidden_ability}}", &hidden_ability)
         .replace("{{hp}}", pokemon.hp.to_string().as_str())
         .replace(
