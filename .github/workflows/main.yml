@@ -75,6 +75,7 @@ jobs:
           releaseBody: "
             Changelog:
             \n- All references to a pokemon in a route and on its page are now updated when its dex number changes.
+            \n- Added convenience button to update and regenerate routes affected by dex number changes.
             "
           releaseDraft: false
           prerelease: false

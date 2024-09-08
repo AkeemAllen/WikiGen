@@ -218,12 +218,14 @@ pub async fn generate_pokemon_pages(
         Err(err) => return Err(format!("Failed to parse routes file: {}", err)),
     };
 
+    let dex_numbers = pokemon_list.iter().map(|p| usize::try_from(p.dex_number).unwrap()).collect::<Vec<_>>();
+
     // Gather all wild encounters for the selected pokemon
     let mut wild_encounters: Vec<WildEncounter> = Vec::new();
     for (_, properties) in &routes.routes {
         for (_, _wild_encounters) in &properties.wild_encounters {
             for wild_encounter in _wild_encounters {
-                if pokemon_ids.contains(&wild_encounter.id) {
+                if dex_numbers.contains(&wild_encounter.id) {
                     wild_encounters.push(wild_encounter.clone());
                 }
             }
@@ -324,7 +326,7 @@ pub async fn generate_pokemon_pages(
         let current_pokemon_locations = wild_encounters
             .iter()
             .cloned()
-            .filter(|w| w.id == usize::try_from(pokemon.id).unwrap())
+            .filter(|w| w.id == usize::try_from(pokemon.dex_number).unwrap() && w.name == pokemon.name)
             .collect::<Vec<_>>();
 
         let pokemon_markdown_string = generate_page_from_template(

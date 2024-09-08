@@ -71,12 +71,9 @@ fn main() {
 
     app.run(|_app_handle, event| match event {
         tauri::RunEvent::Ready => {
-            println!("Running Migrations");
             let base_path = _app_handle.path_resolver().app_data_dir().unwrap();
             match tauri::async_runtime::block_on(run_migrations(&base_path)) {
-                Ok(_) => {
-                    println!("Database migrations ran successfully");
-                }
+                Ok(_) => {}
                 Err(err) => {
                     let migration_error_file = _app_handle
                         .path_resolver()
