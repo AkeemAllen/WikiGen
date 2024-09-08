@@ -30,6 +30,7 @@
   import updateTrainerEncounters from "$lib/utils/migration_helpers/updateTrainerEncounters";
   import updateRouteRender from "$lib/utils/migration_helpers/updateRouteRenderValue";
   import HotKeysModal from "./modals/HotKeysModal.svelte";
+  import updateDexNumberReferences from "$lib/utils/migration_helpers/updateDexNumberReferences";
 
   const toastStore = getToastStore();
 
@@ -158,6 +159,35 @@
       loadRoutes();
     });
   }
+
+  async function updatePokemonReferences() {
+    let updatedRoutes = updateDexNumberReferences($routes, $pokemonList);
+    $routes = updatedRoutes;
+    await writeTextFile(
+      `${$selectedWiki.name}/data/routes.json`,
+      JSON.stringify($routes),
+      { dir: BaseDirectory.AppData },
+    ).then(() => {
+      invoke("generate_route_pages_with_handle", {
+        wikiName: $selectedWiki.name,
+        routeNames: Object.keys($routes.routes),
+      })
+        .then(() => {
+          toastStore.trigger({
+            message: "Changes saved successfully",
+            timeout: 3000,
+            background: "variant-filled-success",
+          });
+        })
+        .catch((e) => {
+          toastStore.trigger({
+            message: `Error generating route pages!: ${e}`,
+            timeout: 3000,
+            background: "variant-filled-success",
+          });
+        });
+    });
+  }
 </script>
 
 <BaseModal bind:open={deleteWikiModalOpen}>
@@ -209,6 +239,11 @@
     <button
       class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
       on:click={backupWiki}>Backup Wiki</button
+    >
+    <button
+      class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+      on:click={() => updatePokemonReferences()}
+      >Update Pokemon References</button
     >
   {/if}
   <button
