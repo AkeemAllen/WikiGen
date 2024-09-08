@@ -218,60 +218,63 @@
             wikiName: $selectedWiki.name,
             oldDexNumber: originalPokemonDetails.dex_number,
             pokemonName: pokemon.name,
-          }).catch((err) => {
-            toastStore.trigger({
-              message: `Error removing old pokemon page!: ${err}`,
-              background: "variant-filled-error",
-            });
-          });
-          let updatedRoutes: Routes = cloneDeep($routes);
-          for (const [routeName, properties] of Object.entries(
-            $routes.routes,
-          )) {
-            for (const [encounterArea, wildEncounters] of Object.entries(
-              properties.wild_encounters,
-            )) {
-              for (const [index, encounter] of wildEncounters.entries()) {
-                if (encounter.name !== pokemon.name) continue;
-                updatedRoutes.routes[routeName].wild_encounters[encounterArea][
-                  index
-                ].id = pokemon.dex_number;
+          })
+            .then(() => {
+              let updatedRoutes: Routes = cloneDeep($routes);
+              for (const [routeName, properties] of Object.entries(
+                $routes.routes,
+              )) {
+                for (const [encounterArea, wildEncounters] of Object.entries(
+                  properties.wild_encounters,
+                )) {
+                  for (const [index, encounter] of wildEncounters.entries()) {
+                    if (encounter.name !== pokemon.name) continue;
+                    updatedRoutes.routes[routeName].wild_encounters[
+                      encounterArea
+                    ][index].id = pokemon.dex_number;
+                  }
+                }
               }
-            }
-          }
-          $routes = cloneDeep(updatedRoutes);
-          writeTextFile(
-            `${$selectedWiki.name}/data/routes.json`,
-            JSON.stringify($routes),
-            { dir: BaseDirectory.AppData },
-          ).then(() => {
-            invoke("generate_route_pages_with_handle", {
-              wikiName: $selectedWiki.name,
-              routeNames: Object.keys($routes.routes),
-            })
-              .then(() => {
-                toastStore.trigger({
-                  message: "Changes saved successfully",
-                  timeout: 3000,
-                  background: "variant-filled-success",
-                });
-              })
-              .catch((e) => {
-                toastStore.trigger({
-                  message: `Error generating route pages!: ${e}`,
-                  timeout: 3000,
-                  background: "variant-filled-success",
-                });
+              $routes = cloneDeep(updatedRoutes);
+              writeTextFile(
+                `${$selectedWiki.name}/data/routes.json`,
+                JSON.stringify($routes),
+                { dir: BaseDirectory.AppData },
+              ).then(() => {
+                invoke("generate_route_pages_with_handle", {
+                  wikiName: $selectedWiki.name,
+                  routeNames: Object.keys($routes.routes),
+                })
+                  .then(() => {
+                    toastStore.trigger({
+                      message: "Changes saved successfully",
+                      timeout: 3000,
+                      background: "variant-filled-success",
+                    });
+                  })
+                  .catch((e) => {
+                    toastStore.trigger({
+                      message: `Error generating route pages!: ${e}`,
+                      timeout: 3000,
+                      background: "variant-filled-success",
+                    });
+                  });
               });
-          });
-          // Update all references to this pokemon in the routes json file to use updated dex number
-          // and regenerate the routes
+            })
+            .catch((err) => {
+              toastStore.trigger({
+                message: `Error removing old pokemon page!: ${err}`,
+                background: "variant-filled-error",
+              });
+            });
         }
         originalPokemonDetails = cloneDeep(pokemon);
         toastStore.trigger({
           message: "Pokemon changes saved!",
           background: "variant-filled-success",
         });
+      })
+      .then(() => {
         generatePokemonPage();
       })
       .catch((err) => {
