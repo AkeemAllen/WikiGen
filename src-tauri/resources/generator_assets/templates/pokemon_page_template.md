@@ -16,7 +16,7 @@
         {{ability_2}}
       </div>
     </div>
-    <div class="hidden-pokemon-attribute" style="display: {{display_hidden_ability}};">
+    <div style="display: {{display_hidden_ability}};" class="hidden-pokemon-attribute">
       <p style="color: #737373; margin: 0px;  font-weight: normal; font-size:15px; align-self: center;">Hidden Ability</p>
       <div class="attribute-value">
         {{hidden_ability}}
