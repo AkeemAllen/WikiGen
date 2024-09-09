@@ -113,3 +113,35 @@
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
   }
 }
+
+.pokemon-attribute-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  @media (min-width: 768px) {
+    display: flex;
+    flex-direction: row;
+    column-gap: 3rem;
+    align-content: center;
+  }
+}
+
+.pokemon-attribute {
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 3rem;
+  alignt-items: center;
+}
+
+.hidden-pokemon-attribute {
+  grid-template-columns: auto auto;
+  column-gap: 3rem;
+  alignt-items: center;
+}
+
+.attribute-value {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 16px;
+  justify-self: end;
+}
