@@ -397,7 +397,7 @@ fn generate_wild_encounter_markdown(
         };
         let encounter_area = &encounter_area_entry;
         let encounters = format!(
-            "<div style=\"display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;\">{}</div>",
+            "<div class=\"wild-encounters-container\">{}</div>",
             pokemon_entries
         );
         let encounter_entry = format!("\n\n\t???+ note \"{}\"\n\t\t{}", encounter_area, encounters);
