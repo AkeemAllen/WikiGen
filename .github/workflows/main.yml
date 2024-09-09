@@ -74,8 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- All references to a pokemon in a route and on its page are now updated when its dex number changes.
-            \n- Added convenience button to update and regenerate routes affected by dex number changes.
+            \n- Base Improvements to wiki's mobile friendliness.
             "
           releaseDraft: false
           prerelease: false
