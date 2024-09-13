@@ -1,6 +1,11 @@
 <script lang="ts">
   import TextInput from "$lib/components/TextInput.svelte";
-  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+  import {
+    BaseDirectory,
+    copyFile,
+    removeFile,
+    writeTextFile,
+  } from "@tauri-apps/api/fs";
   import { routes } from "../../../store/gameRoutes";
   import { selectedWiki } from "../../../store";
   import { sortRoutesByPosition } from "$lib/utils";
@@ -23,6 +28,18 @@
     if (originalRouteName === newName) return;
 
     let updatedRoutes = { ...$routes };
+    for (let [routeName, properties] of Object.entries(updatedRoutes.routes)) {
+      if (routeName !== originalRouteName) continue;
+      for (let [encounterArea, wildEncounters] of Object.entries(
+        properties.wild_encounters,
+      )) {
+        for (let [index, encounter] of wildEncounters.entries()) {
+          updatedRoutes.routes[routeName].wild_encounters[encounterArea][
+            index
+          ].route = newRouteName;
+        }
+      }
+    }
     updatedRoutes.routes[newName] = updatedRoutes.routes[originalRouteName];
     delete updatedRoutes.routes[originalRouteName];
     $routes = { ...sortRoutesByPosition(updatedRoutes) };
@@ -30,7 +47,36 @@
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
-    );
+    )
+      .then(() => {
+        // rename image
+        copyFile(
+          `${$selectedWiki.name}/dist/docs/img/routes/${originalRouteName}.png`,
+          `${$selectedWiki.name}/dist/docs/img/routes/${newName}.png`,
+          { dir: BaseDirectory.AppData },
+        ).then(() => {
+          removeFile(
+            `${$selectedWiki.name}/dist/docs/img/routes/${originalRouteName}.png`,
+            { dir: BaseDirectory.AppData },
+          );
+        });
+      })
+      .then(() => {
+        invoke("delete_route_page_from_mkdocs", {
+          routeName: originalRouteName,
+          wikiName: $selectedWiki.name,
+        }).then(() => {
+          invoke("generate_route_pages_with_handle", {
+            wikiName: $selectedWiki.name,
+            routeNames: Object.keys($routes.routes),
+          }).then(() => {
+            toastStore.trigger({
+              message: `Route Page Updated successfully`,
+              background: "variant-filled-success",
+            });
+          });
+        });
+      });
   }
 
   async function deleteRoute(routeName: string) {
@@ -64,7 +110,13 @@
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify(sortRoutesByPosition($routes)),
       { dir: BaseDirectory.AppData },
-    );
+    ).then(() => {
+      copyFile(
+        `${$selectedWiki.name}/dist/docs/img/routes/${routeName}.png`,
+        `${$selectedWiki.name}/dist/docs/img/routes/${routeName} copy.png`,
+        { dir: BaseDirectory.AppData },
+      );
+    });
   }
 
   function capitalizeWords(event: any) {
