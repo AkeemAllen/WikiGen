@@ -2,7 +2,8 @@ use std::{
     collections::HashMap,
     fs::{self, File, OpenOptions},
     io::Write,
-    path::PathBuf,
+    path::{Path, PathBuf},
+    str::FromStr,
 };
 
 use serde::{Deserialize, Serialize};
@@ -151,7 +152,11 @@ async fn add_all_missing_pokemon(
         .join("resources")
         .join("generator_assets")
         .join("initial.db");
-    let sqlite_connection_string = format!("sqlite:{}", sqlite_path.to_str().unwrap());
+    let sqlite_connection_string = format!(
+        "sqlite:{}",
+        sqlite_path.to_str().unwrap().replace("\\\\?\\", "")
+    );
+    println!("Connecting to {}", &sqlite_connection_string);
     if !Sqlite::database_exists(&sqlite_connection_string)
         .await
         .unwrap_or(false)
@@ -169,7 +174,9 @@ async fn add_all_missing_pokemon(
         .join("resources")
         .join("generator_assets")
         .join("pokemon_moves.json");
-    let pokemon_moves_file = match File::open(&moves_file_path) {
+    let proper_move_file_path =
+        PathBuf::from_str(&moves_file_path.to_str().unwrap().replace("\\\\?\\", "")).unwrap();
+    let pokemon_moves_file = match File::open(proper_move_file_path) {
         Ok(file) => file,
         Err(err) => return Err(format!("Failed to read moves file: {}", err)),
     };
