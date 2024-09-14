@@ -24,6 +24,7 @@
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
+  import WildEncounterAreaMenu from "../modals/WildEncounterAreaMenu.svelte";
 
   export let routeName: string = "";
   let pokemonName: string = "";
@@ -238,10 +239,15 @@
 </div>
 
 <div class="mt-5 flex flex-col gap-y-5">
-  {#each Object.entries(routeWildEncounters) as [_encounterType, encounters]}
+  {#each Object.entries(routeWildEncounters) as [_encounterType, encounters], index}
     <div>
-      <strong>
+      <strong class="flex flex-row items-center gap-x-4">
         {capitalizeWords(_encounterType)} Encounters
+        <WildEncounterAreaMenu
+          {index}
+          bind:encounterArea={_encounterType}
+          bind:routeName
+        />
       </strong>
       <TextInput
         bind:value={areaLevels[_encounterType]}
