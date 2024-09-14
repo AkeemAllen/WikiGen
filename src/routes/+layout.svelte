@@ -26,6 +26,7 @@
     IconDisc,
     IconDotsVertical,
     IconFlame,
+    IconHome,
     IconRoute2,
     IconTestPipe,
     IconTree,
@@ -108,6 +109,13 @@
             active={$page.url.pathname.includes("wiki-testing")}
           >
             <IconTestPipe slot="icon" size={16} color="indigo" />
+          </NavButton>
+          <NavButton
+            name="Home Page"
+            route="/home"
+            active={$page.url.pathname.includes("home")}
+          >
+            <IconHome slot="icon" size={16} color="indigo" />
           </NavButton>
         </div>
       {/if}
