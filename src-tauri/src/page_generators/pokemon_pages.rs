@@ -5,10 +5,11 @@ use std::{
 };
 
 use serde_yaml::{Mapping, Value};
-use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
+use sqlx::Sqlite;
 use tauri::AppHandle;
 
 use crate::{
+    database::{get_mkdocs_config, get_sqlite_connection},
     helpers::capitalize,
     page_generators::pokemon_page_generator_functions::{
         create_evolution_table, create_learnable_moves_table, create_level_up_moves_table,
@@ -112,6 +113,7 @@ pub async fn remove_pokemon_page_with_old_dex_number(
     Ok("".to_string())
 }
 
+// TODO: Remove this function
 #[tauri::command]
 pub async fn generate_pokemon_pages_from_list(
     wiki_name: &str,
@@ -121,41 +123,26 @@ pub async fn generate_pokemon_pages_from_list(
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
     let resources_path = app_handle.path_resolver().resource_dir().unwrap();
 
+    let sqlite_file_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
+    let conn = get_sqlite_connection(sqlite_file_path).await?;
+    let (pokemon_list, movesets) = get_pokemon_list_and_movesets(&conn, &pokemon_ids).await?;
+
     let result = generate_pokemon_pages(
-        pokemon_ids,
         wiki_name,
-        base_path.clone(),
-        resources_path.clone(),
-    )
-    .await;
+        &pokemon_list,
+        &movesets,
+        &base_path,
+        &resources_path,
+    );
     // generate_type_page(wiki_name, base_path.clone())?;
     // generate_evolution_page(wiki_name, base_path)?;
     return result;
 }
 
-pub async fn generate_pokemon_pages(
-    pokemon_ids: Vec<usize>,
-    wiki_name: &str,
-    base_path: PathBuf,
-    resources_path: PathBuf,
-) -> Result<String, String> {
-    let docs_path = base_path.join(wiki_name).join("dist").join("docs");
-
-    let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
-    let sqlite_connection_string = format!("sqlite:{}", sqlite_path.to_str().unwrap());
-    if !Sqlite::database_exists(&sqlite_connection_string)
-        .await
-        .unwrap_or(false)
-    {
-        return Err("Database does not exist".to_string());
-    }
-    let conn = match SqlitePool::connect(&sqlite_connection_string).await {
-        Ok(conn) => conn,
-        Err(err) => {
-            return Err(format!("Failed to connect to database: {}", err));
-        }
-    };
-
+async fn get_pokemon_list_and_movesets(
+    conn: &sqlx::Pool<Sqlite>,
+    pokemon_ids: &[usize],
+) -> Result<(Vec<DBPokemon>, Vec<PokemonMove>), String> {
     let id_list = &pokemon_ids
         .iter()
         .map(|n| n.to_string())
@@ -176,7 +163,7 @@ pub async fn generate_pokemon_pages(
         id_list
     );
     let pokemon_list = match sqlx::query_as::<_, DBPokemon>(&pokemon_query)
-        .fetch_all(&conn)
+        .fetch_all(conn)
         .await
     {
         Ok(pokemon_list) => pokemon_list,
@@ -199,7 +186,7 @@ pub async fn generate_pokemon_pages(
     );
 
     let movesets = match sqlx::query_as::<_, PokemonMove>(&moveset_query)
-        .fetch_all(&conn)
+        .fetch_all(conn)
         .await
     {
         Ok(pokemon_movesets) => pokemon_movesets,
@@ -210,6 +197,17 @@ pub async fn generate_pokemon_pages(
             ));
         }
     };
+    return Ok((pokemon_list, movesets));
+}
+
+pub fn generate_pokemon_pages(
+    wiki_name: &str,
+    pokemon_list: &[DBPokemon],
+    movesets: &[PokemonMove],
+    base_path: &PathBuf,
+    resources_path: &PathBuf,
+) -> Result<String, String> {
+    let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
     let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
     let routes_file = match File::open(&routes_json_file_path) {
@@ -239,18 +237,7 @@ pub async fn generate_pokemon_pages(
     }
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mkdocs_yaml_file = match File::open(&mkdocs_yaml_file_path) {
-        Ok(file) => file,
-        Err(err) => {
-            return Err(format!("Failed to open mkdocs yaml file: {}", err));
-        }
-    };
-    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
-        Ok(mkdocs) => mkdocs,
-        Err(err) => {
-            return Err(format!("Failed to parse mkdocs yaml file: {}", err));
-        }
-    };
+    let mut mkdocs_config = get_mkdocs_config(&mkdocs_yaml_file_path)?;
 
     let template = match read_to_string(
         resources_path
