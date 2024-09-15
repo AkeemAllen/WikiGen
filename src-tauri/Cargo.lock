@@ -6023,7 +6023,7 @@ dependencies = [
 
 [[package]]
 name = "wiki_gen"
-version = "1.6.10"
+version = "1.6.11"
 dependencies = [
  "chrono",
  "futures",
