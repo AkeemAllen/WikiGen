@@ -74,8 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Users are now able to add an image to the home page and any general edits.
-            \n- Added ability to copy encounter areas from one route to another.
+            \n- Fixed bug caused by encounter rate not handling floating point numbers.
             "
           releaseDraft: false
           prerelease: false
