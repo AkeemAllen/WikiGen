@@ -56,7 +56,7 @@ pub struct TrainerPokemon {
 pub struct WildEncounter {
     pub id: usize,
     pub name: String,
-    pub encounter_rate: usize,
+    pub encounter_rate: f32,
     pub encounter_area: String,
     pub route: String,
     pub special_note: String,
@@ -452,7 +452,7 @@ fn generate_trainer_markdown(trainers: &IndexMap<String, TrainerInfo>) -> String
 fn get_markdown_entry_for_pokemon(wiki_name: &str, pokemon: &WildEncounter) -> String {
     let dex_number_file_name = get_pokemon_dex_formatted_name(pokemon.id.try_into().unwrap());
     let encounter_rate = match pokemon.encounter_rate {
-        0 => "".to_string(),
+        0.0 => "".to_string(),
         _ => format!("{}%", &pokemon.encounter_rate),
     };
     return format!(
