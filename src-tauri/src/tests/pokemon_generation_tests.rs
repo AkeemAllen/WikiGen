@@ -1,3 +1,5 @@
+use std::fs::read_to_string;
+
 use serde_yaml::Value;
 
 use crate::{
@@ -7,9 +9,8 @@ use crate::{
 };
 
 #[test]
+// Pokemon Page is created and present in the mkdocs.yml file
 fn test_generate_pokemon_page() {
-    // Check that page is created and entry is in mkdocs.
-    // Remove once complete
     let base_path =
         std::path::PathBuf::from("/Users/akeemallen/Library/Application Support/com.wikigen.dev");
     let resource_path = std::path::PathBuf::from("/Applications/WikiGen.app/Contents/Resources");
@@ -40,7 +41,7 @@ fn test_generate_pokemon_page() {
     let moveset: Vec<PokemonMove> = vec![PokemonMove {
         pokemon: 1,
         move_id: 1,
-        learn_method: "level_up".to_string(),
+        learn_method: "level-up".to_string(),
         level_learned: Some(1),
         move_name: "tackle".to_string(),
         move_type: Some("normal".to_string()),
@@ -65,6 +66,23 @@ fn test_generate_pokemon_page() {
         .join("pokemon")
         .join("001-bulbasaur.md");
     assert!(generated_path.exists());
+
+    let generated_file = match read_to_string(&generated_path) {
+        Ok(file) => file,
+        Err(err) => panic!("Failed to read generated file: {}", err),
+    };
+
+    let snapshot = match read_to_string(
+        base_path
+            .join("testing")
+            .join("snapshots")
+            .join("generated_pokemon-bulbasaur.md"),
+    ) {
+        Ok(snapshot) => snapshot,
+        Err(err) => panic!("Failed to read snapshot file: {}", err),
+    };
+
+    assert_eq!(generated_file, snapshot);
 
     let mkdocs_yaml_file_path = base_path.join("testing").join("dist").join("mkdocs.yml");
     let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
