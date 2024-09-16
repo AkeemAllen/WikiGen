@@ -11,12 +11,7 @@ fn test_generate_route_page_created() {
         std::path::PathBuf::from("/Users/akeemallen/Library/Application Support/com.wikigen.dev");
     let resource_path = std::path::PathBuf::from("/Applications/WikiGen.app/Contents/Resources");
 
-    let result = generate_route_pages(
-        "testing",
-        base_path.clone(),
-        resource_path.clone(),
-        vec!["Route 1"],
-    );
+    let result = generate_route_pages("testing", &base_path, &resource_path, &["Route 1"]);
 
     assert!(result.unwrap() == "Generating Routes".to_string());
     let generated_path = base_path
