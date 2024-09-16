@@ -11,6 +11,7 @@ use serde_yaml::{Mapping, Value};
 use tauri::AppHandle;
 
 use crate::{
+    database::get_routes,
     helpers::{capitalize, capitalize_and_remove_hyphens, get_pokemon_dex_formatted_name},
     structs::mkdocs_structs::MKDocsConfig,
 };
@@ -168,14 +169,7 @@ pub fn generate_route_pages(
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
     let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
-    let routes_file = match File::open(&routes_json_file_path) {
-        Ok(file) => file,
-        Err(err) => return Err(format!("Failed to read routes file: {}", err)),
-    };
-    let routes: Routes = match serde_json::from_reader(routes_file) {
-        Ok(routes) => routes,
-        Err(err) => return Err(format!("Failed to parse routes file: {}", err)),
-    };
+    let routes = get_routes(&routes_json_file_path)?;
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
     let mkdocs_yaml_file = match File::open(&mkdocs_yaml_file_path) {

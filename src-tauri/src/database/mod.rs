@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 
-use crate::structs::mkdocs_structs::MKDocsConfig;
+use crate::{page_generators::game_routes::Routes, structs::mkdocs_structs::MKDocsConfig};
 
 pub async fn get_sqlite_connection(
     sqlite_file_path: std::path::PathBuf,
@@ -35,4 +35,21 @@ pub fn get_mkdocs_config(file_path: &PathBuf) -> Result<MKDocsConfig, String> {
     };
 
     return Ok(config);
+}
+
+pub fn get_routes(file_path: &PathBuf) -> Result<Routes, String> {
+    let routes_file = match std::fs::File::open(file_path) {
+        Ok(file) => file,
+        Err(err) => {
+            return Err(format!("Failed to open routes yaml file: {}", err));
+        }
+    };
+    let routes: Routes = match serde_yaml::from_reader(routes_file) {
+        Ok(routes) => routes,
+        Err(err) => {
+            return Err(format!("Failed to parse routes yaml file: {}", err));
+        }
+    };
+
+    return Ok(routes);
 }

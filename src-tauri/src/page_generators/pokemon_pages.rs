@@ -9,21 +9,15 @@ use sqlx::Sqlite;
 use tauri::AppHandle;
 
 use crate::{
-    database::{get_mkdocs_config, get_sqlite_connection},
+    database::{get_mkdocs_config, get_routes, get_sqlite_connection},
     helpers::capitalize,
     page_generators::pokemon_page_generator_functions::{
         create_evolution_table, create_learnable_moves_table, create_level_up_moves_table,
     },
-    structs::{
-        mkdocs_structs::MKDocsConfig,
-        pokemon_structs::{DBPokemon, PokemonMove},
-    },
+    structs::pokemon_structs::{DBPokemon, PokemonMove},
 };
 
-use super::{
-    game_routes::{Routes, WildEncounter},
-    pokemon_page_generator_functions::create_locations_table,
-};
+use super::{game_routes::WildEncounter, pokemon_page_generator_functions::create_locations_table};
 
 #[tauri::command]
 pub async fn remove_pokemon_page_with_old_dex_number(
@@ -35,18 +29,7 @@ pub async fn remove_pokemon_page_with_old_dex_number(
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mkdocs_yaml_file = match File::open(&mkdocs_yaml_file_path) {
-        Ok(file) => file,
-        Err(err) => {
-            return Err(format!("Failed to open mkdocs yaml file: {}", err));
-        }
-    };
-    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
-        Ok(mkdocs) => mkdocs,
-        Err(err) => {
-            return Err(format!("Failed to parse mkdocs yaml file: {}", err));
-        }
-    };
+    let mut mkdocs_config = get_mkdocs_config(&mkdocs_yaml_file_path)?;
 
     let mut mkdocs_pokemon: &mut Vec<Value> = &mut Vec::new();
 
@@ -134,8 +117,6 @@ pub async fn generate_pokemon_pages_from_list(
         &base_path,
         &resources_path,
     );
-    // generate_type_page(wiki_name, base_path.clone())?;
-    // generate_evolution_page(wiki_name, base_path)?;
     return result;
 }
 
@@ -210,14 +191,7 @@ pub fn generate_pokemon_pages(
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
     let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
-    let routes_file = match File::open(&routes_json_file_path) {
-        Ok(file) => file,
-        Err(err) => return Err(format!("Failed to read routes file: {}", err)),
-    };
-    let routes: Routes = match serde_json::from_reader(routes_file) {
-        Ok(routes) => routes,
-        Err(err) => return Err(format!("Failed to parse routes file: {}", err)),
-    };
+    let routes = get_routes(&routes_json_file_path)?;
 
     let dex_numbers = pokemon_list
         .iter()
