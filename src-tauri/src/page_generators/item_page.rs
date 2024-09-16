@@ -8,11 +8,10 @@ use sqlx::FromRow;
 use tauri::AppHandle;
 
 use crate::{
+    database::get_sqlite_connection,
     helpers::{capitalize_and_remove_hyphens, FALSE, TRUE},
     structs::mkdocs_structs::MKDocsConfig,
 };
-
-use super::get_sqlite_connection;
 
 #[derive(Debug, Clone, FromRow)]
 struct Item {
@@ -296,12 +295,12 @@ pub async fn generate_item_location_page(
     }
 
     item_locations_markdown.push_str(&format!(
-            "| Item Name | Route | Specific Location | Method | Requirements |
+        "| Item Name | Route | Specific Location | Method | Requirements |
             | :--- | :--- | :--- | :--- | :--- |
             {}
             ",
-            item_location_entries
-        ));
+        item_location_entries
+    ));
 
     item_locations_file
         .write_all(format!("{}", item_locations_markdown).as_bytes())
