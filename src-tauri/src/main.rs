@@ -15,7 +15,7 @@ use page_generators::ability_page::generate_ability_page_with_handle;
 use page_generators::game_routes::{
     delete_route_page_from_mkdocs, generate_route_pages_with_handle,
 };
-use page_generators::item_page::{generate_item_location_page, generate_item_page};
+use page_generators::item_page::{generate_item_location_page, generate_item_changes_page_with_handle};
 use page_generators::nature_page::generate_nature_page;
 use page_generators::pokemon_pages::{
     generate_pokemon_pages_from_list, remove_pokemon_page_with_old_dex_number,
@@ -59,7 +59,7 @@ fn main() {
             generate_pokemon_pages_from_list,
             generate_route_pages_with_handle,
             backup_wiki,
-            generate_item_page,
+            generate_item_changes_page_with_handle,
             generate_nature_page,
             generate_ability_page_with_handle,
             update_yaml,

@@ -1,46 +1,61 @@
 use std::{
     fs::{self, File},
     io::Write,
+    path::PathBuf,
 };
 
 use serde_yaml::{Mapping, Value};
-use sqlx::FromRow;
+use sqlx::{FromRow, Sqlite};
 use tauri::AppHandle;
 
 use crate::{
-    database::get_sqlite_connection,
+    database::{get_mkdocs_config, get_sqlite_connection},
     helpers::{capitalize_and_remove_hyphens, FALSE, TRUE},
     structs::mkdocs_structs::MKDocsConfig,
 };
 
 #[derive(Debug, Clone, FromRow)]
-struct Item {
-    name: String,
-    effect: String,
-    is_modified: i32,
-    is_new: i32,
+pub struct Item {
+    pub name: String,
+    pub effect: String,
+    pub is_modified: i32,
+    pub is_new: i32,
 }
 
 #[tauri::command]
-pub async fn generate_item_page(wiki_name: &str, app_handle: AppHandle) -> Result<String, String> {
+pub async fn generate_item_changes_page_with_handle(
+    wiki_name: &str,
+    app_handle: AppHandle,
+) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-
     let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
     let conn = get_sqlite_connection(sqlite_path).await?;
 
-    let items = sqlx::query_as::<_, Item>("SELECT * FROM items")
-        .fetch_all(&conn)
+    let items = get_items(&conn).await?;
+
+    let result = generate_item_changes_page(wiki_name, &items, &base_path);
+    return result;
+}
+
+async fn get_items(conn: &sqlx::Pool<Sqlite>) -> Result<Vec<Item>, String> {
+    let items = match sqlx::query_as::<_, Item>("SELECT * FROM items")
+        .fetch_all(conn)
         .await
-        .unwrap();
-
-    conn.close().await;
-
-    let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
-    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
-        Ok(file) => file,
-        Err(err) => return Err(format!("Failed to read mkdocs yaml file: {}", err)),
+    {
+        Ok(items) => items,
+        Err(err) => return Err(format!("Failed to get items: {}", err)),
     };
+
+    return Ok(items);
+}
+
+pub fn generate_item_changes_page(
+    wiki_name: &str,
+    items: &[Item],
+    base_path: &PathBuf,
+) -> Result<String, String> {
+    let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
+    let mut mkdocs_config = get_mkdocs_config(&mkdocs_yaml_file_path)?;
 
     let mut item_changes_file = match File::create(
         base_path

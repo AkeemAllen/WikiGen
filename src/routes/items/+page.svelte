@@ -59,7 +59,9 @@
   }
 
   async function generateItemPage() {
-    await invoke("generate_item_page", { wikiName: $selectedWiki.name })
+    await invoke("generate_item_changes_page_with_handle", {
+      wikiName: $selectedWiki.name,
+    })
       .then(() => {
         toastStore.trigger({
           message: "Item page regenerated!",
