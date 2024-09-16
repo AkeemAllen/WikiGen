@@ -13,7 +13,6 @@ use tauri::AppHandle;
 use crate::{
     database::{get_mkdocs_config, get_routes},
     helpers::{capitalize, capitalize_and_remove_hyphens, get_pokemon_dex_formatted_name},
-    structs::mkdocs_structs::MKDocsConfig,
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

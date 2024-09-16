@@ -35,7 +35,7 @@
   }));
 
   async function generateAbilityPage() {
-    await invoke("generate_ability_page", {
+    await invoke("generate_ability_page_with_handle", {
       wikiName: $selectedWiki.name,
     }).then(() => {
       toastStore.trigger({

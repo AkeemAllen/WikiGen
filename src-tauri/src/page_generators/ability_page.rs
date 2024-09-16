@@ -4,57 +4,57 @@ use std::{
 };
 
 use serde_yaml::{Mapping, Value};
-use sqlx::{migrate::MigrateDatabase, FromRow, Sqlite, SqlitePool};
+use sqlx::{FromRow, Sqlite};
 use tauri::AppHandle;
 
 use crate::{
-    helpers::{capitalize_and_remove_hyphens, FALSE, TRUE},
-    structs::mkdocs_structs::MKDocsConfig,
+    database::{get_mkdocs_config, get_sqlite_connection},
+    helpers::{capitalize_and_remove_hyphens, FALSE, TRUE}
 };
 
 #[derive(Debug, Clone, FromRow)]
-struct Ability {
-    name: String,
-    effect: String,
-    is_modified: i32,
-    is_new: i32,
+pub struct Ability {
+    pub name: String,
+    pub effect: String,
+    pub is_modified: i32,
+    pub is_new: i32,
 }
 
 #[tauri::command]
-pub async fn generate_ability_page(
+pub async fn generate_ability_page_with_handle(
     wiki_name: &str,
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
 
-    let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
-    let sqlite_connection_string = format!("sqlite:{}", sqlite_path.to_str().unwrap());
-    if !Sqlite::database_exists(&sqlite_connection_string)
+    let sqlite_file_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
+    let conn = get_sqlite_connection(sqlite_file_path).await?;
+
+    let abilities = get_abilities(&conn).await?;
+
+    let result = generate_ability_page(wiki_name, &abilities, &base_path);
+    return result;
+}
+
+async fn get_abilities(conn: &sqlx::Pool<Sqlite>) -> Result<Vec<Ability>, String> {
+    let abilities = match sqlx::query_as::<_, Ability>("SELECT * FROM abilities")
+        .fetch_all(conn)
         .await
-        .unwrap_or(false)
     {
-        return Err("Database does not exist".to_string());
-    }
-    let conn = match SqlitePool::connect(&sqlite_connection_string).await {
-        Ok(conn) => conn,
-        Err(err) => {
-            return Err(format!("Failed to connect to database: {}", err));
-        }
+        Ok(abilities) => abilities,
+        Err(err) => return Err(format!("Failed to get abilities: {}", err)),
     };
 
-    let abilities = sqlx::query_as::<_, Ability>("SELECT * FROM abilities")
-        .fetch_all(&conn)
-        .await
-        .unwrap();
+    return Ok(abilities);
+}
 
-    conn.close().await;
-
+pub fn generate_ability_page(
+    wiki_name: &str,
+    abilities: &[Ability],
+    base_path: &std::path::PathBuf,
+) -> Result<String, String> {
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
-    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
-        Ok(file) => file,
-        Err(err) => return Err(format!("Failed to read mkdocs yaml file: {}", err)),
-    };
+    let mut mkdocs_config = get_mkdocs_config(&mkdocs_yaml_file_path)?;
 
     let mut ability_changes_file = match File::create(
         base_path
