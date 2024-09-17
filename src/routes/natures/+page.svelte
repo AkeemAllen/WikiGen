@@ -50,14 +50,14 @@
   });
 
   async function generateNaturePage() {
-    await invoke("generate_nature_page", { wikiName: $selectedWiki.name }).then(
-      () => {
-        toastStore.trigger({
-          message: "Nature page regenerated!",
-          background: "variant-filled-success",
-        });
-      },
-    );
+    await invoke("generate_nature_page_with_handle", {
+      wikiName: $selectedWiki.name,
+    }).then(() => {
+      toastStore.trigger({
+        message: "Nature page regenerated!",
+        background: "variant-filled-success",
+      });
+    });
   }
 
   async function getNature() {

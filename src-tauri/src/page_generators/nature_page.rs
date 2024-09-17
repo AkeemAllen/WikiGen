@@ -8,17 +8,18 @@ use sqlx::{migrate::MigrateDatabase, FromRow, Sqlite, SqlitePool};
 use tauri::AppHandle;
 
 use crate::{
+    database::{get_mkdocs_config, get_sqlite_connection},
     helpers::{capitalize, capitalize_and_remove_hyphens, FALSE, TRUE},
     structs::mkdocs_structs::MKDocsConfig,
 };
 
 #[derive(Debug, Clone, FromRow)]
-struct Nature {
-    name: String,
-    increased_stat: Option<String>,
-    decreased_stat: Option<String>,
-    is_modified: i32,
-    is_new: i32,
+pub struct Nature {
+    pub name: String,
+    pub increased_stat: Option<String>,
+    pub decreased_stat: Option<String>,
+    pub is_modified: i32,
+    pub is_new: i32,
 }
 
 // enum Stat {
@@ -30,40 +31,39 @@ struct Nature {
 // }
 
 #[tauri::command]
-pub async fn generate_nature_page(
+pub async fn generate_nature_page_with_handle(
     wiki_name: &str,
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-
     let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
-    let sqlite_connection_string = format!("sqlite:{}", sqlite_path.to_str().unwrap());
-    if !Sqlite::database_exists(&sqlite_connection_string)
+    let conn = get_sqlite_connection(sqlite_path).await?;
+
+    let natures = get_natures(&conn).await?;
+
+    let result = generate_nature_page(wiki_name, &natures, &base_path);
+    return result;
+}
+
+async fn get_natures(conn: &sqlx::Pool<Sqlite>) -> Result<Vec<Nature>, String> {
+    let natures = match sqlx::query_as::<_, Nature>("SELECT * FROM natures")
+        .fetch_all(conn)
         .await
-        .unwrap_or(false)
     {
-        return Err("Database does not exist".to_string());
-    }
-    let conn = match SqlitePool::connect(&sqlite_connection_string).await {
-        Ok(conn) => conn,
-        Err(err) => {
-            return Err(format!("Failed to connect to database: {}", err));
-        }
+        Ok(natures) => natures,
+        Err(err) => return Err(format!("Failed to get natures: {}", err)),
     };
 
-    let natures = sqlx::query_as::<_, Nature>("SELECT * FROM natures")
-        .fetch_all(&conn)
-        .await
-        .unwrap();
+    return Ok(natures);
+}
 
-    conn.close().await;
-
+pub fn generate_nature_page(
+    wiki_name: &str,
+    natures: &[Nature],
+    base_path: &std::path::PathBuf,
+) -> Result<String, String> {
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
-    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
-        Ok(file) => file,
-        Err(err) => return Err(format!("Failed to read mkdocs yaml file: {}", err)),
-    };
+    let mut mkdocs_config = get_mkdocs_config(&mkdocs_yaml_file_path)?;
 
     let mut nature_changes_file = match File::create(
         base_path
