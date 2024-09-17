@@ -31,27 +31,6 @@ use wiki_preparation::yaml_declaration::update_yaml;
 
 fn main() {
     let app = tauri::Builder::default()
-        .setup(|app| {
-            let base_path = app.path_resolver().app_data_dir().unwrap();
-            match base_path.join("initial.db").try_exists() {
-                Ok(false) => {
-                    println!("Creating initial database");
-                    match File::create(base_path.join("initial.db")) {
-                        Ok(_) => {
-                            println!("Database created");
-                        }
-                        Err(_) => {
-                            println!("Error creating initial.db");
-                        }
-                    };
-                }
-                Err(_) => {
-                    println!("Error Checking for initial.db");
-                }
-                _ => {}
-            }
-            Ok(())
-        })
         .plugin(tauri_plugin_sql::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             create_wiki,
