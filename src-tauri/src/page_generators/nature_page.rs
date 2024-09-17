@@ -4,13 +4,12 @@ use std::{
 };
 
 use serde_yaml::{Mapping, Value};
-use sqlx::{migrate::MigrateDatabase, FromRow, Sqlite, SqlitePool};
+use sqlx::{FromRow, Sqlite};
 use tauri::AppHandle;
 
 use crate::{
     database::{get_mkdocs_config, get_sqlite_connection},
     helpers::{capitalize, capitalize_and_remove_hyphens, FALSE, TRUE},
-    structs::mkdocs_structs::MKDocsConfig,
 };
 
 #[derive(Debug, Clone, FromRow)]
@@ -21,14 +20,6 @@ pub struct Nature {
     pub is_modified: i32,
     pub is_new: i32,
 }
-
-// enum Stat {
-//     Attack,
-//     Defense,
-//     SpecialAttack,
-//     SpecialDefense,
-//     Speed,
-// }
 
 #[tauri::command]
 pub async fn generate_nature_page_with_handle(
