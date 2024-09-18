@@ -6,8 +6,8 @@ pub enum LogLevel {
     Error,
 }
 
-pub fn write_log(base_path: &PathBuf, log_level: LogLevel, message: &str) {
-    let log_directory = base_path.join("logs");
+pub fn write_log(wiki_path: &PathBuf, log_level: LogLevel, message: &str) {
+    let log_directory = wiki_path.join("logs");
     if !log_directory.try_exists().unwrap_or(false) {
         std::fs::create_dir_all(&log_directory).expect("Failed to create log directory");
     }
