@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod database;
 mod helpers;
+mod logger;
 mod migrations;
 mod page_generators;
 mod structs;
