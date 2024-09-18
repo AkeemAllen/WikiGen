@@ -21,7 +21,12 @@ pub fn write_log(base_path: &PathBuf, log_level: LogLevel, message: &str) {
         std::fs::File::create(&log_file_path).expect("Failed to create log file");
     }
 
-    let log_message = format!("[{:?}] {}\n", log_level, message);
+    let log_message = format!(
+        "[{:?}] [{}] {}\n",
+        log_level,
+        chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
+        message
+    );
 
     let mut log_file = std::fs::OpenOptions::new()
         .append(true)
