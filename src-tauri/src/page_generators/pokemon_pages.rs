@@ -33,7 +33,6 @@ pub async fn remove_pokemon_page_with_old_dex_number(
     let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
         Ok(config) => config,
         Err(err) => {
-            println!("Error Called");
             logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
             return Err(err);
         }
@@ -52,13 +51,7 @@ pub async fn remove_pokemon_page_with_old_dex_number(
         }
     }
 
-    let mut pokedex_markdown_file_name = format!("00{}", old_dex_number);
-    if old_dex_number >= 10 {
-        pokedex_markdown_file_name = format!("0{}", old_dex_number);
-    }
-    if old_dex_number >= 100 {
-        pokedex_markdown_file_name = format!("{}", old_dex_number);
-    }
+    let pokedex_markdown_file_name = get_pokemon_dex_formatted_name(old_dex_number);
     let entry_key = format!(
         "{} - {}",
         &pokedex_markdown_file_name,
@@ -91,7 +84,15 @@ pub async fn remove_pokemon_page_with_old_dex_number(
     if pokemon_page_path.try_exists().unwrap_or(false) {
         match fs::remove_file(pokemon_page_path) {
             Ok(_) => {}
-            Err(err) => return Err(format!("Failed to remove pokemon page: {}", err)),
+            Err(err) => {
+                let message = format!("Failed to remove pokemon page: {err}");
+                logger::write_log(
+                    &base_path.join(wiki_name),
+                    logger::LogLevel::Error,
+                    &message,
+                );
+                return Err(message);
+            }
         }
     }
     match fs::write(
@@ -99,7 +100,15 @@ pub async fn remove_pokemon_page_with_old_dex_number(
         serde_yaml::to_string(&mut mkdocs_config).unwrap(),
     ) {
         Ok(_) => {}
-        Err(err) => return Err(format!("Failed to update mkdocs yaml: {}", err)),
+        Err(err) => {
+            let message = format!("Failed to update mkdocs yaml: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     };
     Ok("".to_string())
 }
@@ -115,8 +124,20 @@ pub async fn generate_pokemon_pages_from_list(
     let resources_path = app_handle.path_resolver().resource_dir().unwrap();
 
     let sqlite_file_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
-    let conn = get_sqlite_connection(sqlite_file_path).await?;
-    let (pokemon_list, movesets) = get_pokemon_list_and_movesets(&conn, &pokemon_ids).await?;
+    let conn = match get_sqlite_connection(sqlite_file_path).await {
+        Ok(conn) => conn,
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
+    let (pokemon_list, movesets) = match get_pokemon_list_and_movesets(&conn, &pokemon_ids).await {
+        Ok((pokemon_list, movesets)) => (pokemon_list, movesets),
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
 
     return generate_pokemon_pages(
         wiki_name,
