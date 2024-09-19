@@ -13,6 +13,7 @@ use tauri::AppHandle;
 use crate::{
     database::{get_mkdocs_config, get_routes},
     helpers::{capitalize, capitalize_and_remove_hyphens, get_pokemon_dex_formatted_name},
+    logger,
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -83,7 +84,13 @@ pub async fn generate_route_pages_with_handle(
         ) {
             Ok(template) => template,
             Err(err) => {
-                return Err(format!("Failed to read template file: {err}"));
+                let message = format!("Failed to read template file: {err}",);
+                logger::write_log(
+                    &base_path.join(wiki_name),
+                    logger::LogLevel::Error,
+                    &message,
+                );
+                return Err(message);
             }
         };
     }
@@ -156,10 +163,22 @@ pub fn generate_route_pages(
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
     let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
-    let routes = get_routes(&routes_json_file_path)?;
+    let routes = match get_routes(&routes_json_file_path) {
+        Ok(routes) => routes,
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mut mkdocs_config = get_mkdocs_config(&mkdocs_yaml_file_path)?;
+    let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
+        Ok(config) => config,
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
 
     let template = match read_to_string(
         resources_path
@@ -170,7 +189,13 @@ pub fn generate_route_pages(
     ) {
         Ok(template) => template,
         Err(err) => {
-            return Err(format!("Failed to read template file: {}", err));
+            let message = format!("Failed to read template file: {err}",);
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
         }
     };
 
@@ -203,12 +228,22 @@ pub fn generate_route_pages(
         // Checking for deleted routes
         if !routes.routes.contains_key(*route_name) && page_entry_exists {
             mkdocs_routes.remove(page_position);
-            println!("{:?}", mkdocs_routes);
             continue;
         }
 
         if page_entry_exists && docs_path.join("routes").join(route_name).is_dir() {
-            fs::remove_dir_all(docs_path.join("routes").join(route_name)).unwrap();
+            match fs::remove_dir_all(docs_path.join("routes").join(route_name)) {
+                Ok(_) => {}
+                Err(err) => {
+                    let message = format!("Failed to delete route directory: {err}",);
+                    logger::write_log(
+                        &base_path.join(wiki_name),
+                        logger::LogLevel::Error,
+                        &message,
+                    );
+                    return Err(message);
+                }
+            };
             mkdocs_routes.remove(page_position);
             page_entry_exists = false;
         }
@@ -219,7 +254,6 @@ pub fn generate_route_pages(
         }
 
         if route_properties.render == false {
-            println!("Skipping rendering route {}", route_name);
             continue;
         }
 
@@ -227,7 +261,12 @@ pub fn generate_route_pages(
             match File::create(docs_path.join("routes").join(format!("{}.md", route_name))) {
                 Ok(file) => file,
                 Err(e) => {
-                    println!("Error creating file: {:?}", e);
+                    let message = format!("Failed to create file: {e}",);
+                    logger::write_log(
+                        &base_path.join(wiki_name),
+                        logger::LogLevel::Error,
+                        &message,
+                    );
                     continue;
                 }
             };
@@ -243,7 +282,12 @@ pub fn generate_route_pages(
         match markdown_file.write_all(route_page_markdown.as_bytes()) {
             Ok(_) => {}
             Err(e) => {
-                println!("Error writing to file: {:?}", e);
+                let message = format!("Failed to write to file: {e}",);
+                logger::write_log(
+                    &base_path.join(wiki_name),
+                    logger::LogLevel::Error,
+                    &message,
+                );
                 continue;
             }
         }
@@ -280,7 +324,15 @@ pub fn generate_route_pages(
         serde_yaml::to_string(&mkdocs_config.clone()).unwrap(),
     ) {
         Ok(_) => {}
-        Err(err) => return Err(format!("Failed to update mkdocs yaml: {err}")),
+        Err(err) => {
+            let message = format!("Failed to update mkdocs yaml: {err}",);
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     };
 
     Ok("Generating Routes".to_string())
