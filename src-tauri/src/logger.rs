@@ -22,9 +22,9 @@ pub fn write_log(wiki_path: &PathBuf, log_level: LogLevel, message: &str) {
     }
 
     let log_message = format!(
-        "[{:?}] [{}] {}\n",
-        log_level,
+        "{} [{:?}] {}\n",
         chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
+        log_level,
         message
     );
 
