@@ -107,8 +107,13 @@ pub async fn delete_route_page_from_mkdocs(
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mut mkdocs_config = get_mkdocs_config(&mkdocs_yaml_file_path)?;
-
+    let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
+        Ok(config) => config,
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
     let mut mkdocs_routes: &mut Vec<Value> = &mut Vec::new();
 
     let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
@@ -140,7 +145,15 @@ pub async fn delete_route_page_from_mkdocs(
         .join(format!("{route_name}.md"));
     match fs::remove_file(route_file_path) {
         Ok(_) => {}
-        Err(err) => return Err(format!("Failed to delete route file: {err}")),
+        Err(err) => {
+            let message = format!("Failed to delete route file: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     }
 
     match fs::write(
@@ -148,7 +161,15 @@ pub async fn delete_route_page_from_mkdocs(
         serde_yaml::to_string(&mkdocs_config.clone()).unwrap(),
     ) {
         Ok(_) => {}
-        Err(err) => return Err(format!("Failed to update mkdocs yaml: {err}")),
+        Err(err) => {
+            let message = format!("Failed to update mkdocs yaml: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     };
 
     Ok("Page Deleted from Mkdocs".to_string())
