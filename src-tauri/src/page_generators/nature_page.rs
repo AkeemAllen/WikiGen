@@ -10,6 +10,7 @@ use tauri::AppHandle;
 use crate::{
     database::{get_mkdocs_config, get_sqlite_connection},
     helpers::{capitalize, capitalize_and_remove_hyphens, FALSE, TRUE},
+    logger,
 };
 
 #[derive(Debug, Clone, FromRow)]
@@ -28,12 +29,23 @@ pub async fn generate_nature_page_with_handle(
 ) -> Result<String, String> {
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
     let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
-    let conn = get_sqlite_connection(sqlite_path).await?;
+    let conn = match get_sqlite_connection(sqlite_path).await {
+        Ok(conn) => conn,
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
 
-    let natures = get_natures(&conn).await?;
+    let natures = match get_natures(&conn).await {
+        Ok(natures) => natures,
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
 
-    let result = generate_nature_page(wiki_name, &natures, &base_path);
-    return result;
+    return generate_nature_page(wiki_name, &natures, &base_path);
 }
 
 async fn get_natures(conn: &sqlx::Pool<Sqlite>) -> Result<Vec<Nature>, String> {
@@ -64,7 +76,15 @@ pub fn generate_nature_page(
             .join("nature_changes.md"),
     ) {
         Ok(file) => file,
-        Err(err) => return Err(format!("Failed to create nature changes file: {}", err)),
+        Err(err) => {
+            let message = format!("Failed to create nature changes file: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     };
 
     let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
@@ -151,7 +171,12 @@ pub fn generate_nature_page(
         ) {
             Ok(file) => file,
             Err(err) => {
-                println!("Failed to remove item changes file: {}", err);
+                let message = format!("Failed to remove nature changes file: {err}");
+                logger::write_log(
+                    &base_path.join(wiki_name),
+                    logger::LogLevel::Error,
+                    &message,
+                );
             }
         }
 
@@ -165,15 +190,32 @@ pub fn generate_nature_page(
             serde_yaml::to_string(&mkdocs_config).unwrap(),
         ) {
             Ok(file) => file,
-            Err(err) => return Err(format!("Failed to update mkdocs yaml file: {}", err)),
+            Err(err) => {
+                let message = format!("Failed to update mkdocs yaml file: {err}");
+                logger::write_log(
+                    &base_path.join(wiki_name),
+                    logger::LogLevel::Error,
+                    &message,
+                );
+                return Err(message);
+            }
         }
 
         return Ok("No Nature changes to generate. Nature Changes page removed".to_string());
     }
 
-    nature_changes_file
-        .write_all(format!("{}", nature_changes_markdown).as_bytes())
-        .unwrap();
+    match nature_changes_file.write_all(format!("{}", nature_changes_markdown).as_bytes()) {
+        Ok(_) => {}
+        Err(err) => {
+            let message = format!("Failed to write to nature changes file: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
+    }
 
     if nature_page_exists {
         return Ok("Nature Changes Page Updated".to_string());
@@ -196,7 +238,15 @@ pub fn generate_nature_page(
         serde_yaml::to_string(&mkdocs_config).unwrap(),
     ) {
         Ok(_) => {}
-        Err(err) => return Err(format!("Failed to update mkdocs yaml file: {}", err)),
+        Err(err) => {
+            let message = format!("Failed to update mkdocs yaml file: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     }
 
     Ok("Natures Page Generated".to_string())
