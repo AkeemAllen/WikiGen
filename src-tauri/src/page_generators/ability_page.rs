@@ -9,7 +9,8 @@ use tauri::AppHandle;
 
 use crate::{
     database::{get_mkdocs_config, get_sqlite_connection},
-    helpers::{capitalize_and_remove_hyphens, FALSE, TRUE}
+    helpers::{capitalize_and_remove_hyphens, FALSE, TRUE},
+    logger,
 };
 
 #[derive(Debug, Clone, FromRow)]
@@ -28,12 +29,22 @@ pub async fn generate_ability_page_with_handle(
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
 
     let sqlite_file_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
-    let conn = get_sqlite_connection(sqlite_file_path).await?;
+    let conn = match get_sqlite_connection(sqlite_file_path).await {
+        Ok(conn) => conn,
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
+    let abilities = match get_abilities(&conn).await {
+        Ok(abilities) => abilities,
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
 
-    let abilities = get_abilities(&conn).await?;
-
-    let result = generate_ability_page(wiki_name, &abilities, &base_path);
-    return result;
+    return generate_ability_page(wiki_name, &abilities, &base_path);
 }
 
 async fn get_abilities(conn: &sqlx::Pool<Sqlite>) -> Result<Vec<Ability>, String> {
@@ -54,8 +65,13 @@ pub fn generate_ability_page(
     base_path: &std::path::PathBuf,
 ) -> Result<String, String> {
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mut mkdocs_config = get_mkdocs_config(&mkdocs_yaml_file_path)?;
-
+    let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
+        Ok(config) => config,
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
     let mut ability_changes_file = match File::create(
         base_path
             .join(wiki_name)
@@ -64,7 +80,15 @@ pub fn generate_ability_page(
             .join("ability_changes.md"),
     ) {
         Ok(file) => file,
-        Err(err) => return Err(format!("Failed to create ability changes file: {}", err)),
+        Err(err) => {
+            let message = format!("Failed to create ability changes file: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     };
 
     let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
@@ -140,7 +164,12 @@ pub fn generate_ability_page(
         ) {
             Ok(file) => file,
             Err(err) => {
-                println!("Failed to remove ability changes file: {}", err);
+                let message = format!("Failed to remove ability changes file: {err}");
+                logger::write_log(
+                    &base_path.join(wiki_name),
+                    logger::LogLevel::Error,
+                    &message,
+                );
             }
         }
 
@@ -154,15 +183,32 @@ pub fn generate_ability_page(
             serde_yaml::to_string(&mkdocs_config).unwrap(),
         ) {
             Ok(file) => file,
-            Err(err) => return Err(format!("Failed to update mkdocs yaml file: {}", err)),
+            Err(err) => {
+                let message = format!("Failed to update mkdocs yaml file: {err}");
+                logger::write_log(
+                    &base_path.join(wiki_name),
+                    logger::LogLevel::Error,
+                    &message,
+                );
+                return Err(message);
+            }
         }
 
         return Ok("No Ability changes to generate. Ability Changes page removed".to_string());
     }
 
-    ability_changes_file
-        .write_all(format!("{}", ability_changes_markdown).as_bytes())
-        .unwrap();
+    match ability_changes_file.write_all(format!("{}", ability_changes_markdown).as_bytes()) {
+        Ok(_) => {}
+        Err(err) => {
+            let message = format!("Failed to write to ability changes file: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
+    }
 
     if ability_page_exists {
         return Ok("Ability Changes Page Updated".to_string());
@@ -185,7 +231,15 @@ pub fn generate_ability_page(
         serde_yaml::to_string(&mkdocs_config).unwrap(),
     ) {
         Ok(_) => {}
-        Err(err) => return Err(format!("Failed to update mkdocs yaml file: {}", err)),
+        Err(err) => {
+            let message = format!("Failed to update mkdocs yaml file: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     }
 
     Ok("Abilities Page Generated".to_string())
