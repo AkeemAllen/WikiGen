@@ -48,7 +48,7 @@
   }));
 
   async function generateItemLocationPage() {
-    await invoke("generate_item_location_page", {
+    await invoke("generate_item_location_page_with_handle", {
       wikiName: $selectedWiki.name,
     }).then(() => {
       toastStore.trigger({

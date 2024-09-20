@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from "$lib/components/Button.svelte";
   import PokemonPanel from "$lib/components/PokemonPanel.svelte";
-  import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
+  import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
   import { invoke } from "@tauri-apps/api/tauri";
   import { selectedWiki } from "../../store";
   import { pokemonList } from "../../store/pokemon";
@@ -9,6 +9,7 @@
   import BaseModal from "$lib/components/BaseModal.svelte";
   import AutoComplete from "$lib/components/AutoComplete.svelte";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import { ToastType, getToastSettings } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
 
@@ -44,23 +45,13 @@
       pokemonIds: pokemonIds,
       wikiName: $selectedWiki.name,
     })
-      .then(() => {
+      .then((res) => {
         loading = false;
-        toastStore.trigger({
-          message: "Pokemon Pages generated",
-          timeout: 5000,
-          hoverable: true,
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
       })
       .catch((err) => {
         loading = false;
-        toastStore.trigger({
-          message: "Failed to generate Pokemon Pages: " + err,
-          autohide: false,
-          hoverable: true,
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
       });
   }
 </script>

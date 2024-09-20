@@ -47,7 +47,7 @@
   const modalRegistry: Record<string, ModalComponent> = {};
 </script>
 
-<Toast />
+<Toast position="br" rounded="rounded-none" padding="px-4 py-2" max={10} />
 <Modal components={modalRegistry} />
 <AppShell class="h-screen bg-white">
   <svelte:fragment slot="sidebarLeft">
