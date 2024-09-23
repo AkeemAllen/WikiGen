@@ -18,10 +18,9 @@
   import { selectedWiki } from "../../store";
   import { addMoves, base64ToArray } from "$lib/utils";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
-  const toastStore = getToastStore();
-
-  let tabSet: number = 0;
+  let pokemonSearch: [number, string] = [0, ""];
   let newSpriteImage: string = "";
   let newPokemon: Pokemon = {
     dex_number: 0,
@@ -39,11 +38,13 @@
   } as Pokemon;
   let copiedMoveset: PokemonMove[] = [];
 
-  let pokemonSearch: [number, string] = [0, ""];
+  let tabSet: number = 0;
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
     value: id,
   }));
+
+  const toastStore = getToastStore();
 
   function onImageUpload(e: any) {
     let file = e.target.files[0];
@@ -51,10 +52,13 @@
     reader.onloadend = (e) => {
       let base64 = e.target?.result as string;
       if (!base64.includes("data:image/png;base64,")) {
-        toastStore.trigger({
-          message: "Invalid image format!",
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            "Invalid image format! Please upload a PNG file!",
+          ),
+        );
+        reader.abort();
         return;
       }
       newSpriteImage = e.target?.result as string;
@@ -75,10 +79,12 @@
         pokemonSearch = [0, ""];
       })
       .catch((err) => {
-        toastStore.trigger({
-          message: `Error loading Pokemon moveset!: \n ${err}`,
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error loading Pokemon moveset!: \n ${err}`,
+          ),
+        );
       });
   }
 
@@ -94,10 +100,12 @@
         copyPokemonMoveset();
       })
       .catch((err) => {
-        toastStore.trigger({
-          message: `Error loading Pokemon details!: \n ${err}`,
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error loading Pokemon details!: \n ${err}`,
+          ),
+        );
       });
   }
 
@@ -141,10 +149,12 @@
           imageBytes,
           { dir: BaseDirectory.AppData },
         ).catch((err) => {
-          toastStore.trigger({
-            message: "Error writing image to file!",
-            background: "variant-filled-error",
-          });
+          toastStore.trigger(
+            getToastSettings(
+              ToastType.ERROR,
+              `Error writing image to file!: ${err}`,
+            ),
+          );
         });
 
         // Add moves to pokemon moveset
@@ -157,11 +167,8 @@
           secondaryMoveId: null,
           secondaryMove: "",
         }));
-        addMoves(moveset, res.lastInsertId, $db).then(() => {
-          toastStore.trigger({
-            message: "Moves added!",
-            background: "variant-filled-success",
-          });
+        addMoves(moveset, res.lastInsertId, $db).catch((err) => {
+          toastStore.trigger(getToastSettings(ToastType.SUCCESS, err));
         });
 
         // Add new pokemon to pokemonList
@@ -172,16 +179,17 @@
           newPokemon.types,
         ]);
 
-        toastStore.trigger({
-          message: "New Pokemon created!",
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.SUCCESS, "New Pokemon created!"),
+        );
       })
       .catch((err) => {
-        toastStore.trigger({
-          message: "Error creating new Pokemon!",
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error creating new Pokemon!: ${err}`,
+          ),
+        );
       });
   }
 </script>

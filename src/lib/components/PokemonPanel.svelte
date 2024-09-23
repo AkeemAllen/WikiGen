@@ -1,11 +1,6 @@
 <script lang="ts">
   import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
-  import {
-    BaseDirectory,
-    exists,
-    readBinaryFile,
-    writeTextFile,
-  } from "@tauri-apps/api/fs";
+  import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
   import { selectedWiki } from "../../store";
   import {
     routes,
@@ -19,7 +14,6 @@
   } from "../../store/pokemon";
   import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
   import PokemonMovesTab from "./PokemonMovesTab.svelte";
-  import { invoke } from "@tauri-apps/api";
   import { shortcut } from "@svelte-put/shortcut";
   import Button from "./Button.svelte";
   import AutoComplete from "./AutoComplete.svelte";
@@ -56,7 +50,6 @@
   async function generatePage() {
     generatePokemonPages([pokemon.id], $selectedWiki.name)
       .then((res) => {
-        console.log(res, pokemon.id);
         toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
       })
       .catch((err) => {
@@ -123,9 +116,6 @@
       })
       .then((res) => {
         originalPokemonDetails = cloneDeep(res);
-        return res;
-      })
-      .then((res) => {
         // Gather location
         pokemonLocations = [];
         for (const [_, properties] of Object.entries($routes.routes)) {
@@ -249,10 +239,7 @@
       })
       .then(() => generatePage())
       .catch((err) => {
-        toastStore.trigger({
-          message: `Error saving pokemon changes!: ${err}`,
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
       });
   }
 
@@ -307,7 +294,7 @@
   />
   <Button
     title="Generate Page"
-    onClick={generatePage}
+    onClick={() => generatePage()}
     disabled={objectIsEmpty(pokemon)}
     class="mt-2 w-32"
   />
