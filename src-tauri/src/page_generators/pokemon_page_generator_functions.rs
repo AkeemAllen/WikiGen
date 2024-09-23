@@ -252,7 +252,7 @@ pub fn create_learnable_moves_table(learnable_moveset: Vec<PokemonMove>) -> Stri
     );
 }
 
-pub fn create_locations_table(wild_encounters: Vec<WildEncounter>) -> String {
+pub fn create_locations_table(wild_encounters: &[WildEncounter]) -> String {
     if wild_encounters.is_empty() {
         return "".to_string();
     }

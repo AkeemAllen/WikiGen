@@ -334,10 +334,10 @@ pub fn generate_pokemon_pages(
             .collect::<Vec<_>>();
 
         let pokemon_markdown_string = generate_page_from_template(
-            template.clone(),
+            &template,
             &pokemon,
-            current_pokemon_movset,
-            current_pokemon_locations,
+            &current_pokemon_movset,
+            &current_pokemon_locations,
         );
 
         match markdown_file.write_all(format!("{pokemon_markdown_string}").as_bytes()) {
@@ -411,10 +411,10 @@ fn extract_pokemon_id(key: Option<&str>) -> i32 {
 }
 
 pub fn generate_page_from_template(
-    template: String,
+    template: &str,
     pokemon: &DBPokemon,
-    movesets: Vec<PokemonMove>,
-    locations: Vec<WildEncounter>,
+    movesets: &[PokemonMove],
+    locations: &[WildEncounter],
 ) -> String {
     let type_images: Vec<String> = pokemon
         .types
