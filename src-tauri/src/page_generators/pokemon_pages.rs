@@ -429,49 +429,51 @@ pub fn generate_page_from_template(
         .filter(|_type| !_type.contains("none"))
         .collect();
 
-    let type_1_image = type_images.get(0).unwrap();
-    let mut type_2_image = String::new();
-    if type_images.len() > 1 {
-        type_2_image.push_str(type_images.get(1).unwrap());
-    }
-
     let mut ability_1 = String::new();
     let mut ability_2 = String::new();
     let mut hidden_ability = String::new();
 
     if pokemon.ability_1.is_some() {
-        ability_1.push_str(
-            format!(
-                "<a href='' title=\"{}\">{}</a>",
-                &pokemon.a1_effect.as_ref().unwrap(),
-                capitalize(&pokemon.ability_1.as_ref().unwrap())
-            )
-            .as_str(),
+        let effect = pokemon
+            .a1_effect
+            .as_ref()
+            .expect("Ability 1 effect missing");
+        ability_1 = format!(
+            "<a href='' title=\"{}\">{}</a>",
+            effect,
+            capitalize(&pokemon.ability_1.as_ref().expect("Ability 1 missing"))
         );
     }
 
     if pokemon.ability_2.is_some() {
-        ability_2.push_str(
-            format!(
-                "/<a href='' title=\"{}\">{}</a>",
-                &pokemon.a2_effect.as_ref().unwrap(),
-                capitalize(&pokemon.ability_2.as_ref().unwrap())
-            )
-            .as_str(),
-        );
+        let effect = pokemon
+            .a2_effect
+            .as_ref()
+            .expect("Ability 2 effect missing");
+        ability_2 = format!(
+            "/<a href='' title=\"{}\">{}</a>",
+            effect,
+            capitalize(&pokemon.ability_2.as_ref().expect("Ability 2 missing"))
+        )
     }
 
     let mut display_hidden_ability_section = "none";
     if pokemon.hidden_ability.is_some() {
         display_hidden_ability_section = "grid";
-        hidden_ability.push_str(
-            format!(
-                "<a href='' title=\"{}\">{}</a>",
-                &pokemon.h3_effect.as_ref().unwrap(),
-                capitalize(&pokemon.hidden_ability.as_ref().unwrap())
+        let effect = pokemon
+            .h3_effect
+            .as_ref()
+            .expect("Hidden Ability effect missing");
+        hidden_ability = format!(
+            "<a href='' title=\"{}\">{}</a>",
+            effect,
+            capitalize(
+                &pokemon
+                    .hidden_ability
+                    .as_ref()
+                    .expect("Hidden Ability missing")
             )
-            .as_str(),
-        );
+        )
     }
 
     let level_up_moveset = movesets
@@ -480,14 +482,13 @@ pub fn generate_page_from_template(
         .filter(|m| m.learn_method.contains("level-up"))
         .collect::<Vec<_>>();
 
-    let level_up_moves = create_level_up_moves_table(level_up_moveset);
-
     let learnable_moveset = movesets
         .iter()
         .cloned()
         .filter(|m| m.learn_method.contains("machine"))
         .collect::<Vec<_>>();
 
+    let level_up_moves = create_level_up_moves_table(level_up_moveset);
     let learnable_moves = create_learnable_moves_table(learnable_moveset);
 
     let location_table = create_locations_table(locations);
@@ -496,8 +497,14 @@ pub fn generate_page_from_template(
 
     let result = template
         .replace("{{pokemon_name}}", &pokemon.name)
-        .replace("{{type_1_image}}", &type_1_image)
-        .replace("{{type_2_image}}", &type_2_image)
+        .replace(
+            "{{type_1_image}}",
+            &type_images.get(0).unwrap_or(&"".to_string()),
+        )
+        .replace(
+            "{{type_2_image}}",
+            &type_images.get(1).unwrap_or(&"".to_string()),
+        )
         .replace("{{ability_1}}", &ability_1)
         .replace("{{ability_2}}", &ability_2)
         .replace(
@@ -567,12 +574,6 @@ pub fn generate_page_from_template(
         .replace("{{level_up_moves}}", &level_up_moves)
         .replace("{{machine_moves}}", &learnable_moves);
 
-    let mut evolution_change_string = String::new();
-    if pokemon.evolution_method != "no_change" {
-        evolution_change_string.push_str(&format!("## Evolution\n\n"));
-        evolution_change_string.push_str(&format!("{}", create_evolution_table(pokemon)));
-    }
-    let result = result.replace("{{evolution_change}}", &evolution_change_string);
     return result;
 }
 
