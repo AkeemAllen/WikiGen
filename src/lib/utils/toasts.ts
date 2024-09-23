@@ -18,7 +18,7 @@ export function getToastSettings(
     case ToastType.SUCCESS:
       return {
         message,
-        autohide: false,
+        timeout: 3000,
         background: "bg-white",
         classes: "border-l-8 border-green-500",
       };
