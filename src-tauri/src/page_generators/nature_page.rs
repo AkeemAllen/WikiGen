@@ -37,27 +37,23 @@ pub async fn generate_nature_page_with_handle(
         }
     };
 
-    let natures = match get_natures(&conn).await {
-        Ok(natures) => natures,
-        Err(err) => {
-            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
-            return Err(err);
-        }
-    };
-
-    return generate_nature_page(wiki_name, &natures, &base_path);
-}
-
-async fn get_natures(conn: &sqlx::Pool<Sqlite>) -> Result<Vec<Nature>, String> {
     let natures = match sqlx::query_as::<_, Nature>("SELECT * FROM natures")
         .fetch_all(conn)
         .await
     {
         Ok(natures) => natures,
-        Err(err) => return Err(format!("Failed to get natures: {}", err)),
+        Err(err) => {
+            let message = format!("Failed to get natures: {}", err);
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     };
 
-    return Ok(natures);
+    return generate_nature_page(wiki_name, &natures, &base_path);
 }
 
 pub fn generate_nature_page(
@@ -66,7 +62,13 @@ pub fn generate_nature_page(
     base_path: &std::path::PathBuf,
 ) -> Result<String, String> {
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mut mkdocs_config = get_mkdocs_config(&mkdocs_yaml_file_path)?;
+    let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
+        Ok(config) => config,
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
 
     let mut nature_changes_file = match File::create(
         base_path
