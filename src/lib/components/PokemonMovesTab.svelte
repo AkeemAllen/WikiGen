@@ -18,12 +18,9 @@
   import { getToastStore } from "@skeletonlabs/skeleton";
   import capitalizeWords from "$lib/utils/capitalizeWords";
 
-  const toastStore = getToastStore();
-
-  // export let pokemonDetails: PokemonDetails;
-  // export let savePokemonChanges: Function;
   export let pokemonId: number;
   export let generatePokemonPage: Function;
+  export let moveset: PokemonMove[] = [];
 
   let searchValue: string = "";
   let modifyMovesetModalOpen: boolean = false;
@@ -46,7 +43,7 @@
 
   let newLearnMethods: string[] = [];
 
-  export let moveset: PokemonMove[] = [];
+  const toastStore = getToastStore();
 
   $: moveListOptions = $moveList
     .map(([id, name]) => ({
