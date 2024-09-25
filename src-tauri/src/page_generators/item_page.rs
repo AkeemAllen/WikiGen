@@ -37,27 +37,24 @@ pub async fn generate_item_changes_page_with_handle(
             return Err(err);
         }
     };
-    let items = match get_items(&conn).await {
+
+    let items = match sqlx::query_as::<_, Item>("SELECT * FROM items")
+        .fetch_all(&conn)
+        .await
+    {
         Ok(items) => items,
         Err(err) => {
-            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
-            return Err(err);
+            let message = format!("Failed to get items: {}", err);
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
         }
     };
 
     return generate_item_changes_page(wiki_name, &items, &base_path);
-}
-
-async fn get_items(conn: &sqlx::Pool<Sqlite>) -> Result<Vec<Item>, String> {
-    let items = match sqlx::query_as::<_, Item>("SELECT * FROM items")
-        .fetch_all(conn)
-        .await
-    {
-        Ok(items) => items,
-        Err(err) => return Err(format!("Failed to get items: {}", err)),
-    };
-
-    return Ok(items);
 }
 
 pub fn generate_item_changes_page(
@@ -201,9 +198,18 @@ pub fn generate_item_changes_page(
         return Ok("No Item changes to generate. Item Changes page removed".to_string());
     }
 
-    item_changes_file
-        .write_all(format!("{}", item_changes_markdown).as_bytes())
-        .unwrap();
+    match item_changes_file.write_all(format!("{}", item_changes_markdown).as_bytes()) {
+        Ok(_) => {}
+        Err(err) => {
+            let message = format!("Failed to write item changes file: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
+    }
 
     if item_page_exists {
         return Ok("Item Changes Page Updated".to_string());
@@ -291,10 +297,12 @@ pub fn generate_item_location_page(
     base_path: &PathBuf,
 ) -> Result<String, String> {
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mkdocs_yaml_file = File::open(&mkdocs_yaml_file_path).unwrap();
-    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
-        Ok(file) => file,
-        Err(err) => return Err(format!("Failed to read mkdocs yaml file: {}", err)),
+    let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
+        Ok(config) => config,
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
     };
 
     let mut item_locations_file = match File::create(
@@ -305,7 +313,15 @@ pub fn generate_item_location_page(
             .join("item_locations.md"),
     ) {
         Ok(file) => file,
-        Err(err) => return Err(format!("Failed to create item locations file: {}", err)),
+        Err(err) => {
+            let message = format!("Failed to create item locations file: {}", err);
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     };
 
     let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
@@ -368,7 +384,12 @@ pub fn generate_item_location_page(
         ) {
             Ok(file) => file,
             Err(err) => {
-                println!("Failed to remove item changes file: {}", err);
+                let message = format!("Failed to remove item locations file: {}", err);
+                logger::write_log(
+                    &base_path.join(wiki_name),
+                    logger::LogLevel::Error,
+                    &message,
+                );
             }
         }
 
@@ -382,7 +403,15 @@ pub fn generate_item_location_page(
             serde_yaml::to_string(&mkdocs_config).unwrap(),
         ) {
             Ok(file) => file,
-            Err(err) => return Err(format!("Failed to update mkdocs yaml file: {}", err)),
+            Err(err) => {
+                let message = format!("Failed to update mkdocs yaml file: {}", err);
+                logger::write_log(
+                    &base_path.join(wiki_name),
+                    logger::LogLevel::Error,
+                    &message,
+                );
+                return Err(message);
+            }
         }
 
         return Ok("No Item Locations to generate. Item Locations page removed".to_string());
@@ -396,9 +425,18 @@ pub fn generate_item_location_page(
         item_location_entries
     ));
 
-    item_locations_file
-        .write_all(format!("{}", item_locations_markdown).as_bytes())
-        .unwrap();
+    match item_locations_file.write_all(format!("{}", item_locations_markdown).as_bytes()) {
+        Ok(_) => {}
+        Err(err) => {
+            let message = format!("Failed to write item locations file: {}", err);
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
+    }
 
     if item_location_page {
         return Ok("Item Changes Page Updated".to_string());
@@ -421,7 +459,15 @@ pub fn generate_item_location_page(
         serde_yaml::to_string(&mkdocs_config).unwrap(),
     ) {
         Ok(_) => {}
-        Err(err) => return Err(format!("Failed to update mkdocs yaml file: {}", err)),
+        Err(err) => {
+            let message = format!("Failed to update mkdocs yaml file: {}", err);
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     }
     Ok("Item Location Page Generated".to_string())
 }
