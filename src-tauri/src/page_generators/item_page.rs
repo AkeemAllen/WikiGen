@@ -5,14 +5,13 @@ use std::{
 };
 
 use serde_yaml::{Mapping, Value};
-use sqlx::{FromRow, Sqlite};
+use sqlx::FromRow;
 use tauri::AppHandle;
 
 use crate::{
     database::{get_mkdocs_config, get_sqlite_connection},
     helpers::{capitalize_and_remove_hyphens, FALSE, TRUE},
     logger,
-    structs::mkdocs_structs::MKDocsConfig,
 };
 
 #[derive(Debug, Clone, FromRow)]

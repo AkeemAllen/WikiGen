@@ -38,7 +38,7 @@ pub async fn generate_nature_page_with_handle(
     };
 
     let natures = match sqlx::query_as::<_, Nature>("SELECT * FROM natures")
-        .fetch_all(conn)
+        .fetch_all(&conn)
         .await
     {
         Ok(natures) => natures,
