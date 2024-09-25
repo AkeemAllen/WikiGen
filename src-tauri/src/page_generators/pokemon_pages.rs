@@ -219,7 +219,13 @@ pub fn generate_pokemon_pages(
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
     let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
-    let routes = get_routes(&routes_json_file_path)?;
+    let routes = match get_routes(&routes_json_file_path) {
+        Ok(routes) => routes,
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
 
     let dex_numbers = pokemon_list
         .iter()

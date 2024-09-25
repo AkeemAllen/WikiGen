@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::{
     helpers::{capitalize, capitalize_and_remove_hyphens},
     structs::pokemon_structs::{DBPokemon, PokemonMove},
