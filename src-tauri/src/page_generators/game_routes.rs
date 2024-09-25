@@ -252,6 +252,8 @@ pub fn generate_route_pages(
             continue;
         }
 
+        // Function originally created to delete previous route structure
+        // Might be able to delete this block
         if page_entry_exists && docs_path.join("routes").join(route_name).is_dir() {
             match fs::remove_dir_all(docs_path.join("routes").join(route_name)) {
                 Ok(_) => {}
@@ -389,11 +391,17 @@ fn generate_route_page_from_template(
     }
 
     let mut route_image = String::new();
-    let route_image_exists = docs_path
+    let route_image_exists = match docs_path
         .join("img")
         .join("routes")
-        .join(format!("{route_name}.png"));
-    if route_image_exists.exists() {
+        .join(format!("{route_name}.png"))
+        .try_exists()
+    {
+        Ok(exists) => exists,
+        Err(_) => false,
+    };
+
+    if route_image_exists {
         route_image =
             format!("<img src=\"../../img/routes/{route_name}.png\" alt=\"{route_name}\"/>",);
     }
@@ -452,7 +460,15 @@ fn generate_wild_encounter_markdown(
 fn generate_trainer_markdown(trainers: &IndexMap<String, TrainerInfo>) -> String {
     let mut markdown_trainers = String::new();
     for (name, trainer_info) in trainers {
-        let trainer_sprite = get_trainer_sprite(name, &trainer_info.sprite);
+        let trainer_sprite = match !trainer_info.sprite.is_empty() {
+            true => {
+                format!(
+                    "![{name}](https://play.pokemonshowdown.com/sprites/trainers/{}.png)",
+                    &trainer_info.sprite
+                )
+            }
+            false => String::new(),
+        };
         let mut trainer_entry: String = String::new();
 
         if trainer_info.versions.is_empty() {
@@ -469,6 +485,7 @@ fn generate_trainer_markdown(trainers: &IndexMap<String, TrainerInfo>) -> String
                 for pokemon in &trainer_info.pokemon_team {
                     if pokemon.trainer_versions.contains(version) {
                         version_has_one_pokemon = true;
+                        break;
                     }
                 }
                 if !version_has_one_pokemon {
@@ -505,13 +522,6 @@ fn get_markdown_entry_for_pokemon(wiki_name: &str, pokemon: &WildEncounter) -> S
         format!("{dex_number_file_name}-{}", pokemon.name),
         encounter_rate
     );
-}
-
-fn get_trainer_sprite(name: &str, sprite: &str) -> String {
-    if sprite == "".to_string() {
-        return "".to_string();
-    }
-    return format!("![{name}](https://play.pokemonshowdown.com/sprites/trainers/{sprite}.png)",);
 }
 
 fn extract_move(_move: &Option<&String>) -> String {
