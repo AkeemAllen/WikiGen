@@ -36,27 +36,24 @@ pub async fn generate_ability_page_with_handle(
             return Err(err);
         }
     };
-    let abilities = match get_abilities(&conn).await {
+
+    let abilities = match sqlx::query_as::<_, Ability>("SELECT * FROM abilities")
+        .fetch_all(&conn)
+        .await
+    {
         Ok(abilities) => abilities,
         Err(err) => {
-            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
-            return Err(err);
+            let message = format!("Failed to get abilities: {}", err);
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
         }
     };
 
     return generate_ability_page(wiki_name, &abilities, &base_path);
-}
-
-async fn get_abilities(conn: &sqlx::Pool<Sqlite>) -> Result<Vec<Ability>, String> {
-    let abilities = match sqlx::query_as::<_, Ability>("SELECT * FROM abilities")
-        .fetch_all(conn)
-        .await
-    {
-        Ok(abilities) => abilities,
-        Err(err) => return Err(format!("Failed to get abilities: {}", err)),
-    };
-
-    return Ok(abilities);
 }
 
 pub fn generate_ability_page(
