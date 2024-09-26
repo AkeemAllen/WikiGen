@@ -14,6 +14,8 @@
   import { IconDotsVertical } from "@tabler/icons-svelte";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import { invoke } from "@tauri-apps/api/tauri";
+  import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
 
@@ -43,11 +45,7 @@
     updatedRoutes.routes[newName] = updatedRoutes.routes[originalRouteName];
     delete updatedRoutes.routes[originalRouteName];
     $routes = { ...sortRoutesByPosition(updatedRoutes) };
-    await writeTextFile(
-      `${$selectedWiki.name}/data/routes.json`,
-      JSON.stringify($routes),
-      { dir: BaseDirectory.AppData },
-    )
+    await updateRoutes($routes, $selectedWiki.name)
       .then(() => {
         // rename image
         copyFile(
@@ -66,39 +64,49 @@
           routeName: originalRouteName,
           wikiName: $selectedWiki.name,
         }).then(() => {
-          invoke("generate_route_pages_with_handle", {
-            wikiName: $selectedWiki.name,
-            routeNames: Object.keys($routes.routes),
-          }).then(() => {
-            toastStore.trigger({
-              message: `Route Page Updated successfully`,
-              background: "variant-filled-success",
+          generateRoutePages(Object.keys($routes.routes), $selectedWiki.name)
+            .then((res) => {
+              toastStore.trigger(
+                getToastSettings(ToastType.SUCCESS, res as string),
+              );
+            })
+            .catch((err) => {
+              toastStore.trigger(
+                getToastSettings(ToastType.ERROR, err as string),
+              );
             });
-          });
         });
+      })
+      .catch((err) => {
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
       });
   }
 
   async function deleteRoute(routeName: string) {
-    let updateRoutes = { ...$routes };
-    delete updateRoutes.routes[routeName];
-    $routes = { ...updateRoutes };
+    let updatedRoutes = { ...$routes };
+    delete updatedRoutes.routes[routeName];
+    $routes = { ...updatedRoutes };
 
-    await writeTextFile(
-      `${$selectedWiki.name}/data/routes.json`,
-      JSON.stringify(sortRoutesByPosition($routes)),
-      { dir: BaseDirectory.AppData },
-    ).then(() => {
-      invoke("delete_route_page_from_mkdocs", {
-        routeName,
-        wikiName: $selectedWiki.name,
-      }).then(() => {
-        toastStore.trigger({
-          message: `Route ${routeName} deleted successfully`,
-          background: "variant-filled-success",
-        });
+    await updateRoutes($routes, $selectedWiki.name)
+      .then(() => {
+        invoke("delete_route_page_from_mkdocs", {
+          routeName,
+          wikiName: $selectedWiki.name,
+        })
+          .then((res) => {
+            toastStore.trigger(
+              getToastSettings(ToastType.SUCCESS, res as string),
+            );
+          })
+          .catch((err) => {
+            toastStore.trigger(
+              getToastSettings(ToastType.ERROR, err as string),
+            );
+          });
+      })
+      .catch((err) => {
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
       });
-    });
   }
 
   async function duplicateRoute(routeName: string) {

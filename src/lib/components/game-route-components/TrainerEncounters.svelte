@@ -27,6 +27,8 @@
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
+  import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
 
@@ -190,26 +192,21 @@
     routeTrainers = cloneDeep($routes.routes[routeName].trainers);
     originalTrainers = cloneDeep(routeTrainers);
 
-    await writeTextFile(
-      `${$selectedWiki.name}/data/routes.json`,
-      JSON.stringify($routes),
-      { dir: BaseDirectory.AppData },
-    ).then(() => {
-      invoke("generate_route_pages_with_handle", {
-        wikiName: $selectedWiki.name,
-        routeNames: [routeName],
-      })
-        .then(() => {
-          toastStore.trigger({
-            message: "Changes saved successfully",
-            timeout: 3000,
-            background: "variant-filled-success",
+    await updateRoutes($routes, $selectedWiki.name)
+      .then(() => {
+        generateRoutePages([routeName], $selectedWiki.name)
+          .then((res) => {
+            toastStore.trigger(
+              getToastSettings(ToastType.SUCCESS, res as string),
+            );
+          })
+          .catch((e) => {
+            toastStore.trigger(getToastSettings(ToastType.ERROR, e as string));
           });
-        })
-        .catch((e) => {
-          console.error(e);
-        });
-    });
+      })
+      .catch((e) => {
+        toastStore.trigger(getToastSettings(ToastType.ERROR, e as string));
+      });
   }
 </script>
 

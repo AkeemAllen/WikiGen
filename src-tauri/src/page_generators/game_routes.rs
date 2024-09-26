@@ -172,7 +172,7 @@ pub async fn delete_route_page_from_mkdocs(
         }
     };
 
-    Ok("Page Deleted from Mkdocs".to_string())
+    Ok("Route Page Deleted".to_string())
 }
 
 pub fn generate_route_pages(
