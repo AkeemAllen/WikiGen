@@ -23,6 +23,8 @@
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
   import objectIsEmpty from "$lib/utils/objectIsEmpty";
+  import { generatePokemonPages } from "$lib/utils/generators";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
   let tabSet: number = 0;
@@ -81,15 +83,13 @@
   $: rowsPerPage = handler.getRowsPerPage();
 
   async function generatePokemonPage(pokemonId: number) {
-    await invoke("generate_pokemon_pages_from_list", {
-      wikiName: $selectedWiki.name,
-      pokemonIds: [pokemonId],
-    }).then(() => {
-      toastStore.trigger({
-        message: "Pokemon page regenerated!",
-        background: "variant-filled-success",
+    await generatePokemonPages([pokemonId], $selectedWiki.name)
+      .then((res) => {
+        toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
+      })
+      .catch((err) => {
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
       });
-    });
   }
   async function gatherPokemonWhoCanLearnMove() {
     return await $db
@@ -102,6 +102,14 @@
       )
       .then((res) => {
         pokemonWhoCanLearnMove = res;
+      })
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error getting Pokemon who can learn move: ${err}`,
+          ),
+        );
       });
   }
 
@@ -109,10 +117,7 @@
     let retrievedMove = $moveList.find(([_, name]) => name === moveSearch[1]);
 
     if (!retrievedMove) {
-      toastStore.trigger({
-        message: "Move not found!",
-        background: "variant-filled-error",
-      });
+      toastStore.trigger(getToastSettings(ToastType.ERROR, "Move not found!"));
       return;
     }
 
@@ -123,9 +128,12 @@
         originalMoveDetails = cloneDeep(move);
       })
       .then(async () => {
-        await gatherPokemonWhoCanLearnMove().then(() => {
-          console.log(pokemonWhoCanLearnMove);
-        });
+        await gatherPokemonWhoCanLearnMove();
+      })
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, `Error getting moves: ${err}`),
+        );
       });
   }
 
@@ -146,20 +154,31 @@
       )
       .then(() => {
         originalMoveDetails = cloneDeep(move);
-        invoke("generate_pokemon_pages_from_list", {
-          pokemonIds: pokemonWhoCanLearnMove.map((p) => p.pokemonId),
-          wikiName: $selectedWiki.name,
-        });
-        toastStore.trigger({
-          message: "Move changes saved!",
-          background: "variant-filled-success",
-        });
+        generatePokemonPages(
+          pokemonWhoCanLearnMove.map((p) => p.pokemonId),
+          $selectedWiki.name,
+        )
+          .then(() => {
+            toastStore.trigger(
+              getToastSettings(
+                ToastType.SUCCESS,
+                `Generated Pages for Pokemon with ${move.name}!`,
+              ),
+            );
+          })
+          .catch((err) => {
+            toastStore.trigger(
+              getToastSettings(
+                ToastType.ERROR,
+                `Error generating Pokemon pages: ${err}`,
+              ),
+            );
+          });
       })
       .catch(() => {
-        toastStore.trigger({
-          message: "Error saving move changes!",
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, "Error saving move changes!"),
+        );
       });
   }
 
@@ -185,10 +204,9 @@
         ],
       )
       .then((res) => {
-        toastStore.trigger({
-          message: "Move created!",
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.SUCCESS, "Move created!"),
+        );
         newMoveModalOpen = false;
         $moveList.push([res.lastInsertId, newMove.name]);
 
@@ -202,11 +220,10 @@
           value: id,
         }));
       })
-      .catch(() => {
-        toastStore.trigger({
-          message: "Error creating new move!",
-          background: "variant-filled-error",
-        });
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, `Error creating new move: ${err}`),
+        );
       });
   }
 
@@ -225,12 +242,19 @@
           (p) => p.pokemonId !== pokemonId,
         );
         pokemonWhoCanLearnMove = updatedMoveLearners;
-        toastStore.trigger({
-          message: "Move deleted successfully",
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.SUCCESS, "Move deleted successfully"),
+        );
       })
-      .then(() => generatePokemonPage(pokemonId));
+      .then(() => generatePokemonPage(pokemonId))
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error deleting move from Pokemon: ${err}`,
+          ),
+        );
+      });
   }
 
   async function addMoveToPokemon() {
@@ -247,10 +271,9 @@
       )
       .then(() => {
         pokemonWhoCanLearnMove = [newMoveLearner, ...pokemonWhoCanLearnMove];
-        toastStore.trigger({
-          message: "Move added successfully",
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.SUCCESS, "Move added successfully"),
+        );
       })
       .then(() => generatePokemonPage(newMoveLearner.pokemonId))
       .then(() => {
@@ -260,6 +283,14 @@
           learn_method: "",
           level_learned: 0,
         };
+      })
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error adding move to Pokemon: ${err}`,
+          ),
+        );
       });
   }
 
@@ -288,10 +319,6 @@
           return pokemon;
         });
         editMoveModalOpen = false;
-        toastStore.trigger({
-          message: "Move updated successfully",
-          background: "variant-filled-success",
-        });
       })
       .then(() => generatePokemonPage(newMoveLearner.pokemonId))
       .then(() => {
@@ -302,6 +329,11 @@
           level_learned: 0,
         };
         newLearnMethods = [];
+      })
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, `Error updating move: ${err}`),
+        );
       });
   }
 
