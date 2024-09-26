@@ -4,13 +4,13 @@
   import TextInput from "$lib/components/TextInput.svelte";
   import { getToastStore } from "@skeletonlabs/skeleton";
   import { IconTrash } from "@tabler/icons-svelte";
-  import { invoke } from "@tauri-apps/api";
   import { selectedWiki } from "../../store";
   import { routes } from "../../store/gameRoutes";
-  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
   import { sortRoutesByPosition } from "$lib/utils";
   import NumberInput from "$lib/components/NumberInput.svelte";
   import GameRoutes from "$lib/components/game-route-components/GameRoutes.svelte";
+  import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
 
@@ -29,12 +29,9 @@
     }
 
     if ($routes.routes[routeName.trim()]) {
-      toastStore.trigger({
-        message: "Route already exists",
-        timeout: 5000,
-        hoverable: true,
-        background: "variant-filled-error",
-      });
+      toastStore.trigger(
+        getToastSettings(ToastType.ERROR, "Route already exists"),
+      );
       return;
     }
 
@@ -45,34 +42,32 @@
       wild_encounters: {},
       wild_encounter_area_levels: {},
     };
-    await writeTextFile(
-      `${$selectedWiki.name}/data/routes.json`,
-      JSON.stringify($routes),
-      { dir: BaseDirectory.AppData },
-    ).then(() => {
-      routeName = "";
-      newRouteModalOpen = false;
-    });
+
+    await updateRoutes($routes, $selectedWiki.name)
+      .then(() => {
+        routeName = "";
+        newRouteModalOpen = false;
+      })
+      .catch((err) => {
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err));
+      });
   }
 
   async function addNewEncounterType() {
     $routes.encounter_areas = [...$routes.encounter_areas, newEncounterType];
-    await writeTextFile(
-      `${$selectedWiki.name}/data/routes.json`,
-      JSON.stringify(sortRoutesByPosition($routes)),
-      { dir: BaseDirectory.AppData },
-    );
+    let sortedRoutes = sortRoutesByPosition($routes);
+    await updateRoutes(sortedRoutes, $selectedWiki.name).catch((err) => {
+      toastStore.trigger(getToastSettings(ToastType.ERROR, err));
+    });
   }
 
   async function deleteEncounterType(encounterType: string) {
     $routes.encounter_areas = $routes.encounter_areas.filter(
       (type) => type !== encounterType,
     );
-    await writeTextFile(
-      `${$selectedWiki.name}/data/routes.json`,
-      JSON.stringify($routes),
-      { dir: BaseDirectory.AppData },
-    );
+    await updateRoutes($routes, $selectedWiki.name).catch((err) => {
+      toastStore.trigger(getToastSettings(ToastType.ERROR, err));
+    });
   }
 
   async function updatePosition() {
@@ -106,29 +101,24 @@
     }
 
     $routes = sortRoutesByPosition($routes);
-    await writeTextFile(
-      `${$selectedWiki.name}/data/routes.json`,
-      JSON.stringify($routes),
-      { dir: BaseDirectory.AppData },
-    );
-  }
-
-  async function generateRoutePages() {
-    loading = true;
-    let routeNames = Object.keys($routes.routes);
-    await invoke("generate_route_pages_with_handle", {
-      wikiName: $selectedWiki.name,
-      routeNames,
-    }).then((response: any) => {
-      loading = false;
-      toastStore.trigger({
-        message: response || "Route Pages generated",
-        timeout: 5000,
-        hoverable: true,
-        background: "variant-filled-success",
-      });
+    await updateRoutes($routes, $selectedWiki.name).catch((err) => {
+      toastStore.trigger(getToastSettings(ToastType.ERROR, err));
     });
   }
+
+  async function generatePages() {
+    loading = true;
+    await generateRoutePages(Object.keys($routes.routes), $selectedWiki.name)
+      .then((res) => {
+        loading = false;
+        toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
+      })
+      .catch((err) => {
+        loading = false;
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err));
+      });
+  }
+
   function capitalizeWords(event: any) {
     routeName = event.target.value.replace(/\b\w/g, (char: string) =>
       char.toUpperCase(),
@@ -207,7 +197,7 @@
   <Button
     class="w-42"
     title="Generate Route Pages"
-    onClick={generateRoutePages}
+    onClick={generatePages}
     {loading}
   />
 </div>

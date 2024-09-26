@@ -358,7 +358,7 @@ pub fn generate_route_pages(
         }
     };
 
-    Ok("Generating Routes".to_string())
+    Ok("Route Page Generated".to_string())
 }
 
 fn generate_route_page_from_template(
