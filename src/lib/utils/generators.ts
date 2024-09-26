@@ -38,11 +38,7 @@ export async function generateRoutePages(
 export async function updateRoutes(routes: Routes, wikiName: string) {
   return writeTextFile(`${wikiName}/data/routes.json`, JSON.stringify(routes), {
     dir: BaseDirectory.AppData,
-  })
-    .then(() => {
-      return generateRoutePages(Object.keys(routes.routes), wikiName);
-    })
-    .catch((err) => {
-      return err;
-    });
+  }).catch((err) => {
+    return err;
+  });
 }

@@ -27,6 +27,7 @@
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import {
     generatePokemonPages,
+    generateRoutePages,
     removePokemonPage,
     updateRoutes,
   } from "$lib/utils/generators";
@@ -218,6 +219,12 @@
               }
               $routes = cloneDeep(updatedRoutes);
               updateRoutes($routes, $selectedWiki.name)
+                .then(() => {
+                  return generateRoutePages(
+                    Object.keys($routes.routes),
+                    $selectedWiki.name,
+                  );
+                })
                 .then((res) => {
                   toastStore.trigger(
                     getToastSettings(ToastType.SUCCESS, res as string),
