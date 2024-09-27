@@ -7,6 +7,8 @@ import {
   writeTextFile,
 } from "@tauri-apps/api/fs";
 import { wikis } from "../store";
+import { getToastStore } from "@skeletonlabs/skeleton";
+import { ToastType, getToastSettings } from "$lib/utils/toasts";
 
 export const prerender = true;
 export const ssr = false;
@@ -32,10 +34,18 @@ export async function load({ params }: { params: { slug: string } }) {
   if (!wikiJsonExists) {
     await writeTextFile("wikis.json", JSON.stringify(wikis), {
       dir: BaseDirectory.AppData,
+    }).catch((err) => {
+      getToastStore().trigger(
+        getToastSettings(ToastType.ERROR, `Error writing wikis.json: ${err}`),
+      );
     });
   }
   const contents = await readTextFile("wikis.json", {
     dir: BaseDirectory.AppData,
+  }).catch((err) => {
+    getToastStore().trigger(
+      getToastSettings(ToastType.ERROR, `Error reading wikis.json: ${err}`),
+    );
   });
-  wikis.set(JSON.parse(contents));
+  wikis.set(JSON.parse(contents as string));
 }
