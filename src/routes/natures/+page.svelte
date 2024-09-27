@@ -18,6 +18,7 @@
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
   import objectIsEmpty from "$lib/utils/objectIsEmpty";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
 
@@ -52,12 +53,13 @@
   async function generateNaturePage() {
     await invoke("generate_nature_page_with_handle", {
       wikiName: $selectedWiki.name,
-    }).then(() => {
-      toastStore.trigger({
-        message: "Nature page regenerated!",
-        background: "variant-filled-success",
+    })
+      .then((res) => {
+        toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
+      })
+      .catch((err) => {
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
       });
-    });
   }
 
   async function getNature() {
@@ -66,20 +68,22 @@
     );
 
     if (!retrievedNature) {
-      toastStore.trigger({
-        message: "Nature not found!",
-        background: "variant-filled-error",
-      });
+      toastStore.trigger(getToastSettings(ToastType.ERROR, "Nature not found"));
       return;
     }
 
     await $db
-      .select<
-        Nature[]
-      >("SELECT * FROM natures WHERE name = $1", [natureSearch[1]])
+      .select<Nature[]>("SELECT * FROM natures WHERE name = $1", [
+        natureSearch[1],
+      ])
       .then((result) => {
         nature = result[0];
         originalNatureDetails = cloneDeep(nature);
+      })
+      .catch(() => {
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, "Error fetching nature"),
+        );
       });
   }
 
@@ -96,17 +100,15 @@
       )
       .then(() => {
         originalNatureDetails = cloneDeep(nature);
-        toastStore.trigger({
-          message: "Nature changes saved!",
-          background: "variant-filled-success",
-        });
         generateNaturePage();
       })
-      .catch(() => {
-        toastStore.trigger({
-          message: "Error saving nature changes!",
-          background: "variant-filled-error",
-        });
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error saving nature changes: ${err}`,
+          ),
+        );
       });
   }
 
@@ -139,11 +141,13 @@
         });
         generateNaturePage();
       })
-      .catch(() => {
-        toastStore.trigger({
-          message: "Error creating new nature!",
-          background: "variant-filled-error",
-        });
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error creating new nature: ${err}`,
+          ),
+        );
       });
   }
 
@@ -151,12 +155,8 @@
     await $db
       .execute("DELETE FROM natures WHERE id = $1;", [nature.id])
       .then(() => {
-        toastStore.trigger({
-          message: "Nature deleted!",
-          background: "variant-filled-success",
-        });
         /// Update the abilities list
-        $db.select("SELECT id, name FROM abilities").then((natures: any) => {
+        $db.select("SELECT id, name FROM natures").then((natures: any) => {
           naturesList.set(
             natures.map((nature: SearchNature) => [nature.id, nature.name]),
           );
@@ -165,11 +165,10 @@
         originalNatureDetails = {} as Nature;
         generateNaturePage();
       })
-      .catch(() => {
-        toastStore.trigger({
-          message: "Error deleting nature!",
-          background: "variant-filled-error",
-        });
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, `Error deleting nature: ${err}`),
+        );
       });
   }
 
