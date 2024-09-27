@@ -14,11 +14,11 @@
     readBinaryFile,
     removeFile,
     writeBinaryFile,
-    writeTextFile,
   } from "@tauri-apps/api/fs";
-  import { invoke } from "@tauri-apps/api";
   import { onMount } from "svelte";
   import { base64ToArray } from "$lib/utils";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
+  import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
 
   const toastStore = getToastStore();
   export let data;
@@ -102,37 +102,32 @@
       { dir: BaseDirectory.AppData },
     )
       .then(() => {
-        toastStore.trigger({
-          message: "Route Image Saved",
-          timeout: 3000,
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.SUCCESS, "Route Image Saved"),
+        );
       })
       .catch((e) => {
-        console.error(e);
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, `Error saving route image: ${e}`),
+        );
       });
   }
 
   async function saveChanges() {
-    await saveRouteImage();
-    await writeTextFile(
-      `${$selectedWiki.name}/data/routes.json`,
-      JSON.stringify($routes),
-      { dir: BaseDirectory.AppData },
-    ).then(() => {
-      invoke("generate_route_pages_with_handle", {
-        wikiName: $selectedWiki.name,
-        routeNames: [data.title],
-      })
-        .then(() => {
-          toastStore.trigger({
-            message: "Route Property Changes Saved",
-            timeout: 3000,
-            background: "variant-filled-success",
-          });
+    await saveRouteImage().catch((e) => {
+      toastStore.trigger(
+        getToastSettings(ToastType.ERROR, `Error saving route image: ${e}`),
+      );
+    });
+    await updateRoutes($routes, $selectedWiki.name).then(() => {
+      generateRoutePages([data.title], $selectedWiki.name)
+        .then((res) => {
+          toastStore.trigger(
+            getToastSettings(ToastType.SUCCESS, res as string),
+          );
         })
         .catch((e) => {
-          console.error(e);
+          toastStore.trigger(getToastSettings(ToastType.ERROR, e));
         });
     });
   }
