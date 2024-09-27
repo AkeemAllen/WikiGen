@@ -25,6 +25,7 @@
     IconBottleFilled,
     IconDisc,
     IconDotsVertical,
+    IconDownload,
     IconFlame,
     IconHome,
     IconRoute2,
@@ -119,7 +120,13 @@
           </NavButton>
         </div>
       {/if}
-      <div class="flex w-40 flex-row items-center justify-between">
+      <button
+        class="flex items-center gap-1 text-sm hover:ring-offset-1 hover:ring hover:ring-green-500 rounded-md p-2"
+      >
+        <IconDownload size={20} color="green" />
+        Update Available!
+      </button>
+      <div class="flex flex-row items-center justify-between">
         <p>
           {$selectedWiki.name ? $selectedWiki.site_name : "Select Wiki"}
         </p>
