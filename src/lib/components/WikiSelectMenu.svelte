@@ -202,6 +202,7 @@
         <button
           on:click={() => {
             $selectedWiki = value;
+            // Check if file migration is needed before loading wiki
             loadWikiData();
             goto("/");
           }}

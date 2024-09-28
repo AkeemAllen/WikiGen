@@ -4,6 +4,7 @@ use std::{io::Write, path::PathBuf};
 pub enum LogLevel {
     Debug,
     Error,
+    MigrationError,
 }
 
 pub fn write_log(wiki_path: &PathBuf, log_level: LogLevel, message: &str) {
@@ -15,6 +16,7 @@ pub fn write_log(wiki_path: &PathBuf, log_level: LogLevel, message: &str) {
     let log_file_path = match log_level {
         LogLevel::Debug => log_directory.join("debug.log"),
         LogLevel::Error => log_directory.join("error.log"),
+        LogLevel::MigrationError => log_directory.join("migration_error.log"),
     };
 
     if !log_file_path.try_exists().unwrap_or(false) {
