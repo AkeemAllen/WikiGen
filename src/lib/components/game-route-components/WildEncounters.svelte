@@ -1,14 +1,9 @@
 <script lang="ts">
   import {
     getToastStore,
-    popup,
     type AutocompleteOption,
   } from "@skeletonlabs/skeleton";
-  import {
-    BaseDirectory,
-    readBinaryFile,
-    writeTextFile,
-  } from "@tauri-apps/api/fs";
+  import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
   import { selectedWiki } from "../../../store";
   import { routes, type WildEncounter } from "../../../store/gameRoutes";
   import { pokemonList } from "../../../store/pokemon";
@@ -17,7 +12,6 @@
   import SelectInput from "../SelectInput.svelte";
   import { IconTrash } from "@tabler/icons-svelte";
   import AutoComplete from "../AutoComplete.svelte";
-  import { invoke } from "@tauri-apps/api";
   import TextInput from "../TextInput.svelte";
   import BaseModal from "../BaseModal.svelte";
   import { shortcut } from "@svelte-put/shortcut";
@@ -25,6 +19,8 @@
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
   import WildEncounterAreaMenu from "../modals/WildEncounterAreaMenu.svelte";
+  import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   export let routeName: string = "";
   let pokemonName: string = "";
@@ -128,26 +124,21 @@
     );
     originalAreaLevels = cloneDeep(areaLevels);
 
-    await writeTextFile(
-      `${$selectedWiki.name}/data/routes.json`,
-      JSON.stringify($routes),
-      { dir: BaseDirectory.AppData },
-    ).then(() => {
-      invoke("generate_route_pages_with_handle", {
-        wikiName: $selectedWiki.name,
-        routeNames: [routeName],
-      })
-        .then(() => {
-          toastStore.trigger({
-            message: "Changes saved successfully",
-            timeout: 3000,
-            background: "variant-filled-success",
+    await updateRoutes($routes, $selectedWiki.name)
+      .then(() => {
+        generateRoutePages([routeName], $selectedWiki.name)
+          .then((res) => {
+            toastStore.trigger(
+              getToastSettings(ToastType.SUCCESS, res as string),
+            );
+          })
+          .catch((e) => {
+            toastStore.trigger(getToastSettings(ToastType.ERROR, e as string));
           });
-        })
-        .catch((e) => {
-          console.error(e);
-        });
-    });
+      })
+      .catch((e) => {
+        toastStore.trigger(getToastSettings(ToastType.ERROR, e as string));
+      });
   }
 
   async function getSpriteImage(pokemonName: string): Promise<string> {

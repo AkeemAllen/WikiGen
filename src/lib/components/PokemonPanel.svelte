@@ -1,11 +1,6 @@
 <script lang="ts">
   import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
-  import {
-    BaseDirectory,
-    exists,
-    readBinaryFile,
-    writeTextFile,
-  } from "@tauri-apps/api/fs";
+  import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
   import { selectedWiki } from "../../store";
   import {
     routes,
@@ -19,7 +14,6 @@
   } from "../../store/pokemon";
   import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
   import PokemonMovesTab from "./PokemonMovesTab.svelte";
-  import { invoke } from "@tauri-apps/api";
   import { shortcut } from "@svelte-put/shortcut";
   import Button from "./Button.svelte";
   import AutoComplete from "./AutoComplete.svelte";
@@ -30,37 +24,38 @@
   import isEqual from "$lib/utils/isEqual";
   import objectIsEmpty from "$lib/utils/objectIsEmpty";
   import PokemonLocationTab from "./PokemonLocationTab.svelte";
-
-  const toastStore = getToastStore();
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
+  import {
+    generatePokemonPages,
+    generateRoutePages,
+    removePokemonPage,
+    updateRoutes,
+  } from "$lib/utils/generators";
 
   let pokemonSearch: [number, string] = [0, ""];
-
-  let pokemonNameInput: HTMLInputElement;
-
   let pokemon = {} as Pokemon;
   let originalPokemonDetails: Pokemon = {} as Pokemon;
   let pokemonMoveset: PokemonMove[] = [];
-  let pokemonSprite: string = "";
-
   let pokemonLocations: WildEncounter[] = [];
+  let pokemonSprite: string = "";
+  let pokemonNameInput: HTMLInputElement;
 
   let tabSet: number = 0;
-
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
     value: id,
   }));
 
-  async function generatePokemonPage() {
-    await invoke("generate_pokemon_pages_from_list", {
-      wikiName: $selectedWiki.name,
-      pokemonIds: [pokemon.id],
-    }).then(() => {
-      toastStore.trigger({
-        message: "Pokemon page regenerated!",
-        background: "variant-filled-success",
+  const toastStore = getToastStore();
+
+  async function generatePage() {
+    generatePokemonPages([pokemon.id], $selectedWiki.name)
+      .then((res) => {
+        toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
+      })
+      .catch((err) => {
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
       });
-    });
   }
 
   async function getPokemon() {
@@ -70,10 +65,9 @@
     );
 
     if (!retrievedPokemon) {
-      toastStore.trigger({
-        message: "Pokemon not found!",
-        background: "variant-filled-error",
-      });
+      toastStore.trigger(
+        getToastSettings(ToastType.ERROR, "Pokemon not found!"),
+      );
       return;
     }
 
@@ -96,10 +90,12 @@
             pokemonMoveset = res;
           })
           .catch((err) => {
-            toastStore.trigger({
-              message: `Error loading Pokemon moveset!: \n ${err}`,
-              background: "variant-filled-error",
-            });
+            toastStore.trigger(
+              getToastSettings(
+                ToastType.ERROR,
+                `Error loading Pokemon moveset!: \n ${err}`,
+              ),
+            );
           });
 
         // Reading in image separately
@@ -112,7 +108,6 @@
             return URL.createObjectURL(blob);
           })
           .catch((err) => {
-            console.log(err);
             if (err.includes("No such file or directory")) {
               return "404";
             }
@@ -122,9 +117,6 @@
       })
       .then((res) => {
         originalPokemonDetails = cloneDeep(res);
-        return res;
-      })
-      .then((res) => {
         // Gather location
         pokemonLocations = [];
         for (const [_, properties] of Object.entries($routes.routes)) {
@@ -139,11 +131,12 @@
         }
       })
       .catch((err) => {
-        console.log(err);
-        toastStore.trigger({
-          message: `Error loading Pokemon!: \n ${err}`,
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error loading Pokemon!: \n ${err}`,
+          ),
+        );
       });
   }
 
@@ -171,54 +164,43 @@
     await $db
       .execute(
         `UPDATE pokemon SET
-          dex_number = $1,
-          name = $2,
-          types = $3,
-          ability_1 = $4,
-          ability_2 = $5,
-          hp = $6,
-          attack = $7,
-          defense = $8,
-          sp_attack = $9,
-          sp_defense = $10,
-          speed = $11,
-          evolution_method = $12,
-          evolution_item = $13,
-          evolution_level = $14,
-          evolution_other = $15,
-          evolved_pokemon = $16,
-          render = $17,
-          hidden_ability = $18
-        WHERE id = $19;`,
+          dex_number = ${pokemon.dex_number},
+          name = "${pokemon.name}",
+          types = "${pokemon.types}",
+          hp = ${pokemon.hp},
+          attack = ${pokemon.attack},
+          defense = ${pokemon.defense},
+          sp_attack = ${pokemon.sp_attack},
+          sp_defense = ${pokemon.sp_defense},
+          speed = ${pokemon.speed},
+          evolution_method = $1,
+          evolution_item = $2,
+          evolution_level = $3,
+          evolution_other = $4,
+          evolved_pokemon = $5,
+          render = "${pokemon.render}",
+          ability_1 = $6,
+          ability_2 = $7,
+          hidden_ability = $8
+        WHERE id = ${pokemon.id};`,
         [
-          pokemon.dex_number,
-          pokemon.name,
-          pokemon.types,
-          pokemon.ability_1?.toLowerCase().split(" ").join("-"),
-          pokemon.ability_2?.toLowerCase().split(" ").join("-"),
-          pokemon.hp,
-          pokemon.attack,
-          pokemon.defense,
-          pokemon.sp_attack,
-          pokemon.sp_defense,
-          pokemon.speed,
           pokemon.evolution_method,
           pokemon.evolution_item,
           pokemon.evolution_level,
           pokemon.evolution_other,
           pokemon.evolved_pokemon,
-          pokemon.render,
+          pokemon.ability_1?.toLowerCase().split(" ").join("-"),
+          pokemon.ability_2?.toLowerCase().split(" ").join("-"),
           pokemon.hidden_ability?.toLowerCase().split(" ").join("-"),
-          pokemon.id,
         ],
       )
       .then(() => {
         if (originalPokemonDetails.dex_number !== pokemon.dex_number) {
-          invoke("remove_pokemon_page_with_old_dex_number", {
-            wikiName: $selectedWiki.name,
-            oldDexNumber: originalPokemonDetails.dex_number,
-            pokemonName: pokemon.name,
-          })
+          removePokemonPage(
+            $selectedWiki.name,
+            pokemon.name,
+            originalPokemonDetails.dex_number,
+          )
             .then(() => {
               let updatedRoutes: Routes = cloneDeep($routes);
               for (const [routeName, properties] of Object.entries(
@@ -236,52 +218,35 @@
                 }
               }
               $routes = cloneDeep(updatedRoutes);
-              writeTextFile(
-                `${$selectedWiki.name}/data/routes.json`,
-                JSON.stringify($routes),
-                { dir: BaseDirectory.AppData },
-              ).then(() => {
-                invoke("generate_route_pages_with_handle", {
-                  wikiName: $selectedWiki.name,
-                  routeNames: Object.keys($routes.routes),
+              updateRoutes($routes, $selectedWiki.name)
+                .then(() => {
+                  return generateRoutePages(
+                    Object.keys($routes.routes),
+                    $selectedWiki.name,
+                  );
                 })
-                  .then(() => {
-                    toastStore.trigger({
-                      message: "Changes saved successfully",
-                      timeout: 3000,
-                      background: "variant-filled-success",
-                    });
-                  })
-                  .catch((e) => {
-                    toastStore.trigger({
-                      message: `Error generating route pages!: ${e}`,
-                      timeout: 3000,
-                      background: "variant-filled-success",
-                    });
-                  });
-              });
+                .then((res) => {
+                  toastStore.trigger(
+                    getToastSettings(ToastType.SUCCESS, res as string),
+                  );
+                })
+                .catch((e) => {
+                  toastStore.trigger(
+                    getToastSettings(ToastType.ERROR, e as string),
+                  );
+                });
             })
             .catch((err) => {
-              toastStore.trigger({
-                message: `Error removing old pokemon page!: ${err}`,
-                background: "variant-filled-error",
-              });
+              toastStore.trigger(
+                getToastSettings(ToastType.ERROR, err as string),
+              );
             });
         }
         originalPokemonDetails = cloneDeep(pokemon);
-        toastStore.trigger({
-          message: "Pokemon changes saved!",
-          background: "variant-filled-success",
-        });
       })
-      .then(() => {
-        generatePokemonPage();
-      })
+      .then(() => generatePage())
       .catch((err) => {
-        toastStore.trigger({
-          message: `Error saving pokemon changes!: ${err}`,
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
       });
   }
 
@@ -336,7 +301,7 @@
   />
   <Button
     title="Generate Page"
-    onClick={generatePokemonPage}
+    onClick={() => generatePage()}
     disabled={objectIsEmpty(pokemon)}
     class="mt-2 w-32"
   />
@@ -371,7 +336,7 @@
         <PokemonMovesTab
           bind:moveset={pokemonMoveset}
           bind:pokemonId={pokemon.id}
-          {generatePokemonPage}
+          generatePokemonPage={() => generatePage()}
         />
       {/if}
       {#if tabSet === 2}

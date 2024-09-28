@@ -1,8 +1,6 @@
 <script lang="ts">
   import {
     BaseDirectory,
-    copyFile,
-    exists,
     readTextFile,
     removeDir,
     writeTextFile,
@@ -24,13 +22,8 @@
   import Database from "tauri-plugin-sql-api";
   import { db } from "../../store/db";
   import { types } from "../../store/types";
-  import { resourceDir } from "@tauri-apps/api/path";
-  import { type as osTypeFunc } from "@tauri-apps/api/os";
-  import updateWildEncounters from "$lib/utils/migration_helpers/updateWildEncounters";
-  import updateTrainerEncounters from "$lib/utils/migration_helpers/updateTrainerEncounters";
-  import updateRouteRender from "$lib/utils/migration_helpers/updateRouteRenderValue";
   import HotKeysModal from "./modals/HotKeysModal.svelte";
-  import updateDexNumberReferences from "$lib/utils/migration_helpers/updateDexNumberReferences";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
 
@@ -51,7 +44,7 @@
       { dir: BaseDirectory.AppData },
     );
 
-    routes.set(sortRoutesByPosition(JSON.parse(routesFromFile)));
+    routes.set(sortRoutesByPosition(JSON.parse(routesFromFile as string)));
   }
 
   async function loadTypes() {
@@ -103,90 +96,79 @@
   }
 
   async function loadWikiData() {
-    await Database.load(
-      `sqlite:${$selectedWiki.name}/${$selectedWiki.name}.db`,
-    ).then((database) => {
-      db.set(database);
-      // Load Pokemon
-      $db
-        .select(
-          "SELECT id, dex_number, name, types FROM pokemon ORDER BY dex_number",
-        )
-        .then((pokemon: any) => {
-          pokemonList.set(
-            pokemon.map((p: SearchPokemon) => [
-              p.id,
-              p.dex_number,
-              p.name,
-              p.types,
+    await Database.load(`sqlite:${$selectedWiki.name}/${$selectedWiki.name}.db`)
+      .then((database) => {
+        db.set(database);
+        // Load Pokemon
+        $db
+          .select(
+            "SELECT id, dex_number, name, types FROM pokemon ORDER BY dex_number",
+          )
+          .then((pokemon: any) => {
+            pokemonList.set(
+              pokemon.map((p: SearchPokemon) => [
+                p.id,
+                p.dex_number,
+                p.name,
+                p.types,
+              ]),
+            );
+          });
+
+        // Load Items
+        $db.select("SELECT id, name FROM items").then((items: any) => {
+          itemsList.set(items.map((item: SearchItem) => [item.id, item.name]));
+        });
+
+        // Load Abilities
+        $db.select("SELECT id, name FROM abilities").then((abilities: any) => {
+          abilitiesList.set(
+            abilities.map((ability: SearchAbility) => [
+              ability.id,
+              ability.name,
             ]),
+          );
+          // Add an empty ability for the search
+          abilitiesList.update((abilities) => {
+            abilities.unshift([0, "None"]);
+            return abilities;
+          });
+        });
+
+        // Load Natures
+        $db.select("SELECT id, name FROM natures").then((natures: any) => {
+          naturesList.set(
+            natures.map((nature: SearchNature) => [nature.id, nature.name]),
           );
         });
 
-      // Load Items
-      $db.select("SELECT id, name FROM items").then((items: any) => {
-        itemsList.set(items.map((item: SearchItem) => [item.id, item.name]));
-      });
-
-      // Load Abilities
-      $db.select("SELECT id, name FROM abilities").then((abilities: any) => {
-        abilitiesList.set(
-          abilities.map((ability: SearchAbility) => [ability.id, ability.name]),
-        );
-        // Add an empty ability for the search
-        abilitiesList.update((abilities) => {
-          abilities.unshift([0, "None"]);
-          return abilities;
+        // Load Moves
+        $db.select("SELECT id, name FROM moves").then((moves: any) => {
+          moveList.set(moves.map((move: SearchMove) => [move.id, move.name]));
         });
-      });
 
-      // Load Natures
-      $db.select("SELECT id, name FROM natures").then((natures: any) => {
-        naturesList.set(
-          natures.map((nature: SearchNature) => [nature.id, nature.name]),
-        );
-      });
+        // Load Types
+        loadTypes().catch((err) => {
+          toastStore.trigger(
+            getToastSettings(ToastType.ERROR, `Error loading types: ${err}`),
+          );
+        });
 
-      // Load Moves
-      $db.select("SELECT id, name FROM moves").then((moves: any) => {
-        moveList.set(moves.map((move: SearchMove) => [move.id, move.name]));
-      });
-
-      // Load Types
-      loadTypes();
-
-      // Load Routes
-      loadRoutes();
-    });
-  }
-
-  async function updatePokemonReferences() {
-    let updatedRoutes = updateDexNumberReferences($routes, $pokemonList);
-    $routes = updatedRoutes;
-    await writeTextFile(
-      `${$selectedWiki.name}/data/routes.json`,
-      JSON.stringify($routes),
-      { dir: BaseDirectory.AppData },
-    ).then(() => {
-      invoke("generate_route_pages_with_handle", {
-        wikiName: $selectedWiki.name,
-        routeNames: Object.keys($routes.routes),
+        // Load Routes
+        loadRoutes().catch((err) => {
+          toastStore.trigger(
+            getToastSettings(ToastType.ERROR, `Error loading routes: ${err}`),
+          );
+        });
       })
-        .then(() => {
-          toastStore.trigger({
-            message: "Changes saved successfully",
-            timeout: 3000,
-            background: "variant-filled-success",
-          });
-        })
-        .catch((e) => {
-          toastStore.trigger({
-            message: `Error generating route pages!: ${e}`,
-            timeout: 3000,
-            background: "variant-filled-success",
-          });
-        });
-    });
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error loading values from database: ${err}`,
+          ),
+        );
+      });
   }
 </script>
 
@@ -220,6 +202,7 @@
         <button
           on:click={() => {
             $selectedWiki = value;
+            // Check if file migration is needed before loading wiki
             loadWikiData();
             goto("/");
           }}
@@ -239,11 +222,6 @@
     <button
       class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
       on:click={backupWiki}>Backup Wiki</button
-    >
-    <button
-      class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-      on:click={() => updatePokemonReferences()}
-      >Update Pokemon References</button
     >
   {/if}
   <button

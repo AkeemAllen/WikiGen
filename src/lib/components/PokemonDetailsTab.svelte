@@ -8,8 +8,8 @@
   import { itemsList } from "../../store/items";
   import { types as pokemonTypes } from "../../store/types";
   import capitalizeWords from "$lib/utils/capitalizeWords";
-  import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
   import { getToastStore } from "@skeletonlabs/skeleton";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   export let pokemon: Pokemon = {} as Pokemon;
   export let isNewPokemon: boolean = false;
@@ -87,10 +87,12 @@
 
     // This scenario should be unlikely. So default it to normal
     if (types[0] === "none" && types[1] === "none") {
-      getToastStore().trigger({
-        message: "Both types cannot be none. Defaulting to normal",
-        background: "variant-filled-error",
-      });
+      getToastStore().trigger(
+        getToastSettings(
+          ToastType.ERROR,
+          "Both types cannot be none. Defaulting to normal",
+        ),
+      );
       pokemon.types = "normal";
       return;
     }

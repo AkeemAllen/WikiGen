@@ -74,7 +74,9 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Fixed bug caused by encounter rate not handling floating point numbers.
+            \n- Added testing to help prevent regressions in page generation.
+            \n- Improved Error Handling.
+            \n- General Code Cleanup and Refactoring.
             "
           releaseDraft: false
           prerelease: false

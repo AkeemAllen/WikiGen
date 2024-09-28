@@ -11,8 +11,9 @@ use serde_yaml::{Mapping, Value};
 use tauri::AppHandle;
 
 use crate::{
+    database::{get_mkdocs_config, get_routes},
     helpers::{capitalize, capitalize_and_remove_hyphens, get_pokemon_dex_formatted_name},
-    structs::mkdocs_structs::MKDocsConfig,
+    logger,
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -83,17 +84,18 @@ pub async fn generate_route_pages_with_handle(
         ) {
             Ok(template) => template,
             Err(err) => {
-                return Err(format!("Failed to read template file: {}", err));
+                let message = format!("Failed to read template file: {err}",);
+                logger::write_log(
+                    &base_path.join(wiki_name),
+                    logger::LogLevel::Error,
+                    &message,
+                );
+                return Err(message);
             }
         };
     }
 
-    return generate_route_pages(
-        &wiki_name,
-        base_path.clone(),
-        resources_path.clone(),
-        route_names,
-    );
+    return generate_route_pages(&wiki_name, &base_path, &resources_path, &route_names);
 }
 
 #[tauri::command]
@@ -105,15 +107,13 @@ pub async fn delete_route_page_from_mkdocs(
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mkdocs_yaml_file = match File::open(&mkdocs_yaml_file_path) {
-        Ok(mkdocs) => mkdocs,
-        Err(err) => return Err(format!("Failed to read Mkdocs yaml file: {}", err)),
-    };
-    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
+    let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
         Ok(config) => config,
-        Err(err) => return Err(format!("Failed to parse Mkdocs yaml file: {}", err)),
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
     };
-
     let mut mkdocs_routes: &mut Vec<Value> = &mut Vec::new();
 
     let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
@@ -142,10 +142,18 @@ pub async fn delete_route_page_from_mkdocs(
         .join("dist")
         .join("docs")
         .join("routes")
-        .join(format!("{}.md", route_name));
+        .join(format!("{route_name}.md"));
     match fs::remove_file(route_file_path) {
         Ok(_) => {}
-        Err(err) => return Err(format!("Failed to delete route file: {}", err)),
+        Err(err) => {
+            let message = format!("Failed to delete route file: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     }
 
     match fs::write(
@@ -153,38 +161,44 @@ pub async fn delete_route_page_from_mkdocs(
         serde_yaml::to_string(&mkdocs_config.clone()).unwrap(),
     ) {
         Ok(_) => {}
-        Err(err) => return Err(format!("Failed to update mkdocs yaml: {}", err)),
+        Err(err) => {
+            let message = format!("Failed to update mkdocs yaml: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     };
 
-    Ok("Page Deleted from Mkdocs".to_string())
+    Ok("Route Page Deleted".to_string())
 }
 
 pub fn generate_route_pages(
     wiki_name: &str,
-    base_path: PathBuf,
-    resources_path: PathBuf,
-    route_names: Vec<&str>,
+    base_path: &PathBuf,
+    resources_path: &PathBuf,
+    route_names: &[&str],
 ) -> Result<String, String> {
     let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
     let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
-    let routes_file = match File::open(&routes_json_file_path) {
-        Ok(file) => file,
-        Err(err) => return Err(format!("Failed to read routes file: {}", err)),
-    };
-    let routes: Routes = match serde_json::from_reader(routes_file) {
+    let routes = match get_routes(&routes_json_file_path) {
         Ok(routes) => routes,
-        Err(err) => return Err(format!("Failed to parse routes file: {}", err)),
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
     };
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mkdocs_yaml_file = match File::open(&mkdocs_yaml_file_path) {
-        Ok(mkdocs) => mkdocs,
-        Err(err) => return Err(format!("Failed to read Mkdocs yaml file: {}", err)),
-    };
-    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
+    let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
         Ok(config) => config,
-        Err(err) => return Err(format!("Failed to parse Mkdocs yaml file: {}", err)),
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
     };
 
     let template = match read_to_string(
@@ -196,7 +210,13 @@ pub fn generate_route_pages(
     ) {
         Ok(template) => template,
         Err(err) => {
-            return Err(format!("Failed to read template file: {}", err));
+            let message = format!("Failed to read template file: {err}",);
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
         }
     };
 
@@ -214,7 +234,7 @@ pub fn generate_route_pages(
     }
 
     for route_name in route_names {
-        let route_properties = routes.routes.get(route_name).unwrap();
+        let route_properties = routes.routes.get(*route_name).unwrap();
 
         let mut page_entry_exists = false;
         let mut page_position = 0;
@@ -227,14 +247,26 @@ pub fn generate_route_pages(
         }
 
         // Checking for deleted routes
-        if !routes.routes.contains_key(route_name) && page_entry_exists {
+        if !routes.routes.contains_key(*route_name) && page_entry_exists {
             mkdocs_routes.remove(page_position);
-            println!("{:?}", mkdocs_routes);
             continue;
         }
 
+        // Function originally created to delete previous route structure
+        // Might be able to delete this block
         if page_entry_exists && docs_path.join("routes").join(route_name).is_dir() {
-            fs::remove_dir_all(docs_path.join("routes").join(route_name)).unwrap();
+            match fs::remove_dir_all(docs_path.join("routes").join(route_name)) {
+                Ok(_) => {}
+                Err(err) => {
+                    let message = format!("Failed to delete route directory: {err}",);
+                    logger::write_log(
+                        &base_path.join(wiki_name),
+                        logger::LogLevel::Error,
+                        &message,
+                    );
+                    return Err(message);
+                }
+            };
             mkdocs_routes.remove(page_position);
             page_entry_exists = false;
         }
@@ -245,7 +277,6 @@ pub fn generate_route_pages(
         }
 
         if route_properties.render == false {
-            println!("Skipping rendering route {}", route_name);
             continue;
         }
 
@@ -253,7 +284,12 @@ pub fn generate_route_pages(
             match File::create(docs_path.join("routes").join(format!("{}.md", route_name))) {
                 Ok(file) => file,
                 Err(e) => {
-                    println!("Error creating file: {:?}", e);
+                    let message = format!("Failed to create file: {e}",);
+                    logger::write_log(
+                        &base_path.join(wiki_name),
+                        logger::LogLevel::Error,
+                        &message,
+                    );
                     continue;
                 }
             };
@@ -262,14 +298,19 @@ pub fn generate_route_pages(
             wiki_name,
             route_name,
             route_properties,
-            template.clone(),
-            docs_path.clone(),
+            &template,
+            &docs_path,
         );
 
         match markdown_file.write_all(route_page_markdown.as_bytes()) {
             Ok(_) => {}
             Err(e) => {
-                println!("Error writing to file: {:?}", e);
+                let message = format!("Failed to write to file: {e}",);
+                logger::write_log(
+                    &base_path.join(wiki_name),
+                    logger::LogLevel::Error,
+                    &message,
+                );
                 continue;
             }
         }
@@ -277,7 +318,7 @@ pub fn generate_route_pages(
         let mut route_page_entry = Mapping::new();
         route_page_entry.insert(
             Value::String(route_name.to_string()),
-            Value::String(format!("routes/{}.md", route_name)),
+            Value::String(format!("routes/{route_name}.md")),
         );
 
         if !page_entry_exists {
@@ -306,18 +347,26 @@ pub fn generate_route_pages(
         serde_yaml::to_string(&mkdocs_config.clone()).unwrap(),
     ) {
         Ok(_) => {}
-        Err(err) => return Err(format!("Failed to update mkdocs yaml: {}", err)),
+        Err(err) => {
+            let message = format!("Failed to update mkdocs yaml: {err}",);
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     };
 
-    Ok("Generating Routes".to_string())
+    Ok("Route Page Generated".to_string())
 }
 
 fn generate_route_page_from_template(
     wiki_name: &str,
     route_name: &str,
     route_properties: &RouteProperties,
-    template: String,
-    docs_path: PathBuf,
+    template: &str,
+    docs_path: &PathBuf,
 ) -> String {
     let mut wild_encounter_tab = String::new();
     let mut wild_encounters = String::new();
@@ -342,15 +391,19 @@ fn generate_route_page_from_template(
     }
 
     let mut route_image = String::new();
-    let route_image_exists = docs_path
+    let route_image_exists = match docs_path
         .join("img")
         .join("routes")
-        .join(format!("{}.png", route_name));
-    if route_image_exists.exists() {
-        route_image = format!(
-            "<img src=\"../../img/routes/{}.png\" alt=\"{}\"/>",
-            route_name, route_name
-        );
+        .join(format!("{route_name}.png"))
+        .try_exists()
+    {
+        Ok(exists) => exists,
+        Err(_) => false,
+    };
+
+    if route_image_exists {
+        route_image =
+            format!("<img src=\"../../img/routes/{route_name}.png\" alt=\"{route_name}\"/>",);
     }
 
     let result = template
@@ -387,20 +440,17 @@ fn generate_wild_encounter_markdown(
                     capitalize_and_remove_hyphens(encounter_area)
                 } else {
                     format!(
-                        "{} Lv. {}",
+                        "{} Lv. {area_level}",
                         capitalize_and_remove_hyphens(&encounter_area),
-                        area_level
                     )
                 }
             }
             None => capitalize_and_remove_hyphens(encounter_area),
         };
         let encounter_area = &encounter_area_entry;
-        let encounters = format!(
-            "<div class=\"wild-encounters-container\">{}</div>",
-            pokemon_entries
-        );
-        let encounter_entry = format!("\n\n\t???+ note \"{}\"\n\t\t{}", encounter_area, encounters);
+        let encounters =
+            format!("<div class=\"wild-encounters-container\">{pokemon_entries}</div>",);
+        let encounter_entry = format!("\n\n\t???+ note \"{encounter_area}\"\n\t\t{encounters}");
         markdown_encounters.push_str(&encounter_entry);
     }
 
@@ -410,7 +460,15 @@ fn generate_wild_encounter_markdown(
 fn generate_trainer_markdown(trainers: &IndexMap<String, TrainerInfo>) -> String {
     let mut markdown_trainers = String::new();
     for (name, trainer_info) in trainers {
-        let trainer_sprite = get_trainer_sprite(name, &trainer_info.sprite);
+        let trainer_sprite = match !trainer_info.sprite.is_empty() {
+            true => {
+                format!(
+                    "![{name}](https://play.pokemonshowdown.com/sprites/trainers/{}.png)",
+                    &trainer_info.sprite
+                )
+            }
+            false => String::new(),
+        };
         let mut trainer_entry: String = String::new();
 
         if trainer_info.versions.is_empty() {
@@ -427,26 +485,26 @@ fn generate_trainer_markdown(trainers: &IndexMap<String, TrainerInfo>) -> String
                 for pokemon in &trainer_info.pokemon_team {
                     if pokemon.trainer_versions.contains(version) {
                         version_has_one_pokemon = true;
+                        break;
                     }
                 }
                 if !version_has_one_pokemon {
                     continue;
                 }
 
-                let version_title = format!("\n\n\t\t=== \"{}\"", version);
+                let version_title = format!("\n\n\t\t=== \"{version}\"");
                 let entry = format!(
                     "\t<div class=\"trainer-pokemon-container\">\n{}</div>",
                     generate_trainer_entry(trainer_info, version)
                 );
-                trainer_entry.push_str(&format!("{}\n\t\t{}", version_title, entry));
+                trainer_entry.push_str(&format!("{version_title}\n\t\t{entry}"));
             }
         }
         markdown_trainers.push_str(&format!(
-            "\n\t{}\n\t???+ note \"{}\"\n\t\t{}",
-            trainer_sprite, name, trainer_entry
+            "\n\t{trainer_sprite}\n\t???+ note \"{name}\"\n\t\t{trainer_entry}",
         ));
     }
-    return format!("{}", markdown_trainers);
+    return format!("{markdown_trainers}");
 }
 
 fn get_markdown_entry_for_pokemon(wiki_name: &str, pokemon: &WildEncounter) -> String {
@@ -461,23 +519,13 @@ fn get_markdown_entry_for_pokemon(wiki_name: &str, pokemon: &WildEncounter) -> S
         pokemon.name,
         capitalize(&pokemon.name),
         wiki_name,
-        format!("{}-{}", dex_number_file_name, pokemon.name),
+        format!("{dex_number_file_name}-{}", pokemon.name),
         encounter_rate
     );
 }
 
-fn get_trainer_sprite(name: &str, sprite: &str) -> String {
-    if sprite == "".to_string() {
-        return "".to_string();
-    }
-    return format!(
-        "![{}](https://play.pokemonshowdown.com/sprites/trainers/{}.png)",
-        name, sprite
-    );
-}
-
-fn extract_move(_move: Option<&String>) -> String {
-    match _move.clone() {
+fn extract_move(_move: &Option<&String>) -> String {
+    match _move {
         Some(_move) => format!(
             "<div class=\"trainer-pokemon-move\">{}</div>",
             capitalize_and_remove_hyphens(_move)
@@ -553,10 +601,10 @@ fn generate_trainer_entry(trainer_info: &TrainerInfo, version: &str) -> String {
                 .replace("{{type_one}}", &type_one)
                 .replace("{{type_two}}", &type_two)
                 .replace("{{item_name}}", &evaluate_attribute(&pokemon.item))
-                .replace("{{move_1}}", &extract_move(pokemon.moves.get(0)))
-                .replace("{{move_2}}", &extract_move(pokemon.moves.get(1)))
-                .replace("{{move_3}}", &extract_move(pokemon.moves.get(2)))
-                .replace("{{move_4}}", &extract_move(pokemon.moves.get(3)));
+                .replace("{{move_1}}", &extract_move(&pokemon.moves.get(0)))
+                .replace("{{move_2}}", &extract_move(&pokemon.moves.get(1)))
+                .replace("{{move_3}}", &extract_move(&pokemon.moves.get(2)))
+                .replace("{{move_4}}", &extract_move(&pokemon.moves.get(3)));
         };
         let mut tabs = "\t\t";
         if !version.is_empty() {
@@ -564,11 +612,11 @@ fn generate_trainer_entry(trainer_info: &TrainerInfo, version: &str) -> String {
         }
         let indented_lines: Vec<String> = pokemon_entry
             .lines()
-            .map(|line| format!("{}{}", tabs, line))
+            .map(|line| format!("{tabs}{line}"))
             .collect();
         let indented_pokemon_entry = indented_lines.join("\n");
 
-        pokemon_team.push_str(&format!("{}", &indented_pokemon_entry))
+        pokemon_team.push_str(&format!("{indented_pokemon_entry}"))
     }
 
     return pokemon_team;

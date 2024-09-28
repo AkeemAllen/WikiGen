@@ -25,6 +25,7 @@
   import isEqual from "$lib/utils/isEqual";
   import objectIsEmpty from "$lib/utils/objectIsEmpty";
   import ItemLocationTable from "$lib/components/ItemLocationTable.svelte";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
 
@@ -48,23 +49,25 @@
   }));
 
   async function generateItemLocationPage() {
-    await invoke("generate_item_location_page", {
+    await invoke("generate_item_location_page_with_handle", {
       wikiName: $selectedWiki.name,
-    }).then(() => {
-      toastStore.trigger({
-        message: "Item location page regenerated!",
-        background: "variant-filled-success",
+    })
+      .then((res) => {
+        toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
+      })
+      .catch((err) => {
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err));
       });
-    });
   }
 
   async function generateItemPage() {
-    await invoke("generate_item_page", { wikiName: $selectedWiki.name })
+    await invoke("generate_item_changes_page_with_handle", {
+      wikiName: $selectedWiki.name,
+    })
       .then(() => {
-        toastStore.trigger({
-          message: "Item page regenerated!",
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.SUCCESS, "Item page regenerated!"),
+        );
       })
       .then(() => {
         generateItemLocationPage();
@@ -75,10 +78,7 @@
     let retrievedItem = $itemsList.find(([_, name]) => name === itemSearch[1]);
 
     if (!retrievedItem) {
-      toastStore.trigger({
-        message: "Item not found!",
-        background: "variant-filled-error",
-      });
+      toastStore.trigger(getToastSettings(ToastType.ERROR, "Item not found!"));
       return;
     }
 
@@ -97,10 +97,12 @@
             itemLocations = res;
           })
           .catch((err) => {
-            toastStore.trigger({
-              message: `Error fetching item locations!: \n ${err}`,
-              background: "variant-filled-error",
-            });
+            toastStore.trigger(
+              getToastSettings(
+                ToastType.ERROR,
+                `Error fetching item locations!: \n ${err}`,
+              ),
+            );
           });
 
         // Reading in image separately
@@ -130,17 +132,12 @@
       )
       .then(() => {
         originalItemDetails = cloneDeep(item);
-        toastStore.trigger({
-          message: "Item changes saved!",
-          background: "variant-filled-success",
-        });
         generateItemPage();
       })
       .catch(() => {
-        toastStore.trigger({
-          message: "Error saving item changes!",
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, "Error saving item changes!"),
+        );
       });
   }
 
@@ -165,10 +162,9 @@
           newSpriteImage = "";
         });
 
-        toastStore.trigger({
-          message: "New Item Created!",
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.SUCCESS, "New Item Created!"),
+        );
         newItemModalOpen = false;
         newItem = {} as Item;
 
@@ -180,10 +176,9 @@
         generateItemPage();
       })
       .catch((err) => {
-        toastStore.trigger({
-          message: "Error creating new item!",
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, "Error creating new item!"),
+        );
       });
   }
 
@@ -191,10 +186,9 @@
     await $db
       .execute("DELETE FROM items WHERE id = $1;", [item.id])
       .then(() => {
-        toastStore.trigger({
-          message: "Item deleted!",
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.SUCCESS, "Item deleted!"),
+        );
         // Update the items list
         $db.select("SELECT id, name FROM items").then((items: any) => {
           let itemNames = items.map((item: SearchItem) => [item.id, item.name]);
@@ -205,10 +199,9 @@
         generateItemPage();
       })
       .catch((err) => {
-        toastStore.trigger({
-          message: "Error deleting item!",
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, `Error deleting item: ${err}`),
+        );
       });
   }
 

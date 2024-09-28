@@ -20,6 +20,7 @@
   import { shortcut } from "@svelte-put/shortcut";
   import MultiSelect from "svelte-multiselect";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
 
@@ -84,10 +85,9 @@
       })
       .then(() => generatePokemonPage())
       .finally(() => {
-        toastStore.trigger({
-          message: "Moveset changes applied!",
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.SUCCESS, "Moveset changes applied!"),
+        );
         onClose();
       });
   }

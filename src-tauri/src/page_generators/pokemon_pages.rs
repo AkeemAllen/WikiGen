@@ -5,24 +5,20 @@ use std::{
 };
 
 use serde_yaml::{Mapping, Value};
-use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
+use sqlx::Sqlite;
 use tauri::AppHandle;
 
 use crate::{
-    helpers::capitalize,
+    database::{get_mkdocs_config, get_routes, get_sqlite_connection},
+    helpers::{capitalize, get_pokemon_dex_formatted_name},
+    logger,
     page_generators::pokemon_page_generator_functions::{
         create_evolution_table, create_learnable_moves_table, create_level_up_moves_table,
     },
-    structs::{
-        mkdocs_structs::MKDocsConfig,
-        pokemon_structs::{DBPokemon, PokemonMove},
-    },
+    structs::pokemon_structs::{DBPokemon, PokemonMove},
 };
 
-use super::{
-    game_routes::{Routes, WildEncounter},
-    pokemon_page_generator_functions::create_locations_table,
-};
+use super::{game_routes::WildEncounter, pokemon_page_generator_functions::create_locations_table};
 
 #[tauri::command]
 pub async fn remove_pokemon_page_with_old_dex_number(
@@ -34,16 +30,11 @@ pub async fn remove_pokemon_page_with_old_dex_number(
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mkdocs_yaml_file = match File::open(&mkdocs_yaml_file_path) {
-        Ok(file) => file,
+    let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
+        Ok(config) => config,
         Err(err) => {
-            return Err(format!("Failed to open mkdocs yaml file: {}", err));
-        }
-    };
-    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
-        Ok(mkdocs) => mkdocs,
-        Err(err) => {
-            return Err(format!("Failed to parse mkdocs yaml file: {}", err));
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
         }
     };
 
@@ -60,13 +51,7 @@ pub async fn remove_pokemon_page_with_old_dex_number(
         }
     }
 
-    let mut pokedex_markdown_file_name = format!("00{}", old_dex_number);
-    if old_dex_number >= 10 {
-        pokedex_markdown_file_name = format!("0{}", old_dex_number);
-    }
-    if old_dex_number >= 100 {
-        pokedex_markdown_file_name = format!("{}", old_dex_number);
-    }
+    let pokedex_markdown_file_name = get_pokemon_dex_formatted_name(old_dex_number);
     let entry_key = format!(
         "{} - {}",
         &pokedex_markdown_file_name,
@@ -99,7 +84,15 @@ pub async fn remove_pokemon_page_with_old_dex_number(
     if pokemon_page_path.try_exists().unwrap_or(false) {
         match fs::remove_file(pokemon_page_path) {
             Ok(_) => {}
-            Err(err) => return Err(format!("Failed to remove pokemon page: {}", err)),
+            Err(err) => {
+                let message = format!("Failed to remove pokemon page: {err}");
+                logger::write_log(
+                    &base_path.join(wiki_name),
+                    logger::LogLevel::Error,
+                    &message,
+                );
+                return Err(message);
+            }
         }
     }
     match fs::write(
@@ -107,11 +100,20 @@ pub async fn remove_pokemon_page_with_old_dex_number(
         serde_yaml::to_string(&mut mkdocs_config).unwrap(),
     ) {
         Ok(_) => {}
-        Err(err) => return Err(format!("Failed to update mkdocs yaml: {}", err)),
+        Err(err) => {
+            let message = format!("Failed to update mkdocs yaml: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     };
     Ok("".to_string())
 }
 
+// TODO: Remove this function
 #[tauri::command]
 pub async fn generate_pokemon_pages_from_list(
     wiki_name: &str,
@@ -121,41 +123,35 @@ pub async fn generate_pokemon_pages_from_list(
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
     let resources_path = app_handle.path_resolver().resource_dir().unwrap();
 
-    let result = generate_pokemon_pages(
-        pokemon_ids,
-        wiki_name,
-        base_path.clone(),
-        resources_path.clone(),
-    )
-    .await;
-    // generate_type_page(wiki_name, base_path.clone())?;
-    // generate_evolution_page(wiki_name, base_path)?;
-    return result;
-}
-
-pub async fn generate_pokemon_pages(
-    pokemon_ids: Vec<usize>,
-    wiki_name: &str,
-    base_path: PathBuf,
-    resources_path: PathBuf,
-) -> Result<String, String> {
-    let docs_path = base_path.join(wiki_name).join("dist").join("docs");
-
-    let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
-    let sqlite_connection_string = format!("sqlite:{}", sqlite_path.to_str().unwrap());
-    if !Sqlite::database_exists(&sqlite_connection_string)
-        .await
-        .unwrap_or(false)
-    {
-        return Err("Database does not exist".to_string());
-    }
-    let conn = match SqlitePool::connect(&sqlite_connection_string).await {
+    let sqlite_file_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
+    let conn = match get_sqlite_connection(sqlite_file_path).await {
         Ok(conn) => conn,
         Err(err) => {
-            return Err(format!("Failed to connect to database: {}", err));
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
+    let (pokemon_list, movesets) = match get_pokemon_list_and_movesets(&conn, &pokemon_ids).await {
+        Ok((pokemon_list, movesets)) => (pokemon_list, movesets),
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
         }
     };
 
+    return generate_pokemon_pages(
+        wiki_name,
+        &pokemon_list,
+        &movesets,
+        &base_path,
+        &resources_path,
+    );
+}
+
+async fn get_pokemon_list_and_movesets(
+    conn: &sqlx::Pool<Sqlite>,
+    pokemon_ids: &[usize],
+) -> Result<(Vec<DBPokemon>, Vec<PokemonMove>), String> {
     let id_list = &pokemon_ids
         .iter()
         .map(|n| n.to_string())
@@ -176,7 +172,7 @@ pub async fn generate_pokemon_pages(
         id_list
     );
     let pokemon_list = match sqlx::query_as::<_, DBPokemon>(&pokemon_query)
-        .fetch_all(&conn)
+        .fetch_all(conn)
         .await
     {
         Ok(pokemon_list) => pokemon_list,
@@ -199,7 +195,7 @@ pub async fn generate_pokemon_pages(
     );
 
     let movesets = match sqlx::query_as::<_, PokemonMove>(&moveset_query)
-        .fetch_all(&conn)
+        .fetch_all(conn)
         .await
     {
         Ok(pokemon_movesets) => pokemon_movesets,
@@ -210,15 +206,25 @@ pub async fn generate_pokemon_pages(
             ));
         }
     };
+    return Ok((pokemon_list, movesets));
+}
+
+pub fn generate_pokemon_pages(
+    wiki_name: &str,
+    pokemon_list: &[DBPokemon],
+    movesets: &[PokemonMove],
+    base_path: &PathBuf,
+    resources_path: &PathBuf,
+) -> Result<String, String> {
+    let docs_path = base_path.join(wiki_name).join("dist").join("docs");
 
     let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
-    let routes_file = match File::open(&routes_json_file_path) {
-        Ok(file) => file,
-        Err(err) => return Err(format!("Failed to read routes file: {}", err)),
-    };
-    let routes: Routes = match serde_json::from_reader(routes_file) {
+    let routes = match get_routes(&routes_json_file_path) {
         Ok(routes) => routes,
-        Err(err) => return Err(format!("Failed to parse routes file: {}", err)),
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
     };
 
     let dex_numbers = pokemon_list
@@ -239,16 +245,11 @@ pub async fn generate_pokemon_pages(
     }
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mkdocs_yaml_file = match File::open(&mkdocs_yaml_file_path) {
-        Ok(file) => file,
+    let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
+        Ok(config) => config,
         Err(err) => {
-            return Err(format!("Failed to open mkdocs yaml file: {}", err));
-        }
-    };
-    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
-        Ok(mkdocs) => mkdocs,
-        Err(err) => {
-            return Err(format!("Failed to parse mkdocs yaml file: {}", err));
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
         }
     };
 
@@ -261,7 +262,13 @@ pub async fn generate_pokemon_pages(
     ) {
         Ok(template) => template,
         Err(err) => {
-            return Err(format!("Failed to read template file: {}", err));
+            let message = format!("Failed to read template file: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
         }
     };
 
@@ -279,13 +286,7 @@ pub async fn generate_pokemon_pages(
     }
 
     for pokemon in pokemon_list {
-        let mut pokedex_markdown_file_name = format!("00{}", pokemon.dex_number);
-        if pokemon.dex_number >= 10 {
-            pokedex_markdown_file_name = format!("0{}", pokemon.dex_number);
-        }
-        if pokemon.dex_number >= 100 {
-            pokedex_markdown_file_name = format!("{}", pokemon.dex_number);
-        }
+        let pokedex_markdown_file_name = get_pokemon_dex_formatted_name(pokemon.dex_number);
         let entry_key = format!(
             "{} - {}",
             pokedex_markdown_file_name,
@@ -306,11 +307,8 @@ pub async fn generate_pokemon_pages(
         }
 
         if pokemon.render == "false" {
-            println!("Skipping rendering page for {}", &pokemon.name);
             continue;
         }
-
-        println!("Rendering page for {}", &pokemon.name);
 
         let mut markdown_file = match File::create(docs_path.join("pokemon").join(format!(
             "{}-{}.md",
@@ -318,7 +316,11 @@ pub async fn generate_pokemon_pages(
         ))) {
             Ok(file) => file,
             Err(e) => {
-                println!("Error creating file: {:?}", e);
+                logger::write_log(
+                    &base_path.join(wiki_name),
+                    logger::LogLevel::Error,
+                    &format!("Error creating markdown file for {}: {:?}", pokemon.name, e),
+                );
                 continue;
             }
         };
@@ -338,20 +340,26 @@ pub async fn generate_pokemon_pages(
             .collect::<Vec<_>>();
 
         let pokemon_markdown_string = generate_page_from_template(
-            template.clone(),
+            &template,
             &pokemon,
-            current_pokemon_movset,
-            current_pokemon_locations,
+            &current_pokemon_movset,
+            &current_pokemon_locations,
         );
 
-        match markdown_file.write_all(format!("{}", pokemon_markdown_string).as_bytes()) {
-            Ok(_) => {}
+        match markdown_file.write_all(format!("{pokemon_markdown_string}").as_bytes()) {
             Err(err) => {
-                return Err(format!(
-                    "Failed to write to pokemon markdown file for {}: {}",
-                    pokemon.dex_number, err
-                ))
+                let message = format!(
+                    "Error writing to markdown file for {}: {}",
+                    pokemon.name, err
+                );
+                logger::write_log(
+                    &base_path.join(wiki_name),
+                    logger::LogLevel::Error,
+                    &message,
+                );
+                return Err(message);
             }
+            _ => {}
         };
 
         let mut pokemon_page_entry = Mapping::new();
@@ -382,7 +390,15 @@ pub async fn generate_pokemon_pages(
         serde_yaml::to_string(&mut mkdocs_config).unwrap(),
     ) {
         Ok(_) => {}
-        Err(err) => return Err(format!("Failed to update mkdocs yaml: {}", err)),
+        Err(err) => {
+            let message = format!("Failed to update mkdocs yaml: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
     };
 
     return Ok("Pokemon Pages Generated".to_string());
@@ -401,10 +417,10 @@ fn extract_pokemon_id(key: Option<&str>) -> i32 {
 }
 
 pub fn generate_page_from_template(
-    template: String,
+    template: &str,
     pokemon: &DBPokemon,
-    movesets: Vec<PokemonMove>,
-    locations: Vec<WildEncounter>,
+    movesets: &[PokemonMove],
+    locations: &[WildEncounter],
 ) -> String {
     let type_images: Vec<String> = pokemon
         .types
@@ -419,49 +435,51 @@ pub fn generate_page_from_template(
         .filter(|_type| !_type.contains("none"))
         .collect();
 
-    let type_1_image = type_images.get(0).unwrap();
-    let mut type_2_image = String::new();
-    if type_images.len() > 1 {
-        type_2_image.push_str(type_images.get(1).unwrap());
-    }
-
     let mut ability_1 = String::new();
     let mut ability_2 = String::new();
     let mut hidden_ability = String::new();
 
     if pokemon.ability_1.is_some() {
-        ability_1.push_str(
-            format!(
-                "<a href='' title=\"{}\">{}</a>",
-                &pokemon.a1_effect.as_ref().unwrap(),
-                capitalize(&pokemon.ability_1.as_ref().unwrap())
-            )
-            .as_str(),
+        let effect = pokemon
+            .a1_effect
+            .as_ref()
+            .expect("Ability 1 effect missing");
+        ability_1 = format!(
+            "<a href='' title=\"{}\">{}</a>",
+            effect,
+            capitalize(&pokemon.ability_1.as_ref().expect("Ability 1 missing"))
         );
     }
 
     if pokemon.ability_2.is_some() {
-        ability_2.push_str(
-            format!(
-                "/<a href='' title=\"{}\">{}</a>",
-                &pokemon.a2_effect.as_ref().unwrap(),
-                capitalize(&pokemon.ability_2.as_ref().unwrap())
-            )
-            .as_str(),
-        );
+        let effect = pokemon
+            .a2_effect
+            .as_ref()
+            .expect("Ability 2 effect missing");
+        ability_2 = format!(
+            "/<a href='' title=\"{}\">{}</a>",
+            effect,
+            capitalize(&pokemon.ability_2.as_ref().expect("Ability 2 missing"))
+        )
     }
 
     let mut display_hidden_ability_section = "none";
     if pokemon.hidden_ability.is_some() {
         display_hidden_ability_section = "grid";
-        hidden_ability.push_str(
-            format!(
-                "<a href='' title=\"{}\">{}</a>",
-                &pokemon.h3_effect.as_ref().unwrap(),
-                capitalize(&pokemon.hidden_ability.as_ref().unwrap())
+        let effect = pokemon
+            .h3_effect
+            .as_ref()
+            .expect("Hidden Ability effect missing");
+        hidden_ability = format!(
+            "<a href='' title=\"{}\">{}</a>",
+            effect,
+            capitalize(
+                &pokemon
+                    .hidden_ability
+                    .as_ref()
+                    .expect("Hidden Ability missing")
             )
-            .as_str(),
-        );
+        )
     }
 
     let level_up_moveset = movesets
@@ -470,14 +488,13 @@ pub fn generate_page_from_template(
         .filter(|m| m.learn_method.contains("level-up"))
         .collect::<Vec<_>>();
 
-    let level_up_moves = create_level_up_moves_table(level_up_moveset);
-
     let learnable_moveset = movesets
         .iter()
         .cloned()
         .filter(|m| m.learn_method.contains("machine"))
         .collect::<Vec<_>>();
 
+    let level_up_moves = create_level_up_moves_table(level_up_moveset);
     let learnable_moves = create_learnable_moves_table(learnable_moveset);
 
     let location_table = create_locations_table(locations);
@@ -486,8 +503,14 @@ pub fn generate_page_from_template(
 
     let result = template
         .replace("{{pokemon_name}}", &pokemon.name)
-        .replace("{{type_1_image}}", &type_1_image)
-        .replace("{{type_2_image}}", &type_2_image)
+        .replace(
+            "{{type_1_image}}",
+            &type_images.get(0).unwrap_or(&"".to_string()),
+        )
+        .replace(
+            "{{type_2_image}}",
+            &type_images.get(1).unwrap_or(&"".to_string()),
+        )
         .replace("{{ability_1}}", &ability_1)
         .replace("{{ability_2}}", &ability_2)
         .replace(
@@ -557,12 +580,6 @@ pub fn generate_page_from_template(
         .replace("{{level_up_moves}}", &level_up_moves)
         .replace("{{machine_moves}}", &learnable_moves);
 
-    let mut evolution_change_string = String::new();
-    if pokemon.evolution_method != "no_change" {
-        evolution_change_string.push_str(&format!("## Evolution\n\n"));
-        evolution_change_string.push_str(&format!("{}", create_evolution_table(pokemon)));
-    }
-    let result = result.replace("{{evolution_change}}", &evolution_change_string);
     return result;
 }
 

@@ -17,13 +17,11 @@
   import { db } from "../../store/db";
   import { getToastStore } from "@skeletonlabs/skeleton";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
-  const toastStore = getToastStore();
-
-  // export let pokemonDetails: PokemonDetails;
-  // export let savePokemonChanges: Function;
   export let pokemonId: number;
   export let generatePokemonPage: Function;
+  export let moveset: PokemonMove[] = [];
 
   let searchValue: string = "";
   let modifyMovesetModalOpen: boolean = false;
@@ -46,7 +44,7 @@
 
   let newLearnMethods: string[] = [];
 
-  export let moveset: PokemonMove[] = [];
+  const toastStore = getToastStore();
 
   $: moveListOptions = $moveList
     .map(([id, name]) => ({
@@ -80,12 +78,16 @@
           (move) => move.id !== moveId,
         );
         moveset = updatedMoves;
-        toastStore.trigger({
-          message: "Move deleted successfully",
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.SUCCESS, "Move deleted successfully"),
+        );
       })
-      .then(() => generatePokemonPage());
+      .then(() => generatePokemonPage())
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, `Error deleting move: ${err}`),
+        );
+      });
   }
 
   async function addMove() {
@@ -111,12 +113,16 @@
           },
         ];
         addMoveModalOpen = false;
-        toastStore.trigger({
-          message: "Move added successfully",
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.SUCCESS, "Move added successfully"),
+        );
       })
-      .then(() => generatePokemonPage());
+      .then(() => generatePokemonPage())
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, `Error adding move: ${err}`),
+        );
+      });
   }
 
   async function editMove() {
@@ -146,12 +152,16 @@
         moveToEdit = { id: 0, name: "", learn_method: "", level_learned: 0 };
         moveToEditLearnMethods = [];
         editMoveModalOpen = false;
-        toastStore.trigger({
-          message: "Move updated successfully",
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.SUCCESS, "Move updated successfully"),
+        );
       })
-      .then(() => generatePokemonPage());
+      .then(() => generatePokemonPage())
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, `Error updating move: ${err}`),
+        );
+      });
   }
 </script>
 

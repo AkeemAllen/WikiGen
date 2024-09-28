@@ -1,31 +1,31 @@
 <script lang="ts">
   import Button from "$lib/components/Button.svelte";
   import PokemonPanel from "$lib/components/PokemonPanel.svelte";
-  import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
-  import { invoke } from "@tauri-apps/api/tauri";
+  import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
   import { selectedWiki } from "../../store";
   import { pokemonList } from "../../store/pokemon";
   import NewPokemonPanel from "$lib/components/NewPokemonPanel.svelte";
   import BaseModal from "$lib/components/BaseModal.svelte";
   import AutoComplete from "$lib/components/AutoComplete.svelte";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import { ToastType, getToastSettings } from "$lib/utils/toasts";
+  import { generatePokemonPages } from "$lib/utils/generators";
 
-  const toastStore = getToastStore();
-
-  let tabSet: number = 0;
   let startingPokemon: [number, number, string] = [0, 0, ""];
   let endingPokemon: [number, number, string] = [0, 0, ""];
-  let loading: boolean = false;
-
-  let pageGenerationWarningModalOpen: boolean = false;
-
   $: rangeTotal = endingPokemon[1] - startingPokemon[1];
+
+  let tabSet: number = 0;
+  let loading: boolean = false;
+  let pageGenerationWarningModalOpen: boolean = false;
 
   let pokemonListOptions = $pokemonList.map(([id, dex_number, name]) => ({
     label: `${dex_number} - ${capitalizeWords(name)}`,
     dex_number: dex_number,
     value: id,
   }));
+
+  const toastStore = getToastStore();
 
   async function generatePokemonPagesInRange(
     startingDexNumber: number,
@@ -40,27 +40,14 @@
       )
       .map(([id, _, __]) => id);
 
-    await invoke("generate_pokemon_pages_from_list", {
-      pokemonIds: pokemonIds,
-      wikiName: $selectedWiki.name,
-    })
-      .then(() => {
+    generatePokemonPages(pokemonIds, $selectedWiki.name)
+      .then((res) => {
         loading = false;
-        toastStore.trigger({
-          message: "Pokemon Pages generated",
-          timeout: 5000,
-          hoverable: true,
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
       })
       .catch((err) => {
         loading = false;
-        toastStore.trigger({
-          message: "Failed to generate Pokemon Pages: " + err,
-          autohide: false,
-          hoverable: true,
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
       });
   }
 </script>

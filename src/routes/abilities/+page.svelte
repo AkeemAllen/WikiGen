@@ -18,6 +18,7 @@
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
   import objectIsEmpty from "$lib/utils/objectIsEmpty";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
 
@@ -35,14 +36,15 @@
   }));
 
   async function generateAbilityPage() {
-    await invoke("generate_ability_page", {
+    await invoke("generate_ability_page_with_handle", {
       wikiName: $selectedWiki.name,
-    }).then(() => {
-      toastStore.trigger({
-        message: "Ability page regenerated!",
-        background: "variant-filled-success",
+    })
+      .then((res) => {
+        toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
+      })
+      .catch((err) => {
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err));
       });
-    });
   }
 
   async function getAbility() {
@@ -51,20 +53,24 @@
     );
 
     if (!retrievedAbility) {
-      toastStore.trigger({
-        message: "Ability not found!",
-        background: "variant-filled-error",
-      });
+      toastStore.trigger(
+        getToastSettings(ToastType.ERROR, "Ability not found!"),
+      );
       return;
     }
 
     await $db
-      .select<
-        Ability[]
-      >("SELECT * FROM abilities WHERE id = $1;", [abilitySearch[0]])
+      .select<Ability[]>("SELECT * FROM abilities WHERE id = $1;", [
+        abilitySearch[0],
+      ])
       .then(async (res) => {
         ability = res[0];
         originalAbilityDetails = cloneDeep(ability);
+      })
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, `Error retrieving ability ${err}`),
+        );
       });
   }
 
@@ -76,17 +82,15 @@
       )
       .then(() => {
         originalAbilityDetails = cloneDeep(ability);
-        toastStore.trigger({
-          message: "Ability changes saved!",
-          background: "variant-filled-success",
-        });
         generateAbilityPage();
       })
-      .catch(() => {
-        toastStore.trigger({
-          message: "Error saving ability changes!",
-          background: "variant-filled-error",
-        });
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error saving ability changes: ${err}`,
+          ),
+        );
       });
   }
 
@@ -103,10 +107,6 @@
         ],
       )
       .then(() => {
-        toastStore.trigger({
-          message: "Ability created!",
-          background: "variant-filled-success",
-        });
         newAbilityModalOpen = false;
         newAbility = {} as Ability;
 
@@ -121,11 +121,13 @@
         });
         generateAbilityPage();
       })
-      .catch(() => {
-        toastStore.trigger({
-          message: "Error creating new ability!",
-          background: "variant-filled-error",
-        });
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error creating new ability: ${err}`,
+          ),
+        );
       });
   }
 
@@ -150,11 +152,10 @@
         originalAbilityDetails = {} as Ability;
         generateAbilityPage();
       })
-      .catch(() => {
-        toastStore.trigger({
-          message: "Error deleting ability!",
-          background: "variant-filled-error",
-        });
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, `Error deleting ability: ${err}`),
+        );
       });
   }
   function setModified(e: any) {

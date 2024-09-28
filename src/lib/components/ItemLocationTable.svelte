@@ -12,6 +12,7 @@
   import { db } from "../../store/db";
 
   import { getToastStore } from "@skeletonlabs/skeleton";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
 
@@ -72,10 +73,9 @@
         ],
       )
       .then((res) => {
-        toastStore.trigger({
-          message: "New Item Location Added!",
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.SUCCESS, "Item Location Added!"),
+        );
         addItemLocationModalOpen = false;
         newItemLocation.id = res.lastInsertId;
         newItemLocation.item_name = itemName;
@@ -84,10 +84,12 @@
         generatePage();
       })
       .catch((err) => {
-        toastStore.trigger({
-          message: `Error Adding Item Location: ${err}`,
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error Adding Item Location: ${err}`,
+          ),
+        );
       });
   }
 
@@ -104,10 +106,9 @@
         ],
       )
       .then(() => {
-        toastStore.trigger({
-          message: "Item Location Updated!",
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.SUCCESS, "Item Location Updated!"),
+        );
         editItemLocationModalOpen = false;
         itemLocations = itemLocations.map((itemLocation) => {
           if (itemLocation.id === itemLocationToEdit.id) {
@@ -119,10 +120,12 @@
         generatePage();
       })
       .catch((err) => {
-        toastStore.trigger({
-          message: `Error Editing Item Location: ${err}`,
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error Editing Item Location: ${err}`,
+          ),
+        );
       });
   }
 
@@ -130,10 +133,9 @@
     await $db
       .execute("DELETE FROM item_location WHERE id = $1;", [id])
       .then(() => {
-        toastStore.trigger({
-          message: "Item Location Deleted!",
-          background: "variant-filled-success",
-        });
+        toastStore.trigger(
+          getToastSettings(ToastType.SUCCESS, "Item Location Deleted!"),
+        );
         editItemLocationModalOpen = false;
         itemLocations = itemLocations.filter(
           (itemLocation) => itemLocation.id !== id,
@@ -142,10 +144,12 @@
         generatePage();
       })
       .catch((err) => {
-        toastStore.trigger({
-          message: `Error Deleting Item Location: ${err}`,
-          background: "variant-filled-error",
-        });
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error Deleting Item Location: ${err}`,
+          ),
+        );
       });
   }
 </script>

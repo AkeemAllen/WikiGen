@@ -1,20 +1,96 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, fs::File, path::PathBuf};
 
-pub mod db_migrations;
-pub mod file_migrations;
+use serde::{Deserialize, Serialize};
+use tauri::AppHandle;
 
-pub async fn run_migrations(base_path: &PathBuf, resources_path: &PathBuf) -> Result<(), String> {
-    match db_migrations::run_db_migrations(base_path, resources_path).await {
-        Ok(_) => {}
-        Err(err) => {
-            println!("Error running database migrations: {}", err);
+use crate::{database::get_sqlite_connection, logger};
+
+pub type Wikis = HashMap<String, Wiki>;
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Wiki {
+    name: String,
+    description: String,
+    author: String,
+    site_name: String,
+    site_url: String,
+    repo_url: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Settings {
+    deployment_url: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Manifest {
+    pub body: String,
+    pub data: String,
+    pub version: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Migration {
+    pub version: String,
+    pub description: String,
+    pub sql: String,
+    pub kind: MigrationKind,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum MigrationKind {
+    UP,
+    DOWN,
+}
+
+#[tauri::command]
+pub async fn run_migrations(manifest: Manifest, app_handle: AppHandle) -> Result<(), String> {
+    // check for migrations.
+    // If not present, return early.
+    let updateURL = format!("{}/update.json", manifest.body);
+    let response = match reqwest::get(&updateURL).await {
+        Ok(response) => response,
+        Err(err) => return Err(format!("Failed to fetch data: {}", err)),
+    };
+
+    let migrations = match response.json::<Vec<Migration>>().await {
+        Ok(migrations) => migrations,
+        Err(err) => return Err(format!("Failed to parse update: {}", err)),
+    };
+
+    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+
+    let wiki_json_file_path = base_path.join("wikis.json");
+    let wikis_file = match File::open(&wiki_json_file_path) {
+        Ok(file) => file,
+        Err(err) => return Err(format!("Failed to read wikis file: {}", err)),
+    };
+    let wikis: Wikis = match serde_json::from_reader(wikis_file) {
+        Ok(wikis) => wikis,
+        Err(err) => return Err(format!("Failed to parse wikis file: {}", err)),
+    };
+
+    for (wiki_name, _) in wikis.iter() {
+        let wiki_path = base_path.join(wiki_name);
+
+        if !wiki_path.exists() {
+            return Err(format!("Wiki path does not exist: {:?}", wiki_path));
         }
-    }
-    match file_migrations::run_file_migrations(base_path, resources_path) {
-        Ok(_) => {}
-        Err(err) => {
-            println!("Error running file migrations: {}", err);
-        }
+
+        // Create versioned backups
+
+        let sqlite_file_path = wiki_path.join(format!("{}.db", wiki_name));
+        let conn = match get_sqlite_connection(sqlite_file_path).await {
+            Ok(conn) => conn,
+            Err(err) => {
+                logger::write_log(
+                    &wiki_path,
+                    logger::LogLevel::MigrationError,
+                    &format!("Failed to connect to database: {}", err),
+                );
+                continue;
+            }
+        };
     }
     Ok(())
 }

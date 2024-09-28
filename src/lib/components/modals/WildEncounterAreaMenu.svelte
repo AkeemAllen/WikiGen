@@ -6,9 +6,9 @@
   import Button from "$lib/components/Button.svelte";
   import { routes, type Routes } from "../../../store/gameRoutes";
   import { selectedWiki } from "../../../store";
-  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
-  import { invoke } from "@tauri-apps/api";
   import { cloneDeep } from "$lib/utils/cloneDeep";
+  import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
 
@@ -49,26 +49,21 @@
 
     $routes = cloneDeep(updatedRoutes);
 
-    await writeTextFile(
-      `${$selectedWiki.name}/data/routes.json`,
-      JSON.stringify($routes),
-      { dir: BaseDirectory.AppData },
-    ).then(() => {
-      invoke("generate_route_pages_with_handle", {
-        wikiName: $selectedWiki.name,
-        routeNames: [routeToCopyTo],
-      })
-        .then(() => {
-          toastStore.trigger({
-            message: "Changes saved successfully",
-            timeout: 3000,
-            background: "variant-filled-success",
+    await updateRoutes($routes, $selectedWiki.name)
+      .then(() => {
+        generateRoutePages([routeToCopyTo], $selectedWiki.name)
+          .then((res) => {
+            toastStore.trigger(
+              getToastSettings(ToastType.SUCCESS, res as string),
+            );
+          })
+          .catch((e) => {
+            toastStore.trigger(getToastSettings(ToastType.ERROR, e as string));
           });
-        })
-        .catch((e) => {
-          console.error(e);
-        });
-    });
+      })
+      .catch((err) => {
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
+      });
     copyToRouteModalOpen = false;
     routeToCopyTo = "";
   }
