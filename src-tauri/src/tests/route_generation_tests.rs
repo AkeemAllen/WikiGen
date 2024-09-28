@@ -13,7 +13,7 @@ fn test_generate_route_page_created() {
 
     let result = generate_route_pages("testing", &base_path, &resource_path, &["Route 1"]);
 
-    assert!(result.unwrap() == "Generating Routes".to_string());
+    assert!(result.unwrap() == "Route Page Generated".to_string());
     let generated_path = base_path
         .join("testing")
         .join("dist")
