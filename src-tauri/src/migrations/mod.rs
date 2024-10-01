@@ -29,35 +29,9 @@ pub struct Manifest {
     pub version: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Migration {
-    pub version: String,
-    pub description: String,
-    pub sql: String,
-    pub kind: MigrationKind,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum MigrationKind {
-    UP,
-    DOWN,
-}
-
 #[tauri::command]
-pub async fn run_migrations(manifest: Manifest, app_handle: AppHandle) -> Result<(), String> {
-    // check for migrations.
-    // If not present, return early.
-    let updateURL = format!("{}/update.json", manifest.body);
-    let response = match reqwest::get(&updateURL).await {
-        Ok(response) => response,
-        Err(err) => return Err(format!("Failed to fetch data: {}", err)),
-    };
-
-    let migrations = match response.json::<Vec<Migration>>().await {
-        Ok(migrations) => migrations,
-        Err(err) => return Err(format!("Failed to parse update: {}", err)),
-    };
-
+pub async fn run_migrations(app_handle: AppHandle) -> Result<(), String> {
+    // check for migrations folder for current app version. If not present or folder empty, return early.
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
 
     let wiki_json_file_path = base_path.join("wikis.json");
@@ -71,6 +45,9 @@ pub async fn run_migrations(manifest: Manifest, app_handle: AppHandle) -> Result
     };
 
     for (wiki_name, _) in wikis.iter() {
+        if wiki_name != "migration-tests" {
+            continue;
+        }
         let wiki_path = base_path.join(wiki_name);
 
         if !wiki_path.exists() {
