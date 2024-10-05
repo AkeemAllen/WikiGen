@@ -73,39 +73,45 @@
         dir: BaseDirectory.Resource,
       })
         .then((res) => {
-          if (!JSON.parse(res)["ran"]) {
-            runningMigrations = true;
-            invoke("run_migrations")
-              .then(() => {
-                runningMigrations = false;
-                toastStore.trigger(
-                  getToastSettings(
-                    ToastType.SUCCESS,
-                    "Migrations ran successfully",
-                  ),
-                );
-                writeTextFile(
-                  "resources/migrations/migration.json",
-                  JSON.stringify({ ran: true }),
-                  { dir: BaseDirectory.Resource },
-                ).catch((err) => {
-                  toastStore.trigger(
-                    getToastSettings(
-                      ToastType.ERROR,
-                      `Error writing migration file: ${err}`,
-                    ),
-                  );
-                });
-              })
-              .catch((err) => {
+          let migration: { migration_present: boolean; ran: boolean } =
+            JSON.parse(res);
+          if (!migration.migration_present) {
+            return;
+          }
+          if (migration.ran) {
+            return;
+          }
+          runningMigrations = true;
+          invoke("run_migrations")
+            .then(() => {
+              runningMigrations = false;
+              toastStore.trigger(
+                getToastSettings(
+                  ToastType.SUCCESS,
+                  "Migrations ran successfully",
+                ),
+              );
+              writeTextFile(
+                "resources/migrations/migration.json",
+                JSON.stringify({ ran: true, migrations_present: false }),
+                { dir: BaseDirectory.Resource },
+              ).catch((err) => {
                 toastStore.trigger(
                   getToastSettings(
                     ToastType.ERROR,
-                    `Error running migrations: ${err}`,
+                    `Error writing migration file: ${err}`,
                   ),
                 );
               });
-          }
+            })
+            .catch((err) => {
+              toastStore.trigger(
+                getToastSettings(
+                  ToastType.ERROR,
+                  `Error running migrations: ${err}`,
+                ),
+              );
+            });
         })
         .catch((err) => {
           toastStore.trigger(
