@@ -1,6 +1,7 @@
 use std::{collections::HashMap, fs::File, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
+use sqlx::Executor;
 use tauri::AppHandle;
 
 use crate::{database::get_sqlite_connection, logger};
@@ -68,6 +69,24 @@ pub async fn run_migrations(app_handle: AppHandle) -> Result<(), String> {
                 continue;
             }
         };
+        let result = match sqlx::query(
+            "INSERT INTO abilities (name, effect) VALUES ('migration-test-1', 'migration-test-1')",
+        )
+        .execute(&conn)
+        .await
+        {
+            Ok(result) => result,
+            Err(err) => {
+                logger::write_log(
+                    &wiki_path,
+                    logger::LogLevel::MigrationError,
+                    &format!("Failed to execute migration: {}", err),
+                );
+                continue;
+            }
+        };
+
+        println!("Migration Result: {:?}", result);
     }
     Ok(())
 }
