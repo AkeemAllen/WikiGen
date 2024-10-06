@@ -70,7 +70,7 @@ pub async fn run_migrations(app_handle: AppHandle) -> Result<(), String> {
             }
         };
         let result = match sqlx::query(
-            "INSERT INTO abilities (name, effect) VALUES ('migration-test-2', 'migration-test-2')",
+            "INSERT INTO abilities (name, effect) VALUES ('migration-test-3', 'migration-test-3')",
         )
         .execute(&conn)
         .await
