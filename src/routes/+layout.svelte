@@ -73,9 +73,9 @@
         dir: BaseDirectory.Resource,
       })
         .then((res) => {
-          let migration: { migration_present: boolean; ran: boolean } =
+          let migration: { migrations_present: boolean; ran: boolean } =
             JSON.parse(res);
-          if (!migration.migration_present) {
+          if (!migration.migrations_present) {
             return;
           }
           if (migration.ran) {
