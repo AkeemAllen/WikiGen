@@ -5,6 +5,7 @@ pub enum LogLevel {
     Debug,
     Error,
     MigrationError,
+    MigrationSuccess,
 }
 
 pub fn write_log(wiki_path: &PathBuf, log_level: LogLevel, message: &str) {
@@ -17,6 +18,7 @@ pub fn write_log(wiki_path: &PathBuf, log_level: LogLevel, message: &str) {
         LogLevel::Debug => log_directory.join("debug.log"),
         LogLevel::Error => log_directory.join("error.log"),
         LogLevel::MigrationError => log_directory.join("migration_error.log"),
+        LogLevel::MigrationSuccess => log_directory.join("migration_success.log"),
     };
 
     if !log_file_path.try_exists().unwrap_or(false) {
