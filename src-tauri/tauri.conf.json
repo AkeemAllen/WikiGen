@@ -69,7 +69,6 @@
     "updater": {
       "active": true,
       "endpoints": [
-        "https://gist.github.com/AkeemAllen/38cc49c99d6e6c74680d05c053519ca9/raw",
         "https://gist.github.com/AkeemAllen/45b036d6d2330074b996823297c1d125/raw"
       ],
       "dialog": false,

@@ -69,28 +69,28 @@ pub async fn run_migrations(app_handle: AppHandle) -> Result<(), String> {
                 continue;
             }
         };
-        let result = match sqlx::query(
-            "INSERT INTO abilities (name, effect) VALUES ('migration-test-3', 'migration-test-3')",
-        )
-        .execute(&conn)
-        .await
-        {
-            Ok(result) => result,
-            Err(err) => {
-                logger::write_log(
-                    &wiki_path,
-                    logger::LogLevel::MigrationError,
-                    &format!("Failed to execute migration: {}", err),
-                );
-                continue;
-            }
-        };
+        // let result = match sqlx::query(
+        //     "INSERT INTO abilities (name, effect) VALUES ('migration-test-3', 'migration-test-3')",
+        // )
+        // .execute(&conn)
+        // .await
+        // {
+        //     Ok(result) => result,
+        //     Err(err) => {
+        //         logger::write_log(
+        //             &wiki_path,
+        //             logger::LogLevel::MigrationError,
+        //             &format!("Failed to execute migration: {}", err),
+        //         );
+        //         continue;
+        //     }
+        // };
 
-        logger::write_log(
-            &wiki_path,
-            logger::LogLevel::MigrationSuccess,
-            &format!("Migration successful: {:?}", result),
-        );
+        // logger::write_log(
+        //     &wiki_path,
+        //     logger::LogLevel::MigrationSuccess,
+        //     &format!("Migration successful: {:?}", result),
+        // );
     }
     Ok(())
 }
