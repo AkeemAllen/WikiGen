@@ -86,7 +86,11 @@ pub async fn run_migrations(app_handle: AppHandle) -> Result<(), String> {
             }
         };
 
-        println!("Migration Result: {:?}", result);
+        logger::write_log(
+            &wiki_path,
+            logger::LogLevel::MigrationSuccess,
+            &format!("Migration successful: {:?}", result),
+        );
     }
     Ok(())
 }
