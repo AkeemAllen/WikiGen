@@ -1,6 +1,6 @@
 {
   "name": "wikigen",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "private": true,
   "scripts": {
     "dev": "vite dev",
