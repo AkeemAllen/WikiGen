@@ -1,4 +1,5 @@
 use std::{
+    fmt::format,
     fs::{self, read_to_string, File},
     io::Write,
     path::PathBuf,
@@ -10,7 +11,7 @@ use tauri::AppHandle;
 
 use crate::{
     database::{get_mkdocs_config, get_routes, get_sqlite_connection},
-    helpers::{capitalize, get_pokemon_dex_formatted_name},
+    helpers::{capitalize, capitalize_and_remove_hyphens, get_pokemon_dex_formatted_name},
     logger,
     page_generators::pokemon_page_generator_functions::{
         create_evolution_table, create_learnable_moves_table, create_level_up_moves_table,
@@ -19,6 +20,100 @@ use crate::{
 };
 
 use super::{game_routes::WildEncounter, pokemon_page_generator_functions::create_locations_table};
+
+#[tauri::command]
+pub async fn update_pokemon_pages_with_stripped_name_with_handle(
+    wiki_name: &str,
+    app_handle: AppHandle,
+) -> Result<(), String> {
+    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    let result = match update_pokemon_pages_with_stripped_name(wiki_name, &base_path) {
+        Ok(_) => (),
+        Err(err) => return Err(err),
+    };
+
+    Ok(result)
+}
+
+pub fn update_pokemon_pages_with_stripped_name(
+    wiki_name: &str,
+    base_path: &PathBuf,
+) -> Result<(), String> {
+    let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
+    let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
+        Ok(config) => config,
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
+
+    let mut mkdocs_pokemon: &mut Vec<Value> = &mut Vec::new();
+
+    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
+    for entry in nav_entries {
+        let map_entries = entry.as_mapping_mut().unwrap();
+        match map_entries.get_mut(Value::String("Pokemon".to_string())) {
+            Some(map_entry) => {
+                mkdocs_pokemon = map_entry.as_sequence_mut().unwrap();
+            }
+            None => {}
+        }
+    }
+
+    let new_page_entries: &mut Vec<Value> = &mut Vec::new();
+    for page_entry in mkdocs_pokemon.iter_mut() {
+        let key = page_entry
+            .as_mapping()
+            .unwrap()
+            .keys()
+            .next()
+            .unwrap()
+            .as_str();
+
+        let value = page_entry
+            .as_mapping()
+            .unwrap()
+            .values()
+            .next()
+            .unwrap()
+            .as_str()
+            .unwrap();
+
+        let stripped_name = capitalize_and_remove_hyphens(&key.unwrap().to_string().split_off(6));
+        let new_key = format!(
+            "{} - {}",
+            get_pokemon_dex_formatted_name(u32::try_from(extract_pokemon_id(key.clone())).unwrap()),
+            stripped_name
+        );
+        let mut new_entry = Mapping::new();
+        new_entry.insert(Value::String(new_key), Value::String(value.to_string()));
+        new_page_entries.push(Value::Mapping(new_entry));
+    }
+    mkdocs_pokemon.clear();
+    for new_entry in new_page_entries {
+        mkdocs_pokemon.push(Value::Mapping(new_entry.as_mapping().unwrap().clone()));
+    }
+    for entry in mkdocs_pokemon {
+        println!("{:?}", entry);
+    }
+    match fs::write(
+        &mkdocs_yaml_file_path,
+        serde_yaml::to_string(&mut mkdocs_config).unwrap(),
+    ) {
+        Ok(_) => {}
+        Err(err) => {
+            let message = format!("Failed to update mkdocs yaml: {err}");
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
+        }
+    };
+    Ok(())
+}
 
 #[tauri::command]
 pub async fn remove_pokemon_page_with_old_dex_number(
@@ -290,7 +385,7 @@ pub fn generate_pokemon_pages(
         let entry_key = format!(
             "{} - {}",
             pokedex_markdown_file_name,
-            capitalize(&pokemon.name)
+            &capitalize_and_remove_hyphens(&pokemon.name)
         );
         let mut page_entry_exists = false;
         let mut page_position = 0;
@@ -502,7 +597,7 @@ pub fn generate_page_from_template(
     let evolution_change = create_evolution_table(&pokemon);
 
     let result = template
-        .replace("{{pokemon_name}}", &pokemon.name)
+        .replace("{{pokemon_img_name}}", &pokemon.name)
         .replace(
             "{{type_1_image}}",
             &type_images.get(0).unwrap_or(&"".to_string()),
