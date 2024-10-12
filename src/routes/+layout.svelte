@@ -50,6 +50,7 @@
   } from "@tauri-apps/api/fs";
   import { invoke } from "@tauri-apps/api";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
+  import type { MigrationJson } from "../store/db";
 
   initializeStores();
 
@@ -69,55 +70,23 @@
 
   onMount(() => {
     async function runMigrations() {
-      await readTextFile("resources/migrations/migration.json", {
-        dir: BaseDirectory.Resource,
-      })
+      invoke("run_migrations")
         .then((res) => {
-          let migration: { migrations_present: boolean; ran: boolean } =
-            JSON.parse(res);
-          if (!migration.migrations_present) {
-            return;
+          runningMigrations = false;
+          if (res !== "skipping") {
+            toastStore.trigger(
+              getToastSettings(
+                ToastType.SUCCESS,
+                "Migrations ran successfully",
+              ),
+            );
           }
-          if (migration.ran) {
-            return;
-          }
-          runningMigrations = true;
-          invoke("run_migrations")
-            .then(() => {
-              runningMigrations = false;
-              toastStore.trigger(
-                getToastSettings(
-                  ToastType.SUCCESS,
-                  "Migrations ran successfully",
-                ),
-              );
-              writeTextFile(
-                "resources/migrations/migration.json",
-                JSON.stringify({ ran: true, migrations_present: false }),
-                { dir: BaseDirectory.Resource },
-              ).catch((err) => {
-                toastStore.trigger(
-                  getToastSettings(
-                    ToastType.ERROR,
-                    `Error writing migration file: ${err}`,
-                  ),
-                );
-              });
-            })
-            .catch((err) => {
-              toastStore.trigger(
-                getToastSettings(
-                  ToastType.ERROR,
-                  `Error running migrations: ${err}`,
-                ),
-              );
-            });
         })
         .catch((err) => {
           toastStore.trigger(
             getToastSettings(
               ToastType.ERROR,
-              `Error reading migration file: ${err}`,
+              `Error running migrations: ${err}`,
             ),
           );
         });

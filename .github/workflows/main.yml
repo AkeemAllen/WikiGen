@@ -74,7 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Added migration to fix mega-sharpedo typo
+            \n- Formatting Pokemon Page names similar to how they appear in-app.
             "
           releaseDraft: false
           prerelease: false

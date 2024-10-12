@@ -24,6 +24,7 @@
   import { types } from "../../store/types";
   import HotKeysModal from "./modals/HotKeysModal.svelte";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
+  import { onMount } from "svelte";
 
   const toastStore = getToastStore();
 
@@ -37,6 +38,23 @@
   $: wikiListOptions = Object.keys($wikis).filter(
     (wiki) => wiki !== $selectedWiki.name,
   );
+
+  async function updatePageNames() {
+    await invoke("update_pokemon_pages_with_stripped_name_with_handle", {
+      wikiName: $selectedWiki.name,
+    })
+      .then((res) => {
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.SUCCESS,
+            "Pokemon Page Names Updated Successfully",
+          ),
+        );
+      })
+      .catch((err) => {
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
+      });
+  }
 
   async function loadRoutes() {
     const routesFromFile = await readTextFile(
@@ -222,6 +240,10 @@
     <button
       class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
       on:click={backupWiki}>Backup Wiki</button
+    >
+    <button
+      class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+      on:click={updatePageNames}>Reformat Pokemon Page Names</button
     >
   {/if}
   <button

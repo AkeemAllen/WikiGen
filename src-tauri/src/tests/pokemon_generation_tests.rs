@@ -4,9 +4,20 @@ use serde_yaml::Value;
 
 use crate::{
     database::get_mkdocs_config,
-    page_generators::pokemon_pages::generate_pokemon_pages,
+    page_generators::pokemon_pages::{
+        generate_pokemon_pages, update_pokemon_pages_with_stripped_name,
+    },
     structs::pokemon_structs::{DBPokemon, PokemonMove},
 };
+
+#[test]
+fn test_updating_pages_with_stripped_name() {
+    let base_path =
+        std::path::PathBuf::from("/Users/akeemallen/Library/Application Support/com.wikigen.dev");
+    let wiki_name = "home-page-editing";
+    let result = update_pokemon_pages_with_stripped_name(wiki_name, &base_path).unwrap();
+    assert_eq!(result, ());
+}
 
 #[test]
 // Pokemon Page is created and present in the mkdocs.yml file
