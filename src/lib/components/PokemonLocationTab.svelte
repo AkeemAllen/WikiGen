@@ -20,7 +20,7 @@
   let searchValue: string = "";
   let addLocationModalOpen: boolean = false;
   let editLocationModalOpen: boolean = false;
-  export let pokemonId: number;
+  export let pokemonDexNumber: number;
   export let pokemonName: string;
   export let pokemonLocations: WildEncounter[] = [];
 
@@ -84,7 +84,7 @@
   }
 
   async function addPokemonToLocation() {
-    newLocation.id = pokemonId;
+    newLocation.id = pokemonDexNumber;
     newLocation.name = pokemonName;
 
     let location = cloneDeep(newLocation);

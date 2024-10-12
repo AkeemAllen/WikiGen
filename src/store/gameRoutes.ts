@@ -50,4 +50,3 @@ export type WildEncounter = {
 
 export let routes = writable<Routes>();
 export let wildEncounters = writable<WildEncounter[]>();
-// export let routesList = writable<>()
