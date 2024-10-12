@@ -94,9 +94,6 @@ pub fn update_pokemon_pages_with_stripped_name(
     for new_entry in new_page_entries {
         mkdocs_pokemon.push(Value::Mapping(new_entry.as_mapping().unwrap().clone()));
     }
-    for entry in mkdocs_pokemon {
-        println!("{:?}", entry);
-    }
     match fs::write(
         &mkdocs_yaml_file_path,
         serde_yaml::to_string(&mut mkdocs_config).unwrap(),
