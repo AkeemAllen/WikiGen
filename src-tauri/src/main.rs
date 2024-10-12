@@ -9,8 +9,6 @@ mod structs;
 mod tests;
 mod wiki_preparation;
 
-use std::fs::{self};
-
 use helpers::mkdocs_process::{check_process_status, kill_mkdocs_process, spawn_mkdocs_process};
 use page_generators::ability_page::generate_ability_page_with_handle;
 use page_generators::game_routes::{
@@ -22,6 +20,7 @@ use page_generators::item_page::{
 use page_generators::nature_page::generate_nature_page_with_handle;
 use page_generators::pokemon_pages::{
     generate_pokemon_pages_from_list, remove_pokemon_page_with_old_dex_number,
+    update_pokemon_pages_with_stripped_name_with_handle,
 };
 use tauri_plugin_sql;
 use wiki_preparation::backup_wiki::backup_wiki;
@@ -48,31 +47,9 @@ fn main() {
             delete_route_page_from_mkdocs,
             generate_item_location_page_with_handle,
             remove_pokemon_page_with_old_dex_number,
+            update_pokemon_pages_with_stripped_name_with_handle,
             run_migrations
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-
-    // app.run(|_app_handle, event| match event {
-    //     tauri::RunEvent::Ready => {
-    //         let base_path = _app_handle.path_resolver().app_data_dir().unwrap();
-    //         let resource_path = _app_handle.path_resolver().resource_dir().unwrap();
-    //         match tauri::async_runtime::block_on(run_migrations(&base_path, &resource_path)) {
-    //             Ok(_) => {}
-    //             Err(err) => {
-    //                 let migration_error_file = _app_handle
-    //                     .path_resolver()
-    //                     .app_data_dir()
-    //                     .unwrap()
-    //                     .join("migration_error.txt");
-    //                 fs::write(
-    //                     migration_error_file,
-    //                     format!("Error running database migrations: {}", err),
-    //                 )
-    //                 .expect("Unable to write file");
-    //             }
-    //         }
-    //     }
-    //     _ => {}
-    // });
 }

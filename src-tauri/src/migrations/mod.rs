@@ -80,9 +80,6 @@ pub async fn run_migrations(app_handle: AppHandle) -> Result<String, String> {
     };
 
     for (wiki_name, _) in wikis.iter() {
-        if wiki_name != "migration-tests" {
-            continue;
-        }
         let wiki_path = base_path.join(wiki_name);
 
         if !wiki_path.exists() {
