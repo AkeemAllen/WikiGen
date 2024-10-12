@@ -343,6 +343,7 @@
         <PokemonLocationTab
           {pokemonLocations}
           pokemonId={pokemon.id}
+          pokemonDexNumber={pokemon.dex_number}
           pokemonName={pokemon.name}
         />
       {/if}

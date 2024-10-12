@@ -14,6 +14,8 @@
   import { invoke } from "@tauri-apps/api";
   import { selectedWiki } from "../../store";
   import { cloneDeep } from "$lib/utils/cloneDeep";
+  import { generatePokemonPages } from "$lib/utils/generators";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
 
@@ -21,6 +23,7 @@
   let addLocationModalOpen: boolean = false;
   let editLocationModalOpen: boolean = false;
   export let pokemonId: number;
+  export let pokemonDexNumber: number;
   export let pokemonName: string;
   export let pokemonLocations: WildEncounter[] = [];
 
@@ -70,30 +73,21 @@
     invoke("generate_route_pages_with_handle", {
       wikiName: $selectedWiki.name,
       routeNames: [routeName],
-    })
-      .then(() => {
-        toastStore.trigger({
-          message: "Changes saved successfully",
-          timeout: 3000,
-          background: "variant-filled-success",
-        });
-      })
-      .catch((e) => {
-        console.error(e);
-      });
+    }).catch((e) => {
+      getToastSettings(ToastType.ERROR, e);
+    });
   }
 
   async function addPokemonToLocation() {
-    newLocation.id = pokemonId;
+    newLocation.id = pokemonDexNumber;
     newLocation.name = pokemonName;
 
     let location = cloneDeep(newLocation);
 
     if (!Object.keys($routes.routes).includes(location.route)) {
-      getToastStore().trigger({
-        message: "Route is required",
-        background: "variant-filled-error",
-      });
+      toastStore.trigger(
+        getToastSettings(ToastType.ERROR, "Route is required"),
+      );
       return;
     }
 
@@ -102,10 +96,12 @@
         location.encounter_area
       ]?.find((encounter) => encounter.name === location.name)
     ) {
-      toastStore.trigger({
-        message: "This Pokemon is already in this location",
-        background: "variant-filled-error",
-      });
+      toastStore.trigger(
+        getToastSettings(
+          ToastType.ERROR,
+          "This Pokemon is already in this location",
+        ),
+      );
       return;
     }
 
@@ -127,19 +123,31 @@
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
-    ).then(() => {
-      generateRoutePage(location.route);
-      pokemonLocations = [...pokemonLocations, { ...location }];
-      addLocationModalOpen = false;
-      newLocation = {
-        id: 0,
-        name: "",
-        encounter_area: "",
-        encounter_rate: 0,
-        route: "",
-        special_note: "",
-      };
-    });
+    )
+      .then(() => {
+        generateRoutePage(location.route);
+        pokemonLocations = [...pokemonLocations, { ...location }];
+        addLocationModalOpen = false;
+        newLocation = {
+          id: 0,
+          name: "",
+          encounter_area: "",
+          encounter_rate: 0,
+          route: "",
+          special_note: "",
+        };
+      })
+      .then(() => {
+        generatePokemonPages([pokemonId], $selectedWiki.name)
+          .then(() => {
+            toastStore.trigger(
+              getToastSettings(ToastType.SUCCESS, "Pokemon page regenerated"),
+            );
+          })
+          .catch((e) => {
+            toastStore.trigger(getToastSettings(ToastType.ERROR, e));
+          });
+      });
   }
 
   async function editPokemonLocation() {
@@ -160,28 +168,40 @@
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify($routes),
       { dir: BaseDirectory.AppData },
-    ).then(() => {
-      generateRoutePage(location.route);
-      let updatedLocations = [...pokemonLocations];
-      let locationIndex = updatedLocations.findIndex(
-        (loc) =>
-          loc.route === location.route &&
-          loc.encounter_area === location.encounter_area,
-      );
-      console.log(locationIndex);
-      updatedLocations[locationIndex] = cloneDeep(location);
+    )
+      .then(() => {
+        generateRoutePage(location.route);
+        let updatedLocations = [...pokemonLocations];
+        let locationIndex = updatedLocations.findIndex(
+          (loc) =>
+            loc.route === location.route &&
+            loc.encounter_area === location.encounter_area,
+        );
+        console.log(locationIndex);
+        updatedLocations[locationIndex] = cloneDeep(location);
 
-      pokemonLocations = [...updatedLocations];
-      editLocationModalOpen = false;
-      locationToEdit = {
-        id: 0,
-        name: "",
-        encounter_area: "",
-        encounter_rate: 0,
-        route: "",
-        special_note: "",
-      };
-    });
+        pokemonLocations = [...updatedLocations];
+        editLocationModalOpen = false;
+        locationToEdit = {
+          id: 0,
+          name: "",
+          encounter_area: "",
+          encounter_rate: 0,
+          route: "",
+          special_note: "",
+        };
+      })
+      .then(() => {
+        generatePokemonPages([pokemonId], $selectedWiki.name)
+          .then(() => {
+            toastStore.trigger(
+              getToastSettings(ToastType.SUCCESS, "Pokemon page regenerated"),
+            );
+          })
+          .catch((e) => {
+            toastStore.trigger(getToastSettings(ToastType.ERROR, e));
+          });
+      });
   }
 
   async function deletePokemonFromLocation(
