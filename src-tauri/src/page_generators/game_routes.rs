@@ -517,7 +517,7 @@ fn get_markdown_entry_for_pokemon(wiki_name: &str, pokemon: &WildEncounter) -> S
         "![{}](../../img/pokemon/{}.png) [{}](/{}/pokemon/{}) {}",
         pokemon.name,
         pokemon.name,
-        capitalize(&pokemon.name),
+        capitalize_and_remove_hyphens(&pokemon.name),
         wiki_name,
         format!("{dex_number_file_name}-{}", pokemon.name),
         encounter_rate
@@ -585,7 +585,10 @@ fn generate_trainer_entry(trainer_info: &TrainerInfo, version: &str) -> String {
             pokemon_entry = TRAINER_POKEMON_TEMPLATE
                 .clone()
                 .replace("{{pokemon_name}}", &pokemon.name)
-                .replace("{{cap_pokemon_name}}", &capitalize(&pokemon.name))
+                .replace(
+                    "{{cap_pokemon_name}}",
+                    &capitalize_and_remove_hyphens(&pokemon.name),
+                )
                 .replace(
                     "{{page_title}}",
                     &format!(
