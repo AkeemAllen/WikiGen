@@ -57,7 +57,10 @@
   }));
 
   let pokemonListOptions: AutocompleteOption<string | number>[] =
-    $pokemonList.map(([id, _, name]) => ({ label: name, value: id }));
+    $pokemonList.map(([id, _, name]) => ({
+      label: capitalizeWords(name),
+      value: id,
+    }));
 
   function onPokemonNameSelected(
     event: CustomEvent<AutocompleteOption<string | number>>,
@@ -67,7 +70,8 @@
 
   function addPokemonToTrainer() {
     let searchedPokemon = $pokemonList.find(
-      ([_, __, name, ___]) => name === pokemonSearchName.toLowerCase(),
+      ([_, __, name, ___]) =>
+        name === pokemonSearchName.toLowerCase().replaceAll(" ", "-"),
     );
 
     if (searchedPokemon === undefined) {
@@ -94,7 +98,7 @@
         [key: string]: TrainerInfo;
       },
       trainerName,
-      pokemonSearchName.toLowerCase(),
+      pokemonSearchName.toLowerCase().replaceAll(" ", "-"),
       $pokemonList,
     );
 
@@ -103,7 +107,7 @@
       {
         id: id,
         unique_id: uniqueId,
-        name: pokemonSearchName.toLowerCase(),
+        name: pokemonSearchName.toLowerCase().replaceAll(" ", "-"),
         types: searchedPokemon[3].split(","),
         level,
         item: "",

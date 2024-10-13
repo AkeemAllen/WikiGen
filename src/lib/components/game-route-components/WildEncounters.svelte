@@ -38,7 +38,10 @@
   );
   let originalRouteWildEncounters = cloneDeep(routeWildEncounters);
   let pokemonListOptions: AutocompleteOption<string | number>[] =
-    $pokemonList.map(([id, _, name]) => ({ label: name, value: id }));
+    $pokemonList.map(([id, _, name]) => ({
+      label: capitalizeWords(name),
+      value: id,
+    }));
 
   const encounterAreas = $routes.encounter_areas.map((type) => ({
     label: type,
@@ -54,15 +57,14 @@
 
   async function addEncounter() {
     let searchedPokemon = $pokemonList.find(
-      ([_, __, name]) => name === pokemonName.toLowerCase(),
+      ([_, __, name]) =>
+        name === pokemonName.toLowerCase().replaceAll(" ", "-"),
     );
 
     if (searchedPokemon === undefined) {
-      toastStore.trigger({
-        message: "Pokemon not found",
-        timeout: 3000,
-        background: "variant-filled-error",
-      });
+      toastStore.trigger(
+        getToastSettings(ToastType.ERROR, "Pokemon not found"),
+      );
       return;
     }
 
@@ -72,7 +74,7 @@
         ...(routeWildEncounters[encounterArea] ?? []),
         {
           id: searchedPokemon[1],
-          name: pokemonName.toLowerCase(),
+          name: pokemonName.toLowerCase().replaceAll(" ", "-"),
           encounter_rate: encounterRate,
           encounter_area: encounterArea,
           special_note: "",
@@ -143,8 +145,9 @@
 
   async function getSpriteImage(pokemonName: string): Promise<string> {
     let sprite = "";
+    let spriteName = pokemonName.toLowerCase().replaceAll(" ", "-");
     await readBinaryFile(
-      `${$selectedWiki.name}/dist/docs/img/pokemon/${pokemonName}.png`,
+      `${$selectedWiki.name}/dist/docs/img/pokemon/${spriteName}.png`,
       { dir: BaseDirectory.AppData },
     )
       .then((res) => {
