@@ -116,7 +116,30 @@ pub async fn run_migrations(app_handle: AppHandle) -> Result<String, String> {
         };
 
         match update_mega_sharpedo_typo(&conn).await {
-            Ok(_) => {}
+            Ok(_) => {
+                let current_name_path = wiki_path
+                    .join("dist")
+                    .join("docs")
+                    .join("img")
+                    .join("pokemon")
+                    .join("meag-sharpedo.png");
+                let corrected_name_path = wiki_path
+                    .join("dist")
+                    .join("docs")
+                    .join("img")
+                    .join("pokemon")
+                    .join("mega-sharpedo.png");
+                match fs::rename(current_name_path, corrected_name_path) {
+                    Ok(_) => {}
+                    Err(err) => {
+                        logger::write_log(
+                            &wiki_path,
+                            logger::LogLevel::MigrationError,
+                            &format!("Failed to rename file: {}", err),
+                        );
+                    }
+                };
+            }
             Err(err) => {
                 logger::write_log(
                     &wiki_path,
