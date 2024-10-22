@@ -188,8 +188,8 @@
 <Modal components={modalRegistry} />
 <AppShell class="h-screen bg-white">
   <svelte:fragment slot="sidebarLeft">
-    <div class="flex h-full flex-col gap-4 bg-white p-4 pt-6">
-      {#if $selectedWiki.name !== ""}
+    {#if $selectedWiki.name !== ""}
+      <div class="flex h-full flex-col gap-4 bg-white p-4 pt-6">
         <div class="flex grow flex-col gap-y-3">
           <NavButton
             name="Pokemon"
@@ -255,17 +255,17 @@
             <IconHome slot="icon" size={16} color="indigo" />
           </NavButton>
         </div>
-      {/if}
-      <div class="flex flex-row items-center justify-between w-[12rem]">
-        <p>
-          {$selectedWiki.name ? $selectedWiki.site_name : "Select Wiki"}
-        </p>
-        <span use:popup={wikiSelectPopup} class="hover:cursor-pointer">
-          <IconDotsVertical size={"20"} />
-        </span>
+        <div class="flex flex-row items-center justify-between w-[12rem]">
+          <p>
+            {$selectedWiki.name ? $selectedWiki.site_name : "Select Wiki"}
+          </p>
+          <span use:popup={wikiSelectPopup} class="hover:cursor-pointer">
+            <IconDotsVertical size={"20"} />
+          </span>
+        </div>
+        <WikiSelectMenu />
       </div>
-      <WikiSelectMenu />
-    </div>
+    {/if}
   </svelte:fragment>
   <svelte:fragment slot="pageFooter">
     <div id="page-footer" class={`${displayUpdateButton ? "" : "hidden"}`}>
@@ -280,7 +280,5 @@
       </div>
     </div>
   </svelte:fragment>
-  <div class="ml-2 mt-6">
-    <slot />
-  </div>
+  <slot />
 </AppShell>
