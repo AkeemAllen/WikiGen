@@ -102,9 +102,6 @@ export async function loadWikiData(wiki: Wiki, toastStore: any) {
         );
       });
     })
-    .then(() => {
-      toastStore.trigger(getToastSettings(ToastType.SUCCESS, "Testing Toast"));
-    })
     .catch((err) => {
       toastStore.trigger(
         getToastSettings(
