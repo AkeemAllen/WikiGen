@@ -30,6 +30,7 @@
     IconDownload,
     IconFlame,
     IconHome,
+    IconPlus,
     IconRoute2,
     IconTestPipe,
     IconTree,
@@ -50,7 +51,11 @@
   } from "@tauri-apps/api/fs";
   import { invoke } from "@tauri-apps/api";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
-  import type { MigrationJson } from "../store/db";
+  import { wikis } from "../store";
+  import SelectInput from "$lib/components/SelectInput.svelte";
+  import { loadWikiData } from "$lib/utils/loadWiki";
+  import { goto } from "$app/navigation";
+  import CreateWikiModal from "$lib/components/modals/CreateWikiModal.svelte";
 
   initializeStores();
 
@@ -67,6 +72,8 @@
   let displayUpdateButton = false;
   let updateStatus = "";
   let runningMigrations = false;
+
+  let createWikiModalOpen = false;
 
   onMount(() => {
     async function runMigrations() {
@@ -143,7 +150,18 @@
         );
       });
   }
+
+  function loadSelectedWiki(e: any) {
+    console.log(e.target.value);
+    $selectedWiki = $wikis[e.target.value];
+    console.log($selectedWiki);
+    console.log($wikis);
+    loadWikiData($selectedWiki, toastStore);
+    goto("/");
+  }
 </script>
+
+<CreateWikiModal bind:open={createWikiModalOpen} />
 
 <BaseModal bind:open={runningMigrations} close={() => {}} class="w-[30rem]">
   <div class="flex gap-2 items-center">
@@ -280,5 +298,27 @@
       </div>
     </div>
   </svelte:fragment>
+  {#if $selectedWiki.name !== ""}
+    <div class="flex flex-row justify-end mr-10 gap-x-3 items-center">
+      <SelectInput
+        options={Object.entries($wikis).map(([name, props]) => ({
+          label: props.site_name,
+          value: name,
+        }))}
+        value={$selectedWiki.name}
+        onChange={loadSelectedWiki}
+        class="w-[20rem]"
+      />
+      <button
+        class="self-center p-1.5 rounded-md mt-2
+        shadow-sm ring-1 ring-inset ring-gray-300
+        text-gray-500
+          border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
+        on:click={() => (createWikiModalOpen = true)}
+      >
+        <IconPlus size={25} />
+      </button>
+    </div>
+  {/if}
   <slot />
 </AppShell>
