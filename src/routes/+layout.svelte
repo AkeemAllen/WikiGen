@@ -60,6 +60,7 @@
   import { loadWikiData } from "$lib/utils/loadWiki";
   import { goto, invalidateAll } from "$app/navigation";
   import CreateWikiModal from "$lib/components/modals/CreateWikiModal.svelte";
+  import DeleteWikiModal from "$lib/components/modals/DeleteWikiModal.svelte";
 
   initializeStores();
 
@@ -78,6 +79,7 @@
   let runningMigrations = false;
 
   let createWikiModalOpen = false;
+  let deleteWikiModalOpen = false;
 
   onMount(() => {
     async function runMigrations() {
@@ -160,6 +162,17 @@
     loadWikiData($selectedWiki, toastStore);
     goto("/");
   }
+
+  async function backupWiki() {
+    await invoke("backup_wiki", {
+      wikiName: $selectedWiki.name,
+    }).then(() => {
+      toastStore.trigger({
+        message: "Wiki Backed Up Successfully",
+        background: "variant-filled-success",
+      });
+    });
+  }
 </script>
 
 <CreateWikiModal bind:open={createWikiModalOpen} />
@@ -202,6 +215,8 @@
     <p>{updateStatus}</p>
   </div>
 </BaseModal>
+
+<DeleteWikiModal bind:open={deleteWikiModalOpen} />
 
 <Toast position="br" rounded="rounded-none" padding="px-4 py-2" max={10} />
 <Modal components={modalRegistry} />
@@ -351,7 +366,7 @@
             target: "backupWikiToolTip",
             placement: "top",
           }}
-          on:click={() => (createWikiModalOpen = true)}
+          on:click={backupWiki}
         >
           <IconDeviceFloppy size={20} />
         </button>
@@ -365,7 +380,7 @@
           shadow-sm ring-1 ring-inset ring-gray-300
           text-gray-500
             border-0 hover:bg-red-600 hover:text-white ease-in-out duration-200"
-          on:click={() => (createWikiModalOpen = true)}
+          on:click={() => (deleteWikiModalOpen = true)}
         >
           <IconTrash size={20} />
         </button>
