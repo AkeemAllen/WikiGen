@@ -23,8 +23,11 @@
   } from "@skeletonlabs/skeleton";
   import {
     IconAdjustmentsUp,
+    IconArrowBackUp,
     IconBallBasketball,
     IconBottleFilled,
+    IconBrandGithub,
+    IconDeviceFloppy,
     IconDisc,
     IconDotsVertical,
     IconDownload,
@@ -33,6 +36,7 @@
     IconPlus,
     IconRoute2,
     IconTestPipe,
+    IconTrash,
     IconTree,
   } from "@tabler/icons-svelte";
   import "../app.pcss";
@@ -54,7 +58,7 @@
   import { wikis } from "../store";
   import SelectInput from "$lib/components/SelectInput.svelte";
   import { loadWikiData } from "$lib/utils/loadWiki";
-  import { goto } from "$app/navigation";
+  import { goto, invalidateAll } from "$app/navigation";
   import CreateWikiModal from "$lib/components/modals/CreateWikiModal.svelte";
 
   initializeStores();
@@ -152,10 +156,7 @@
   }
 
   function loadSelectedWiki(e: any) {
-    console.log(e.target.value);
     $selectedWiki = $wikis[e.target.value];
-    console.log($selectedWiki);
-    console.log($wikis);
     loadWikiData($selectedWiki, toastStore);
     goto("/");
   }
@@ -210,6 +211,13 @@
       <div class="flex h-full flex-col gap-4 bg-white p-4 pt-6">
         <div class="flex grow flex-col gap-y-3">
           <NavButton
+            name="Home Page"
+            route="/home"
+            active={$page.url.pathname.includes("home")}
+          >
+            <IconHome slot="icon" size={16} color="indigo" />
+          </NavButton>
+          <NavButton
             name="Pokemon"
             route="/pokemon"
             active={$page.url.pathname.includes("pokemon")}
@@ -258,22 +266,15 @@
           >
             <IconTree slot="icon" size={16} color="indigo" />
           </NavButton>
-          <NavButton
+          <!-- <NavButton
             name="Wiki Testing"
             route="/wiki-testing"
             active={$page.url.pathname.includes("wiki-testing")}
           >
             <IconTestPipe slot="icon" size={16} color="indigo" />
-          </NavButton>
-          <NavButton
-            name="Home Page"
-            route="/home"
-            active={$page.url.pathname.includes("home")}
-          >
-            <IconHome slot="icon" size={16} color="indigo" />
-          </NavButton>
+          </NavButton> -->
         </div>
-        <div class="flex flex-row items-center justify-between w-[12rem]">
+        <!-- <div class="flex flex-row items-center justify-between w-[12rem]">
           <p>
             {$selectedWiki.name ? $selectedWiki.site_name : "Select Wiki"}
           </p>
@@ -281,44 +282,115 @@
             <IconDotsVertical size={"20"} />
           </span>
         </div>
-        <WikiSelectMenu />
+        <WikiSelectMenu /> -->
       </div>
     {/if}
   </svelte:fragment>
-  <svelte:fragment slot="pageFooter">
-    <div id="page-footer" class={`${displayUpdateButton ? "" : "hidden"}`}>
-      <div class="flex w-full p-2 justify-end">
-        <button
-          class="flex items-center self-end justify-self-end gap-1 text-sm hover:ring-offset-1 hover:ring hover:ring-green-500 rounded-md p-2"
-          on:click={() => updateApp()}
-        >
-          <IconDownload size={18} color="green" />
-          Update Available!
-        </button>
-      </div>
-    </div>
+  <svelte:fragment slot="pageHeader">
+    <div class="flex flex-row justify-end mr-10 gap-x-3 items-center"></div>
   </svelte:fragment>
-  {#if $selectedWiki.name !== ""}
-    <div class="flex flex-row justify-end mr-10 gap-x-3 items-center">
-      <SelectInput
-        options={Object.entries($wikis).map(([name, props]) => ({
-          label: props.site_name,
-          value: name,
-        }))}
-        value={$selectedWiki.name}
-        onChange={loadSelectedWiki}
-        class="w-[20rem]"
-      />
-      <button
-        class="self-center p-1.5 rounded-md mt-2
+  <div class="mt-6 mr-5">
+    <slot />
+  </div>
+  <svelte:fragment slot="footer">
+    {#if $selectedWiki.name !== ""}
+      <div class="flex flex-row w-full p-2 justify-end pr-5 gap-x-3">
+        <button
+          class="self-center p-2 rounded-md mt-2
         shadow-sm ring-1 ring-inset ring-gray-300
         text-gray-500
           border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
-        on:click={() => (createWikiModalOpen = true)}
-      >
-        <IconPlus size={25} />
-      </button>
-    </div>
-  {/if}
-  <slot />
+          use:popup={{
+            event: "hover",
+            target: "addIconToolTip",
+            placement: "bottom",
+          }}
+          on:click={() => (createWikiModalOpen = true)}
+        >
+          <IconPlus size={20} />
+        </button>
+        <div data-popup="addIconToolTip">
+          <p class="card p-1 text-sm">Create New Wiki</p>
+
+          <div class="arrow bg-surface-100-800-token" />
+        </div>
+        <button
+          class="self-center p-2 rounded-md mt-2
+        shadow-sm ring-1 ring-inset ring-gray-300
+        text-gray-500
+          border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
+          use:popup={{
+            event: "hover",
+            target: "previewWikiToolTip",
+            placement: "bottom",
+          }}
+        >
+          <IconTestPipe size={20} />
+        </button>
+        <div data-popup="previewWikiToolTip">
+          <p class="card p-1 text-sm">Preview Wiki</p>
+
+          <div class="arrow bg-surface-100-800-token" />
+        </div>
+        <!-- <div class="flex flex-row w-full p-2 justify-end mr-10 gap-x-3"> -->
+        <button
+          class="self-center p-2 rounded-md mt-2
+          shadow-sm ring-1 ring-inset ring-gray-300
+          text-gray-500
+            border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
+        >
+          <IconBrandGithub size={20} />
+        </button>
+        <button
+          class="self-center p-2 rounded-md mt-2
+          shadow-sm ring-1 ring-inset ring-gray-300
+          text-gray-500
+            border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
+          use:popup={{
+            event: "hover",
+            target: "backupWikiToolTip",
+            placement: "top",
+          }}
+          on:click={() => (createWikiModalOpen = true)}
+        >
+          <IconDeviceFloppy size={20} />
+        </button>
+        <div data-popup="backupWikiToolTip">
+          <p class="card p-1 text-sm">Backup Wiki</p>
+
+          <div class="arrow bg-surface-100-800-token" />
+        </div>
+        <button
+          class="self-center p-2 rounded-md mt-2
+          shadow-sm ring-1 ring-inset ring-gray-300
+          text-gray-500
+            border-0 hover:bg-red-600 hover:text-white ease-in-out duration-200"
+          on:click={() => (createWikiModalOpen = true)}
+        >
+          <IconTrash size={20} />
+        </button>
+        <SelectInput
+          options={Object.entries($wikis).map(([name, props]) => ({
+            label: props.site_name,
+            value: name,
+          }))}
+          value={$selectedWiki.name}
+          onChange={loadSelectedWiki}
+          class="w-[17rem]"
+        />
+        {#if displayUpdateButton}
+          <button
+            class="flex items-center self-end justify-self-end gap-1 shadow-sm border-0
+        text-sm text-gray-500 ring-inset ring-gray-300 hover:bg-indigo-600
+        hover:text-white ease-in-out duration-200 rounded-md p-2"
+            on:click={() => updateApp()}
+          >
+            <IconDownload size={18} />
+            Update Available!
+          </button>
+        {/if}
+      </div>
+    {/if}
+    <!-- </div> -->
+  </svelte:fragment>
 </AppShell>
