@@ -292,7 +292,7 @@
               class={`${$page.url.pathname.includes("types") && "text-red-500"}`}
             />
           </NavButton>
-          <p class="mb-3 mt-3 text-sm text-slate-400 font-semibold">
+          <p class="mb-2 mt-4 text-sm text-slate-400 font-semibold">
             Attributes
           </p>
           <NavButton
@@ -351,7 +351,7 @@
   <svelte:fragment slot="pageHeader">
     <div class="flex flex-row justify-end mr-10 gap-x-3 items-center"></div>
   </svelte:fragment>
-  <div class="mt-6 mr-5 ml-5">
+  <div class="mt-6 mr-10 ml-10">
     <slot />
   </div>
   <svelte:fragment slot="pageFooter">
@@ -361,7 +361,7 @@
           class="self-center p-2 rounded-md mt-2
         shadow-sm ring-1 ring-inset ring-gray-300
         text-gray-500
-          border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
+          border-0 hover:bg-red-600 hover:text-white ease-in-out duration-200"
           use:popup={{
             event: "hover",
             target: "addIconToolTip",
@@ -380,7 +380,7 @@
           class="self-center p-2 rounded-md mt-2
         shadow-sm ring-1 ring-inset ring-gray-300
         text-gray-500
-          border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
+          border-0 hover:bg-red-600 hover:text-white ease-in-out duration-200"
           use:popup={{
             event: "hover",
             target: "previewWikiToolTip",
@@ -399,7 +399,7 @@
           class="self-center p-2 rounded-md mt-2
           shadow-sm ring-1 ring-inset ring-gray-300
           text-gray-500
-            border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
+            border-0 hover:bg-red-600 hover:text-white ease-in-out duration-200"
         >
           <IconBrandGithub size={20} />
         </button>
@@ -407,7 +407,7 @@
           class="self-center p-2 rounded-md mt-2
           shadow-sm ring-1 ring-inset ring-gray-300
           text-gray-500
-            border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
+            border-0 hover:bg-red-600 hover:text-white ease-in-out duration-200"
           use:popup={{
             event: "hover",
             target: "backupWikiToolTip",
@@ -443,7 +443,7 @@
         {#if displayUpdateButton}
           <button
             class="flex items-center self-end justify-self-end gap-1 shadow-sm border-0
-        text-sm text-gray-500 ring-inset ring-gray-300 hover:bg-indigo-600
+        text-sm text-gray-500 ring-inset ring-gray-300 hover:bg-red-600
         hover:text-white ease-in-out duration-200 rounded-md p-2"
             on:click={() => updateApp()}
           >
