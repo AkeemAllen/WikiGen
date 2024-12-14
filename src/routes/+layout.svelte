@@ -25,6 +25,7 @@
     IconAdjustmentsUp,
     IconArrowBackUp,
     IconBallBasketball,
+    IconBottle,
     IconBottleFilled,
     IconBrandGithub,
     IconDeviceFloppy,
@@ -33,10 +34,15 @@
     IconDownload,
     IconFlame,
     IconHome,
+    IconHomeFilled,
+    IconMapRoute,
     IconPlus,
+    IconPokeball,
     IconRoute2,
+    IconSeeding,
     IconTestPipe,
     IconTrash,
+    IconTreadmill,
     IconTree,
   } from "@tabler/icons-svelte";
   import "../app.pcss";
@@ -163,6 +169,12 @@
     goto("/");
   }
 
+  function isActivePage(pageName: string) {
+    if ($page.url.pathname.includes(pageName)) return true;
+
+    return false;
+  }
+
   async function backupWiki() {
     await invoke("backup_wiki", {
       wikiName: $selectedWiki.name,
@@ -223,63 +235,98 @@
 <AppShell class="h-screen bg-white">
   <svelte:fragment slot="sidebarLeft">
     {#if $selectedWiki.name !== ""}
-      <div class="flex h-full flex-col gap-4 bg-white p-4 pt-6">
-        <div class="flex grow flex-col gap-y-3">
+      <div class="flex h-full flex-col gap-4 bg-touch-red p-4 pt-6 w-[17.5rem]">
+        <div class="flex grow flex-col">
           <NavButton
-            name="Home Page"
+            name="Home"
             route="/home"
             active={$page.url.pathname.includes("home")}
           >
-            <IconHome slot="icon" size={16} color="indigo" />
+            <IconHome
+              slot="icon"
+              size={20}
+              class={`${$page.url.pathname.includes("home") && "text-red-500"}`}
+            />
           </NavButton>
           <NavButton
             name="Pokemon"
             route="/pokemon"
             active={$page.url.pathname.includes("pokemon")}
           >
-            <IconBallBasketball slot="icon" size={16} color="indigo" />
+            <IconPokeball
+              slot="icon"
+              size={20}
+              class={`${$page.url.pathname.includes("pokemon") && "text-red-500"}`}
+            />
           </NavButton>
           <NavButton
-            name="Game Routes"
+            name="Routes"
             route="/game-routes"
             active={$page.url.pathname.includes("game-routes")}
           >
-            <IconRoute2 slot="icon" size={16} color="indigo" />
+            <IconMapRoute
+              slot="icon"
+              size={20}
+              class={`${$page.url.pathname.includes("game-routes") && "text-red-500"}`}
+            />
           </NavButton>
           <NavButton
             name="Moves"
             route="/moves"
             active={$page.url.pathname.includes("moves")}
           >
-            <IconDisc slot="icon" size={16} color="indigo" />
+            <IconDisc
+              slot="icon"
+              size={20}
+              class={`${$page.url.pathname.includes("moves") && "text-red-500"}`}
+            />
           </NavButton>
           <NavButton
             name="Types"
             route="/types"
             active={$page.url.pathname.includes("types")}
           >
-            <IconFlame slot="icon" size={16} color="indigo" />
+            <IconFlame
+              slot="icon"
+              size={20}
+              class={`${$page.url.pathname.includes("types") && "text-red-500"}`}
+            />
           </NavButton>
+          <p class="mb-3 mt-3 text-sm text-slate-400 font-semibold">
+            Attributes
+          </p>
           <NavButton
             name="Items"
             route="/items"
             active={$page.url.pathname.includes("items")}
           >
-            <IconBottleFilled slot="icon" size={16} color="indigo" />
+            <IconBottle
+              slot="icon"
+              size={20}
+              class={`${$page.url.pathname.includes("items") && "text-red-500"}`}
+            />
           </NavButton>
           <NavButton
             name="Abiities"
             route="/abilities"
             active={$page.url.pathname.includes("abilities")}
           >
-            <IconAdjustmentsUp slot="icon" size={16} color="indigo" />
+            <IconTreadmill
+              slot="icon"
+              size={20}
+              class={`${$page.url.pathname.includes("abilities") && "text-red-500"}`}
+            />
           </NavButton>
           <NavButton
             name="Natures"
             route="/natures"
             active={$page.url.pathname.includes("natures")}
           >
-            <IconTree slot="icon" size={16} color="indigo" />
+            <IconSeeding
+              slot="icon"
+              size={20}
+              class={`${$page.url.pathname.includes("natures") && "text-red-500"}`}
+            />
           </NavButton>
           <!-- <NavButton
             name="Wiki Testing"
@@ -304,10 +351,10 @@
   <svelte:fragment slot="pageHeader">
     <div class="flex flex-row justify-end mr-10 gap-x-3 items-center"></div>
   </svelte:fragment>
-  <div class="mt-6 mr-5">
+  <div class="mt-6 mr-5 ml-5">
     <slot />
   </div>
-  <svelte:fragment slot="footer">
+  <svelte:fragment slot="pageFooter">
     {#if $selectedWiki.name !== ""}
       <div class="flex flex-row w-full p-2 justify-end pr-5 gap-x-3">
         <button
