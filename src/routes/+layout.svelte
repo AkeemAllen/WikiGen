@@ -359,9 +359,8 @@
       <div class="flex flex-row w-full p-2 justify-end pr-5 gap-x-3">
         <button
           class="self-center p-2 rounded-md mt-2
-        shadow-sm ring-1 ring-inset ring-gray-300
-        text-gray-500
-          border-0 hover:bg-red-600 hover:text-white ease-in-out duration-200"
+       text-gray-400
+          border-0 hover:text-red-600 ease-in-out duration-200"
           use:popup={{
             event: "hover",
             target: "addIconToolTip",
@@ -378,9 +377,8 @@
         </div>
         <button
           class="self-center p-2 rounded-md mt-2
-        shadow-sm ring-1 ring-inset ring-gray-300
-        text-gray-500
-          border-0 hover:bg-red-600 hover:text-white ease-in-out duration-200"
+       text-gray-400
+          border-0 hover:text-red-600 ease-in-out duration-200"
           use:popup={{
             event: "hover",
             target: "previewWikiToolTip",
@@ -397,17 +395,15 @@
         <!-- <div class="flex flex-row w-full p-2 justify-end mr-10 gap-x-3"> -->
         <button
           class="self-center p-2 rounded-md mt-2
-          shadow-sm ring-1 ring-inset ring-gray-300
-          text-gray-500
-            border-0 hover:bg-red-600 hover:text-white ease-in-out duration-200"
+         text-gray-400
+            border-0 hover:text-red-600 ease-in-out duration-200"
         >
           <IconBrandGithub size={20} />
         </button>
         <button
           class="self-center p-2 rounded-md mt-2
-          shadow-sm ring-1 ring-inset ring-gray-300
-          text-gray-500
-            border-0 hover:bg-red-600 hover:text-white ease-in-out duration-200"
+         text-gray-400
+            border-0 hover:text-red-600 ease-in-out duration-200"
           use:popup={{
             event: "hover",
             target: "backupWikiToolTip",
@@ -424,8 +420,7 @@
         </div>
         <button
           class="self-center p-2 rounded-md mt-2
-          shadow-sm ring-1 ring-inset ring-gray-300
-          text-gray-500
+         text-gray-400
             border-0 hover:bg-red-600 hover:text-white ease-in-out duration-200"
           on:click={() => (deleteWikiModalOpen = true)}
         >
@@ -443,7 +438,7 @@
         {#if displayUpdateButton}
           <button
             class="flex items-center self-end justify-self-end gap-1 shadow-sm border-0
-        text-sm text-gray-500 ring-inset ring-gray-300 hover:bg-red-600
+        text-sm text-gray-500 hover:bg-red-600
         hover:text-white ease-in-out duration-200 rounded-md p-2"
             on:click={() => updateApp()}
           >
