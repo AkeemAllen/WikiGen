@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { onMount } from "svelte";
 
   // import { getToastStore } from "@skeletonlabs/skeleton";
@@ -14,10 +16,7 @@
   // };
 
   // const toastStore = getToastStore();
-  let mkdocsFilePath: string = "";
-  $: getMkdocsDirectory($selectedWiki.name).then((response) => {
-    mkdocsFilePath = response;
-  });
+  let mkdocsFilePath: string = $state("");
 
   // let isProcessRunning: boolean = false;
 
@@ -71,6 +70,11 @@
     }
     return mkdocsFilePath;
   }
+  run(() => {
+    getMkdocsDirectory($selectedWiki.name).then((response) => {
+      mkdocsFilePath = response;
+    });
+  });
 </script>
 
 <!-- <div class="mt-6 ml-2">

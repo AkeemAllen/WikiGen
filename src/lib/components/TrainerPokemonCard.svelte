@@ -5,10 +5,14 @@
   import { selectedWiki } from "../../store";
   import capitalizeWords from "$lib/utils/capitalizeWords";
 
-  export let pokemon: TrainerPokemon = {} as TrainerPokemon;
-  export let trainerName: string;
 
-  export let deletePokemon = (id: string, name: string) => {};
+  interface Props {
+    pokemon?: TrainerPokemon;
+    trainerName: string;
+    deletePokemon?: any;
+  }
+
+  let { pokemon = {} as TrainerPokemon, trainerName, deletePokemon = (id: string, name: string) => {} }: Props = $props();
 
   async function getSpriteImage(pokemonName: string): Promise<string> {
     return await readBinaryFile(
@@ -42,7 +46,7 @@
 </div>
 <button
   class="invisible absolute right-2 top-2 z-10 rounded-md bg-red-200 p-1 hover:scale-110 group-hover:visible"
-  on:click={(e) => {
+  onclick={(e) => {
     e.stopPropagation();
     deletePokemon(pokemon.unique_id, trainerName);
   }}

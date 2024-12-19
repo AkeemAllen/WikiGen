@@ -1,7 +1,17 @@
 <script lang="ts">
-  export let name = "";
-  export let route = "";
-  export let active = false;
+  interface Props {
+    name?: string;
+    route?: string;
+    active?: boolean;
+    icon?: import('svelte').Snippet;
+  }
+
+  let {
+    name = "",
+    route = "",
+    active = false,
+    icon
+  }: Props = $props();
 </script>
 
 <a
@@ -11,7 +21,7 @@
 >
   <div class="flex items-center gap-3">
     <div class="p-1 rounded-md">
-      <slot name="icon" />
+      {@render icon?.()}
     </div>
     <span class={`${active ? "text-red-500" : "text-black"}`}>
       {name}

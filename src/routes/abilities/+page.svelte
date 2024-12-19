@@ -22,18 +22,18 @@
 
   const toastStore = getToastStore();
 
-  let abilitySearch: [number, string] = [0, ""];
+  let abilitySearch: [number, string] = $state([0, ""]);
 
-  let ability: Ability = {} as Ability;
-  let originalAbilityDetails: Ability = {} as Ability;
+  let ability: Ability = $state({} as Ability);
+  let originalAbilityDetails: Ability = $state({} as Ability);
 
-  let newAbilityModalOpen: boolean = false;
-  let newAbility: Ability = {} as Ability;
+  let newAbilityModalOpen: boolean = $state(false);
+  let newAbility: Ability = $state({} as Ability);
 
-  $: abilityListOptions = $abilitiesList.map(([id, name]) => ({
+  let abilityListOptions = $derived($abilitiesList.map(([id, name]) => ({
     label: name,
     value: id,
-  }));
+  })));
 
   async function generateAbilityPage() {
     await invoke("generate_ability_page_with_handle", {
@@ -184,7 +184,7 @@
         id="effect"
         bind:value={newAbility.effect}
         class="block h-32 w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-      />
+></textarea>
     </div>
   </div>
   <Button
@@ -247,7 +247,7 @@
           id="effect"
           bind:value={ability.effect}
           class="block h-32 w-[50rem] rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-        />
+></textarea>
       </div>
     </div>
     {#if !ability.is_new}
@@ -255,7 +255,7 @@
         <input
           type="checkbox"
           checked={Boolean(ability.is_modified)}
-          on:change={setModified}
+          onchange={setModified}
           class="text-sm font-medium leading-6 text-gray-900"
         />
         Mark Item as Modified

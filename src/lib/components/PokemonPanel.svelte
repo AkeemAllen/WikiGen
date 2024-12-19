@@ -32,15 +32,15 @@
     updateRoutes,
   } from "$lib/utils/generators";
 
-  let pokemonSearch: [number, string] = [0, ""];
-  let pokemon = {} as Pokemon;
-  let originalPokemonDetails: Pokemon = {} as Pokemon;
-  let pokemonMoveset: PokemonMove[] = [];
-  let pokemonLocations: WildEncounter[] = [];
-  let pokemonSprite: string = "";
-  let pokemonNameInput: HTMLInputElement;
+  let pokemonSearch: [number, string] = $state([0, ""]);
+  let pokemon = $state({} as Pokemon);
+  let originalPokemonDetails: Pokemon = $state({} as Pokemon);
+  let pokemonMoveset: PokemonMove[] = $state([]);
+  let pokemonLocations: WildEncounter[] = $state([]);
+  let pokemonSprite: string = $state("");
+  let pokemonNameInput: HTMLInputElement = $state();
 
-  let tabSet: number = 0;
+  let tabSet: number = $state(0);
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
     value: id,
@@ -328,26 +328,28 @@
     <Tab bind:group={tabSet} name="location" value={2} class="text-sm"
       >Location</Tab
     >
-    <svelte:fragment slot="panel">
-      {#if tabSet === 0}
-        <PokemonDetailsTab bind:pokemon />
-      {/if}
-      {#if tabSet === 1}
-        <PokemonMovesTab
-          bind:moveset={pokemonMoveset}
-          bind:pokemonId={pokemon.id}
-          generatePokemonPage={() => generatePage()}
-        />
-      {/if}
-      {#if tabSet === 2}
-        <PokemonLocationTab
-          {pokemonLocations}
-          pokemonId={pokemon.id}
-          pokemonDexNumber={pokemon.dex_number}
-          pokemonName={pokemon.name}
-        />
-      {/if}
-    </svelte:fragment>
+    {#snippet panel()}
+      
+        {#if tabSet === 0}
+          <PokemonDetailsTab bind:pokemon />
+        {/if}
+        {#if tabSet === 1}
+          <PokemonMovesTab
+            bind:moveset={pokemonMoveset}
+            bind:pokemonId={pokemon.id}
+            generatePokemonPage={() => generatePage()}
+          />
+        {/if}
+        {#if tabSet === 2}
+          <PokemonLocationTab
+            {pokemonLocations}
+            pokemonId={pokemon.id}
+            pokemonDexNumber={pokemon.dex_number}
+            pokemonName={pokemon.name}
+          />
+        {/if}
+      
+      {/snippet}
   </TabGroup>
 {/if}
 

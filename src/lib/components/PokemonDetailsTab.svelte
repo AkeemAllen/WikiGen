@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import SelectInput from "$lib/components/SelectInput.svelte";
   import AutoComplete from "$lib/components/AutoComplete.svelte";
   import TextInput from "$lib/components/TextInput.svelte";
@@ -11,8 +13,12 @@
   import { getToastStore } from "@skeletonlabs/skeleton";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
-  export let pokemon: Pokemon = {} as Pokemon;
-  export let isNewPokemon: boolean = false;
+  interface Props {
+    pokemon?: Pokemon;
+    isNewPokemon?: boolean;
+  }
+
+  let { pokemon = $bindable({} as Pokemon), isNewPokemon = false }: Props = $props();
 
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
@@ -37,8 +43,7 @@
     value: name,
   }));
 
-  let ability_1: string = "";
-  $: if (pokemon.ability_1 || pokemon.ability_1 === null) setAbility1();
+  let ability_1: string = $state("");
   function setAbility1() {
     if (pokemon.ability_1 === null) {
       ability_1 = "None";
@@ -47,8 +52,7 @@
     ability_1 = capitalizeWords(pokemon.ability_1);
   }
 
-  let ability_2: string = "";
-  $: if (pokemon.ability_2 || pokemon.ability_2 === null) setAbility2();
+  let ability_2: string = $state("");
   function setAbility2() {
     if (pokemon.ability_2 === null) {
       ability_2 = "None";
@@ -57,9 +61,7 @@
     ability_2 = capitalizeWords(pokemon.ability_2);
   }
 
-  let hidden_ability: string = "";
-  $: if (pokemon.hidden_ability || pokemon.hidden_ability === null)
-    setHiddenAbility();
+  let hidden_ability: string = $state("");
   function setHiddenAbility() {
     if (pokemon.hidden_ability === null) {
       hidden_ability = "None";
@@ -68,8 +70,7 @@
     hidden_ability = capitalizeWords(pokemon.hidden_ability);
   }
 
-  let types: string[];
-  $: if (pokemon.types) setTypes();
+  let types: string[] = $state();
   function setTypes() {
     types = pokemon.types.split(",");
     if (types.length === 1) {
@@ -109,6 +110,19 @@
 
     pokemon.types = `${types[0]},${types[1]}`;
   }
+  run(() => {
+    if (pokemon.ability_1 || pokemon.ability_1 === null) setAbility1();
+  });
+  run(() => {
+    if (pokemon.ability_2 || pokemon.ability_2 === null) setAbility2();
+  });
+  run(() => {
+    if (pokemon.hidden_ability || pokemon.hidden_ability === null)
+      setHiddenAbility();
+  });
+  run(() => {
+    if (pokemon.types) setTypes();
+  });
 </script>
 
 <div class="scroll-smooth px-4">

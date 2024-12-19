@@ -14,8 +14,8 @@
   import Button from "$lib/components/Button.svelte";
   import { onMount } from "svelte";
 
-  let homePageImage: string = "";
-  let generalInfo = "";
+  let homePageImage: string = $state("");
+  let generalInfo = $state("");
 
   const toastStore = getToastStore();
 
@@ -138,7 +138,7 @@
     type="file"
     accept="image/png"
     class="mt-2"
-    on:change={onImageUpload}
+    onchange={onImageUpload}
   />
 </div>
 <div class="mt-4">
@@ -150,8 +150,8 @@
       id="effect"
       bind:value={generalInfo}
       spellcheck="false"
-      on:keydown={captureTab}
+      onkeydown={captureTab}
       class="block h-48 w-[50rem] rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-    />
+></textarea>
   </div>
 </div>

@@ -19,12 +19,16 @@
 
   const toastStore = getToastStore();
 
-  export let positionModalOpen: boolean = false;
-  export let routeToUpdate: string = "";
-  export let oldRoutePosition: number = 0;
+  interface Props {
+    positionModalOpen?: boolean;
+    routeToUpdate?: string;
+    oldRoutePosition?: number;
+  }
 
-  let newRouteName: string = "";
-  let routeBeingEdited: string;
+  let { positionModalOpen = $bindable(false), routeToUpdate = $bindable(""), oldRoutePosition = $bindable(0) }: Props = $props();
+
+  let newRouteName: string = $state("");
+  let routeBeingEdited: string = $state();
 
   async function renameRoute(originalRouteName: string, newName: string) {
     if (originalRouteName === newName) return;
@@ -169,22 +173,22 @@
     <div class="card w-44 grid-cols-1 p-4" data-popup="routeMenu-{index}">
       <button
         class="w-full rounded-md bg-gray-100 px-3 py-1 text-start text-sm hover:cursor-pointer hover:bg-gray-300"
-        on:click={() => {
+        onclick={() => {
           routeBeingEdited = routeName;
           newRouteName = routeName;
         }}>Rename</button
       >
       <button
         class="w-full rounded-md bg-gray-100 px-3 py-1 text-start text-sm hover:cursor-pointer hover:bg-gray-300"
-        on:click={() => duplicateRoute(routeName)}>Duplicate</button
+        onclick={() => duplicateRoute(routeName)}>Duplicate</button
       >
       <button
         class="w-full rounded-md bg-gray-100 px-3 py-1 text-start text-sm hover:cursor-pointer hover:bg-gray-300"
-        on:click={() => deleteRoute(routeName)}>Delete</button
+        onclick={() => deleteRoute(routeName)}>Delete</button
       >
       <button
         class="w-full rounded-md bg-gray-100 px-3 py-1 text-start text-sm hover:cursor-pointer hover:bg-gray-300"
-        on:click={() => {
+        onclick={() => {
           positionModalOpen = true;
           routeToUpdate = routeName;
           oldRoutePosition = $routes.routes[routeName].position;

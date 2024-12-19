@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { getToastStore, popup } from "@skeletonlabs/skeleton";
   import { IconDots } from "@tabler/icons-svelte";
   import BaseModal from "$lib/components/BaseModal.svelte";
@@ -12,14 +14,20 @@
 
   const toastStore = getToastStore();
 
-  export let index: number;
-  export let routeName: string;
-  export let encounterArea: string;
+  interface Props {
+    index: number;
+    routeName: string;
+    encounterArea: string;
+  }
 
-  $: console.log({ routeName, encounterArea });
+  let { index, routeName, encounterArea }: Props = $props();
 
-  let copyToRouteModalOpen = false;
-  let routeToCopyTo: string = "";
+  run(() => {
+    console.log({ routeName, encounterArea });
+  });
+
+  let copyToRouteModalOpen = $state(false);
+  let routeToCopyTo: string = $state("");
 
   let routeListOptions = Object.keys($routes.routes)
     .filter((route) => route !== routeName)
@@ -105,7 +113,7 @@
 >
   <button
     class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-    on:click={() => {
+    onclick={() => {
       copyToRouteModalOpen = true;
       console.log(routeName, copyToRouteModalOpen);
     }}>Copy To Route</button

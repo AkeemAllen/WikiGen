@@ -28,16 +28,16 @@
 
   const toastStore = getToastStore();
 
-  let deleteWikiModalOpen: boolean = false;
-  let wikisToDelete: string[] = [];
+  let deleteWikiModalOpen: boolean = $state(false);
+  let wikisToDelete: string[] = $state([]);
   let directoriesRemoved: boolean = false;
   let wikiJsonUpdated: boolean = false;
 
-  let hotKeysModalOpen: boolean = false;
+  let hotKeysModalOpen: boolean = $state(false);
 
-  $: wikiListOptions = Object.keys($wikis).filter(
+  let wikiListOptions = $derived(Object.keys($wikis).filter(
     (wiki) => wiki !== $selectedWiki.name,
-  );
+  ));
 
   async function updatePageNames() {
     await invoke("update_pokemon_pages_with_stripped_name_with_handle", {
@@ -218,7 +218,7 @@
     {#each Object.entries($wikis) as [_, value]}
       {#if value.name !== $selectedWiki.name}
         <button
-          on:click={() => {
+          onclick={() => {
             $selectedWiki = value;
             // Check if file migration is needed before loading wiki
             loadWikiData();
@@ -239,19 +239,19 @@
   {#if $selectedWiki.name}
     <button
       class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-      on:click={backupWiki}>Backup Wiki</button
+      onclick={backupWiki}>Backup Wiki</button
     >
     <button
       class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-      on:click={updatePageNames}>Reformat Pokemon Page Names</button
+      onclick={updatePageNames}>Reformat Pokemon Page Names</button
     >
   {/if}
   <button
     class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-    on:click={() => (hotKeysModalOpen = true)}>View Hotkeys</button
+    onclick={() => (hotKeysModalOpen = true)}>View Hotkeys</button
   >
   <button
     class="w-full rounded-md p-2 text-left text-sm text-red-500 hover:bg-slate-300"
-    on:click={() => (deleteWikiModalOpen = true)}>Delete A Wiki</button
+    onclick={() => (deleteWikiModalOpen = true)}>Delete A Wiki</button
   >
 </div>

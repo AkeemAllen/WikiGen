@@ -16,30 +16,34 @@
 
   const toastStore = getToastStore();
 
-  let searchValue: string = "";
-  let addItemLocationModalOpen: boolean = false;
-  let editItemLocationModalOpen: boolean = false;
-  export let itemName: string = "";
-  export let generatePage: Function;
-  export let itemLocations: ItemLocation[] = [];
+  let searchValue: string = $state("");
+  let addItemLocationModalOpen: boolean = $state(false);
+  let editItemLocationModalOpen: boolean = $state(false);
+  interface Props {
+    itemName?: string;
+    generatePage: Function;
+    itemLocations?: ItemLocation[];
+  }
 
-  let newItemLocation: ItemLocation = {
+  let { itemName = "", generatePage, itemLocations = $bindable([]) }: Props = $props();
+
+  let newItemLocation: ItemLocation = $state({
     id: 0,
     item_name: "",
     route: "",
     specific_location: null,
     method: null,
     requirements: null,
-  };
+  });
 
-  let itemLocationToEdit: ItemLocation = {
+  let itemLocationToEdit: ItemLocation = $state({
     id: 0,
     item_name: "",
     route: "",
     specific_location: null,
     method: null,
     requirements: null,
-  };
+  });
 
   let routeListOptions = Object.keys($routes.routes).map((route) => ({
     label: route,
@@ -54,11 +58,11 @@
     { label: "100", value: 100 },
   ];
 
-  $: handler = new DataHandler(itemLocations, {
+  let handler = $derived(new DataHandler(itemLocations, {
     rowsPerPage: 5,
-  });
-  $: rows = handler.getRows();
-  $: rowsPerPage = handler.getRowsPerPage();
+  }));
+  let rows = $derived(handler.getRows());
+  let rowsPerPage = $derived(handler.getRowsPerPage());
 
   async function addItemLocation() {
     await $db
@@ -179,7 +183,7 @@
         bind:value={newItemLocation.specific_location}
         placeholder="Specific Location"
         class="block h-15 w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-      />
+></textarea>
     </div>
   </div>
   <TextInput
@@ -199,7 +203,7 @@
         bind:value={newItemLocation.requirements}
         placeholder="Requirements"
         class="block h-15 w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-      />
+></textarea>
     </div>
   </div>
   <Button
@@ -237,7 +241,7 @@
         bind:value={itemLocationToEdit.specific_location}
         placeholder="Specific Location"
         class="block h-15 w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-      />
+></textarea>
     </div>
   </div>
   <TextInput
@@ -257,7 +261,7 @@
         bind:value={itemLocationToEdit.requirements}
         placeholder="Requirements"
         class="block h-15 w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-      />
+></textarea>
     </div>
   </div>
   <Button title="Edit Location" onClick={editItemLocation} />
@@ -303,7 +307,7 @@
           <td>{row.requirements ? row.requirements : ""}</td>
           <td
             class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-            on:click={() => {
+            onclick={() => {
               itemLocationToEdit = { ...row };
               editItemLocationModalOpen = true;
             }}
@@ -312,7 +316,7 @@
           </td>
           <td
             class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-            on:click={() => {
+            onclick={() => {
               deleteItemLocation(row.id);
             }}
           >

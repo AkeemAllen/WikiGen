@@ -5,13 +5,26 @@
     label: string;
     value: any;
   };
-  export let id = "";
-  export let label = "";
-  export let value: string | undefined | null | boolean | number = "";
-  export let options: Option[] = [];
-  export let onChange: EventHandler<Event, HTMLSelectElement> = () => {};
-  let className: string = "";
-  export { className as class };
+  interface Props {
+    id?: string;
+    label?: string;
+    value?: string | undefined | null | boolean | number;
+    options?: Option[];
+    onChange?: EventHandler<Event, HTMLSelectElement>;
+    class?: string;
+    [key: string]: any
+  }
+
+  let {
+    id = "",
+    label = "",
+    value = $bindable(""),
+    options = [],
+    onChange = () => {},
+    class: className = "",
+    ...rest
+  }: Props = $props();
+  
 </script>
 
 <div class="min-w-20 {className}">
@@ -24,8 +37,8 @@
       style={"-webkit-appearance: none;"}
       class="block w-full rounded-md border-0 pl-2 py-1.5 mt-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 disabled:bg-gray-100 disabled:text-gray-400"
       bind:value
-      on:change={onChange}
-      {...$$restProps}
+      onchange={onChange}
+      {...rest}
     >
       {#each options as option}
         <option value={option.value}>{option.label}</option>

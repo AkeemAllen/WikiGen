@@ -8,14 +8,18 @@
 
   const toastStore = getToastStore();
 
-  export let open: boolean = false;
-  let wikisToDelete: string[] = [];
+  interface Props {
+    open?: boolean;
+  }
+
+  let { open = $bindable(false) }: Props = $props();
+  let wikisToDelete: string[] = $state([]);
   let directoriesRemoved: boolean = false;
   let wikiJsonUpdated: boolean = false;
 
-  $: wikiListOptions = Object.keys($wikis).filter(
+  let wikiListOptions = $derived(Object.keys($wikis).filter(
     (wiki) => wiki !== $selectedWiki.name,
-  );
+  ));
 
   async function deleteWikis() {
     for (const wiki of wikisToDelete) {

@@ -1,14 +1,24 @@
 <script lang="ts">
-  export let onClick = () => {};
-  export let title: string = "";
-  export let disabled: boolean = false;
-  export let loading: boolean = false;
-  let className: string = "";
-  export { className as class };
+  interface Props {
+    onClick?: any;
+    title?: string;
+    disabled?: boolean;
+    loading?: boolean;
+    class?: string;
+  }
+
+  let {
+    onClick = () => {},
+    title = "",
+    disabled = false,
+    loading = false,
+    class: className = ""
+  }: Props = $props();
+  
 </script>
 
 <button
-  on:click={onClick}
+  onclick={onClick}
   {disabled}
   class="{loading &&
     'flex justify-between'} rounded-3xl bg-red-600 px-3 py-2 text-sm font-semibold text-white

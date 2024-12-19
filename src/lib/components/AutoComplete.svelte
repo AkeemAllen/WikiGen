@@ -2,23 +2,40 @@
 import { Autocomplete, popup } from "@skeletonlabs/skeleton";
 import { IconChevronDown } from "@tabler/icons-svelte";
 
-export let id: string = "";
-export let popupId: string = "";
-export let placeholder: string = "";
-export let label: string = "";
-export let value: string | number | null = "";
-export let showChevron: boolean = true;
-export let disabled: boolean = false;
-export let options: { label: string; value: string | number | null }[] = [];
-export let onSelection: (event: CustomEvent) => void;
-export let inputNode: HTMLInputElement = document.createElement("input");
-export let onKeydown: (event: KeyboardEvent) => void = () => {};
 function setInputNode(node: HTMLElement, input: HTMLElement) {
   inputNode = node as HTMLInputElement;
 }
 
-let className: string = "";
-export { className as class };
+  interface Props {
+    id?: string;
+    popupId?: string;
+    placeholder?: string;
+    label?: string;
+    value?: string | number | null;
+    showChevron?: boolean;
+    disabled?: boolean;
+    options?: { label: string; value: string | number | null }[];
+    onSelection: (event: CustomEvent) => void;
+    inputNode?: HTMLInputElement;
+    onKeydown?: (event: KeyboardEvent) => void;
+    class?: string;
+  }
+
+  let {
+    id = "",
+    popupId = "",
+    placeholder = "",
+    label = "",
+    value = $bindable(""),
+    showChevron = true,
+    disabled = false,
+    options = [],
+    onSelection,
+    inputNode = $bindable(document.createElement("input")),
+    onKeydown = () => {},
+    class: className = ""
+  }: Props = $props();
+
 </script>
 
 <div class={className}>
@@ -39,7 +56,7 @@ export { className as class };
       placement: "bottom",
     }}
       use:setInputNode={inputNode}
-      on:keydown={onKeydown}
+      onkeydown={onKeydown}
     />
     {#if showChevron}
       <div class="absolute right-5 top-[10px] z-10 block">

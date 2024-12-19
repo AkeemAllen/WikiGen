@@ -1,12 +1,23 @@
 <script lang="ts">
 import { IconDots } from "@tabler/icons-svelte";
 import { popup } from "@skeletonlabs/skeleton";
-export let index;
-export let trainerToUpdate: string;
-export let trainerName: string;
-export let spriteModalOpen: boolean = false;
-export let trainerVersionsModalOpen: boolean = false;
-export let positionModalOpen: boolean = false;
+  interface Props {
+    index: any;
+    trainerToUpdate: string;
+    trainerName: string;
+    spriteModalOpen?: boolean;
+    trainerVersionsModalOpen?: boolean;
+    positionModalOpen?: boolean;
+  }
+
+  let {
+    index,
+    trainerToUpdate = $bindable(),
+    trainerName,
+    spriteModalOpen = $bindable(false),
+    trainerVersionsModalOpen = $bindable(false),
+    positionModalOpen = $bindable(false)
+  }: Props = $props();
 </script>
 
 <button
@@ -22,7 +33,7 @@ export let positionModalOpen: boolean = false;
 <div class="card z-10 w-44 bg-white p-2" data-popup="trainerMenu{index}">
   <button
     class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-    on:click={() => {
+    onclick={() => {
                     spriteModalOpen = true;
                     trainerToUpdate = trainerName;
                 }}
@@ -30,7 +41,7 @@ export let positionModalOpen: boolean = false;
   >
   <button
     class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-    on:click={() => {
+    onclick={() => {
                     trainerVersionsModalOpen = true;
                     trainerToUpdate = trainerName;
                 }}
@@ -38,7 +49,7 @@ export let positionModalOpen: boolean = false;
   >
   <button
     class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-    on:click={() => {
+    onclick={() => {
                     positionModalOpen = true;
                     trainerToUpdate = trainerName;
                 }}
