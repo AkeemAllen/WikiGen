@@ -30,8 +30,8 @@
         {#each Object.entries($wikis) as [codeName, properties]}
           <button
             class="bg-gray-100 p-3 rounded-md border-2
-            hover:bg-indigo-600 hover:text-white hover:font-semibold
-            hover:ring hover:ring-indigo-500 ease-in-out duration-200"
+            hover:bg-red-600 hover:text-white hover:font-semibold
+            hover:ring hover:ring-red-500 ease-in-out duration-200"
             onclick={() => {
               $selectedWiki = $wikis[codeName];
               loadWikiData($selectedWiki, toastStore);
@@ -41,8 +41,8 @@
       </div>
       <button
         class="bg-gray-100 self-center p-2 rounded-md
-        border-2 hover:bg-indigo-600 hover:text-white hover:ring
-        hover:ring-indigo-500 ease-in-out duration-200"
+        border-2 hover:bg-red-600 hover:text-white hover:ring
+        hover:ring-red-500 ease-in-out duration-200"
         use:popup={addIconToolTip}
         onclick={() => (createWikiModalOpen = true)}
       >

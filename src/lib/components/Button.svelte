@@ -1,20 +1,19 @@
 <script lang="ts">
-  interface Props {
+  type Props = {
     onClick?: any;
     title?: string;
     disabled?: boolean;
     loading?: boolean;
     class?: string;
-  }
+  };
 
   let {
     onClick = () => {},
     title = "",
     disabled = false,
     loading = false,
-    class: className = ""
+    class: className = "",
   }: Props = $props();
-  
 </script>
 
 <button

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import NavButton from "$lib/components/NavButton.svelte";
-  import WikiSelectMenu from "$lib/components/WikiSelectMenu.svelte";
   import BaseModal from "$lib/components/BaseModal.svelte";
   import {
     arrow,
@@ -22,28 +21,20 @@
     storePopup,
   } from "@skeletonlabs/skeleton";
   import {
-    IconAdjustmentsUp,
-    IconArrowBackUp,
-    IconBallBasketball,
     IconBottle,
-    IconBottleFilled,
     IconBrandGithub,
     IconDeviceFloppy,
     IconDisc,
-    IconDotsVertical,
     IconDownload,
     IconFlame,
     IconHome,
-    IconHomeFilled,
     IconMapRoute,
     IconPlus,
     IconPokeball,
-    IconRoute2,
     IconSeeding,
     IconTestPipe,
     IconTrash,
     IconTreadmill,
-    IconTree,
   } from "@tabler/icons-svelte";
   import "../app.pcss";
   import { selectedWiki } from "../store";
@@ -54,11 +45,6 @@
   } from "@tauri-apps/api/updater";
   import { onMount } from "svelte";
   import { relaunch } from "@tauri-apps/api/process";
-  import {
-    BaseDirectory,
-    readTextFile,
-    writeTextFile,
-  } from "@tauri-apps/api/fs";
   import { invoke } from "@tauri-apps/api";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import { wikis } from "../store";
@@ -68,7 +54,7 @@
   import CreateWikiModal from "$lib/components/modals/CreateWikiModal.svelte";
   import DeleteWikiModal from "$lib/components/modals/DeleteWikiModal.svelte";
   interface Props {
-    children?: import('svelte').Snippet;
+    children?: import("svelte").Snippet;
   }
 
   let { children }: Props = $props();
@@ -76,12 +62,6 @@
   initializeStores();
 
   storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
-
-  const wikiSelectPopup: PopupSettings = {
-    event: "click",
-    target: "wikiSelectPopup",
-    placement: "top",
-  };
 
   const modalRegistry: Record<string, ModalComponent> = {};
   let updaterModalOpen = $state(false);
@@ -239,126 +219,117 @@
 <Modal components={modalRegistry} />
 <AppShell class="h-screen bg-white">
   {#snippet sidebarLeft()}
-  
-      {#if $selectedWiki.name !== ""}
-        <div class="flex h-full flex-col gap-4 bg-touch-red p-4 pt-6 w-[17.5rem]">
-          <div class="flex grow flex-col">
-            <NavButton
-              name="Home"
-              route="/home"
-              active={$page.url.pathname.includes("home")}
-            >
-              {#snippet icon()}
-                        <IconHome
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("home") && "text-red-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <NavButton
-              name="Pokemon"
-              route="/pokemon"
-              active={$page.url.pathname.includes("pokemon")}
-            >
-              {#snippet icon()}
-                        <IconPokeball
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("pokemon") && "text-red-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <NavButton
-              name="Routes"
-              route="/game-routes"
-              active={$page.url.pathname.includes("game-routes")}
-            >
-              {#snippet icon()}
-                        <IconMapRoute
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("game-routes") && "text-red-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <NavButton
-              name="Moves"
-              route="/moves"
-              active={$page.url.pathname.includes("moves")}
-            >
-              {#snippet icon()}
-                        <IconDisc
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("moves") && "text-red-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <NavButton
-              name="Types"
-              route="/types"
-              active={$page.url.pathname.includes("types")}
-            >
-              {#snippet icon()}
-                        <IconFlame
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("types") && "text-red-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <p class="mb-2 mt-4 text-sm text-slate-400 font-semibold">
-              Attributes
-            </p>
-            <NavButton
-              name="Items"
-              route="/items"
-              active={$page.url.pathname.includes("items")}
-            >
-              {#snippet icon()}
-                        <IconBottle
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("items") && "text-red-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <NavButton
-              name="Abiities"
-              route="/abilities"
-              active={$page.url.pathname.includes("abilities")}
-            >
-              {#snippet icon()}
-                        <IconTreadmill
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("abilities") && "text-red-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <NavButton
-              name="Natures"
-              route="/natures"
-              active={$page.url.pathname.includes("natures")}
-            >
-              {#snippet icon()}
-                        <IconSeeding
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("natures") && "text-red-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <!-- <NavButton
+    {#if $selectedWiki.name !== ""}
+      <div class="flex h-full flex-col gap-4 bg-touch-red p-4 pt-6 w-[17.5rem]">
+        <div class="flex grow flex-col">
+          <NavButton
+            name="Home"
+            route="/home"
+            active={$page.url.pathname.includes("home")}
+          >
+            {#snippet icon()}
+              <IconHome
+                size={20}
+                class={`${$page.url.pathname.includes("home") && "text-red-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <NavButton
+            name="Pokemon"
+            route="/pokemon"
+            active={$page.url.pathname.includes("pokemon")}
+          >
+            {#snippet icon()}
+              <IconPokeball
+                size={20}
+                class={`${$page.url.pathname.includes("pokemon") && "text-red-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <NavButton
+            name="Routes"
+            route="/game-routes"
+            active={$page.url.pathname.includes("game-routes")}
+          >
+            {#snippet icon()}
+              <IconMapRoute
+                size={20}
+                class={`${$page.url.pathname.includes("game-routes") && "text-red-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <NavButton
+            name="Moves"
+            route="/moves"
+            active={$page.url.pathname.includes("moves")}
+          >
+            {#snippet icon()}
+              <IconDisc
+                size={20}
+                class={`${$page.url.pathname.includes("moves") && "text-red-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <NavButton
+            name="Types"
+            route="/types"
+            active={$page.url.pathname.includes("types")}
+          >
+            {#snippet icon()}
+              <IconFlame
+                size={20}
+                class={`${$page.url.pathname.includes("types") && "text-red-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <p class="mb-2 mt-4 text-sm text-slate-400 font-semibold">
+            Attributes
+          </p>
+          <NavButton
+            name="Items"
+            route="/items"
+            active={$page.url.pathname.includes("items")}
+          >
+            {#snippet icon()}
+              <IconBottle
+                size={20}
+                class={`${$page.url.pathname.includes("items") && "text-red-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <NavButton
+            name="Abiities"
+            route="/abilities"
+            active={$page.url.pathname.includes("abilities")}
+          >
+            {#snippet icon()}
+              <IconTreadmill
+                size={20}
+                class={`${$page.url.pathname.includes("abilities") && "text-red-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <NavButton
+            name="Natures"
+            route="/natures"
+            active={$page.url.pathname.includes("natures")}
+          >
+            {#snippet icon()}
+              <IconSeeding
+                size={20}
+                class={`${$page.url.pathname.includes("natures") && "text-red-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <!-- <NavButton
               name="Wiki Testing"
               route="/wiki-testing"
               active={$page.url.pathname.includes("wiki-testing")}
             >
               <IconTestPipe slot="icon" size={16} color="indigo" />
             </NavButton> -->
-          </div>
-          <!-- <div class="flex flex-row items-center justify-between w-[12rem]">
+        </div>
+        <!-- <div class="flex flex-row items-center justify-between w-[12rem]">
             <p>
               {$selectedWiki.name ? $selectedWiki.site_name : "Select Wiki"}
             </p>
@@ -367,114 +338,109 @@
             </span>
           </div>
           <WikiSelectMenu /> -->
-        </div>
-      {/if}
-    
+      </div>
+    {/if}
   {/snippet}
   {#snippet pageHeader()}
-  
-      <div class="flex flex-row justify-end mr-10 gap-x-3 items-center"></div>
-    
+    <div class="flex flex-row justify-end mr-10 gap-x-3 items-center"></div>
   {/snippet}
   <div class="mt-6 mr-10 ml-10">
     {@render children?.()}
   </div>
   {#snippet pageFooter()}
-  
-      {#if $selectedWiki.name !== ""}
-        <div class="flex flex-row w-full p-2 justify-end pr-5 gap-x-3">
-          <button
-            class="self-center p-2 rounded-md mt-2
+    {#if $selectedWiki.name !== ""}
+      <div class="flex flex-row w-full p-2 justify-end pr-5 gap-x-3">
+        <button
+          class="self-center p-2 rounded-md mt-2
          text-gray-400
             border-0 hover:text-red-600 ease-in-out duration-200"
-            use:popup={{
-              event: "hover",
-              target: "addIconToolTip",
-              placement: "bottom",
-            }}
-            onclick={() => (createWikiModalOpen = true)}
-          >
-            <IconPlus size={20} />
-          </button>
-          <div data-popup="addIconToolTip">
-            <p class="card p-1 text-sm">Create New Wiki</p>
+          use:popup={{
+            event: "hover",
+            target: "addIconToolTip",
+            placement: "bottom",
+          }}
+          onclick={() => (createWikiModalOpen = true)}
+        >
+          <IconPlus size={20} />
+        </button>
+        <div data-popup="addIconToolTip">
+          <p class="card p-1 text-sm">Create New Wiki</p>
 
-            <div class="arrow bg-surface-100-800-token"></div>
-          </div>
-          <button
-            class="self-center p-2 rounded-md mt-2
+          <div class="arrow bg-surface-100-800-token"></div>
+        </div>
+        <button
+          class="self-center p-2 rounded-md mt-2
          text-gray-400
             border-0 hover:text-red-600 ease-in-out duration-200"
-            use:popup={{
-              event: "hover",
-              target: "previewWikiToolTip",
-              placement: "bottom",
-            }}
-          >
-            <IconTestPipe size={20} />
-          </button>
-          <div data-popup="previewWikiToolTip">
-            <p class="card p-1 text-sm">Preview Wiki</p>
+          use:popup={{
+            event: "hover",
+            target: "previewWikiToolTip",
+            placement: "bottom",
+          }}
+        >
+          <IconTestPipe size={20} />
+        </button>
+        <div data-popup="previewWikiToolTip">
+          <p class="card p-1 text-sm">Preview Wiki</p>
 
-            <div class="arrow bg-surface-100-800-token"></div>
-          </div>
-          <!-- <div class="flex flex-row w-full p-2 justify-end mr-10 gap-x-3"> -->
-          <button
-            class="self-center p-2 rounded-md mt-2
+          <div class="arrow bg-surface-100-800-token"></div>
+        </div>
+        <!-- <div class="flex flex-row w-full p-2 justify-end mr-10 gap-x-3"> -->
+        <button
+          class="self-center p-2 rounded-md mt-2
            text-gray-400
               border-0 hover:text-red-600 ease-in-out duration-200"
-          >
-            <IconBrandGithub size={20} />
-          </button>
-          <button
-            class="self-center p-2 rounded-md mt-2
+        >
+          <IconBrandGithub size={20} />
+        </button>
+        <button
+          class="self-center p-2 rounded-md mt-2
            text-gray-400
               border-0 hover:text-red-600 ease-in-out duration-200"
-            use:popup={{
-              event: "hover",
-              target: "backupWikiToolTip",
-              placement: "top",
-            }}
-            onclick={backupWiki}
-          >
-            <IconDeviceFloppy size={20} />
-          </button>
-          <div data-popup="backupWikiToolTip">
-            <p class="card p-1 text-sm">Backup Wiki</p>
+          use:popup={{
+            event: "hover",
+            target: "backupWikiToolTip",
+            placement: "top",
+          }}
+          onclick={backupWiki}
+        >
+          <IconDeviceFloppy size={20} />
+        </button>
+        <div data-popup="backupWikiToolTip">
+          <p class="card p-1 text-sm">Backup Wiki</p>
 
-            <div class="arrow bg-surface-100-800-token"></div>
-          </div>
-          <button
-            class="self-center p-2 rounded-md mt-2
+          <div class="arrow bg-surface-100-800-token"></div>
+        </div>
+        <button
+          class="self-center p-2 rounded-md mt-2
            text-gray-400
               border-0 hover:bg-red-600 hover:text-white ease-in-out duration-200"
-            onclick={() => (deleteWikiModalOpen = true)}
-          >
-            <IconTrash size={20} />
-          </button>
-          <SelectInput
-            options={Object.entries($wikis).map(([name, props]) => ({
-              label: props.site_name,
-              value: name,
-            }))}
-            value={$selectedWiki.name}
-            onChange={loadSelectedWiki}
-            class="w-[17rem]"
-          />
-          {#if displayUpdateButton}
-            <button
-              class="flex items-center self-end justify-self-end gap-1 shadow-sm border-0
+          onclick={() => (deleteWikiModalOpen = true)}
+        >
+          <IconTrash size={20} />
+        </button>
+        <SelectInput
+          options={Object.entries($wikis).map(([name, props]) => ({
+            label: props.site_name,
+            value: name,
+          }))}
+          value={$selectedWiki.name}
+          onChange={loadSelectedWiki}
+          class="w-[17rem]"
+        />
+        {#if displayUpdateButton}
+          <button
+            class="flex items-center self-end justify-self-end gap-1 shadow-sm border-0
           text-sm text-gray-500 hover:bg-red-600
           hover:text-white ease-in-out duration-200 rounded-md p-2"
-              onclick={() => updateApp()}
-            >
-              <IconDownload size={18} />
-              Update Available!
-            </button>
-          {/if}
-        </div>
-      {/if}
-      <!-- </div> -->
-    
+            onclick={() => updateApp()}
+          >
+            <IconDownload size={18} />
+            Update Available!
+          </button>
+        {/if}
+      </div>
+    {/if}
+    <!-- </div> -->
   {/snippet}
 </AppShell>

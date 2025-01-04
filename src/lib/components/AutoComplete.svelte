@@ -1,10 +1,10 @@
 <script lang="ts">
-import { Autocomplete, popup } from "@skeletonlabs/skeleton";
-import { IconChevronDown } from "@tabler/icons-svelte";
+  import { Autocomplete, popup } from "@skeletonlabs/skeleton";
+  import { IconChevronDown } from "@tabler/icons-svelte";
 
-function setInputNode(node: HTMLElement, input: HTMLElement) {
-  inputNode = node as HTMLInputElement;
-}
+  function setInputNode(node: HTMLElement, input: HTMLElement) {
+    inputNode = node as HTMLInputElement;
+  }
 
   interface Props {
     id?: string;
@@ -14,7 +14,7 @@ function setInputNode(node: HTMLElement, input: HTMLElement) {
     value?: string | number | null;
     showChevron?: boolean;
     disabled?: boolean;
-    options?: { label: string; value: string | number | null }[];
+    options?: { label: any; value: string | number | null }[];
     onSelection: (event: CustomEvent) => void;
     inputNode?: HTMLInputElement;
     onKeydown?: (event: KeyboardEvent) => void;
@@ -33,9 +33,8 @@ function setInputNode(node: HTMLElement, input: HTMLElement) {
     onSelection,
     inputNode = $bindable(document.createElement("input")),
     onKeydown = () => {},
-    class: className = ""
+    class: className = "",
   }: Props = $props();
-
 </script>
 
 <div class={className}>
@@ -44,17 +43,17 @@ function setInputNode(node: HTMLElement, input: HTMLElement) {
   </label>
   <div class="relative">
     <input
-      id={id}
+      {id}
       type="text"
-      placeholder={placeholder}
+      {placeholder}
       class="mt-2 block w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-      bind:value={value}
-      disabled={disabled}
+      bind:value
+      {disabled}
       use:popup={{
-      event: "focus-click",
-      target: popupId,
-      placement: "bottom",
-    }}
+        event: "focus-click",
+        target: popupId,
+        placement: "bottom",
+      }}
       use:setInputNode={inputNode}
       onkeydown={onKeydown}
     />
@@ -71,7 +70,7 @@ function setInputNode(node: HTMLElement, input: HTMLElement) {
   >
     <Autocomplete
       bind:input={value}
-      options={options}
+      {options}
       limit={5}
       on:selection={onSelection}
       class="w-full rounded-md border bg-white p-2 text-sm"

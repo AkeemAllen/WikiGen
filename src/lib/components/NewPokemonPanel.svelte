@@ -23,6 +23,7 @@
   let pokemonSearch: [number, string] = $state([0, ""]);
   let newSpriteImage: string = $state("");
   let newPokemon: Pokemon = $state({
+    id: 0,
     dex_number: 0,
     name: "",
     types: "normal",
@@ -35,7 +36,13 @@
     sp_attack: 0,
     sp_defense: 0,
     speed: 0,
-  } as Pokemon);
+    render: "true",
+    evolution_method: "no_change",
+    evolved_pokemon: null,
+    evolution_item: null,
+    evolution_level: null,
+    evolution_other: null,
+  });
   let copiedMoveset: PokemonMove[] = $state([]);
 
   let tabSet: number = $state(0);
@@ -246,7 +253,7 @@
     label="Pokemon Name*"
     bind:value={newPokemon.name}
     class="w-40"
-    inputHandler={(e) => {
+    inputHandler={(e: any) => {
       newPokemon.name = e.target.value.toLowerCase().replaceAll(" ", "-");
     }}
   />
@@ -265,17 +272,15 @@
     >Moves</Tab
   >
   {#snippet panel()}
-  
-      {#if tabSet === 0}
-        <PokemonDetailsTab bind:pokemon={newPokemon} isNewPokemon={true} />
-      {/if}
-      {#if tabSet === 1}
-        <PokemonMovesetTab
-          moveset={copiedMoveset}
-          pokemonId={0}
-          generatePokemonPage={() => {}}
-        />
-      {/if}
-    
+    {#if tabSet === 0}
+      <PokemonDetailsTab bind:pokemon={newPokemon} isNewPokemon={true} />
+    {/if}
+    {#if tabSet === 1}
+      <PokemonMovesetTab
+        moveset={copiedMoveset}
+        pokemonId={0}
+        generatePokemonPage={() => {}}
+      />
+    {/if}
   {/snippet}
 </TabGroup>

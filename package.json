@@ -16,21 +16,21 @@
     "@sveltejs/adapter-auto": "^3.0.0",
     "@sveltejs/adapter-static": "^3.0.1",
     "@sveltejs/kit": "^2.5.27",
-    "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tauri-apps/cli": "^1.5.11",
     "@types/node": "^20.11.25",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
     "postcss-load-config": "^5.0.2",
-    "prettier": "^3.2.5",
-    "prettier-plugin-svelte": "^3.2.6",
+    "prettier": "^3.4.2",
+    "prettier-plugin-svelte": "^3.3.2",
     "prettier-plugin-tailwindcss": "^0.5.12",
     "svelte": "^5.0.0",
     "svelte-check": "^4.0.0",
     "tailwindcss": "^3.3.6",
     "tslib": "^2.4.1",
     "typescript": "^5.5.0",
-    "vite": "^5.4.4"
+    "vite": "^6.0.3"
   },
   "type": "module",
   "dependencies": {
@@ -38,7 +38,7 @@
     "@tabler/icons-svelte": "^3.0.0",
     "@tauri-apps/api": "^1.5.3",
     "@vincjo/datatables": "^1.14.5",
-    "svelte-multiselect": "^10.3.0",
+    "svelte-multiselect": "11.0.0-rc.1",
     "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql#v1"
   }
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
+  import { run } from "svelte/legacy";
 
   import SelectInput from "$lib/components/SelectInput.svelte";
   import AutoComplete from "$lib/components/AutoComplete.svelte";
@@ -14,11 +14,12 @@
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   interface Props {
-    pokemon?: Pokemon;
+    pokemon: Pokemon;
     isNewPokemon?: boolean;
   }
 
-  let { pokemon = $bindable({} as Pokemon), isNewPokemon = false }: Props = $props();
+  let { pokemon = $bindable({} as Pokemon), isNewPokemon = false }: Props =
+    $props();
 
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
@@ -26,12 +27,6 @@
   }));
 
   const abilitiesListOptions = $abilitiesList.map(([id, name]) => {
-    if (name === "None") {
-      return {
-        label: "None",
-        value: null,
-      };
-    }
     return {
       label: capitalizeWords(name),
       value: name,
@@ -43,51 +38,27 @@
     value: name,
   }));
 
-  let ability_1: string = $state("");
-  function setAbility1() {
-    if (pokemon.ability_1 === null) {
-      ability_1 = "None";
-      return;
+  let type1: string = $derived(pokemon.types.split(",")[0]);
+  let type2: string = $derived.by(() => {
+    if (pokemon.types.split(",").length < 2) {
+      return "none";
     }
-    ability_1 = capitalizeWords(pokemon.ability_1);
-  }
 
-  let ability_2: string = $state("");
-  function setAbility2() {
-    if (pokemon.ability_2 === null) {
-      ability_2 = "None";
-      return;
-    }
-    ability_2 = capitalizeWords(pokemon.ability_2);
-  }
-
-  let hidden_ability: string = $state("");
-  function setHiddenAbility() {
-    if (pokemon.hidden_ability === null) {
-      hidden_ability = "None";
-      return;
-    }
-    hidden_ability = capitalizeWords(pokemon.hidden_ability);
-  }
-
-  let types: string[] = $state();
-  function setTypes() {
-    types = pokemon.types.split(",");
-    if (types.length === 1) {
-      types.push("none");
-    }
-  }
+    return pokemon.types.split(",")[1];
+  });
 
   function onTypeChange(e: any, type_number: string) {
-    console.log(e);
+    let tempType1 = type1;
+    let tempType2 = type2;
+
     if (type_number === "1") {
-      types[0] = e.target.value;
+      tempType1 = e.target.value;
     } else {
-      types[1] = e.target.value;
+      tempType2 = e.target.value;
     }
 
     // This scenario should be unlikely. So default it to normal
-    if (types[0] === "none" && types[1] === "none") {
+    if (tempType1 === "none" && tempType2 === "none") {
       getToastStore().trigger(
         getToastSettings(
           ToastType.ERROR,
@@ -98,38 +69,25 @@
       return;
     }
 
-    if (types[0] !== "none" && types[1] === "none") {
-      pokemon.types = types[0];
+    if (tempType1 !== "none" && tempType2 === "none") {
+      pokemon.types = tempType1;
       return;
     }
 
-    if (types[0] === "none" && types[1] !== "none") {
-      pokemon.types = types[1];
+    if (tempType1 === "none" && tempType2 !== "none") {
+      pokemon.types = tempType2;
       return;
     }
 
-    pokemon.types = `${types[0]},${types[1]}`;
+    pokemon.types = `${tempType1},${tempType2}`;
   }
-  run(() => {
-    if (pokemon.ability_1 || pokemon.ability_1 === null) setAbility1();
-  });
-  run(() => {
-    if (pokemon.ability_2 || pokemon.ability_2 === null) setAbility2();
-  });
-  run(() => {
-    if (pokemon.hidden_ability || pokemon.hidden_ability === null)
-      setHiddenAbility();
-  });
-  run(() => {
-    if (pokemon.types) setTypes();
-  });
 </script>
 
 <div class="scroll-smooth px-4">
   <div class="mt-4 grid grid-cols-2 gap-x-10 gap-y-5">
     <SelectInput
       id="pokemon-type-1"
-      bind:value={types[0]}
+      value={type1}
       label="Type 1"
       options={$pokemonTypes.map((type) => {
         return {
@@ -141,7 +99,7 @@
     />
     <SelectInput
       id="pokemon-type-2"
-      bind:value={types[1]}
+      value={type2}
       label="Type 2"
       options={$pokemonTypes.map((type) => {
         return {
@@ -153,33 +111,30 @@
     />
     <AutoComplete
       label="Ability 1"
-      bind:value={ability_1}
+      bind:value={pokemon.ability_1}
       options={abilitiesListOptions}
       popupId="ability-1-popup"
       onSelection={(e) => {
-        ability_1 = e.detail.label;
         pokemon.ability_1 = e.detail.value;
       }}
       class="w-full"
     />
     <AutoComplete
       label="Ability 2"
-      bind:value={ability_2}
+      bind:value={pokemon.ability_2}
       options={abilitiesListOptions}
       popupId="ability-2-popup"
       onSelection={(e) => {
-        ability_2 = e.detail.label;
         pokemon.ability_2 = e.detail.value;
       }}
       class="w-full"
     />
     <AutoComplete
       label="Hidden Ability"
-      bind:value={hidden_ability}
+      bind:value={pokemon.hidden_ability}
       options={abilitiesListOptions}
       popupId="hidden-ability-popup"
       onSelection={(e) => {
-        hidden_ability = e.detail.label;
         pokemon.hidden_ability = e.detail.value;
       }}
       class="w-full col-start-2"

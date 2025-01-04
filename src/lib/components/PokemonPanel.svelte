@@ -38,7 +38,9 @@
   let pokemonMoveset: PokemonMove[] = $state([]);
   let pokemonLocations: WildEncounter[] = $state([]);
   let pokemonSprite: string = $state("");
-  let pokemonNameInput: HTMLInputElement = $state();
+  let pokemonNameInput: HTMLInputElement = $state(
+    document.createElement("input"),
+  );
 
   let tabSet: number = $state(0);
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
@@ -329,27 +331,25 @@
       >Location</Tab
     >
     {#snippet panel()}
-      
-        {#if tabSet === 0}
-          <PokemonDetailsTab bind:pokemon />
-        {/if}
-        {#if tabSet === 1}
-          <PokemonMovesTab
-            bind:moveset={pokemonMoveset}
-            bind:pokemonId={pokemon.id}
-            generatePokemonPage={() => generatePage()}
-          />
-        {/if}
-        {#if tabSet === 2}
-          <PokemonLocationTab
-            {pokemonLocations}
-            pokemonId={pokemon.id}
-            pokemonDexNumber={pokemon.dex_number}
-            pokemonName={pokemon.name}
-          />
-        {/if}
-      
-      {/snippet}
+      {#if tabSet === 0}
+        <PokemonDetailsTab bind:pokemon />
+      {/if}
+      {#if tabSet === 1}
+        <PokemonMovesTab
+          bind:moveset={pokemonMoveset}
+          bind:pokemonId={pokemon.id}
+          generatePokemonPage={() => generatePage()}
+        />
+      {/if}
+      {#if tabSet === 2}
+        <PokemonLocationTab
+          {pokemonLocations}
+          pokemonId={pokemon.id}
+          pokemonDexNumber={pokemon.dex_number}
+          pokemonName={pokemon.name}
+        />
+      {/if}
+    {/snippet}
   </TabGroup>
 {/if}
 
