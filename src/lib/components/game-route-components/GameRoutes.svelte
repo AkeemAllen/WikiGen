@@ -25,10 +25,14 @@
     oldRoutePosition?: number;
   }
 
-  let { positionModalOpen = $bindable(false), routeToUpdate = $bindable(""), oldRoutePosition = $bindable(0) }: Props = $props();
+  let {
+    positionModalOpen = $bindable(false),
+    routeToUpdate = $bindable(""),
+    oldRoutePosition = $bindable(0),
+  }: Props = $props();
 
   let newRouteName: string = $state("");
-  let routeBeingEdited: string = $state();
+  let routeBeingEdited: string = $state("");
 
   async function renameRoute(originalRouteName: string, newName: string) {
     if (originalRouteName === newName) return;

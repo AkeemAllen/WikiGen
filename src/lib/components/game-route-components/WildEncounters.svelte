@@ -275,7 +275,7 @@ https://svelte.dev/e/node_invalid_placement -->
                 {encounter.encounter_rate}%
               </p>
             </div>
-            <button
+            <a
               class="invisible absolute right-2 top-2 z-20 rounded-md bg-red-200 p-1 hover:scale-110 group-hover:visible"
               on:click={(e) => {
                 e.stopPropagation();
@@ -283,7 +283,7 @@ https://svelte.dev/e/node_invalid_placement -->
               }}
             >
               <IconTrash size={16} color="grey" />
-            </button>
+            </a>
           </button>
         {/each}
       </div>
