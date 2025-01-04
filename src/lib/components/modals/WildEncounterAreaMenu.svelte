@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
+  import { run } from "svelte/legacy";
 
   import { getToastStore, popup } from "@skeletonlabs/skeleton";
   import { IconDots } from "@tabler/icons-svelte";
@@ -21,10 +21,6 @@
   }
 
   let { index, routeName, encounterArea }: Props = $props();
-
-  run(() => {
-    console.log({ routeName, encounterArea });
-  });
 
   let copyToRouteModalOpen = $state(false);
   let routeToCopyTo: string = $state("");
