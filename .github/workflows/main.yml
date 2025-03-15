@@ -74,7 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Added Hisuian Variants
+            \n- General Design and User Experience Improvements
             "
           releaseDraft: false
           prerelease: false

@@ -1,20 +1,20 @@
 <script lang="ts">
-export let onClick = () => {};
-export let title: string = "";
-export let disabled: boolean = false;
-export let loading: boolean = false;
-let className: string = "";
-export { className as class };
+  export let onClick = () => {};
+  export let title: string = "";
+  export let disabled: boolean = false;
+  export let loading: boolean = false;
+  let className: string = "";
+  export { className as class };
 </script>
 
 <button
   on:click={onClick}
-  disabled={disabled}
+  {disabled}
   class="{loading &&
-    'flex justify-between'} {className} rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white
-      shadow-sm hover:bg-indigo-500 focus-visible:outline
-      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
-        disabled:bg-indigo-400"
+    'flex justify-between'} rounded-3xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white
+    shadow-sm hover:bg-indigo-500 focus-visible:outline
+    focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
+    disabled:bg-indigo-400 {className}"
 >
   {#if loading}
     <svg
