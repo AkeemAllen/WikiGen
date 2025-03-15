@@ -201,20 +201,6 @@ async fn migrate_hisuian_forms(
     wiki_path: &PathBuf,
 ) -> Result<(), String> {
     let is_already_migrated = check_if_pokemon_already_migrated("growlithe-hisuian", conn).await;
-    let wiki_sprite_dir = wiki_path
-        .join("dist")
-        .join("docs")
-        .join("img")
-        .join("pokemon");
-    fs::remove_dir_all(&wiki_sprite_dir).unwrap();
-    copy_recursively(
-        resources_path
-            .join("resources")
-            .join("generator_assets")
-            .join("pokemon_sprites"),
-        &wiki_sprite_dir,
-    )
-    .expect("Failed to copy sprites");
 
     if !is_already_migrated {
         // run true migrations
