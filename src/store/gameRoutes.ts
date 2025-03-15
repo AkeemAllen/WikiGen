@@ -2,10 +2,11 @@ import { writable } from "svelte/store";
 
 export type Routes = {
   routes: { [key: string]: RouteProperties };
-  encounter_types: string[];
+  encounter_areas: string[];
 };
 
 export type RouteProperties = {
+  render: boolean;
   position: number;
   trainers: {
     [key: string]: TrainerInfo;
@@ -28,6 +29,7 @@ export type TrainerInfo = {
 export type TrainerPokemon = {
   id: number;
   unique_id: string;
+  types: string[];
   name: string;
   level: number;
   moves: string[];
@@ -41,7 +43,10 @@ export type WildEncounter = {
   id: number;
   name: string;
   encounter_rate: number;
+  encounter_area: string;
+  route: string;
+  special_note: string;
 };
 
 export let routes = writable<Routes>();
-// export let routesList = writable<>()
+export let wildEncounters = writable<WildEncounter[]>();

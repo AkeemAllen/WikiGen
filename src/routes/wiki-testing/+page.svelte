@@ -15,6 +15,9 @@
 
   // const toastStore = getToastStore();
   let mkdocsFilePath: string = "";
+  $: getMkdocsDirectory($selectedWiki.name).then((response) => {
+    mkdocsFilePath = response;
+  });
 
   // let isProcessRunning: boolean = false;
 
@@ -27,11 +30,6 @@
   // //     }
   // //   });
   // // });
-  onMount(() => {
-    getMkdocsDirectory().then((response) => {
-      mkdocsFilePath = response;
-    });
-  });
 
   // async function spawnProcess() {
   //   const appData = await appDataDir();
@@ -64,9 +62,9 @@
   //     isProcessRunning = false;
   //   });
   // }
-  async function getMkdocsDirectory(): Promise<string> {
+  async function getMkdocsDirectory(wikiName: string): Promise<string> {
     const appData = await appDataDir();
-    let mkdocsFilePath = `${appData}${$selectedWiki.name}/dist`;
+    let mkdocsFilePath = `${appData}${wikiName}/dist`;
     const osType = await type();
     if (osType === "Windows_NT") {
       mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
@@ -104,7 +102,7 @@
 <p class=" text-xl font-bold">Under Developement</p>
 <p class="text-sm">
   Currently developing the ability to launch and manage the wiki server from the
-  app. However, due to complications, this feature is currenctly paused.
+  app. However, due to complications, this feature is currently paused.
   <br />
   Below are instructions for launching the server manually
 </p>
@@ -112,25 +110,29 @@
 
 <div class="flex flex-col gap-y-1">
   <p class="text-sm">
-    1. Ensure <a href="https://www.python.org" target="_blank" class="underline"
-      >Python</a
-    > is installed on your system
+    1. Ensure <a
+      href="https://www.python.org/downloads/"
+      target="_blank"
+      class="underline">Python</a
+    > is installed on your system.
   </p>
   <p class="text-sm">
-    2. Run <code class="bg-gray-200 rounded-md px-1"
+    2. Run <code class="rounded-md bg-gray-200 px-1"
       >pip install mkdocs mkdocs-material</code
     > in a terminal to install mkdocs and its material theme
   </p>
   <p class="text-sm">
-    3. Navigate to the wiki dist directory <code
-      class="bg-gray-200 rounded-md px-1">{mkdocsFilePath}</code
+    3. In your terminal, navigate to the wiki's distribution directory with the
+    following command: <code class="rounded-md bg-gray-200 px-1"
+      >cd {mkdocsFilePath}</code
     >
-    and run <code class="bg-gray-200 rounded-md px-1">mkdocs serve</code>
+    and then run
+    <code class="rounded-md bg-gray-200 px-1">mkdocs serve</code>
   </p>
   <p class="text-sm">
     4. You should now see the server running on
     <a href="http://localhost:8000" target="_blank" class="underline"
-      >http://localhost:8000/_wiki_name_</a
+      >http://localhost:8000/{$selectedWiki.name}</a
     >. From there you can monitor the changes you make to the wiki
   </p>
 </div>

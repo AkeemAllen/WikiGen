@@ -1,0 +1,3758 @@
+{
+  "growlithe-hisuian": {
+    "ember": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "leer": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "howl": {
+      "level_learned": 4,
+      "learn_method": ["level-up"]
+    },
+    "bite": {
+      "level_learned": 8,
+      "learn_method": ["level-up"]
+    },
+    "flame-wheel": {
+      "level_learned": 12,
+      "learn_method": ["level-up"]
+    },
+    "helping-hand": {
+      "level_learned": 16,
+      "learn_method": ["level-up", "machine"]
+    },
+    "fire-fang": {
+      "level_learned": 24,
+      "learn_method": ["level-up", "machine"]
+    },
+    "retaliate": {
+      "level_learned": 28,
+      "learn_method": ["level-up"]
+    },
+    "crunch": {
+      "level_learned": 32,
+      "learn_method": ["level-up", "machine"]
+    },
+    "take-down": {
+      "level_learned": 36,
+      "learn_method": ["level-up", "machine"]
+    },
+    "flamethrower": {
+      "level_learned": 40,
+      "learn_method": ["level-up", "machine"]
+    },
+    "roar": {
+      "level_learned": 44,
+      "learn_method": ["level-up", "machine"]
+    },
+    "rock-slide": {
+      "level_learned": 48,
+      "learn_method": ["level-up", "machine"]
+    },
+    "reversal": {
+      "level_learned": 52,
+      "learn_method": ["level-up", "machine"]
+    },
+    "flare-blitz": {
+      "level_learned": 56,
+      "learn_method": ["level-up", "machine"]
+    },
+    "agility": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "scary-face": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "protect": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thunder-fang": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fire-spin": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rock-tomb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "flame-charge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sunny-day": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sandstorm": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "smart-strike": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dig": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "psychic-fangs": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "body-slam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rock-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "power-gem": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "will-o-wisp": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "stealth-rock": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "heat-wave": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fire-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "wild-charge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "stone-edge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "outrage": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "overheat": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "close-combat": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "smack-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "double-edge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "temper-flare": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "scorching-sands": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  },
+  "arcanine-hisuian": {
+    "agility": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "bite": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "crunch": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "ember": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "fire-fang": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "flame-wheel": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "flare-blitz": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "helping-hand": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "howl": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "leer": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "retaliate": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "reversal": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "roar": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "rock-slide": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "rock-throw": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "take-down": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "flamethrower": {
+      "level_learned": 5,
+      "learn_method": ["level-up", "machine"]
+    },
+    "raging-fury": {
+      "level_learned": 64,
+      "learn_method": ["level-up"]
+    },
+    "scary-face": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "protect": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thunder-fang": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thief": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fire-spin": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "aerial-ace": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "bulldoze": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "snarl": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rock-tomb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "flame-charge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sunny-day": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sandstorm": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "smart-strike": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dig": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "psychic-fangs": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "body-slam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rock-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "iron-head": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "power-gem": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "will-o-wisp": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dragon-pulse": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "stealth-rock": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hyper-voice": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "heat-wave": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fire-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "wild-charge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "stone-edge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-impact": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "outrage": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "overheat": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hyper-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "close-combat": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "solar-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "smack-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "heat-crash": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "double-edge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "temper-flare": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "scorching-sands": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  },
+  "decidueye-hisuian": {
+    "growl": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "leaf-storm": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "leafage": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "tackle": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "u-turn": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "peck": {
+      "level_learned": 9,
+      "learn_method": ["level-up"]
+    },
+    "shadow-sneak": {
+      "level_learned": 12,
+      "learn_method": ["level-up"]
+    },
+    "razor-leaf": {
+      "level_learned": 15,
+      "learn_method": ["level-up"]
+    },
+    "synthesis": {
+      "level_learned": 20,
+      "learn_method": ["level-up"]
+    },
+    "pluck": {
+      "level_learned": 25,
+      "learn_method": ["level-up"]
+    },
+    "bulk-up": {
+      "level_learned": 30,
+      "learn_method": ["level-up", "machine"]
+    },
+    "sucker-punch": {
+      "level_learned": 37,
+      "learn_method": ["level-up"]
+    },
+    "leaf-blade": {
+      "level_learned": 44,
+      "learn_method": ["level-up"]
+    },
+    "feather-dance": {
+      "level_learned": 51,
+      "learn_method": ["level-up", "machine"]
+    },
+    "brave-bird": {
+      "level_learned": 58,
+      "learn_method": ["level-up", "machine"]
+    },
+    "take-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "scary-face": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "protect": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "low-kick": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "confuse-ray": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "trailblaze": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "aerial-ace": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "swift": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "magical-leaf": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rock-tomb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "low-sweep": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "air-cutter": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "night-shade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sunny-day": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rain-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "bullet-seed": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "false-swipe": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "brick-break": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "shadow-claw": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "air-slash": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "seed-bomb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "light-screen": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "grass-knot": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "taunt": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "swords-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-drain": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "aura-sphere": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tailwind": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "energy-ball": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "helping-hand": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "baton-pass": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "reversal": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "grassy-terrain": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "nasty-plot": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "grass-pledge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-impact": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "frenzy-plant": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "focus-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hyper-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "close-combat": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "solar-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "haze": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "smack-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "knock-off": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "focus-punch": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "grassy-glide": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dual-wingbeat": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "coaching": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "upper-hand": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  },
+  "avalugg-hisuian": {
+    "harden": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "powder-snow": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "rapid-spin": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "tackle": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "wide-guard": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "curse": {
+      "level_learned": 9,
+      "learn_method": ["level-up", "machine"]
+    },
+    "icy-wind": {
+      "level_learned": 12,
+      "learn_method": ["level-up", "machine"]
+    },
+    "protect": {
+      "level_learned": 15,
+      "learn_method": ["level-up", "machine"]
+    },
+    "avalanche": {
+      "level_learned": 18,
+      "learn_method": ["level-up", "machine"]
+    },
+    "bite": {
+      "level_learned": 21,
+      "learn_method": ["level-up"]
+    },
+    "ice-fang": {
+      "level_learned": 24,
+      "learn_method": ["level-up", "machine"]
+    },
+    "iron-defense": {
+      "level_learned": 27,
+      "learn_method": ["level-up", "machine"]
+    },
+    "recover": {
+      "level_learned": 30,
+      "learn_method": ["level-up"]
+    },
+    "crunch": {
+      "level_learned": 33,
+      "learn_method": ["level-up", "machine"]
+    },
+    "take-down": {
+      "level_learned": 36,
+      "learn_method": ["level-up", "machine"]
+    },
+    "blizzard": {
+      "level_learned": 41,
+      "learn_method": ["level-up", "machine"]
+    },
+    "double-edge": {
+      "level_learned": 46,
+      "learn_method": ["level-up", "machine"]
+    },
+    "stone-edge": {
+      "level_learned": 51,
+      "learn_method": ["level-up", "machine"]
+    },
+    "mountain-gale": {
+      "level_learned": 61,
+      "learn_method": ["level-up"]
+    },
+    "scary-face": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "chilling-water": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "bulldoze": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rock-tomb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rain-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sandstorm": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "snowscape": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dig": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "body-slam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rock-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "stomping-tantrum": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rock-slide": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "body-press": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "iron-head": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "stealth-rock": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "heavy-slam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "ice-spinner": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "ice-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "earthquake": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-impact": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hyper-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "gyro-ball": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "high-horsepower": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "icicle-spear": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "meteor-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hard-press": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  },
+  "goodra-hisuian": {
+    "absorb": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "acid-spray": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "dragon-breath": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "feint": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "shelter": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "tackle": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "tearful-look": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "water-gun": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "protect": {
+      "level_learned": 15,
+      "learn_method": ["level-up", "machine"]
+    },
+    "flail": {
+      "level_learned": 20,
+      "learn_method": ["level-up"]
+    },
+    "water-pulse": {
+      "level_learned": 25,
+      "learn_method": ["level-up", "machine"]
+    },
+    "rain-dance": {
+      "level_learned": 30,
+      "learn_method": ["level-up", "machine"]
+    },
+    "dragon-pulse": {
+      "level_learned": 35,
+      "learn_method": ["level-up", "machine"]
+    },
+    "curse": {
+      "level_learned": 43,
+      "learn_method": ["level-up", "machine"]
+    },
+    "body-slam": {
+      "level_learned": 49,
+      "learn_method": ["level-up", "machine"]
+    },
+    "iron-head": {
+      "level_learned": 49,
+      "learn_method": ["level-up", "machine"]
+    },
+    "muddy-water": {
+      "level_learned": 58,
+      "learn_method": ["level-up", "machine"]
+    },
+    "heavy-slam": {
+      "level_learned": 67,
+      "learn_method": ["level-up", "machine"]
+    },
+    "take-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "charm": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "scary-face": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "chilling-water": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "bulldoze": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "mud-shot": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rock-tomb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dragon-tail": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sunny-day": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sandstorm": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fire-punch": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thunder-punch": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dragon-claw": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "stomping-tantrum": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rock-slide": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "body-press": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "flash-cannon": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "surf": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "ice-spinner": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "flamethrower": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thunderbolt": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "ice-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fire-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hydro-pump": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "blizzard": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sludge-bomb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "earthquake": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-impact": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "outrage": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hyper-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thunder": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "draco-meteor": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "steel-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "gyro-ball": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "knock-off": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "weather-ball": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "lash-out": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sludge-wave": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "skitter-smack": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "breaking-swipe": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dragon-cheer": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  },
+  "sliggoo-hisuian": {
+    "absorb": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "acid-armor": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "dragon-breath": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "tackle": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "water-gun": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "protect": {
+      "level_learned": 15,
+      "learn_method": ["level-up", "machine"]
+    },
+    "flail": {
+      "level_learned": 20,
+      "learn_method": ["level-up"]
+    },
+    "water-pulse": {
+      "level_learned": 25,
+      "learn_method": ["level-up", "machine"]
+    },
+    "rain-dance": {
+      "level_learned": 30,
+      "learn_method": ["level-up", "machine"]
+    },
+    "dragon-pulse": {
+      "level_learned": 35,
+      "learn_method": ["level-up", "machine"]
+    },
+    "curse": {
+      "level_learned": 43,
+      "learn_method": ["level-up", "machine"]
+    },
+    "iron-head": {
+      "level_learned": 49,
+      "learn_method": ["level-up", "machine"]
+    },
+    "muddy-water": {
+      "level_learned": 56,
+      "learn_method": ["level-up", "machine"]
+    },
+    "take-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "charm": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "acid-spray": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "chilling-water": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "mud-shot": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rock-tomb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sunny-day": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sandstorm": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "body-slam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rock-slide": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "flash-cannon": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "heavy-slam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "ice-spinner": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thunderbolt": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "ice-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "blizzard": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sludge-bomb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "outrage": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thunder": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "draco-meteor": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "steel-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "gyro-ball": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sludge-wave": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "skitter-smack": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  },
+  "braviary-hisuian": {
+    "hone-claws": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "leer": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "peck": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "sky-attack": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "superpower": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "wing-attack": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "tailwind": {
+      "level_learned": 18,
+      "learn_method": ["level-up", "machine"]
+    },
+    "scary-face": {
+      "level_learned": 24,
+      "learn_method": ["level-up", "machine"]
+    },
+    "aerial-ace": {
+      "level_learned": 30,
+      "learn_method": ["level-up", "machine"]
+    },
+    "slash": {
+      "level_learned": 36,
+      "learn_method": ["level-up"]
+    },
+    "whirlwind": {
+      "level_learned": 42,
+      "learn_method": ["level-up"]
+    },
+    "crush-claw": {
+      "level_learned": 48,
+      "learn_method": ["level-up"]
+    },
+    "air-slash": {
+      "level_learned": 57,
+      "learn_method": ["level-up", "machine"]
+    },
+    "defog": {
+      "level_learned": 64,
+      "learn_method": ["level-up"]
+    },
+    "thrash": {
+      "level_learned": 72,
+      "learn_method": ["level-up"]
+    },
+    "hurricane": {
+      "level_learned": 80,
+      "learn_method": ["level-up", "machine"]
+    },
+    "take-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "agility": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "protect": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "acrobatics": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "psybeam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "confuse-ray": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "snarl": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "metal-claw": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "swift": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "icy-wind": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rock-tomb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "air-cutter": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "stored-power": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "night-shade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sunny-day": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rain-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "psyshock": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "zen-headbutt": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "u-turn": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "shadow-claw": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "bulk-up": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "body-slam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dazzling-gleam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rock-slide": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fly": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "shadow-ball": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hyper-voice": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "heat-wave": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "psychic": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "calm-mind": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "helping-hand": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "reversal": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "psychic-terrain": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-impact": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hyper-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "brave-bird": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "close-combat": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "vacuum-wave": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dual-wingbeat": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "psych-up": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "double-edge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "feather-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "future-sight": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "expanding-force": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "psychic-noise": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  },
+  "zoroark-hisuian": {
+    "hone-claws": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "leer": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "scratch": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "torment": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "u-turn": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "shadow-sneak": {
+      "level_learned": 12,
+      "learn_method": ["level-up"]
+    },
+    "curse": {
+      "level_learned": 16,
+      "learn_method": ["level-up", "machine"]
+    },
+    "taunt": {
+      "level_learned": 20,
+      "learn_method": ["level-up", "machine"]
+    },
+    "knock-off": {
+      "level_learned": 24,
+      "learn_method": ["level-up", "machine"]
+    },
+    "spite": {
+      "level_learned": 28,
+      "learn_method": ["level-up", "machine"]
+    },
+    "agility": {
+      "level_learned": 34,
+      "learn_method": ["level-up", "machine"]
+    },
+    "shadow-ball": {
+      "level_learned": 40,
+      "learn_method": ["level-up", "machine"]
+    },
+    "bitter-malice": {
+      "level_learned": 46,
+      "learn_method": ["level-up"]
+    },
+    "nasty-plot": {
+      "level_learned": 52,
+      "learn_method": ["level-up", "machine"]
+    },
+    "foul-play": {
+      "level_learned": 58,
+      "learn_method": ["level-up", "machine"]
+    },
+    "take-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fake-tears": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "scary-face": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "protect": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "low-kick": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "confuse-ray": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thief": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "aerial-ace": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hex": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "snarl": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "swift": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "icy-wind": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "low-sweep": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "night-shade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fling": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rain-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "snowscape": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dig": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "brick-break": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "shadow-claw": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "body-slam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "grass-knot": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "swords-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "imprison": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dark-pulse": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "will-o-wisp": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "crunch": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "trick": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hyper-voice": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "psychic": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "flamethrower": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "calm-mind": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "helping-hand": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sludge-bomb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "phantom-force": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-impact": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "focus-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hyper-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "roar": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "focus-punch": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "burning-jealousy": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "poltergeist": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "lash-out": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "pain-split": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "psych-up": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "skitter-smack": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "throat-chop": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  },
+  "zorua-hisuian": {
+    "leer": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "scratch": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "torment": {
+      "level_learned": 4,
+      "learn_method": ["level-up"]
+    },
+    "hone-claws": {
+      "level_learned": 8,
+      "learn_method": ["level-up"]
+    },
+    "shadow-sneak": {
+      "level_learned": 12,
+      "learn_method": ["level-up"]
+    },
+    "curse": {
+      "level_learned": 16,
+      "learn_method": ["level-up", "machine"]
+    },
+    "taunt": {
+      "level_learned": 20,
+      "learn_method": ["level-up", "machine"]
+    },
+    "knock-off": {
+      "level_learned": 24,
+      "learn_method": ["level-up", "machine"]
+    },
+    "spite": {
+      "level_learned": 28,
+      "learn_method": ["level-up", "machine"]
+    },
+    "agility": {
+      "level_learned": 32,
+      "learn_method": ["level-up", "machine"]
+    },
+    "shadow-ball": {
+      "level_learned": 36,
+      "learn_method": ["level-up", "machine"]
+    },
+    "bitter-malice": {
+      "level_learned": 40,
+      "learn_method": ["level-up"]
+    },
+    "nasty-plot": {
+      "level_learned": 44,
+      "learn_method": ["level-up", "machine"]
+    },
+    "foul-play": {
+      "level_learned": 48,
+      "learn_method": ["level-up", "machine"]
+    },
+    "take-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fake-tears": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "protect": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "confuse-ray": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thief": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hex": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "snarl": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "swift": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "icy-wind": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "night-shade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fling": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rain-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "snowscape": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dig": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "u-turn": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "shadow-claw": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "imprison": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dark-pulse": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "will-o-wisp": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "trick": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "calm-mind": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sludge-bomb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "phantom-force": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-impact": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hyper-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "roar": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "focus-punch": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "burning-jealousy": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "lash-out": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "pain-split": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "psych-up": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "skitter-smack": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  },
+  "lilligant-hisuian": {
+    "absorb": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "after-you": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "defog": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "energy-ball": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "entrainment": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "giga-drain": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "growth": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "helping-hand": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "leaf-blade": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "leaf-storm": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "leech-seed": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "magical-leaf": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "mega-drain": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "mega-kick": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "petal-blizzard": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "sleep-powder": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "solar-blade": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "stun-spore": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "sunny-day": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "synthesis": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "teeter-dance": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "axe-kick": {
+      "level_learned": 5,
+      "learn_method": ["level-up"]
+    },
+    "take-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "charm": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "protect": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "low-kick": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "acrobatics": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "trailblaze": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "aerial-ace": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "low-sweep": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rain-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "bullet-seed": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "brick-break": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "air-slash": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "seed-bomb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "metronome": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "grass-knot": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "poison-jab": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "swords-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "encore": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "ice-spinner": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "pollen-puff": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "grassy-terrain": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-impact": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hurricane": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hyper-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "close-combat": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "solar-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "vacuum-wave": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "weather-ball": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "grassy-glide": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "psych-up": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "triple-axel": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "coaching": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "upper-hand": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  },
+  "samurott-hisuian": {
+    "megahorn": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "slash": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "sucker-punch": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "tackle": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "tail-whip": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "water-gun": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "focus-energy": {
+      "level_learned": 13,
+      "learn_method": ["level-up"]
+    },
+    "razor-shell": {
+      "level_learned": 18,
+      "learn_method": ["level-up"]
+    },
+    "fury-cutter": {
+      "level_learned": 21,
+      "learn_method": ["level-up"]
+    },
+    "water-pulse": {
+      "level_learned": 25,
+      "learn_method": ["level-up", "machine"]
+    },
+    "aerial-ace": {
+      "level_learned": 29,
+      "learn_method": ["level-up", "machine"]
+    },
+    "aqua-jet": {
+      "level_learned": 34,
+      "learn_method": ["level-up"]
+    },
+    "encore": {
+      "level_learned": 39,
+      "learn_method": ["level-up", "machine"]
+    },
+    "aqua-tail": {
+      "level_learned": 46,
+      "learn_method": ["level-up"]
+    },
+    "retaliate": {
+      "level_learned": 51,
+      "learn_method": ["level-up"]
+    },
+    "swords-dance": {
+      "level_learned": 58,
+      "learn_method": ["level-up", "machine"]
+    },
+    "hydro-pump": {
+      "level_learned": 63,
+      "learn_method": ["level-up", "machine"]
+    },
+    "take-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "scary-face": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "protect": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thief": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "chilling-water": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "bulldoze": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "snarl": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "swift": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "icy-wind": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fling": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "avalanche": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rain-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "snowscape": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "smart-strike": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dig": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "false-swipe": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "brick-break": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "air-slash": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "body-slam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "waterfall": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "grass-knot": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "taunt": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dark-pulse": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "x-scissor": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "drill-run": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "liquidation": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "surf": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "helping-hand": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "ice-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "blizzard": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "water-pledge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-impact": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hydro-cannon": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hyper-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "knock-off": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "vacuum-wave": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "flip-turn": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "lash-out": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "whirlpool": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "throat-chop": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "upper-hand": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  },
+  "sneasel-hisuian": {
+    "leer": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "rock-smash": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "scratch": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "taunt": {
+      "level_learned": 6,
+      "learn_method": ["level-up", "machine"]
+    },
+    "quick-attack": {
+      "level_learned": 12,
+      "learn_method": ["level-up"]
+    },
+    "metal-claw": {
+      "level_learned": 18,
+      "learn_method": ["level-up", "machine"]
+    },
+    "poison-jab": {
+      "level_learned": 24,
+      "learn_method": ["level-up", "machine"]
+    },
+    "brick-break": {
+      "level_learned": 30,
+      "learn_method": ["level-up", "machine"]
+    },
+    "hone-claws": {
+      "level_learned": 36,
+      "learn_method": ["level-up"]
+    },
+    "slash": {
+      "level_learned": 42,
+      "learn_method": ["level-up"]
+    },
+    "agility": {
+      "level_learned": 48,
+      "learn_method": ["level-up", "machine"]
+    },
+    "screech": {
+      "level_learned": 54,
+      "learn_method": ["level-up"]
+    },
+    "close-combat": {
+      "level_learned": 60,
+      "learn_method": ["level-up", "machine"]
+    },
+    "take-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "protect": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "low-kick": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "acid-spray": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thief": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "trailblaze": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "poison-tail": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "aerial-ace": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "swift": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "low-sweep": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fling": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "venoshock": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sunny-day": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rain-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dig": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "false-swipe": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "shadow-claw": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "bulk-up": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "grass-knot": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "swords-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "toxic-spikes": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "gunk-shot": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "x-scissor": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "shadow-ball": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "calm-mind": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "reversal": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "nasty-plot": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sludge-bomb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-impact": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "focus-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "toxic": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "spite": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "vacuum-wave": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "focus-punch": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "lash-out": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "coaching": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sludge-wave": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "throat-chop": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  },
+  "qwilfish-hisuian": {
+    "poison-sting": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "tackle": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "harden": {
+      "level_learned": 4,
+      "learn_method": ["level-up"]
+    },
+    "bite": {
+      "level_learned": 8,
+      "learn_method": ["level-up"]
+    },
+    "fell-stinger": {
+      "level_learned": 12,
+      "learn_method": ["level-up"]
+    },
+    "minimize": {
+      "level_learned": 16,
+      "learn_method": ["level-up"]
+    },
+    "spikes": {
+      "level_learned": 20,
+      "learn_method": ["level-up", "machine"]
+    },
+    "brine": {
+      "level_learned": 24,
+      "learn_method": ["level-up"]
+    },
+    "barb-barrage": {
+      "level_learned": 28,
+      "learn_method": ["level-up"]
+    },
+    "pin-missile": {
+      "level_learned": 32,
+      "learn_method": ["level-up"]
+    },
+    "toxic-spikes": {
+      "level_learned": 36,
+      "learn_method": ["level-up", "machine"]
+    },
+    "spit-up": {
+      "level_learned": 40,
+      "learn_method": ["level-up"]
+    },
+    "stockpile": {
+      "level_learned": 40,
+      "learn_method": ["level-up"]
+    },
+    "toxic": {
+      "level_learned": 44,
+      "learn_method": ["level-up", "machine"]
+    },
+    "crunch": {
+      "level_learned": 48,
+      "learn_method": ["level-up", "machine"]
+    },
+    "acupressure": {
+      "level_learned": 52,
+      "learn_method": ["level-up"]
+    },
+    "destiny-bond": {
+      "level_learned": 56,
+      "learn_method": ["level-up"]
+    },
+    "take-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "agility": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "scary-face": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "protect": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "water-pulse": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "acid-spray": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "chilling-water": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "poison-tail": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hex": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "swift": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "icy-wind": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "mud-shot": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "venoshock": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rain-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "waterfall": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "poison-jab": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "taunt": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "swords-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dark-pulse": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "gunk-shot": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "liquidation": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "shadow-ball": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "surf": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "reversal": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "ice-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hydro-pump": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "blizzard": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sludge-bomb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-impact": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "haze": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "spite": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "gyro-ball": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "lash-out": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "scale-shot": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "pain-split": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "double-edge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "throat-chop": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "curse": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  },
+  "typhlosion-hisuian": {
+    "double-edge": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "ember": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "eruption": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "gyro-ball": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "leer": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "smokescreen": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "tackle": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "quick-attack": {
+      "level_learned": 13,
+      "learn_method": ["level-up"]
+    },
+    "flame-wheel": {
+      "level_learned": 20,
+      "learn_method": ["level-up"]
+    },
+    "defense-curl": {
+      "level_learned": 24,
+      "learn_method": ["level-up"]
+    },
+    "swift": {
+      "level_learned": 31,
+      "learn_method": ["level-up", "machine"]
+    },
+    "flame-charge": {
+      "level_learned": 35,
+      "learn_method": ["level-up", "machine"]
+    },
+    "lava-plume": {
+      "level_learned": 43,
+      "learn_method": ["level-up"]
+    },
+    "flamethrower": {
+      "level_learned": 48,
+      "learn_method": ["level-up", "machine"]
+    },
+    "inferno": {
+      "level_learned": 56,
+      "learn_method": ["level-up"]
+    },
+    "rollout": {
+      "level_learned": 61,
+      "learn_method": ["level-up"]
+    },
+    "overheat": {
+      "level_learned": 74,
+      "learn_method": ["level-up", "machine"]
+    },
+    "take-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "protect": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fire-fang": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "low-kick": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "confuse-ray": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fire-spin": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "aerial-ace": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "bulldoze": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hex": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "night-shade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sunny-day": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "dig": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "brick-break": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "zen-headbutt": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "shadow-claw": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "body-slam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fire-punch": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thunder-punch": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "stomping-tantrum": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rock-slide": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "iron-head": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "will-o-wisp": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "shadow-ball": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "heat-wave": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "play-rough": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "calm-mind": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "reversal": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fire-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "fire-pledge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "wild-charge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "earthquake": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-impact": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "blast-burn": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "focus-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hyper-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "flare-blitz": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "solar-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "roar": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "spite": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "focus-punch": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "burning-jealousy": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "poltergeist": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endeavor": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "temper-flare": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "curse": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  },
+  "electrode-hisuian": {
+    "charge": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "tackle": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "thunder-shock": {
+      "level_learned": 4,
+      "learn_method": ["level-up"]
+    },
+    "stun-spore": {
+      "level_learned": 6,
+      "learn_method": ["level-up"]
+    },
+    "bullet-seed": {
+      "level_learned": 9,
+      "learn_method": ["level-up", "machine"]
+    },
+    "rollout": {
+      "level_learned": 11,
+      "learn_method": ["level-up"]
+    },
+    "screech": {
+      "level_learned": 13,
+      "learn_method": ["level-up"]
+    },
+    "charge-beam": {
+      "level_learned": 16,
+      "learn_method": ["level-up", "machine"]
+    },
+    "swift": {
+      "level_learned": 20,
+      "learn_method": ["level-up", "machine"]
+    },
+    "electro-ball": {
+      "level_learned": 22,
+      "learn_method": ["level-up", "machine"]
+    },
+    "self-destruct": {
+      "level_learned": 26,
+      "learn_method": ["level-up"]
+    },
+    "energy-ball": {
+      "level_learned": 29,
+      "learn_method": ["level-up", "machine"]
+    },
+    "discharge": {
+      "level_learned": 34,
+      "learn_method": ["level-up"]
+    },
+    "seed-bomb": {
+      "level_learned": 34,
+      "learn_method": ["level-up", "machine"]
+    },
+    "explosion": {
+      "level_learned": 41,
+      "learn_method": ["level-up"]
+    },
+    "gyro-ball": {
+      "level_learned": 46,
+      "learn_method": ["level-up", "machine"]
+    },
+    "grassy-terrain": {
+      "level_learned": 50,
+      "learn_method": ["level-up", "machine"]
+    },
+    "take-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "agility": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "scary-face": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "protect": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thief": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "volt-switch": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rain-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "foul-play": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "reflect": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "grass-knot": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thunder-wave": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "taunt": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-drain": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thunderbolt": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "electric-terrain": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "wild-charge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-impact": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "leaf-storm": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "hyper-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thunder": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "solar-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "grassy-glide": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "double-edge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "supercell-slam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "electroweb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "curse": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  },
+  "voltorb-hisuian": {
+    "charge": {
+      "level_learned": 1,
+      "learn_method": ["level-up", "machine"]
+    },
+    "tackle": {
+      "level_learned": 1,
+      "learn_method": ["level-up"]
+    },
+    "thunder-shock": {
+      "level_learned": 4,
+      "learn_method": ["level-up"]
+    },
+    "stun-spore": {
+      "level_learned": 6,
+      "learn_method": ["level-up"]
+    },
+    "bullet-seed": {
+      "level_learned": 9,
+      "learn_method": ["level-up", "machine"]
+    },
+    "rollout": {
+      "level_learned": 11,
+      "learn_method": ["level-up"]
+    },
+    "screech": {
+      "level_learned": 13,
+      "learn_method": ["level-up"]
+    },
+    "charge-beam": {
+      "level_learned": 16,
+      "learn_method": ["level-up", "machine"]
+    },
+    "swift": {
+      "level_learned": 20,
+      "learn_method": ["level-up", "machine"]
+    },
+    "electro-ball": {
+      "level_learned": 22,
+      "learn_method": ["level-up", "machine"]
+    },
+    "self-destruct": {
+      "level_learned": 26,
+      "learn_method": ["level-up"]
+    },
+    "energy-ball": {
+      "level_learned": 29,
+      "learn_method": ["level-up", "machine"]
+    },
+    "discharge": {
+      "level_learned": 34,
+      "learn_method": ["level-up"]
+    },
+    "seed-bomb": {
+      "level_learned": 34,
+      "learn_method": ["level-up", "machine"]
+    },
+    "explosion": {
+      "level_learned": 41,
+      "learn_method": ["level-up"]
+    },
+    "gyro-ball": {
+      "level_learned": 46,
+      "learn_method": ["level-up", "machine"]
+    },
+    "grassy-terrain": {
+      "level_learned": 50,
+      "learn_method": ["level-up", "machine"]
+    },
+    "take-down": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "agility": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "protect": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thief": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "facade": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "endure": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "volt-switch": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rain-dance": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "foul-play": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "sleep-talk": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "reflect": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "grass-knot": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thunder-wave": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "rest": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "taunt": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "substitute": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "giga-drain": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thunderbolt": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "electric-terrain": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "wild-charge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "leaf-storm": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "thunder": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "solar-beam": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "tera-blast": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "grassy-glide": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "double-edge": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    },
+    "electroweb": {
+      "level_learned": 0,
+      "learn_method": ["machine"]
+    }
+  }
+}

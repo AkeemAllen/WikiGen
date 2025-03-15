@@ -7,7 +7,7 @@
   };
   export let id = "";
   export let label = "";
-  export let value: string | undefined | null | number = "";
+  export let value: string | undefined | null | boolean | number = "";
   export let options: Option[] = [];
   export let onChange: EventHandler<Event, HTMLSelectElement> = () => {};
 </script>
@@ -20,9 +20,10 @@
     <select
       {id}
       style={"-webkit-appearance: none;"}
-      class=" block w-full rounded-md border-0 pl-2 py-1.5 mt-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+      class=" block w-full rounded-md border-0 pl-2 py-1.5 mt-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 disabled:bg-gray-100 disabled:text-gray-400"
       bind:value
       on:change={onChange}
+      {...$$restProps}
     >
       {#each options as option}
         <option value={option.value}>{option.label}</option>

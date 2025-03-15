@@ -1,206 +1,323 @@
 <script lang="ts">
-import {
-  Tab,
-  TabGroup,
-  getToastStore,
-  type AutocompleteOption,
-} from "@skeletonlabs/skeleton";
-import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
-import _ from "lodash";
-import { selectedWiki } from "../../store";
-import {
-  pokemon,
-  pokemonList,
-  modifiedPokemon,
-  type PokemonDetails,
-} from "../../store/pokemon";
-import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
-import PokemonMovesTab from "./PokemonMovesTab.svelte";
-import { invoke } from "@tauri-apps/api";
-import {
-  convertToTitle,
-  extractPokemonRange,
-  getShardToWrite,
-} from "$lib/utils";
-import { shortcut } from "@svelte-put/shortcut";
-import Button from "./Button.svelte";
-import AutoComplete from "./AutoComplete.svelte";
-import { updatePokemonModifications } from "$lib/utils/modificationHelpers";
+  import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
+  import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
+  import { selectedWiki } from "../../store";
+  import {
+    routes,
+    type Routes,
+    type WildEncounter,
+  } from "../../store/gameRoutes";
+  import {
+    pokemonList,
+    type Pokemon,
+    type PokemonMove,
+  } from "../../store/pokemon";
+  import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
+  import PokemonMovesTab from "./PokemonMovesTab.svelte";
+  import { shortcut } from "@svelte-put/shortcut";
+  import Button from "./Button.svelte";
+  import AutoComplete from "./AutoComplete.svelte";
+  import NumberInput from "./NumberInput.svelte";
+  import { db } from "../../store/db";
+  import { cloneDeep } from "$lib/utils/cloneDeep";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
+  import isEqual from "$lib/utils/isEqual";
+  import objectIsEmpty from "$lib/utils/objectIsEmpty";
+  import PokemonLocationTab from "./PokemonLocationTab.svelte";
+  import { getToastSettings, ToastType } from "$lib/utils/toasts";
+  import {
+    generatePokemonPages,
+    generateRoutePages,
+    removePokemonPage,
+    updateRoutes,
+  } from "$lib/utils/generators";
 
-const toastStore = getToastStore();
+  let pokemonSearch: [number, string] = [0, ""];
+  let pokemon = {} as Pokemon;
+  let originalPokemonDetails: Pokemon = {} as Pokemon;
+  let pokemonMoveset: PokemonMove[] = [];
+  let pokemonLocations: WildEncounter[] = [];
+  let pokemonSprite: string = "";
+  let pokemonNameInput: HTMLInputElement;
 
-let pokemonName: string = "";
-let formName: string = "";
-let pokemonId: number = 0;
-let pokemonDetails: PokemonDetails = {} as PokemonDetails;
-let originalPokemonDetails: PokemonDetails = {} as PokemonDetails;
-let pokemonNameInput: HTMLInputElement;
-let currentPokemonName: string = "";
+  let tabSet: number = 0;
+  let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
+    label: capitalizeWords(name),
+    value: id,
+  }));
 
-let tabSet: number = 0;
-let formTabSet: number = 0;
+  const toastStore = getToastStore();
 
-let pokemonListOptions: AutocompleteOption<string | number>[] =
-  $pokemonList.map(([name, id]) => ({ label: name, value: id }));
-
-function onPokemonNameSelected(
-  event: CustomEvent<AutocompleteOption<string | number>>,
-): void {
-  pokemonName = event.detail.label;
-  pokemonId = event.detail.value as number;
-}
-
-function setPokemonDetails(pokemonId: number) {
-  pokemonName = $pokemon.pokemon[pokemonId].name;
-  currentPokemonName = pokemonName;
-  pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
-  originalPokemonDetails = _.cloneDeep(pokemonDetails);
-  formTabSet = 0;
-}
-
-async function savePokemonChanges() {
-  if (formTabSet !== 0) {
-    $pokemon.pokemon[pokemonId].forms[formName] = {
-      types: pokemonDetails.types,
-      abilities: pokemonDetails.abilities,
-      stats: pokemonDetails.stats,
-      moves: pokemonDetails.moves,
-      sprite: pokemonDetails.sprite,
-    };
-    formName = "";
-  } else {
-    $pokemon.pokemon[pokemonId] = pokemonDetails;
+  async function generatePage() {
+    generatePokemonPages([pokemon.id], $selectedWiki.name)
+      .then((res) => {
+        toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
+      })
+      .catch((err) => {
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
+      });
   }
 
-  updatePokemonModifications(
-    $modifiedPokemon,
-    originalPokemonDetails,
-    pokemonDetails,
-  );
+  async function getPokemon() {
+    let retrievedPokemon = $pokemonList.find(
+      ([__, ___, name]) =>
+        name === pokemonSearch[1].toLowerCase().split(" ").join("-"),
+    );
 
-  let shard_index = getShardToWrite(pokemonId);
+    if (!retrievedPokemon) {
+      toastStore.trigger(
+        getToastSettings(ToastType.ERROR, "Pokemon not found!"),
+      );
+      return;
+    }
 
-  await writeTextFile(
-    `${$selectedWiki.name}/data/pokemon_data/shard_${shard_index}.json`,
-    JSON.stringify(extractPokemonRange($pokemon, shard_index)),
-    { dir: BaseDirectory.AppData },
-  ).then(() => {
-    originalPokemonDetails = _.cloneDeep(pokemonDetails);
-    toastStore.trigger({
-      message: "Pokemon Changes Saved",
-      timeout: 3000,
-      background: "variant-filled-success",
-    });
-    invoke("generate_pokemon_pages_from_list", {
-      wikiName: $selectedWiki.name,
-      dexNumbers: [pokemonId],
-    });
-  });
-}
+    await $db
+      .select<Pokemon[]>(`SELECT * FROM pokemon WHERE id = $1;`, [
+        pokemonSearch[0],
+      ])
+      .then(async (res) => {
+        pokemon = res[0];
 
-function nextPokemon() {
-  if (pokemonId === 1025) {
-    toastStore.trigger({
-      message: "No more Pokemon",
-      timeout: 3000,
-      background: "variant-filled-error",
-    });
-    return;
+        // Gather moveset
+        await $db
+          .select<PokemonMove[]>(
+            `SELECT moves.id as id, moves.name as name, learn_method, level_learned FROM pokemon_movesets
+            INNER JOIN moves on moves.id = pokemon_movesets.move
+            WHERE pokemon = $1;`,
+            [res[0].id],
+          )
+          .then((res) => {
+            pokemonMoveset = res;
+          })
+          .catch((err) => {
+            toastStore.trigger(
+              getToastSettings(
+                ToastType.ERROR,
+                `Error loading Pokemon moveset!: \n ${err}`,
+              ),
+            );
+          });
+
+        // Reading in image separately
+        pokemonSprite = await readBinaryFile(
+          `${$selectedWiki.name}/dist/docs/img/pokemon/${res[0].name}.png`,
+          { dir: BaseDirectory.AppData },
+        )
+          .then((res) => {
+            const blob = new Blob([res], { type: "image/png" });
+            return URL.createObjectURL(blob);
+          })
+          .catch((err) => {
+            if (err.includes("No such file or directory")) {
+              return "404";
+            }
+            return "Error loading image";
+          });
+        return res[0];
+      })
+      .then((res) => {
+        originalPokemonDetails = cloneDeep(res);
+        // Gather location
+        pokemonLocations = [];
+        for (const [_, properties] of Object.entries($routes.routes)) {
+          for (const [_, encounters] of Object.entries(
+            properties.wild_encounters,
+          )) {
+            for (const encounter of encounters) {
+              if (encounter.name !== res.name) continue;
+              pokemonLocations = [...pokemonLocations, cloneDeep(encounter)];
+            }
+          }
+        }
+      })
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error loading Pokemon!: \n ${err}`,
+          ),
+        );
+      });
   }
-  setPokemonDetails(pokemonId++);
-}
 
-function prevPokemon() {
-  if (pokemonId === 1) {
-    toastStore.trigger({
-      message: "No more Pokemon",
-      timeout: 3000,
-      background: "variant-filled-error",
-    });
-    return;
+  async function savePokemonChanges() {
+    if (isEqual(pokemon, originalPokemonDetails)) {
+      return;
+    }
+
+    if (pokemon.evolution_method === "no_change") {
+      pokemon.evolution_item = null;
+      pokemon.evolution_level = null;
+      pokemon.evolution_other = null;
+      pokemon.evolved_pokemon = null;
+    } else if (pokemon.evolution_method === "level_up") {
+      pokemon.evolution_item = null;
+      pokemon.evolution_other = null;
+    } else if (pokemon.evolution_method === "other") {
+      pokemon.evolution_item = null;
+      pokemon.evolution_level = null;
+    } else if (pokemon.evolution_method === "item") {
+      pokemon.evolution_level = null;
+      pokemon.evolution_other = null;
+    }
+
+    await $db
+      .execute(
+        `UPDATE pokemon SET
+          dex_number = ${pokemon.dex_number},
+          name = "${pokemon.name}",
+          types = "${pokemon.types}",
+          hp = ${pokemon.hp},
+          attack = ${pokemon.attack},
+          defense = ${pokemon.defense},
+          sp_attack = ${pokemon.sp_attack},
+          sp_defense = ${pokemon.sp_defense},
+          speed = ${pokemon.speed},
+          evolution_method = $1,
+          evolution_item = $2,
+          evolution_level = $3,
+          evolution_other = $4,
+          evolved_pokemon = $5,
+          render = "${pokemon.render}",
+          ability_1 = $6,
+          ability_2 = $7,
+          hidden_ability = $8
+        WHERE id = ${pokemon.id};`,
+        [
+          pokemon.evolution_method,
+          pokemon.evolution_item,
+          pokemon.evolution_level,
+          pokemon.evolution_other,
+          pokemon.evolved_pokemon,
+          pokemon.ability_1?.toLowerCase().split(" ").join("-"),
+          pokemon.ability_2?.toLowerCase().split(" ").join("-"),
+          pokemon.hidden_ability?.toLowerCase().split(" ").join("-"),
+        ],
+      )
+      .then(() => {
+        if (originalPokemonDetails.dex_number !== pokemon.dex_number) {
+          removePokemonPage(
+            $selectedWiki.name,
+            pokemon.name,
+            originalPokemonDetails.dex_number,
+          )
+            .then(() => {
+              let updatedRoutes: Routes = cloneDeep($routes);
+              for (const [routeName, properties] of Object.entries(
+                $routes.routes,
+              )) {
+                for (const [encounterArea, wildEncounters] of Object.entries(
+                  properties.wild_encounters,
+                )) {
+                  for (const [index, encounter] of wildEncounters.entries()) {
+                    if (encounter.name !== pokemon.name) continue;
+                    updatedRoutes.routes[routeName].wild_encounters[
+                      encounterArea
+                    ][index].id = pokemon.dex_number;
+                  }
+                }
+              }
+              $routes = cloneDeep(updatedRoutes);
+              updateRoutes($routes, $selectedWiki.name)
+                .then(() => {
+                  return generateRoutePages(
+                    Object.keys($routes.routes),
+                    $selectedWiki.name,
+                  );
+                })
+                .then((res) => {
+                  toastStore.trigger(
+                    getToastSettings(ToastType.SUCCESS, res as string),
+                  );
+                })
+                .catch((e) => {
+                  toastStore.trigger(
+                    getToastSettings(ToastType.ERROR, e as string),
+                  );
+                });
+            })
+            .catch((err) => {
+              toastStore.trigger(
+                getToastSettings(ToastType.ERROR, err as string),
+              );
+            });
+        }
+        originalPokemonDetails = cloneDeep(pokemon);
+      })
+      .then(() => generatePage())
+      .catch((err) => {
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
+      });
   }
-  setPokemonDetails(pokemonId--);
-}
+
+  // function nextPokemon() {
+  //   if (pokemonId === 1025) {
+  //     toastStore.trigger({
+  //       message: "No more Pokemon",
+  //       timeout: 3000,
+  //       background: "variant-filled-error",
+  //     });
+  //     return;
+  //   }
+  //   setPokemonDetails(pokemonId + 1);
+  // }
+
+  // function prevPokemon() {
+  //   if (pokemonId === 1) {
+  //     toastStore.trigger({
+  //       message: "No more Pokemon",
+  //       timeout: 3000,
+  //       background: "variant-filled-error",
+  //     });
+  //     return;
+  //   }
+  //   setPokemonDetails(pokemonId - 1);
+  // }
 </script>
 
 <div class="flex flex-row gap-7">
   <AutoComplete
-    bind:value={pokemonName}
+    bind:value={pokemonSearch[1]}
     placeholder="Search Pokemon"
     options={pokemonListOptions}
     popupId="pokemon-search"
-    onSelection={onPokemonNameSelected}
+    onSelection={(e) => {
+      pokemonSearch = [e.detail.value, e.detail.label];
+    }}
     bind:inputNode={pokemonNameInput}
     showChevron={false}
-    onKeydown={(e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          let id = Object.entries($pokemon.pokemon).find(([_, value]) => value.name === pokemonName)?.[1].id;
-          if (id === undefined) {
-            toastStore.trigger({
-              message: "Pokemon not found",
-              timeout: 3000,
-              background: "variant-filled-error",
-            });
-            return;
-          }
-          setPokemonDetails(id);
-        }
-      }}
   />
   <Button
     title="Search"
-    onClick={() => {
-        setPokemonDetails(pokemonId);
-      }}
-    disabled={pokemonName === ""}
+    onClick={getPokemon}
+    disabled={pokemonSearch[0] === 0}
     class="mt-2 w-32"
   />
   <Button
     title="Save Changes"
     onClick={savePokemonChanges}
-    disabled={_.isEqual(pokemonDetails, originalPokemonDetails)}
+    disabled={isEqual(pokemon, originalPokemonDetails)}
+    class="mt-2 w-32"
+  />
+  <Button
+    title="Generate Page"
+    onClick={() => generatePage()}
+    disabled={objectIsEmpty(pokemon)}
     class="mt-2 w-32"
   />
 </div>
 
-{#if pokemonDetails.id !== undefined}
-  {#if Object.keys(pokemonDetails.forms).length !== 0}
-    <TabGroup class="mb-4 mt-4">
-      <Tab
-        bind:group={formTabSet}
-        name="pokemon-details"
-        value={0}
-        class="text-sm"
-        on:click={() => {
-          pokemonDetails = _.cloneDeep($pokemon.pokemon[pokemonId]);
-          originalPokemonDetails = _.cloneDeep(pokemonDetails);
-          formName = "";
-        }}
-        >{convertToTitle(currentPokemonName)}</Tab
-      >
-      {#each Object.keys(pokemonDetails.forms) as form, index}
-        <Tab
-          bind:group={formTabSet}
-          name={form}
-          value={index + 1}
-          class="text-sm"
-          on:click={() => {
-            pokemonDetails = {
-              ...pokemonDetails,
-              ...pokemonDetails.forms[form],
-              name: form,
-            };
-            originalPokemonDetails = _.cloneDeep(pokemonDetails);
-            formName = form;
-          }}
-          >{convertToTitle(form)}</Tab
-        >
-      {/each}
-    </TabGroup>
+{#if !objectIsEmpty(pokemon)}
+  {#if pokemonSprite === "404"}
+    <p>No sprite found for {pokemon.name}</p>
+  {:else}
+    <img src={pokemonSprite} alt={pokemon.name} width="100" />
+    <NumberInput
+      label="Dex Number"
+      bind:value={pokemon.dex_number}
+      class="w-40 mb-5"
+    />
   {/if}
-
-  <img src={pokemonDetails.sprite} alt={pokemonDetails.name} width="100" />
   <TabGroup>
     <Tab bind:group={tabSet} name="pokemon-details" value={0} class="text-sm"
       >Details</Tab
@@ -208,17 +325,26 @@ function prevPokemon() {
     <Tab bind:group={tabSet} name="pokemon-moves" value={1} class="text-sm"
       >Moves</Tab
     >
+    <Tab bind:group={tabSet} name="location" value={2} class="text-sm"
+      >Location</Tab
+    >
     <svelte:fragment slot="panel">
       {#if tabSet === 0}
-        <PokemonDetailsTab
-          bind:pokemonDetails={pokemonDetails}
-          bind:formTabSet={formTabSet}
-        />
+        <PokemonDetailsTab bind:pokemon />
       {/if}
       {#if tabSet === 1}
         <PokemonMovesTab
-          bind:pokemonDetails={pokemonDetails}
-          savePokemonChanges={savePokemonChanges}
+          bind:moveset={pokemonMoveset}
+          bind:pokemonId={pokemon.id}
+          generatePokemonPage={() => generatePage()}
+        />
+      {/if}
+      {#if tabSet === 2}
+        <PokemonLocationTab
+          {pokemonLocations}
+          pokemonId={pokemon.id}
+          pokemonDexNumber={pokemon.dex_number}
+          pokemonName={pokemon.name}
         />
       {/if}
     </svelte:fragment>
@@ -228,36 +354,24 @@ function prevPokemon() {
 <svelte:window
   use:shortcut={{
     trigger: {
-      key: ']',
-      modifier:["ctrl", "meta"],
-      callback: () => nextPokemon(),
-    },
-  }}
-  use:shortcut={{
-    trigger: {
-      key: '[',
-      modifier:["ctrl", "meta"],
-      callback: () => prevPokemon(),
-    },
-  }}
-  use:shortcut={{
-    trigger: {
-      key: 'k',
-      modifier:["ctrl", "meta"],
+      key: "k",
+      modifier: ["ctrl", "meta"],
       callback: () => pokemonNameInput.focus(),
     },
   }}
   use:shortcut={{
     trigger: {
-      key: 'm',
-      modifier:"ctrl",
-      callback: () => { tabSet = 1},
+      key: "m",
+      modifier: "ctrl",
+      callback: () => {
+        tabSet = 1;
+      },
     },
   }}
   use:shortcut={{
     trigger: {
-      key: 'Enter',
-      modifier: "meta",
+      key: "Enter",
+      modifier: ["ctrl", "meta"],
       callback: () => savePokemonChanges(),
     },
   }}

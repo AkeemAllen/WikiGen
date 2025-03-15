@@ -1,6 +1,6 @@
 {
   "name": "wikigen",
-  "version": "0.7.3",
+  "version": "1.7.9",
   "private": true,
   "scripts": {
     "dev": "vite dev",
@@ -18,7 +18,6 @@
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^3.0.0",
     "@tauri-apps/cli": "^1.5.11",
-    "@types/lodash": "^4.17.0",
     "@types/node": "^20.11.25",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
@@ -39,7 +38,7 @@
     "@tabler/icons-svelte": "^3.0.0",
     "@tauri-apps/api": "^1.5.3",
     "@vincjo/datatables": "^1.14.5",
-    "lodash": "^4.17.21",
-    "svelte-multiselect": "^10.3.0"
+    "svelte-multiselect": "^10.3.0",
+    "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql#v1"
   }
 }

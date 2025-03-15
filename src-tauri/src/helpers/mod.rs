@@ -1,9 +1,12 @@
+pub const TRUE: i32 = 1;
+pub const FALSE: i32 = 0;
+
 use std::{fs, io, path::Path};
 
 pub mod matchups;
 pub mod mkdocs_process;
 
-pub fn get_pokemon_dex_formatted_name(dex_number: usize) -> String {
+pub fn get_pokemon_dex_formatted_name(dex_number: u32) -> String {
     let mut pokedex_markdown_file_name = format!("00{}", dex_number);
     if dex_number >= 10 {
         pokedex_markdown_file_name = format!("0{}", dex_number);
@@ -50,12 +53,4 @@ pub fn copy_recursively(source: impl AsRef<Path>, destination: impl AsRef<Path>)
         }
     }
     Ok(())
-}
-
-pub fn round_up_to_nearest_100(num: u32) -> u32 {
-    if num % 100 == 0 {
-        num
-    } else {
-        ((num / 100) + 1) * 100
-    }
 }

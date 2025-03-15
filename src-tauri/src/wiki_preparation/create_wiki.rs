@@ -1,7 +1,7 @@
 use crate::helpers::{capitalize, copy_recursively};
 use crate::wiki_preparation::yaml_declaration;
 use serde::{Deserialize, Serialize};
-use std::fs;
+use std::fs::{self};
 use tauri::AppHandle;
 
 #[derive(Serialize, Deserialize)]
@@ -77,6 +77,14 @@ pub async fn create_wiki(
 
     let generator_assets_path = resource_path.join("generator_assets");
 
+    let sqlite_db_path = generator_assets_path.join("initial.db");
+    match fs::copy(sqlite_db_path, base_path.join(format!("{}.db", wiki_name))) {
+        Ok(_) => {}
+        Err(err) => {
+            return Err(format!("Failed to copy initial database: {:?}", err));
+        }
+    }
+
     let items_folder = generator_assets_path.join("items");
     let dist_items_folder = docs_folder.join("img").join("items");
     let _ = copy_recursively(items_folder, dist_items_folder);
@@ -92,6 +100,17 @@ pub async fn create_wiki(
     let pokemon_sprites_folder = generator_assets_path.join("pokemon_sprites");
     let pokemon_images_folder = docs_folder.join("img").join("pokemon");
     let _ = copy_recursively(pokemon_sprites_folder, pokemon_images_folder);
+
+    let route_image_folder = docs_folder.join("img").join("routes");
+    match fs::create_dir_all(&route_image_folder) {
+        Ok(_) => {}
+        Err(err) => {
+            return Err(format!(
+                "Failed to create route image directory path: {:?}",
+                err
+            ));
+        }
+    }
 
     let index_file_path = docs_folder.join("index.md");
     match fs::write(index_file_path, "# Index") {

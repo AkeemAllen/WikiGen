@@ -1,13 +1,25 @@
 import { writable } from "svelte/store";
 
-export type Items = {
-  [key: string]: Item;
-};
-
 export type Item = {
+  id: number;
+  name: string;
   effect: string;
-  sprite: string;
+  is_modified: number;
+  is_new: number;
 };
 
-export let items = writable<Items>();
-export let itemsList = writable<string[]>([]);
+export type ItemLocation = {
+  id: number;
+  item_name: string;
+  route: string;
+  specific_location: string | null;
+  method: string | null;
+  requirements: string | null;
+};
+
+export type SearchItem = {
+  id: number;
+  name: string;
+};
+
+export let itemsList = writable<[number, string][]>([]);

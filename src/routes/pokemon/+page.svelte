@@ -1,124 +1,155 @@
 <script lang="ts">
-import Button from "$lib/components/Button.svelte";
-import NumberInput from "$lib/components/NumberInput.svelte";
-import PokemonPanel from "$lib/components/PokemonPanel.svelte";
-import {
-  Tab,
-  TabGroup,
-  getToastStore,
-  type ToastSettings,
-} from "@skeletonlabs/skeleton";
-import { readTextFile } from "@tauri-apps/api/fs";
-import { appDataDir } from "@tauri-apps/api/path";
-import { invoke } from "@tauri-apps/api/tauri";
-import { selectedWiki } from "../../store";
-import { pokemon, pokemonList } from "../../store/pokemon";
+  import Button from "$lib/components/Button.svelte";
+  import PokemonPanel from "$lib/components/PokemonPanel.svelte";
+  import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
+  import { selectedWiki } from "../../store";
+  import { pokemonList } from "../../store/pokemon";
+  import NewPokemonPanel from "$lib/components/NewPokemonPanel.svelte";
+  import BaseModal from "$lib/components/BaseModal.svelte";
+  import AutoComplete from "$lib/components/AutoComplete.svelte";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
+  import { ToastType, getToastSettings } from "$lib/utils/toasts";
+  import { generatePokemonPages } from "$lib/utils/generators";
 
-const toastStore = getToastStore();
+  let startingPokemon: [number, number, string] = [0, 0, ""];
+  let endingPokemon: [number, number, string] = [0, 0, ""];
+  $: rangeTotal = endingPokemon[1] - startingPokemon[1];
 
-let tabSet: number = 0;
-let rangeStart: number = 0;
-let rangeEnd: number = 0;
-let loading: boolean = false;
+  let tabSet: number = 0;
+  let loading: boolean = false;
+  let pageGenerationWarningModalOpen: boolean = false;
 
-const dataPreparedToast: ToastSettings = {
-  message: "Data Prepared",
-  timeout: 5000,
-  hoverable: true,
-  background: "variant-filled-success",
-};
+  let pokemonListOptions = $pokemonList.map(([id, dex_number, name]) => ({
+    label: `${dex_number} - ${capitalizeWords(name)}`,
+    dex_number: dex_number,
+    value: id,
+  }));
 
-async function downloadAndPrepPokemonData() {
-  const directory = await appDataDir();
-  loading = true;
-  await invoke("download_and_prep_pokemon_data", {
-    wikiName: $selectedWiki.name,
-    rangeStart,
-    rangeEnd,
-  }).then(async () => {
-    const pokemonFromFile = await readTextFile(
-      `${directory}${$selectedWiki.name}/data/pokemon.json`,
-    );
-    pokemon.set(JSON.parse(pokemonFromFile));
-    pokemonList.set(
-      Object.entries($pokemon.pokemon).map(([key, value]) => [
-        value.name,
-        parseInt(key),
-      ]),
-    );
-    loading = false;
-    toastStore.trigger(dataPreparedToast);
-  });
+  const toastStore = getToastStore();
 
-  await invoke("download_pokemon_sprites", {
-    wikiName: $selectedWiki.name,
-    rangeStart,
-    rangeEnd,
-  }).then(() => {
-    toastStore.trigger({
-      message: "Sprites prepared",
-      timeout: 5000,
-      hoverable: true,
-      background: "variant-filled-success",
-    });
-  });
-}
+  async function generatePokemonPagesInRange(
+    startingDexNumber: number,
+    endingDexNumber: number,
+  ) {
+    loading = true;
+    let pokemonIds: number[] = [];
+    pokemonIds = $pokemonList
+      .filter(
+        ([_, dex_number, __]) =>
+          dex_number >= startingDexNumber && dex_number <= endingDexNumber,
+      )
+      .map(([id, _, __]) => id);
 
-async function generatePokemonPagesInRange() {
-  loading = true;
-  let dexNumbers: number[] = [];
-  for (let i = rangeStart; i <= rangeEnd; i++) {
-    dexNumbers.push(i);
+    generatePokemonPages(pokemonIds, $selectedWiki.name)
+      .then((res) => {
+        loading = false;
+        toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
+      })
+      .catch((err) => {
+        loading = false;
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
+      });
   }
-  await invoke("generate_pokemon_pages_from_list", {
-    dexNumbers: dexNumbers,
-    wikiName: $selectedWiki.name,
-  }).then(() => {
-    loading = false;
-    toastStore.trigger({
-      message: "Pokemon Pages generated",
-      timeout: 5000,
-      hoverable: true,
-      background: "variant-filled-success",
-    });
-  });
-}
 </script>
 
+<BaseModal bind:open={pageGenerationWarningModalOpen}>
+  <p class="italic">
+    NOTE: {Object.keys($pokemonList).length} pokemon pages will be rendered. Do you
+    wish to continue?
+  </p>
+  <div class="flex flex-row gap-2">
+    <Button
+      title="Cancel"
+      onClick={() => (pageGenerationWarningModalOpen = false)}
+      class="bg-gray-300"
+    />
+    <Button
+      title={`Generate ALL ${Object.entries($pokemonList).length} Pokemon Pages`}
+      onClick={() => {
+        generatePokemonPagesInRange(1, 1025);
+        pageGenerationWarningModalOpen = false;
+      }}
+    />
+  </div>
+</BaseModal>
+
 <TabGroup>
-  <Tab bind:group={tabSet} name="pokemon" value={0}>Pokemon</Tab>
-  <Tab bind:group={tabSet} name="prepare-pokemon-data" value={1}>Generation</Tab
+  <Tab bind:group={tabSet} name="pokemon" value={0} class="text-sm">Pokemon</Tab
+  >
+  <Tab bind:group={tabSet} name="prepare-pokemon-data" value={1} class="text-sm"
+    >Generation</Tab
+  >
+  <Tab bind:group={tabSet} name="new-pokemon" value={2} class="text-sm"
+    >Create New Pokemon</Tab
   >
   <svelte:fragment slot="panel">
     {#if tabSet === 0}
       <PokemonPanel />
     {/if}
     {#if tabSet === 1}
+      <Button
+        title="Generate All Pokemon Pages"
+        onClick={() => (pageGenerationWarningModalOpen = true)}
+        disabled={loading === true}
+        {loading}
+        class="mb-3"
+      />
+      {#if loading}
+        <p class="text-sm italic text-gray-500 mb-3 align-middle">
+          Generating {Object.keys($pokemonList).length} Pokemon Pages...This may
+          take a while
+        </p>
+      {/if}
+      <p class="text-sm text-gray-500 italic">
+        Pages will be generated for all pokemon with pokedex number in this
+        range: {startingPokemon[1]}
+        - {endingPokemon[1]}
+      </p>
+      <p class="text-sm text-gray-500 italic mb-4">
+        Total Pages: {rangeTotal <= 0 ? 0 : `>=${rangeTotal + 1}`}
+      </p>
       <div class="flex gap-16">
         <!-- Only 1025 pokemon exist in the game right now. But setting ranges to 2000 for future proofing -->
-        <NumberInput
-          id="range-start"
-          label="Range Start"
-          bind:value={rangeStart}
-          max={2000}
+        <AutoComplete
+          label="Starting Pokemon"
+          bind:value={startingPokemon[2]}
+          placeholder="Search Pokemon"
+          options={pokemonListOptions}
+          popupId="starting-pokemon-search"
+          onSelection={(e) => {
+            startingPokemon = [
+              e.detail.value,
+              e.detail.dex_number,
+              e.detail.label,
+            ];
+          }}
         />
-        <NumberInput
-          id="range-end"
-          label="Range End"
-          bind:value={rangeEnd}
-          max={2000}
+        <AutoComplete
+          label="Ending Pokemon"
+          bind:value={endingPokemon[2]}
+          placeholder="Search Pokemon"
+          options={pokemonListOptions}
+          popupId="ending-pokemon-search"
+          onSelection={(e) => {
+            endingPokemon = [
+              e.detail.value,
+              e.detail.dex_number,
+              e.detail.label,
+            ];
+          }}
         />
       </div>
       <Button
         class=" mt-4 w-40"
-        disabled={rangeStart === 0 ||
-                    rangeEnd === 0 ||
-                    rangeStart > rangeEnd ||
-                    loading === true}
         title="Generate Pages"
-        onClick={generatePokemonPagesInRange}
-        loading={loading}
+        onClick={() =>
+          generatePokemonPagesInRange(startingPokemon[1], endingPokemon[1])}
+        disabled={loading || startingPokemon[1] === 0 || endingPokemon[1] === 0}
+        {loading}
       />
+    {/if}
+    {#if tabSet === 2}
+      <NewPokemonPanel />
     {/if}
   </svelte:fragment>
 </TabGroup>

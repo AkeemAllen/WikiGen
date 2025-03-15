@@ -1,72 +1,68 @@
 import { writable } from "svelte/store";
 
-export type Pokemon = {
-  pokemon: { [key: number]: PokemonDetails };
-};
-
-export type PokemonDetails = {
+export type SearchPokemon = {
   id: number;
+  dex_number: number;
   name: string;
-  types: string[];
-  abilities: string[];
-  stats: Stats;
-  moves: PokemonMoveSet;
-  sprite: string;
-  evolution: Evolution;
-  forms: {
-    [key: string]: PokemonForm;
-  };
+  types: string;
 };
 
-export type PokemonForm = {
-  types: string[];
-  abilities: string[];
-  stats: Stats;
-  sprite: string;
-  moves: PokemonMoveSet;
-};
-
-export type ModifiedPokemon = {
-  [key: string]: ModifiedPokemonDetails;
-};
-
-export type ModifiedPokemonDetails = {
+export type Pokemon = {
   id: number;
-  evolution: Evolution;
-  types: {
-    original: string[];
-    modified: string[];
-  };
-};
-
-export type Stats = {
+  dex_number: number;
+  name: string;
+  types: string;
+  ability_1: string | null;
+  ability_2: string | null;
+  hidden_ability: string | null;
   hp: number;
   attack: number;
   defense: number;
   sp_attack: number;
   sp_defense: number;
   speed: number;
+  evolution_method: "level_up" | "item" | "other" | "no_change";
+  evolution_level: number | null;
+  evolution_item: string | null;
+  evolution_other: string | null;
+  evolved_pokemon: string | null;
+  render: "true" | "false";
 };
 
-export type Evolution = {
-  level: number;
-  item: string;
-  other: string;
-  evolves_to: {
-    id: number;
-    pokemon_name: string;
-  };
-  method: "no_change" | "level_up" | "item" | "other";
-};
-
-export type PokemonMoveSet = {
-  [key: string]: PokemonMove;
+export type Ability = {
+  id: number;
+  name: string;
 };
 
 export type PokemonMove = {
+  id: number;
+  name: string;
+  learn_method: string;
   level_learned: number;
-  learn_method: string[];
 };
+
+export type MoveSetChange = {
+  id: number;
+  operation: string;
+  move: string;
+  method: LearnMethod[];
+  level: number;
+  secondaryMoveId: number | null | undefined;
+  secondaryMove: string;
+};
+
+export type LearnMethod = "level-up" | "machine" | "tutor" | "egg";
+
+export enum Operation {
+  ADD = "add",
+  SHIFT = "shift",
+  DELETE = "delete",
+  REPLACE_MOVE = "replace_move",
+  // REPLACE_BY_LEVEL = "replace_by_level",
+  // SWAP_MOVES = "swap_moves",
+}
+
+export type EvolutionChange = {};
 
 export const PokemonTypes = [
   "none",
@@ -90,6 +86,4 @@ export const PokemonTypes = [
   "fairy",
 ];
 
-export let pokemon = writable<Pokemon>({ pokemon: {} });
-export let pokemonList = writable<[string, number][]>([]);
-export let modifiedPokemon = writable<ModifiedPokemon>({});
+export let pokemonList = writable<[number, number, string, string][]>([]);

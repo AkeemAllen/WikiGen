@@ -1,6 +1,10 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    fs::{self, File},
+};
 
 use serde_yaml::{Mapping, Value};
+use tauri::AppHandle;
 
 use crate::structs::mkdocs_structs::{
     MKDocsConfig, MarkdownExtension, Palette, Plugin, PymdownxTabbed, PymdownxTaskList, Search,
@@ -86,6 +90,7 @@ pub fn get_yaml(
             MarkdownExtension::String("attr_list".to_string()),
             MarkdownExtension::String("pymdownx.snippets".to_string()),
             MarkdownExtension::String("pymdownx.superfences".to_string()),
+            MarkdownExtension::String("pymdownx.details".to_string()),
             MarkdownExtension::PymdownxTaskList(PymdownxTaskList {
                 custom_checkbox: true,
             }),
@@ -98,4 +103,58 @@ pub fn get_yaml(
     };
 
     return mkdocs_config;
+}
+
+#[tauri::command]
+pub fn update_yaml(wiki_name: &str, app_handle: AppHandle) -> Result<String, String> {
+    let data_dir = app_handle.path_resolver().app_data_dir().unwrap();
+    let dist_folder = data_dir.join(wiki_name).join("dist");
+
+    let mkdocs_yaml_file_path = dist_folder.join("mkdocs.yml");
+    let mkdocs_yaml_file = match File::open(&mkdocs_yaml_file_path) {
+        Ok(file) => file,
+        Err(err) => {
+            return Err(format!("Failed to open mkdocs yaml file: {}", err));
+        }
+    };
+    let mut mkdocs_config: MKDocsConfig = match serde_yaml::from_reader(mkdocs_yaml_file) {
+        Ok(mkdocs) => mkdocs,
+        Err(err) => {
+            return Err(format!("Failed to parse mkdocs yaml file: {}", err));
+        }
+    };
+
+    if !mkdocs_config
+        .markdown_extensions
+        .contains(&MarkdownExtension::String("pymdownx.details".to_string()))
+    {
+        mkdocs_config.markdown_extensions = [
+            MarkdownExtension::String("admonition".to_string()),
+            MarkdownExtension::String("abbr".to_string()),
+            MarkdownExtension::String("attr_list".to_string()),
+            MarkdownExtension::String("pymdownx.snippets".to_string()),
+            MarkdownExtension::String("pymdownx.superfences".to_string()),
+            MarkdownExtension::String("pymdownx.details".to_string()),
+            MarkdownExtension::PymdownxTaskList(PymdownxTaskList {
+                custom_checkbox: true,
+            }),
+            MarkdownExtension::PymdownxTabbed(PymdownxTabbed {
+                alternate_style: true,
+            }),
+        ]
+        .to_vec();
+        let mkdocs_file_path = dist_folder.join("mkdocs.yml");
+        match fs::write(
+            mkdocs_file_path,
+            serde_yaml::to_string(&mkdocs_config).unwrap(),
+        ) {
+            Ok(_) => {}
+            Err(err) => {
+                return Err(format!("Failed to create mkdocs yaml file: {:?}", err));
+            }
+        }
+        return Ok("Mkdocs yml updated".to_string());
+    }
+
+    Ok("".to_string())
 }

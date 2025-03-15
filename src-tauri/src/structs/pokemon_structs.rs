@@ -1,5 +1,6 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
+use sqlx::FromRow;
 use std::{collections::HashMap, fmt, str::FromStr};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -18,6 +19,57 @@ pub struct PokemonData {
     pub sprite: String,
     pub evolution: Evolution,
     pub forms: HashMap<String, PokemonForm>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, FromRow)]
+pub struct DBPokemon {
+    pub id: u32,
+    pub dex_number: u32,
+    pub name: String,
+    pub types: String,
+    pub ability_1: Option<String>,
+    pub ability_2: Option<String>,
+    pub hidden_ability: Option<String>,
+    pub hp: u32,
+    pub attack: u32,
+    pub defense: u32,
+    pub sp_attack: u32,
+    pub sp_defense: u32,
+    pub speed: u32,
+    pub a1_effect: Option<String>,
+    pub a2_effect: Option<String>,
+    pub h3_effect: Option<String>,
+    pub evolution_method: String,
+    pub evolution_level: Option<u32>,
+    pub evolution_item: Option<String>,
+    pub evolution_other: Option<String>,
+    pub evolved_pokemon: Option<String>,
+    pub render: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, FromRow)]
+pub struct PokemonMove {
+    pub pokemon: u32,
+    pub move_id: u32,
+    pub learn_method: String,
+    pub level_learned: Option<u32>,
+    pub move_name: String,
+    pub move_type: Option<String>,
+    pub power: Option<u32>,
+    pub accuracy: Option<u32>,
+    pub pp: Option<u32>,
+    pub damage_class: String,
+    pub machine_name: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct EvolutionChange {
+    pub id: u32,
+    pub level: Option<u32>,
+    pub item: Option<String>,
+    pub other: Option<String>,
+    pub evolved_pokemon: EvolvedPokemon,
+    pub method: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -59,9 +111,9 @@ pub struct Evolution {
     pub method: EvolutionMethod,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, FromRow)]
 pub struct EvolvedPokemon {
-    pub id: usize,
+    pub id: u32,
     pub pokemon_name: String,
 }
 
