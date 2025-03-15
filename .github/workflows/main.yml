@@ -74,10 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Improved Update functionality and Migration system
-            \n- Fixed bug where locations weren't generating for certain pokemon
-            \n- Unified Pokemon name formatting in app and on wiki
-            \n- Added migration to fix mega-sharpedo typo
+            \n- Added Hisuian Variants
             "
           releaseDraft: false
           prerelease: false
