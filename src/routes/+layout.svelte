@@ -64,6 +64,7 @@
   import DeleteWikiModal from "$lib/components/modals/DeleteWikiModal.svelte";
   import SelectInput from "$lib/components/SelectInput.svelte";
   import { goto, invalidateAll } from "$app/navigation";
+  import logo from "$lib/assets/icon.png";
 
   initializeStores();
 
@@ -227,11 +228,21 @@
 
 <Toast position="br" rounded="rounded-none" padding="px-4 py-2" max={10} />
 <Modal components={modalRegistry} />
-<AppShell class="h-screen bg-white">
+<AppShell class="h-screen bg-indigo-100">
+  <svelte:fragment slot="header">
+    <div
+      class="bg-white h-[60px] pl-4 flex border-b border-indigo-100 items-center"
+    >
+      <div class="flex flex-row items-center">
+        <img src={logo} alt="WikiGen Logo" width="40rem" />
+        <h1>WikiGen</h1>
+      </div>
+    </div>
+  </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
     {#if $selectedWiki.name !== ""}
       <div
-        class="flex h-full flex-col gap-4 bg-touch-indigo p-4 pt-6 w-[15rem]"
+        class="flex h-full flex-col bg-white gap-4 bg-touch-indigo p-4 pt-2 w-[15rem] border-r border-indigo-100"
       >
         <div class="flex grow flex-col">
           <NavButton
@@ -348,14 +359,16 @@
   <svelte:fragment slot="pageHeader">
     <div class="flex flex-row justify-end mr-10 gap-x-3 items-center"></div>
   </svelte:fragment>
-  <div class="mt-6 mr-10 ml-10">
+  <div class="mr-5 ml-5 pt-2">
     <slot />
   </div>
   <svelte:fragment slot="footer">
     {#if $selectedWiki.name !== ""}
-      <div class="flex flex-row w-full p-2 justify-end pr-5 gap-x-3">
+      <div
+        class="flex flex-row w-full p-2 justify-end pr-5 gap-x-3 bg-white items-center border-t border-indigo-100"
+      >
         <button
-          class="self-center p-2 rounded-md mt-2
+          class="self-center p-2 rounded-md
           shadow-sm ring-1 ring-inset ring-gray-300
           text-gray-500
             border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
@@ -371,10 +384,10 @@
         <div data-popup="addIconToolTip">
           <p class="card p-1 text-sm">Create New Wiki</p>
 
-          <div class="arrow bg-surface-100-800-token" />
+          <div class="arrow bg-surface-100-800-token"></div>
         </div>
         <button
-          class="self-center p-2 rounded-md mt-2
+          class="self-center p-2 rounded-md
           shadow-sm ring-1 ring-inset ring-gray-300
           text-gray-500
             border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
@@ -393,7 +406,7 @@
         </div>
         <!-- <div class="flex flex-row w-full p-2 justify-end mr-10 gap-x-3"> -->
         <button
-          class="self-center p-2 rounded-md mt-2
+          class="self-center p-2 rounded-md
             shadow-sm ring-1 ring-inset ring-gray-300
             text-gray-500
               border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
@@ -401,7 +414,7 @@
           <IconBrandGithub size={20} />
         </button>
         <button
-          class="self-center p-2 rounded-md mt-2
+          class="self-center p-2 rounded-md
             shadow-sm ring-1 ring-inset ring-gray-300
             text-gray-500
               border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
@@ -420,7 +433,7 @@
           <div class="arrow bg-surface-100-800-token" />
         </div>
         <button
-          class="self-center p-2 rounded-md mt-2
+          class="self-center p-2 rounded-md
             shadow-sm ring-1 ring-inset ring-gray-300
             text-gray-500
               border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
@@ -435,7 +448,7 @@
           }))}
           value={$selectedWiki.name}
           onChange={loadSelectedWiki}
-          class="w-[17rem]"
+          class="w-[17rem] mt-0"
         />
         {#if displayUpdateButton}
           <button
