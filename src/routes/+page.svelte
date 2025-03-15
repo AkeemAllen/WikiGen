@@ -50,8 +50,7 @@
       </button>
       <div data-popup="addIconToolTip">
         <p class="card p-1">Create New Wiki</p>
-
-        <div class="arrow bg-surface-100-800-token" />
+        <div class="arrow bg-surface-100-800-token"></div>
       </div>
     </div>
   </div>

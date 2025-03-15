@@ -26,7 +26,6 @@ export function getToastSettings(
     case ToastType.INFO:
       return {
         message,
-        autohide: false,
         background: "bg-white",
         classes: "border-l-8 border-blue-500",
       };

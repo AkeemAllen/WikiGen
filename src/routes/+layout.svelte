@@ -22,26 +22,19 @@
     storePopup,
   } from "@skeletonlabs/skeleton";
   import {
-    IconAdjustmentsUp,
-    IconBallBasketball,
     IconBottle,
-    IconBottleFilled,
     IconBrandGithub,
     IconDeviceFloppy,
     IconDisc,
-    IconDotsVertical,
     IconDownload,
     IconFlame,
     IconHome,
     IconMapRoute,
     IconPlus,
     IconPokeball,
-    IconRoute2,
     IconSeeding,
-    IconTestPipe,
     IconTrash,
     IconTreadmill,
-    IconTree,
   } from "@tabler/icons-svelte";
   import "../app.pcss";
   import { selectedWiki, wikis } from "../store";
@@ -52,11 +45,6 @@
   } from "@tauri-apps/api/updater";
   import { onMount } from "svelte";
   import { relaunch } from "@tauri-apps/api/process";
-  import {
-    BaseDirectory,
-    readTextFile,
-    writeTextFile,
-  } from "@tauri-apps/api/fs";
   import { invoke } from "@tauri-apps/api";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import { loadWikiData } from "$lib/utils/loadWiki";
@@ -70,12 +58,6 @@
 
   storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
-  const wikiSelectPopup: PopupSettings = {
-    event: "click",
-    target: "wikiSelectPopup",
-    placement: "top",
-  };
-
   const modalRegistry: Record<string, ModalComponent> = {};
   let updaterModalOpen = false;
   let displayUpdateButton = false;
@@ -83,6 +65,8 @@
   let runningMigrations = false;
   let createWikiModalOpen = false;
   let deleteWikiModalOpen = false;
+  let connectedToGithub = false;
+  let backingUpWiki = false;
 
   onMount(() => {
     async function runMigrations() {
@@ -173,14 +157,20 @@
   }
 
   async function backupWiki() {
+    toastStore.trigger(getToastSettings(ToastType.INFO, "Backing Up Wiki..."));
     await invoke("backup_wiki", {
       wikiName: $selectedWiki.name,
-    }).then(() => {
-      toastStore.trigger({
-        message: "Wiki Backed Up Successfully",
-        background: "variant-filled-success",
+    })
+      .then(() => {
+        toastStore.trigger(
+          getToastSettings(ToastType.INFO, "Wiki Backed Up Successfully"),
+        );
+      })
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, `Error Backing Up Wiki: ${err}`),
+        );
       });
-    });
   }
 </script>
 
@@ -231,18 +221,44 @@
 <AppShell class="h-screen bg-indigo-100">
   <svelte:fragment slot="header">
     <div
-      class="bg-white h-[60px] pl-4 flex border-b border-indigo-100 items-center"
+      class="bg-white h-[60px] px-4 flex border-b border-indigo-100 items-center justify-between"
     >
       <div class="flex flex-row items-center">
         <img src={logo} alt="WikiGen Logo" width="40rem" />
         <h1>WikiGen</h1>
       </div>
+      <!-- <div class="flex flex-row items-center gap-1">
+        {#if !connectedToGithub}
+          <button class="p-2 rounded-md text-sm text-gray-400 hover:bg-gray-100"
+            >Deploy Wiki</button
+          >
+        {:else}
+          <button
+            class="self-center p-2 rounded-full
+              shadow-sm ring-1 ring-inset ring-gray-300
+              text-gray-500
+                border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
+            use:popup={{
+              event: "hover",
+              target: "connectToGithubToolTip",
+              placement: "bottom",
+            }}
+          >
+            <IconBrandGithub size={20} />
+          </button>
+          <div data-popup="connectToGithubToolTip">
+            <p class="card p-1 text-sm">Connect To Github</p>
+
+            <div class="arrow bg-surface-100-800-token"></div>
+          </div>
+        {/if}
+      </div> -->
     </div>
   </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
     {#if $selectedWiki.name !== ""}
       <div
-        class="flex h-full flex-col bg-white gap-4 bg-touch-indigo p-4 pt-2 w-[15rem] border-r border-indigo-100"
+        class="flex h-full flex-col bg-white gap-4 bg-touch-indigo p-4 pt-2 w-[12rem] border-r border-indigo-100"
       >
         <div class="flex grow flex-col">
           <NavButton
@@ -359,7 +375,7 @@
   <svelte:fragment slot="pageHeader">
     <div class="flex flex-row justify-end mr-10 gap-x-3 items-center"></div>
   </svelte:fragment>
-  <div class="mr-5 ml-5 pt-2">
+  <div class="my-3 mr-5 ml-5 p-2 bg-white rounded-md">
     <slot />
   </div>
   <svelte:fragment slot="footer">
@@ -371,26 +387,20 @@
           class="self-center p-2 rounded-md
           shadow-sm ring-1 ring-inset ring-gray-300
           text-gray-500
-            border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
-          use:popup={{
-            event: "hover",
-            target: "addIconToolTip",
-            placement: "bottom",
-          }}
+            border-0 hover:bg-indigo-500 hover:ring-0 hover:text-white ease-in-out duration-200"
           on:click={() => (createWikiModalOpen = true)}
         >
           <IconPlus size={20} />
         </button>
-        <div data-popup="addIconToolTip">
+        <!-- <div data-popup="addIconToolTip">
           <p class="card p-1 text-sm">Create New Wiki</p>
-
           <div class="arrow bg-surface-100-800-token"></div>
-        </div>
-        <button
+        </div> -->
+        <!-- <button
           class="self-center p-2 rounded-md
           shadow-sm ring-1 ring-inset ring-gray-300
           text-gray-500
-            border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
+            border-0 hover:bg-indigo-600 hover:text-white hover:ring-0 ease-in-out duration-200"
           use:popup={{
             event: "hover",
             target: "previewWikiToolTip",
@@ -403,40 +413,26 @@
           <p class="card p-1 text-sm">Preview Wiki</p>
 
           <div class="arrow bg-surface-100-800-token" />
-        </div>
+        </div> -->
         <!-- <div class="flex flex-row w-full p-2 justify-end mr-10 gap-x-3"> -->
         <button
           class="self-center p-2 rounded-md
             shadow-sm ring-1 ring-inset ring-gray-300
             text-gray-500
-              border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
-        >
-          <IconBrandGithub size={20} />
-        </button>
-        <button
-          class="self-center p-2 rounded-md
-            shadow-sm ring-1 ring-inset ring-gray-300
-            text-gray-500
-              border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
-          use:popup={{
-            event: "hover",
-            target: "backupWikiToolTip",
-            placement: "top",
-          }}
+              border-0 hover:bg-indigo-500 hover:ring-0 hover:text-white ease-in-out duration-200"
           on:click={backupWiki}
         >
           <IconDeviceFloppy size={20} />
         </button>
-        <div data-popup="backupWikiToolTip">
+        <!-- <div data-popup="backupWikiToolTip">
           <p class="card p-1 text-sm">Backup Wiki</p>
-
-          <div class="arrow bg-surface-100-800-token" />
-        </div>
+          <div class="arrow bg-surface-100-800-token"></div>
+        </div> -->
         <button
           class="self-center p-2 rounded-md
             shadow-sm ring-1 ring-inset ring-gray-300
             text-gray-500
-              border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
+              border-0 hover:bg-red-400 hover:ring-0 hover:text-white ease-in-out duration-200"
           on:click={() => (deleteWikiModalOpen = true)}
         >
           <IconTrash size={20} />
