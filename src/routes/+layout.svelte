@@ -53,6 +53,8 @@
   import SelectInput from "$lib/components/SelectInput.svelte";
   import { goto, invalidateAll } from "$app/navigation";
   import logo from "$lib/assets/icon.png";
+  import { PUBLIC_CLIENT_ID, PUBLIC_REDIRECT_URI } from "$env/static/public";
+  import { WebviewWindow } from "@tauri-apps/api/window";
 
   initializeStores();
 
@@ -172,6 +174,27 @@
         );
       });
   }
+
+  async function signInToGithub() {
+    const url = new URL("https://github.com/login/oauth/authorize");
+    const params = new URLSearchParams();
+    params.append("client_id", PUBLIC_CLIENT_ID);
+    params.append("redirect_url", PUBLIC_REDIRECT_URI);
+    params.append("scope", "read:user public_repo");
+
+    url.search = params.toString();
+
+    const webview = new WebviewWindow("GithubAccessRequest", {
+      url: url.toString(),
+      title: "Github Access Request",
+    });
+    webview.once("tauri://created", function () {
+      // webview window successfully created
+    });
+    webview.once("tauri://error", function (e) {
+      // an error occurred during webview window creation
+    });
+  }
 </script>
 
 <BaseModal bind:open={runningMigrations} close={() => {}} class="w-[30rem]">
@@ -227,10 +250,11 @@
         <img src={logo} alt="WikiGen Logo" width="40rem" />
         <h1>WikiGen</h1>
       </div>
-      <!-- <div class="flex flex-row items-center gap-1">
+      <div class="flex flex-row items-center gap-1">
         {#if !connectedToGithub}
-          <button class="p-2 rounded-md text-sm text-gray-400 hover:bg-gray-100"
-            >Deploy Wiki</button
+          <button
+            class="p-2 rounded-md text-sm text-gray-400 hover:bg-gray-100"
+            on:click={signInToGithub}>Sign in to github</button
           >
         {:else}
           <button
@@ -252,7 +276,7 @@
             <div class="arrow bg-surface-100-800-token"></div>
           </div>
         {/if}
-      </div> -->
+      </div>
     </div>
   </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
