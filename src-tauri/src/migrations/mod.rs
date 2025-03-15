@@ -1,14 +1,17 @@
+mod pokemon_migrations;
+
 use std::{
     collections::HashMap,
     fs::{self, File},
     path::PathBuf,
 };
 
+use pokemon_migrations::{add_all_missing_pokemon, check_if_pokemon_already_migrated};
 use serde::{Deserialize, Serialize};
 use sqlx::{Error, Executor, Pool, Sqlite};
 use tauri::AppHandle;
 
-use crate::{database::get_sqlite_connection, logger};
+use crate::{database::get_sqlite_connection, helpers::copy_recursively, logger};
 
 pub type Wikis = HashMap<String, Wiki>;
 
@@ -49,6 +52,7 @@ struct MigrationJson {
 #[tauri::command]
 pub async fn run_migrations(app_handle: AppHandle) -> Result<String, String> {
     // check for migrations folder for current app version. If not present or folder empty, return early.
+    println!("Running Migrations");
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
     let resources_path = app_handle.path_resolver().resource_dir().unwrap();
 
@@ -115,40 +119,18 @@ pub async fn run_migrations(app_handle: AppHandle) -> Result<String, String> {
             }
         };
 
-        match update_mega_sharpedo_typo(&conn).await {
-            Ok(_) => {
-                let current_name_path = wiki_path
-                    .join("dist")
-                    .join("docs")
-                    .join("img")
-                    .join("pokemon")
-                    .join("meag-sharpedo.png");
-                let corrected_name_path = wiki_path
-                    .join("dist")
-                    .join("docs")
-                    .join("img")
-                    .join("pokemon")
-                    .join("mega-sharpedo.png");
-                match fs::rename(current_name_path, corrected_name_path) {
-                    Ok(_) => {}
-                    Err(err) => {
-                        logger::write_log(
-                            &wiki_path,
-                            logger::LogLevel::MigrationError,
-                            &format!("Failed to rename file: {}", err),
-                        );
-                    }
-                };
-            }
+        // Add Migration function call here
+        match migrate_hisuian_forms(&conn, &resources_path, &wiki_path).await {
+            Ok(_) => {}
             Err(err) => {
                 logger::write_log(
                     &wiki_path,
                     logger::LogLevel::MigrationError,
-                    &format!("Failed to execute migration: {}", err),
+                    &format!("Failed to migrate hisuian forms: {}", err),
                 );
                 continue;
             }
-        };
+        }
 
         logger::write_log(
             &wiki_path,
@@ -209,6 +191,39 @@ async fn update_mega_sharpedo_typo(conn: &Pool<Sqlite>) -> Result<(), Error> {
             .expect("Failed to Insert Migration"),
         Err(err) => return Err(err),
     };
+
+    Ok(())
+}
+
+async fn migrate_hisuian_forms(
+    conn: &Pool<Sqlite>,
+    resources_path: &PathBuf,
+    wiki_path: &PathBuf,
+) -> Result<(), String> {
+    let is_already_migrated = check_if_pokemon_already_migrated("growlithe-hisuian", conn).await;
+
+    if !is_already_migrated {
+        // run true migrations
+        match add_all_missing_pokemon(conn, resources_path).await {
+            Ok(_) => {
+                let wiki_sprite_dir = wiki_path
+                    .join("dist")
+                    .join("docs")
+                    .join("img")
+                    .join("pokemon");
+                fs::remove_dir_all(&wiki_sprite_dir).unwrap();
+                copy_recursively(
+                    resources_path
+                        .join("resources")
+                        .join("generator_assets")
+                        .join("pokemon_sprites"),
+                    &wiki_sprite_dir,
+                )
+                .expect("Failed to copy sprites");
+            }
+            Err(err) => return Err(err),
+        }
+    }
 
     Ok(())
 }
