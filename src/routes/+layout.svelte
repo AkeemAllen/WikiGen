@@ -176,24 +176,34 @@
   }
 
   async function signInToGithub() {
-    const url = new URL("https://github.com/login/oauth/authorize");
-    const params = new URLSearchParams();
-    params.append("client_id", PUBLIC_CLIENT_ID);
-    params.append("redirect_url", PUBLIC_REDIRECT_URI);
-    params.append("scope", "read:user public_repo");
-
-    url.search = params.toString();
-
-    const webview = new WebviewWindow("GithubAccessRequest", {
-      url: url.toString(),
-      title: "Github Access Request",
-    });
-    webview.once("tauri://created", function () {
-      // webview window successfully created
-    });
-    webview.once("tauri://error", function (e) {
-      // an error occurred during webview window creation
-    });
+    // Have application create custom protocol
+    // Open Webview to the signin endpoint
+    // Have endpoint redirect to github.com/login/oatuh/authorize
+    // get code and redirect to /authorize endpoint, get access code, create cookie
+    // Open desktop app using custom protocol and pass cookie as a parameter.
+    // const url = new URL("https://github.com/login/oauth/authorize");
+    // const params = new URLSearchParams();
+    // params.append("client_id", PUBLIC_CLIENT_ID);
+    // // params.append(
+    // //   "redirect_uri",
+    // //   `http://127.0.0.1:${window.location.port}auth`,
+    // // );
+    // params.append("scope", "read:user public_repo");
+    // url.search = params.toString();
+    // const webview = new WebviewWindow("GithubAccessRequest", {
+    //   url: url.toString(),
+    //   title: "Github Access Request",
+    // });
+    // const unlisten = await webview.listen("event", (event) => {
+    //   console.log(event);
+    // });
+    // webview.once("event", () => {
+    //   console.log("Event");
+    // });
+    // webview.onCloseRequested(() => {
+    //   unlisten();
+    //   // Ping server again for new token and add that to state.
+    // });
   }
 </script>
 
