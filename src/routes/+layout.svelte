@@ -24,6 +24,7 @@
   import {
     IconBottle,
     IconBrandGithub,
+    IconChevronDown,
     IconDeviceFloppy,
     IconDisc,
     IconDownload,
@@ -37,7 +38,7 @@
     IconTreadmill,
   } from "@tabler/icons-svelte";
   import "../app.pcss";
-  import { selectedWiki, wikis } from "../store";
+  import { selectedWiki, wikis, token, user, type User } from "../store";
   import {
     checkUpdate,
     installUpdate,
@@ -67,8 +68,6 @@
   let runningMigrations = false;
   let createWikiModalOpen = false;
   let deleteWikiModalOpen = false;
-  let connectedToGithub = false;
-  let backingUpWiki = false;
 
   onMount(() => {
     async function runMigrations() {
@@ -176,34 +175,62 @@
   }
 
   async function signInToGithub() {
-    // Have application create custom protocol
-    // Open Webview to the signin endpoint
-    // Have endpoint redirect to github.com/login/oatuh/authorize
-    // get code and redirect to /authorize endpoint, get access code, create cookie
-    // Open desktop app using custom protocol and pass cookie as a parameter.
-    // const url = new URL("https://github.com/login/oauth/authorize");
-    // const params = new URLSearchParams();
-    // params.append("client_id", PUBLIC_CLIENT_ID);
-    // // params.append(
-    // //   "redirect_uri",
-    // //   `http://127.0.0.1:${window.location.port}auth`,
-    // // );
-    // params.append("scope", "read:user public_repo");
-    // url.search = params.toString();
-    // const webview = new WebviewWindow("GithubAccessRequest", {
-    //   url: url.toString(),
-    //   title: "Github Access Request",
-    // });
-    // const unlisten = await webview.listen("event", (event) => {
-    //   console.log(event);
-    // });
-    // webview.once("event", () => {
-    //   console.log("Event");
-    // });
-    // webview.onCloseRequested(() => {
-    //   unlisten();
-    //   // Ping server again for new token and add that to state.
-    // });
+    const url = new URL("https://github.com/login/oauth/authorize");
+    const params = new URLSearchParams();
+    params.append("client_id", PUBLIC_CLIENT_ID);
+    params.append("scope", "read:user public_repo");
+
+    url.search = params.toString();
+
+    const webview = new WebviewWindow("GithubAccessRequest", {
+      url: url.toString(),
+      title: "Github Access Request",
+    });
+
+    const unlisten = await webview.listen("loading-token", (event: any) => {
+      let data = parseJwt(event.payload.token);
+      localStorage.setItem("token", event.payload.token);
+      $user = data;
+
+      webview.close();
+    });
+
+    webview.onCloseRequested(() => {
+      unlisten();
+    });
+  }
+
+  function signOut() {
+    localStorage.removeItem("token");
+    $user = {
+      userName: "",
+      avatarUrl: "",
+      isConnected: false,
+    };
+  }
+
+  function parseJwt(jsonWebToken: string): User {
+    var base64Url = jsonWebToken.split(".")[1];
+    var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    var jsonPayload = decodeURIComponent(
+      window
+        .atob(base64)
+        .split("")
+        .map(function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join(""),
+    );
+
+    let parsedJson = JSON.parse(jsonPayload);
+
+    let loggedInUser: User = {
+      userName: parsedJson.user_name as string,
+      avatarUrl: parsedJson.avatar as string,
+      isConnected: true,
+    };
+
+    return loggedInUser;
   }
 </script>
 
@@ -261,30 +288,36 @@
         <h1>WikiGen</h1>
       </div>
       <div class="flex flex-row items-center gap-1">
-        {#if !connectedToGithub}
+        {#if !$user.isConnected}
           <button
             class="p-2 rounded-md text-sm text-gray-400 hover:bg-gray-100"
             on:click={signInToGithub}>Sign in to github</button
           >
         {:else}
-          <button
-            class="self-center p-2 rounded-full
-              shadow-sm ring-1 ring-inset ring-gray-300
-              text-gray-500
-                border-0 hover:bg-indigo-600 hover:text-white ease-in-out duration-200"
+          <div
+            class="flex flex-row items-center gap-2 hover:cursor-pointer hover:bg-gray-200 rounded-2xl py-2 px-4"
             use:popup={{
-              event: "hover",
-              target: "connectToGithubToolTip",
-              placement: "bottom",
+              event: "click",
+              target: "profileMenu",
             }}
           >
-            <IconBrandGithub size={20} />
-          </button>
-          <div data-popup="connectToGithubToolTip">
-            <p class="card p-1 text-sm">Connect To Github</p>
-
-            <div class="arrow bg-surface-100-800-token"></div>
+            <img
+              src={$user.avatarUrl}
+              alt="Avatar"
+              class="rounded-full ring-1 ring-inset ring-gray-300 border-0 h-7"
+            />
+            <IconChevronDown size={16} color="gray" />
           </div>
+          <ul
+            class="card z-10 w-36 grid-cols-1 p-2 shadow-xl"
+            data-popup="profileMenu"
+          >
+            <button
+              on:click={signOut}
+              class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+              >Sign Out</button
+            >
+          </ul>
         {/if}
       </div>
     </div>
@@ -453,7 +486,7 @@
           class="self-center p-2 rounded-md
             shadow-sm ring-1 ring-inset ring-gray-300
             text-gray-500
-              border-0 hover:bg-indigo-500 hover:ring-0 hover:text-white ease-in-out duration-200"
+              border-0 hover:bg-indigo-100 hover:ring-0 hover:text-white ease-in-out duration-200"
           on:click={backupWiki}
         >
           <IconDeviceFloppy size={20} />
