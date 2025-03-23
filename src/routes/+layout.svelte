@@ -232,6 +232,48 @@
 
     return loggedInUser;
   }
+
+  async function deployWiki() {
+    if ($selectedWiki.name === "") {
+      toastStore.trigger(
+        getToastSettings(
+          ToastType.ERROR,
+          "Wiki needs to be selected before deploying",
+        ),
+      );
+      return;
+    }
+    await fetch("http://localhost:3000/create-repo", {
+      method: "POST",
+      body: JSON.stringify({
+        token: localStorage.getItem("token"),
+        wikiName: $selectedWiki.name,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.status === 401) {
+          toastStore.trigger(
+            getToastSettings(
+              ToastType.ERROR,
+              "Token has expired. Relogin to deploy wiki",
+            ),
+          );
+          signOut();
+        }
+        invoke("deploy_wiki", {
+          wikiName: $selectedWiki.name,
+        }).then((res) => {
+          console.log(res);
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
 </script>
 
 <BaseModal bind:open={runningMigrations} close={() => {}} class="w-[30rem]">
@@ -312,6 +354,11 @@
             class="card z-10 w-36 grid-cols-1 p-2 shadow-xl"
             data-popup="profileMenu"
           >
+            <button
+              on:click={deployWiki}
+              class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+              >Deploy Wiki</button
+            >
             <button
               on:click={signOut}
               class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
