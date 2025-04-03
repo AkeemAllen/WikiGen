@@ -52,7 +52,7 @@
   import SelectInput from "$lib/components/SelectInput.svelte";
   import { goto } from "$app/navigation";
   import logo from "$lib/assets/icon.png";
-  import { PUBLIC_CLIENT_ID, PUBLIC_REDIRECT_URI } from "$env/static/public";
+  // import { PUBLIC_CLIENT_ID } from "$env/static/public";
   import { WebviewWindow } from "@tauri-apps/api/window";
   import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
   import { appDataDir } from "@tauri-apps/api/path";
@@ -198,7 +198,7 @@
   async function signInToGithub() {
     const url = new URL("https://github.com/login/oauth/authorize");
     const params = new URLSearchParams();
-    params.append("client_id", PUBLIC_CLIENT_ID);
+    params.append("client_id", "Ov23li9oWejO62cA6Kee");
     params.append("scope", "read:user public_repo");
 
     url.search = params.toString();
