@@ -20,21 +20,20 @@
     popup,
     storePopup,
   } from "@skeletonlabs/skeleton";
-  import {
-    IconBottle,
-    IconChevronDown,
-    IconDeviceFloppy,
-    IconDisc,
-    IconDownload,
-    IconFlame,
-    IconHome,
-    IconMapRoute,
-    IconPlus,
-    IconPokeball,
-    IconSeeding,
-    IconTrash,
-    IconTreadmill,
-  } from "@tabler/icons-svelte";
+  import IconTreadmill from "@tabler/icons-svelte/icons/treadmill";
+  import IconBottle from "@tabler/icons-svelte/icons/bottle";
+  import IconChevronDown from "@tabler/icons-svelte/icons/chevron-down";
+  import IconDeviceFloppy from "@tabler/icons-svelte/icons/device-floppy";
+  import IconDisc from "@tabler/icons-svelte/icons/disc";
+  import IconDownload from "@tabler/icons-svelte/icons/download";
+  import IconFlame from "@tabler/icons-svelte/icons/flame";
+  import IconHome from "@tabler/icons-svelte/icons/home";
+  import IconMapRoute from "@tabler/icons-svelte/icons/map-route";
+  import IconPlus from "@tabler/icons-svelte/icons/plus";
+  import IconPokeball from "@tabler/icons-svelte/icons/pokeball";
+  import IconSeeding from "@tabler/icons-svelte/icons/seeding";
+  import IconTrash from "@tabler/icons-svelte/icons/trash";
+
   import "../app.pcss";
   import { selectedWiki, wikis, user, type User } from "../store";
   import {

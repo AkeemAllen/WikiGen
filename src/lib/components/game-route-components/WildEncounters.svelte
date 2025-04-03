@@ -273,8 +273,6 @@
                 {encounter.encounter_rate}%
               </p>
             </div>
-            <!-- svelte-ignore a11y_click_events_have_key_events -->
-            <!-- svelte-ignore a11y_missing_attribute -->
             <a
               class="invisible absolute right-2 top-2 z-20 rounded-md bg-red-200 p-1 hover:scale-110 group-hover:visible"
               type="button"
