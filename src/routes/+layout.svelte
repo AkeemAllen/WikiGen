@@ -264,7 +264,8 @@
       );
       return;
     }
-    await fetch("http://localhost:3000/create-repo", {
+    deployingWiki = true;
+    await fetch("https://wikigen-auth.fly.dev/create-repo", {
       method: "POST",
       body: JSON.stringify({
         token: localStorage.getItem("token"),

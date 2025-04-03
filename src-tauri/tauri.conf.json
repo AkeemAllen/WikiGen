@@ -81,7 +81,7 @@
       "csp": null,
       "dangerousRemoteDomainIpcAccess": [
         {
-          "domain": "localhost",
+          "domain": "wikigen-auth.fly.dev",
           "windows": ["GithubAccessRequest"],
           "enableTauriAPI": true
         }
