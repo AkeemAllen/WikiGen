@@ -64,7 +64,14 @@ jobs:
       - name: install frontend dependencies
         run: pnpm install
 
-      - name: build frontend
+      - name: build frontend windows
+        if: matrix.settings.platform == 'windows-latest'
+        run: |
+          setx NODE_OPTIONS "--max-old-space-size=4096"
+          pnpm run build
+
+      - name: build frontend darwin
+        if: matrix.settings.platform == 'macos-latest'
         run: |
           export NODE_OPTIONS="--max-old-space-size=4096"
           pnpm run build
