@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { IconPlus } from "@tabler/icons-svelte";
+  import IconPlus from "@tabler/icons-svelte/icons/plus";
   import { wikis, selectedWiki } from "../store";
   import {
     getToastStore,

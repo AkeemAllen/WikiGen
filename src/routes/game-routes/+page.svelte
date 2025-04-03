@@ -3,7 +3,7 @@
   import Button from "$lib/components/Button.svelte";
   import TextInput from "$lib/components/TextInput.svelte";
   import { getToastStore } from "@skeletonlabs/skeleton";
-  import { IconTrash } from "@tabler/icons-svelte";
+  import IconTrash from "@tabler/icons-svelte/icons/trash";
   import { selectedWiki } from "../../store";
   import { routes } from "../../store/gameRoutes";
   import { sortRoutesByPosition } from "$lib/utils";

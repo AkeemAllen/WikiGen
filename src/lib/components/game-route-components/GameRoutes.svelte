@@ -11,7 +11,7 @@
   import { sortRoutesByPosition } from "$lib/utils";
 
   import { getToastStore, popup } from "@skeletonlabs/skeleton";
-  import { IconDotsVertical } from "@tabler/icons-svelte";
+  import IconDotsVertical from "@tabler/icons-svelte/icons/dots-vertical";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import { invoke } from "@tauri-apps/api/tauri";
   import { generateRoutePages, updateRoutes } from "$lib/utils/generators";

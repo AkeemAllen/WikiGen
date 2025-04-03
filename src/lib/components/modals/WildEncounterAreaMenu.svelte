@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getToastStore, popup } from "@skeletonlabs/skeleton";
-  import { IconDots } from "@tabler/icons-svelte";
+  import IconDots from "@tabler/icons-svelte/icons/dots";
   import BaseModal from "$lib/components/BaseModal.svelte";
   import AutoComplete from "$lib/components/AutoComplete.svelte";
   import Button from "$lib/components/Button.svelte";

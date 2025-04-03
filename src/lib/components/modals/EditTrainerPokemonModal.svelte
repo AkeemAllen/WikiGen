@@ -5,7 +5,8 @@
   import AutoComplete from "../AutoComplete.svelte";
   import MultiSelect from "svelte-multiselect";
   import Button from "../Button.svelte";
-  import { IconChevronLeft, IconChevronRight } from "@tabler/icons-svelte";
+  import IconChevronLeft from "@tabler/icons-svelte/icons/chevron-left";
+  import IconChevronRight from "@tabler/icons-svelte/icons/chevron-right";
   import { abilitiesList } from "../../../store/abilities";
   import { naturesList } from "../../../store/natures";
   import { itemsList } from "../../../store/items";

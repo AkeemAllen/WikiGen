@@ -4,7 +4,8 @@
   import SelectInput from "$lib/components/SelectInput.svelte";
   import Button from "$lib/components/Button.svelte";
   import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
-  import { IconArrowLeft, IconTrash } from "@tabler/icons-svelte";
+  import IconTrash from "@tabler/icons-svelte/icons/trash";
+  import IconArrowLeft from "@tabler/icons-svelte/icons/arrow-left";
   import { routes } from "../../../store/gameRoutes";
   import { selectedWiki } from "../../../store";
   import {

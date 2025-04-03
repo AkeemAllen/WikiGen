@@ -10,7 +10,7 @@
   import Button from "../Button.svelte";
   import NumberInput from "../NumberInput.svelte";
   import SelectInput from "../SelectInput.svelte";
-  import { IconTrash } from "@tabler/icons-svelte";
+  import IconTrash from "@tabler/icons-svelte/icons/trash";
   import AutoComplete from "../AutoComplete.svelte";
   import TextInput from "../TextInput.svelte";
   import BaseModal from "../BaseModal.svelte";
