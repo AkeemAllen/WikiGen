@@ -29,6 +29,19 @@
       },
       "os": {
         "all": true
+      },
+      "shell": {
+        "all": true,
+        "execute": true,
+        "open": false,
+        "scope": [
+          {
+            "name": "git-commands",
+            "cmd": "git",
+            "args": true
+          }
+        ],
+        "sidecar": false
       }
     },
     "bundle": {

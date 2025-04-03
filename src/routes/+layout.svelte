@@ -1,7 +1,6 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import NavButton from "$lib/components/NavButton.svelte";
-  import WikiSelectMenu from "$lib/components/WikiSelectMenu.svelte";
   import BaseModal from "$lib/components/BaseModal.svelte";
   import {
     arrow,
@@ -11,7 +10,7 @@
     offset,
     shift,
   } from "@floating-ui/dom";
-  import type { ModalComponent, PopupSettings } from "@skeletonlabs/skeleton";
+  import type { ModalComponent } from "@skeletonlabs/skeleton";
   import {
     AppShell,
     Modal,
@@ -23,7 +22,6 @@
   } from "@skeletonlabs/skeleton";
   import {
     IconBottle,
-    IconBrandGithub,
     IconChevronDown,
     IconDeviceFloppy,
     IconDisc,
@@ -38,7 +36,7 @@
     IconTreadmill,
   } from "@tabler/icons-svelte";
   import "../app.pcss";
-  import { selectedWiki, wikis, token, user, type User } from "../store";
+  import { selectedWiki, wikis, user, type User } from "../store";
   import {
     checkUpdate,
     installUpdate,
@@ -52,10 +50,13 @@
   import CreateWikiModal from "$lib/components/modals/CreateWikiModal.svelte";
   import DeleteWikiModal from "$lib/components/modals/DeleteWikiModal.svelte";
   import SelectInput from "$lib/components/SelectInput.svelte";
-  import { goto, invalidateAll } from "$app/navigation";
+  import { goto } from "$app/navigation";
   import logo from "$lib/assets/icon.png";
   import { PUBLIC_CLIENT_ID, PUBLIC_REDIRECT_URI } from "$env/static/public";
   import { WebviewWindow } from "@tauri-apps/api/window";
+  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+  import { appDataDir } from "@tauri-apps/api/path";
+  import { type } from "@tauri-apps/api/os";
 
   initializeStores();
 
@@ -68,6 +69,26 @@
   let runningMigrations = false;
   let createWikiModalOpen = false;
   let deleteWikiModalOpen = false;
+  let deployingWiki = false;
+  let deployWikiFinalStepsModal = false;
+  let osType = "";
+
+  let mkdocsFilePath: string = "";
+  $: getMkdocsDirectory($selectedWiki.name).then((response) => {
+    mkdocsFilePath = response;
+  });
+
+  async function getMkdocsDirectory(wikiName: string): Promise<string> {
+    const appData = await appDataDir();
+    let mkdocsFilePath = `${appData}${wikiName}/dist`;
+    osType = await type();
+    if (osType === "Windows_NT") {
+      mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
+    } else if (osType === "Darwin") {
+      mkdocsFilePath = mkdocsFilePath.replace(/\s/g, "\\ ");
+    }
+    return mkdocsFilePath;
+  }
 
   onMount(() => {
     async function runMigrations() {
@@ -264,14 +285,39 @@
           );
           signOut();
         }
+        console.log(res);
+        return res;
+      })
+      .then(async (res) => {
+        if ($selectedWiki.settings.deployment_url === "") {
+          $wikis[$selectedWiki.name].settings.deployment_url = res.ssh_url;
+          await writeTextFile("wikis.json", JSON.stringify($wikis), {
+            dir: BaseDirectory.AppData,
+          });
+        }
+        deployingWiki = true;
+        return res;
+      })
+      .then(async (deploy_result) => {
         invoke("deploy_wiki", {
           wikiName: $selectedWiki.name,
-        }).then((res) => {
-          console.log(res);
+          sshUrl: $selectedWiki.settings.deployment_url,
+        }).then(() => {
+          toastStore.trigger(
+            getToastSettings(ToastType.SUCCESS, `Wiki Preparation Complete!`),
+          );
+          deployingWiki = false;
+          deployWikiFinalStepsModal = true;
         });
       })
       .catch((err) => {
-        console.log(err);
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error while preparing wiki for deployment!: ${err}`,
+          ),
+        );
+        deployingWiki = false;
       });
   }
 </script>
@@ -293,6 +339,73 @@
       /></svg
     >
     <p>Current Upating Database...This might take a while</p>
+  </div>
+</BaseModal>
+<BaseModal bind:open={deployingWiki} close={() => {}} class="w-[30rem]">
+  <div class="flex gap-2 items-center">
+    <svg
+      aria-hidden="true"
+      class="h-5 w-5 animate-spin fill-indigo-600 text-gray-200"
+      viewBox="0 0 100 101"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ><path
+        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+        fill="currentColor"
+      /><path
+        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+        fill="currentFill"
+      /></svg
+    >
+    <p>Preparing Wiki For Deployment</p>
+  </div>
+</BaseModal>
+<BaseModal
+  bind:open={deployWikiFinalStepsModal}
+  close={() => (deployWikiFinalStepsModal = false)}
+  class="min-w-[30rem]"
+>
+  <h2 class="text-lg font-bold leading-6 text-gray-900">Final Deploy Steps</h2>
+  <div class="grid gap-3">
+    <p>
+      1.
+      {#if osType === "Windows_NT"}
+        Press Windows Start Key, type Terminal, and open it
+      {:else if osType === "Darwin"}
+        Open spotlight search, type Terminal, and open it
+      {/if}
+    </p>
+    <h2 class="text-md font-semibold leading-3 text-gray-900">
+      Copy and paste the below commands
+    </h2>
+    <p>
+      2. Navigate to the Wiki
+      <br />
+      <span class="code font-semibold"> cd {mkdocsFilePath}</span>
+    </p>
+    <p>
+      3. Update the main branch
+      <br />
+      <span class="code font-semibold"> git push -u origin main</span>
+    </p>
+    <p>
+      4. Deploy the Wiki
+      <br />
+      <span class="code font-semibold"> mkdocs gh-deploy</span>
+    </p>
+    <p>
+      4. Once done, your docs should be available at the below URL. Note that it
+      may take a few minutes to load.
+      <br />
+      <a
+        href={`https://${$user.userName.toLowerCase()}.github.io/${$selectedWiki.name}/`}
+        target="_blank"
+      >
+        <span class="code font-semibold"
+          >https://{$user.userName.toLowerCase()}.github.io/{$selectedWiki.name}/</span
+        >
+      </a>
+    </p>
   </div>
 </BaseModal>
 <BaseModal bind:open={updaterModalOpen} close={() => {}} class="w-[30rem]">

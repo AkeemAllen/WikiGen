@@ -52,7 +52,6 @@ struct MigrationJson {
 #[tauri::command]
 pub async fn run_migrations(app_handle: AppHandle) -> Result<String, String> {
     // check for migrations folder for current app version. If not present or folder empty, return early.
-    println!("Running Migrations");
     let base_path = app_handle.path_resolver().app_data_dir().unwrap();
     let resources_path = app_handle.path_resolver().resource_dir().unwrap();
 
@@ -73,6 +72,7 @@ pub async fn run_migrations(app_handle: AppHandle) -> Result<String, String> {
         return Ok("skipping".to_string());
     }
 
+    println!("Running Migrations");
     let wiki_json_file_path = base_path.join("wikis.json");
     let wikis_file = match File::open(&wiki_json_file_path) {
         Ok(file) => file,
