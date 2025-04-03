@@ -25,6 +25,7 @@ use page_generators::pokemon_pages::{
 use tauri_plugin_sql;
 use wiki_preparation::backup_wiki::backup_wiki;
 use wiki_preparation::create_wiki::create_wiki;
+use wiki_preparation::deploy_wiki::deploy_wiki;
 
 use migrations::run_migrations;
 use wiki_preparation::yaml_declaration::update_yaml;
@@ -40,6 +41,7 @@ fn main() {
             generate_pokemon_pages_from_list,
             generate_route_pages_with_handle,
             backup_wiki,
+            deploy_wiki,
             generate_item_changes_page_with_handle,
             generate_nature_page_with_handle,
             generate_ability_page_with_handle,

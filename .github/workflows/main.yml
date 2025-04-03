@@ -74,7 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- General Design and User Experience Improvements
+            \n- Added More convenient Wiki Deployment
             "
           releaseDraft: false
           prerelease: false

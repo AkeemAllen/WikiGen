@@ -23,7 +23,7 @@
 <CreateWikiModal bind:open={createWikiModalOpen} />
 
 {#if $selectedWiki.name == ""}
-  <div class="flex justify-center h-screen">
+  <div class="flex justify-center h-[calc(100vh-100px)]">
     <div class="flex flex-col text-center mt-24 gap-4">
       <p class="text-xl font-bold">Current Wikis</p>
       <div class="grid grid-cols-3 gap-3 w-[60rem]">

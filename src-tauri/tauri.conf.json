@@ -4,11 +4,12 @@
     "beforeBuildCommand": "pnpm run build",
     "beforeDevCommand": "pnpm run dev",
     "devPath": "http://localhost:5173",
-    "distDir": "../build"
+    "distDir": "../build",
+    "withGlobalTauri": true
   },
   "package": {
     "productName": "WikiGen",
-    "version": "1.7.10"
+    "version": "1.8.0"
   },
   "tauri": {
     "allowlist": {
@@ -28,6 +29,19 @@
       },
       "os": {
         "all": true
+      },
+      "shell": {
+        "all": true,
+        "execute": true,
+        "open": false,
+        "scope": [
+          {
+            "name": "git-commands",
+            "cmd": "git",
+            "args": true
+          }
+        ],
+        "sidecar": false
       }
     },
     "bundle": {
@@ -64,7 +78,14 @@
       }
     },
     "security": {
-      "csp": null
+      "csp": null,
+      "dangerousRemoteDomainIpcAccess": [
+        {
+          "domain": "wikigen-auth.fly.dev",
+          "windows": ["GithubAccessRequest"],
+          "enableTauriAPI": true
+        }
+      ]
     },
     "updater": {
       "active": true,
