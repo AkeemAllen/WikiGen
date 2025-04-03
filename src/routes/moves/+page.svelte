@@ -16,7 +16,8 @@
   import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
   import BaseModal from "$lib/components/BaseModal.svelte";
   import { DataHandler } from "@vincjo/datatables";
-  import { IconEdit, IconTrash } from "@tabler/icons-svelte";
+  import IconTrash from "@tabler/icons-svelte/icons/trash";
+  import IconEdit from "@tabler/icons-svelte/icons/edit";
   import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
   import MultiSelect from "svelte-multiselect";
   import { cloneDeep } from "$lib/utils/cloneDeep";

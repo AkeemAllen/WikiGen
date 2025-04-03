@@ -2,7 +2,8 @@
   import Pagination from "$lib/components/Pagination.svelte";
   import SelectInput from "$lib/components/SelectInput.svelte";
   import ThSort from "$lib/components/ThSort.svelte";
-  import { IconEdit, IconTrash } from "@tabler/icons-svelte";
+  import IconEdit from "@tabler/icons-svelte/icons/edit";
+  import IconTrash from "@tabler/icons-svelte/icons/trash";
   import { DataHandler } from "@vincjo/datatables";
   import type { PokemonMove } from "../../store/pokemon";
   import TextInput from "./TextInput.svelte";

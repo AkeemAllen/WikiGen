@@ -7,7 +7,8 @@
   import ThSort from "$lib/components/ThSort.svelte";
   import BaseModal from "$lib/components/BaseModal.svelte";
   import AutoComplete from "$lib/components/AutoComplete.svelte";
-  import { IconEdit, IconTrash } from "@tabler/icons-svelte";
+  import IconEdit from "@tabler/icons-svelte/icons/edit";
+  import IconTrash from "@tabler/icons-svelte/icons/trash";
   import { routes } from "../../store/gameRoutes";
   import { db } from "../../store/db";
 

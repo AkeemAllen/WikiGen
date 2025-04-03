@@ -31,7 +31,7 @@
   import IconMapRoute from "@tabler/icons-svelte/icons/map-route";
   import IconPlus from "@tabler/icons-svelte/icons/plus";
   import IconPokeball from "@tabler/icons-svelte/icons/pokeball";
-  import IconSeeding from "@tabler/icons-svelte/icons/seeding";
+  import IconSeedling from "@tabler/icons-svelte/icons/seedling";
   import IconTrash from "@tabler/icons-svelte/icons/trash";
 
   import "../app.pcss";
@@ -573,7 +573,7 @@
             route="/natures"
             active={$page.url.pathname.includes("natures")}
           >
-            <IconSeeding
+            <IconSeedling
               slot="icon"
               size={20}
               class={`${$page.url.pathname.includes("natures") && "text-indigo-500"}`}

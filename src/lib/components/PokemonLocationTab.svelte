@@ -6,7 +6,8 @@
   import Button from "$lib/components/Button.svelte";
   import BaseModal from "$lib/components/BaseModal.svelte";
   import AutoComplete from "$lib/components/AutoComplete.svelte";
-  import { IconEdit, IconTrash } from "@tabler/icons-svelte";
+  import IconEdit from "@tabler/icons-svelte/icons/edit";
+  import IconTrash from "@tabler/icons-svelte/icons/trash";
   import { type WildEncounter, routes } from "../../store/gameRoutes";
   import NumberInput from "./NumberInput.svelte";
   import { getToastStore } from "@skeletonlabs/skeleton";

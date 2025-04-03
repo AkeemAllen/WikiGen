@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { IconTrash } from "@tabler/icons-svelte";
+  import IconTrash from "@tabler/icons-svelte/icons/trash";
   import { types } from "../../store/types";
   import Button from "$lib/components/Button.svelte";
   import TextInput from "$lib/components/TextInput.svelte";

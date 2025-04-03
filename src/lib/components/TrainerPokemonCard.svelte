@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { IconTrash } from "@tabler/icons-svelte";
+  import IconTrash from "@tabler/icons-svelte/icons/trash";
   import { type TrainerPokemon } from "../../store/gameRoutes";
   import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
   import { selectedWiki } from "../../store";

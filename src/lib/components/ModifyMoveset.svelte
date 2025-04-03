@@ -6,7 +6,7 @@
     popup,
     type AutocompleteOption,
   } from "@skeletonlabs/skeleton";
-  import { IconTrash } from "@tabler/icons-svelte";
+  import IconTrash from "@tabler/icons-svelte/icons/trash";
   import { moveList } from "../../store/moves";
   import {
     type PokemonMove,

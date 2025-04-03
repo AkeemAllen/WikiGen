@@ -35,7 +35,7 @@
   "type": "module",
   "dependencies": {
     "@floating-ui/dom": "^1.6.3",
-    "@tabler/icons-svelte": "^3.0.0",
+    "@tabler/icons-svelte": "^3.31.0",
     "@tauri-apps/api": "^1.5.3",
     "@vincjo/datatables": "^1.14.5",
     "svelte-multiselect": "^10.3.0",
