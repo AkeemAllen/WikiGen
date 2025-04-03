@@ -64,6 +64,11 @@ jobs:
       - name: install frontend dependencies
         run: pnpm install
 
+      - name: build frontend
+        run: |
+          export NODE_OPTIONS="--max-old-space-size=4096"
+          pnpm run build
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
