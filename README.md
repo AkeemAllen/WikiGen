@@ -133,25 +133,9 @@ Simply open the "Generation" tab on the Game Routes page and click "Generate Pag
 
 ## Deployment
 
-*I'm writing these intructions under the assumption that you're deploying to github pages.*
+I've mostly automated this process. You can now deploy a wiki with the below steps.
 
-#### Prerequisite
-
-1. Have a [Github](https://github.com/) account
-2. Create a new repository with the name (code name) of the wiki. Eg. blaze-black, emerald-kaizo, etc.
-
-#### Full deployment
-
-1. Open a terminal and navigate to the wiki's dist folder.
-2. Run the following git commands:
-   - `git init`
-   - `git add .`
-   - `git commit -m "__Update_Message__"`
-   - `git remote add origin git@github.com:AkeemAllen/test-deployment.git`
-   - `git push -u origin main`
-3. Finally, run the command `mkdocs gh-deploy` to deploy the site to github pages. The command will also spit out a link to your wiki's site.
-4. Visit the link and refresh after a few minutes, the site should be available.
-
-Your Wiki is now deployed and ready to be used by you Rom Hack Enjoyers!!!!
-
-*I plan on automating the deployment process in the future.*
+1. Connect your github account by clicking the "Sign In to Github" button at the top right.
+2. Once signed in, click the profile Icon, and you'll see the option to Deploy Wiki.
+3. Select a wiki to deploy and click the "Deploy Wiki" menu option.
+4. Follow the final instructions displayed in the app.
