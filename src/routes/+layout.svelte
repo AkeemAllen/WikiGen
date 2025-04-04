@@ -35,7 +35,7 @@
   import IconTrash from "@tabler/icons-svelte/icons/trash";
 
   import "../app.pcss";
-  import { selectedWiki, wikis, user, type User } from "../store";
+  import { selectedWiki, wikis, user, type User, type Wiki } from "../store";
   import {
     checkUpdate,
     installUpdate,
@@ -325,6 +325,11 @@
         deployingWiki = false;
       });
   }
+
+  function navigateToSelectWikisPage() {
+    $selectedWiki = { name: "" } as Wiki;
+    goto("/");
+  }
 </script>
 
 <LoadingModal
@@ -399,10 +404,12 @@
     <div
       class="bg-white h-[60px] px-4 flex border-b border-indigo-100 items-center justify-between"
     >
-      <div class="flex flex-row items-center">
-        <img src={logo} alt="WikiGen Logo" width="40rem" />
-        <h1>WikiGen</h1>
-      </div>
+      <button on:click={navigateToSelectWikisPage}>
+        <div class="flex flex-row items-center">
+          <img src={logo} alt="WikiGen Logo" width="40rem" />
+          <h1>WikiGen</h1>
+        </div>
+      </button>
       <div class="flex flex-row items-center gap-1">
         {#if !$user.isConnected}
           <button
@@ -636,7 +643,7 @@
         />
         {#if displayUpdateButton}
           <button
-            class="flex items-center self-end justify-self-end gap-1 shadow-sm border-0
+            class="flex items-center gap-1 shadow-sm border-0
           text-sm text-gray-500 ring-inset ring-gray-300 hover:bg-indigo-600
           hover:text-white ease-in-out duration-200 rounded-md p-2"
             on:click={() => updateApp()}
