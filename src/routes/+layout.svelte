@@ -33,6 +33,8 @@
   import IconPokeball from "@tabler/icons-svelte/icons/pokeball";
   import IconSeedling from "@tabler/icons-svelte/icons/seedling";
   import IconTrash from "@tabler/icons-svelte/icons/trash";
+  import IconTestPipe from "@tabler/icons-svelte/icons/test-pipe";
+  import IconTestPipeOff from "@tabler/icons-svelte/icons/test-pipe-off";
 
   import "../app.pcss";
   import { selectedWiki, wikis, user, type User, type Wiki } from "../store";
@@ -51,12 +53,13 @@
   import SelectInput from "$lib/components/SelectInput.svelte";
   import { goto } from "$app/navigation";
   import logo from "$lib/assets/icon.png";
-  // import { PUBLIC_CLIENT_ID } from "$env/static/public";
   import { WebviewWindow } from "@tauri-apps/api/window";
   import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
   import { appDataDir } from "@tauri-apps/api/path";
   import { type } from "@tauri-apps/api/os";
   import LoadingModal from "$lib/components/modals/LoadingModal.svelte";
+  import { processId } from "../store/db";
+  import { appWindow } from "@tauri-apps/api/window";
 
   initializeStores();
 
@@ -73,10 +76,16 @@
   let deployWikiFinalStepsModal = false;
   let signingIntoGithub = false;
   let osType = "";
+  let isProcessRunning = false;
+  let startingTestServer = false;
 
   let mkdocsFilePath: string = "";
   $: getMkdocsDirectory($selectedWiki.name).then((response) => {
     mkdocsFilePath = response;
+  });
+
+  appWindow.onCloseRequested(async () => {
+    if (isProcessRunning) killTestServer();
   });
 
   async function getMkdocsDirectory(wikiName: string): Promise<string> {
@@ -168,6 +177,8 @@
   }
 
   function loadSelectedWiki(e: any) {
+    if (isProcessRunning) killTestServer();
+
     $selectedWiki = $wikis[e.target.value];
     loadWikiData($selectedWiki, toastStore);
     goto("/");
@@ -330,6 +341,58 @@
     $selectedWiki = { name: "" } as Wiki;
     goto("/");
   }
+
+  type Payload = {
+    process_id: number;
+    message: string;
+    status: string;
+  };
+
+  async function killTestServer() {
+    await invoke("kill_mkdocs_process", {
+      processId: $processId,
+    }).then((response) => {
+      const typedResponse = response as Payload;
+      toastStore.trigger(
+        getToastSettings(ToastType.INFO, typedResponse.message),
+      );
+      $processId = 0;
+      isProcessRunning = false;
+    });
+  }
+
+  async function runTestServer() {
+    startingTestServer = true;
+    const appData = await appDataDir();
+
+    let filePath = `${appData}${$selectedWiki.name}/dist/mkdocs.yml`;
+    osType = await type();
+    if (osType === "Windows_NT") {
+      filePath = filePath.replace(/\//g, "\\");
+    } else if (osType === "Darwin") {
+      filePath = filePath.replace(/\s/g, "\\ ");
+    }
+
+    await invoke("spawn_mkdocs_process", {
+      wikiName: $selectedWiki.name,
+      port: 4000,
+    })
+      .then((response) => {
+        const typedResponse = response as Payload;
+        toastStore.trigger(
+          getToastSettings(ToastType.INFO, typedResponse.message),
+        );
+        $processId = typedResponse.process_id;
+        isProcessRunning = true;
+        startingTestServer = false;
+      })
+      .catch((error) => {
+        const typedError = error as Payload;
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, typedError.message),
+        );
+      });
+  }
 </script>
 
 <LoadingModal
@@ -339,6 +402,10 @@
 <LoadingModal
   message="Preparing Wiki For Deployment"
   bind:loading={deployingWiki}
+/>
+<LoadingModal
+  message="Starting Test Server"
+  bind:loading={startingTestServer}
 />
 <LoadingModal message={updateStatus} bind:loading={updaterModalOpen} />
 <LoadingModal
@@ -578,6 +645,25 @@
       <div
         class="flex flex-row w-full p-2 justify-end pr-5 gap-x-3 bg-white items-center border-t border-indigo-100"
       >
+        {#if isProcessRunning}
+          <div class="flex flex-row gap-x-2">
+            <span class="relative flex self-center h-3 w-3">
+              <span
+                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
+              ></span>
+              <span
+                class="relative inline-flex rounded-full h-3 w-3 bg-green-500"
+              ></span>
+            </span>
+            Wiki Running at
+            <a
+              target="_blank"
+              href={`http://localhost:4000/${$selectedWiki.name}`}
+              class=" underline italic"
+              >http://localhost:4000/{$selectedWiki.name}</a
+            >
+          </div>
+        {/if}
         <button
           class="self-center p-2 rounded-md
           shadow-sm ring-1 ring-inset ring-gray-300
@@ -587,34 +673,34 @@
         >
           <IconPlus size={20} />
         </button>
-        <!-- <div data-popup="addIconToolTip">
-          <p class="card p-1 text-sm">Create New Wiki</p>
-          <div class="arrow bg-surface-100-800-token"></div>
-        </div> -->
-        <!-- <button
+        <button
           class="self-center p-2 rounded-md
           shadow-sm ring-1 ring-inset ring-gray-300
           text-gray-500
-            border-0 hover:bg-indigo-600 hover:text-white hover:ring-0 ease-in-out duration-200"
-          use:popup={{
-            event: "hover",
-            target: "previewWikiToolTip",
-            placement: "bottom",
+            border-0 hover:{isProcessRunning
+            ? 'bg-red-400'
+            : 'bg-indigo-500'} hover:text-white hover:ring-0 ease-in-out duration-200 hover:cursor-pointer"
+          on:click={() => {
+            if (isProcessRunning) {
+              killTestServer();
+              return;
+            }
+
+            runTestServer();
           }}
         >
-          <IconTestPipe size={20} />
+          {#if isProcessRunning}
+            <IconTestPipeOff size={20} />
+          {:else}
+            <IconTestPipe size={20} />
+          {/if}
         </button>
-        <div data-popup="previewWikiToolTip">
-          <p class="card p-1 text-sm">Preview Wiki</p>
-
-          <div class="arrow bg-surface-100-800-token" />
-        </div> -->
         <!-- <div class="flex flex-row w-full p-2 justify-end mr-10 gap-x-3"> -->
         <button
           class="self-center p-2 rounded-md
             shadow-sm ring-1 ring-inset ring-gray-300
             text-gray-500
-              border-0 hover:bg-indigo-100 hover:ring-0 hover:text-white ease-in-out duration-200"
+              border-0 hover:bg-indigo-500 hover:ring-0 hover:text-white ease-in-out duration-200"
           on:click={backupWiki}
         >
           <IconDeviceFloppy size={20} />

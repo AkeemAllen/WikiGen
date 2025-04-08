@@ -39,6 +39,11 @@
             "name": "git-commands",
             "cmd": "git",
             "args": true
+          },
+          {
+            "name": "mkdocs-commands",
+            "cmd": "mkdocs",
+            "args": true
           }
         ],
         "sidecar": false
