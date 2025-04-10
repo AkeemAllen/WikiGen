@@ -1,4 +1,4 @@
-export function load({ params }) {
+export function load({ params }: any) {
   return {
     title: params.slug,
   };

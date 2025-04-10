@@ -48,20 +48,20 @@
     value: id,
   }));
 
-  async function generateItemLocationPage() {
-    await invoke("generate_item_location_page_with_handle", {
-      wikiName: $selectedWiki.name,
-    })
-      .then((res) => {
-        toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
-      })
-      .catch((err) => {
-        toastStore.trigger(getToastSettings(ToastType.ERROR, err));
-      });
-  }
+  // async function generateItemLocationPage() {
+  //   await invoke("generate_item_location_page_with_handle", {
+  //     wikiName: $selectedWiki.name,
+  //   })
+  //     .then((res) => {
+  //       toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
+  //     })
+  //     .catch((err) => {
+  //       toastStore.trigger(getToastSettings(ToastType.ERROR, err));
+  //     });
+  // }
 
   async function generateItemPage() {
-    await invoke("generate_item_changes_page_with_handle", {
+    await invoke("generate_items_page_with_handle", {
       wikiName: $selectedWiki.name,
     })
       .then(() => {
@@ -69,8 +69,13 @@
           getToastSettings(ToastType.SUCCESS, "Item page regenerated!"),
         );
       })
-      .then(() => {
-        generateItemLocationPage();
+      .catch((err) => {
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.ERROR,
+            `Error generating Item Page: ${err}`,
+          ),
+        );
       });
   }
 
@@ -344,7 +349,7 @@
           <ItemLocationTable
             {itemLocations}
             itemName={item.name}
-            generatePage={generateItemLocationPage}
+            generatePage={generateItemPage}
           />
         {/if}
       </svelte:fragment>
