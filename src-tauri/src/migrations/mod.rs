@@ -8,7 +8,7 @@ use std::{
 
 use pokemon_migrations::{add_all_missing_pokemon, check_if_pokemon_already_migrated};
 use serde::{Deserialize, Serialize};
-use sqlx::{Error, Executor, Pool, Sqlite};
+use sqlx::{sqlite::SqliteQueryResult, Error, Executor, Pool, Sqlite};
 use tauri::AppHandle;
 
 use crate::{database::get_sqlite_connection, helpers::copy_recursively, logger};
@@ -72,7 +72,6 @@ pub async fn run_migrations(app_handle: AppHandle) -> Result<String, String> {
         return Ok("skipping".to_string());
     }
 
-    println!("Running Migrations");
     let wiki_json_file_path = base_path.join("wikis.json");
     let wikis_file = match File::open(&wiki_json_file_path) {
         Ok(file) => file,
@@ -132,6 +131,18 @@ pub async fn run_migrations(app_handle: AppHandle) -> Result<String, String> {
             }
         }
 
+        match add_item_categories(&conn).await {
+            Ok(_) => {}
+            Err(err) => {
+                logger::write_log(
+                    &wiki_path,
+                    logger::LogLevel::MigrationError,
+                    &format!("Failed to migrate hisuian forms: {}", err),
+                );
+                continue;
+            }
+        }
+
         logger::write_log(
             &wiki_path,
             logger::LogLevel::MigrationSuccess,
@@ -168,9 +179,7 @@ async fn create_migrations_table(conn: &Pool<Sqlite>) -> Result<(), Error> {
         .to_string(),
     };
     match sqlx::query(&migration.sql).execute(conn).await {
-        Ok(_) => insert_migration(conn, &migration)
-            .await
-            .expect("Failed to Insert Migration"),
+        Ok(_) => {}
         Err(err) => return Err(err),
     };
 
@@ -228,6 +237,44 @@ async fn migrate_hisuian_forms(
     Ok(())
 }
 
+async fn add_item_categories(conn: &Pool<Sqlite>) -> Result<(), String> {
+    let migration: Migration = Migration {
+        name: "add_item_categories".to_string(),
+        app_version: "1.9.0".to_string(),
+        sql: "INSERT INTO item_categories".to_string(),
+    };
+
+    match sqlx::query(&migration.sql).execute(conn).await {
+        Ok(_) => insert_migration(conn, &migration).await?,
+        Err(err) => {
+            return Err(format!(
+                "Failed to execute add_item_categories migration: {}",
+                err
+            ))
+        }
+    };
+
+    Ok(())
+}
+
+pub async fn create_categories_table(conn: &Pool<Sqlite>) -> Result<(), Error> {
+    let migration: Migration = Migration {
+        name: "create_categories_table".to_string(),
+        app_version: "1.9.0".to_string(),
+        sql: "CREATE TABLE IF NOT EXISTS item_categories (
+                    id INTEGER PRIMARY KEY,
+                    name TEXT NOT NULL
+                )"
+        .to_string(),
+    };
+    match sqlx::query(&migration.sql).execute(conn).await {
+        Ok(_) => {}
+        Err(err) => return Err(err),
+    };
+
+    Ok(())
+}
+
 async fn insert_migration(conn: &Pool<Sqlite>, migration: &Migration) -> Result<(), String> {
     match sqlx::query("INSERT INTO migrations (name, app_version, sql) VALUES (?, ?, ?)")
         .bind(&migration.name)
@@ -238,7 +285,7 @@ async fn insert_migration(conn: &Pool<Sqlite>, migration: &Migration) -> Result<
     {
         Ok(_) => {}
         Err(err) => return Err(format!("Failed to insert migration: {}", err)),
-    };
+    }
 
     Ok(())
 }
