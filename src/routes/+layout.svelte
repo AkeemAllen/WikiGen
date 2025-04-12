@@ -92,28 +92,28 @@
   }
 
   onMount(() => {
-    async function runMigrations() {
-      invoke("run_migrations")
-        .then((res) => {
-          runningMigrations = false;
-          if (res !== "skipping") {
-            toastStore.trigger(
-              getToastSettings(
-                ToastType.SUCCESS,
-                "Migrations ran successfully",
-              ),
-            );
-          }
-        })
-        .catch((err) => {
-          toastStore.trigger(
-            getToastSettings(
-              ToastType.ERROR,
-              `Error running migrations: ${err}`,
-            ),
-          );
-        });
-    }
+    // async function runMigrations() {
+    //   invoke("run_migrations")
+    //     .then((res) => {
+    //       runningMigrations = false;
+    //       if (res !== "skipping") {
+    //         toastStore.trigger(
+    //           getToastSettings(
+    //             ToastType.SUCCESS,
+    //             "Migrations ran successfully",
+    //           ),
+    //         );
+    //       }
+    //     })
+    //     .catch((err) => {
+    //       toastStore.trigger(
+    //         getToastSettings(
+    //           ToastType.ERROR,
+    //           `Error running migrations: ${err}`,
+    //         ),
+    //       );
+    //     });
+    // }
     async function checkForUpdate() {
       const { shouldUpdate } = await checkUpdate();
       if (shouldUpdate) {
@@ -122,7 +122,7 @@
     }
 
     checkForUpdate();
-    runMigrations();
+    // runMigrations();
   });
 
   const toastStore = getToastStore();
