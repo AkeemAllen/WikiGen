@@ -10,12 +10,8 @@
   } from "../../store/items";
   import { selectedWiki } from "../../store";
   import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
-  import { invoke } from "@tauri-apps/api";
-  import {
-    writeBinaryFile,
-    BaseDirectory,
-    readBinaryFile,
-  } from "@tauri-apps/api/fs";
+  import { invoke } from "@tauri-apps/api/core";
+  import { writeFile, BaseDirectory, readFile } from "@tauri-apps/plugin-fs";
   import TextInput from "$lib/components/TextInput.svelte";
   import { db } from "../../store/db";
   import { base64ToArray, isNullEmptyOrUndefined } from "$lib/utils";
@@ -84,7 +80,7 @@
 
     await $db
       .select<Item[]>("SELECT * FROM items WHERE id = $1;", [itemSearch[0]])
-      .then(async (res) => {
+      .then(async (res: any) => {
         item = res[0];
         originalItemDetails = cloneDeep(item);
 
@@ -106,15 +102,15 @@
           });
 
         // Reading in image separately
-        spriteImage = await readBinaryFile(
+        spriteImage = await readFile(
           `${$selectedWiki.name}/dist/docs/img/items/${item.name}.png`,
-          { dir: BaseDirectory.AppData },
+          { baseDir: BaseDirectory.AppData },
         )
-          .then((res) => {
+          .then((res: any) => {
             const blob = new Blob([res], { type: "image/png" });
             return URL.createObjectURL(blob);
           })
-          .catch((err) => {
+          .catch((err: any) => {
             console.log(err);
             if (err.includes("No such file or directory")) {
               return "404";
@@ -154,10 +150,11 @@
           newSpriteImage.replace("data:image/png;base64,", ""),
           "image/png",
         );
-        writeBinaryFile(
+        const contents = new Uint8Array(imageBytes);
+        writeFile(
           `${$selectedWiki.name}/dist/docs/img/items/${newItem.name}.png`,
-          imageBytes,
-          { dir: BaseDirectory.AppData },
+          contents,
+          { baseDir: BaseDirectory.AppData },
         ).then(() => {
           newSpriteImage = "";
         });
@@ -175,7 +172,7 @@
         });
         generateItemPage();
       })
-      .catch((err) => {
+      .catch((err: any) => {
         toastStore.trigger(
           getToastSettings(ToastType.ERROR, "Error creating new item!"),
         );

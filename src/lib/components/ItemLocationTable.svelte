@@ -78,7 +78,7 @@
           getToastSettings(ToastType.SUCCESS, "Item Location Added!"),
         );
         addItemLocationModalOpen = false;
-        newItemLocation.id = res.lastInsertId;
+        newItemLocation.id = res.lastInsertId as number;
         newItemLocation.item_name = itemName;
         itemLocations = [...itemLocations, newItemLocation];
         newItemLocation = {} as ItemLocation;

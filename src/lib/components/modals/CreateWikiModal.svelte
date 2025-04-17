@@ -10,8 +10,8 @@
   import BaseModal from "$lib/components/BaseModal.svelte";
   import TextInput from "$lib/components/TextInput.svelte";
   import Button from "$lib/components/Button.svelte";
-  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
-  import { invoke } from "@tauri-apps/api";
+  import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
+  import { invoke } from "@tauri-apps/api/core";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
@@ -40,7 +40,7 @@
     };
 
     await writeTextFile("wikis.json", JSON.stringify($wikis), {
-      dir: BaseDirectory.AppData,
+      baseDir: BaseDirectory.AppData,
     });
     await invoke("create_wiki", {
       wikiName: wikiCodeName,

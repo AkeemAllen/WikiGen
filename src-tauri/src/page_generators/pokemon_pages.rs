@@ -1,5 +1,4 @@
 use std::{
-    fmt::format,
     fs::{self, read_to_string, File},
     io::Write,
     path::PathBuf,
@@ -7,7 +6,7 @@ use std::{
 
 use serde_yaml::{Mapping, Value};
 use sqlx::Sqlite;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 use crate::{
     database::{get_mkdocs_config, get_routes, get_sqlite_connection},
@@ -26,7 +25,7 @@ pub async fn update_pokemon_pages_with_stripped_name_with_handle(
     wiki_name: &str,
     app_handle: AppHandle,
 ) -> Result<(), String> {
-    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    let base_path = app_handle.path().app_data_dir().unwrap();
     let result = match update_pokemon_pages_with_stripped_name(wiki_name, &base_path) {
         Ok(_) => (),
         Err(err) => return Err(err),
@@ -119,7 +118,7 @@ pub async fn remove_pokemon_page_with_old_dex_number(
     old_dex_number: u32,
     app_handle: AppHandle,
 ) -> Result<String, String> {
-    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    let base_path = app_handle.path().app_data_dir().unwrap();
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
     let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
@@ -212,8 +211,8 @@ pub async fn generate_pokemon_pages_from_list(
     pokemon_ids: Vec<usize>,
     app_handle: AppHandle,
 ) -> Result<String, String> {
-    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    let resources_path = app_handle.path_resolver().resource_dir().unwrap();
+    let base_path = app_handle.path().app_data_dir().unwrap();
+    let resources_path = app_handle.path().resource_dir().unwrap();
 
     let sqlite_file_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
     let conn = match get_sqlite_connection(sqlite_file_path).await {

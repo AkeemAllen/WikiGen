@@ -1,12 +1,12 @@
 extern crate chrono;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 use crate::helpers::copy_recursively;
 use chrono::Local;
 
 #[tauri::command]
 pub async fn backup_wiki(wiki_name: &str, app_handle: AppHandle) -> Result<String, String> {
-    let data_dir = app_handle.path_resolver().app_data_dir().unwrap();
+    let data_dir = app_handle.path().app_data_dir().unwrap();
     let base_path = data_dir.join(wiki_name);
 
     let date = Local::now();

@@ -11,7 +11,7 @@
   import { selectedWiki } from "../../store";
   import { getToastStore } from "@skeletonlabs/skeleton";
   import SelectInput from "$lib/components/SelectInput.svelte";
-  import { invoke } from "@tauri-apps/api";
+  import { invoke } from "@tauri-apps/api/core";
   import { db } from "../../store/db";
   import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
   import { cloneDeep } from "$lib/utils/cloneDeep";

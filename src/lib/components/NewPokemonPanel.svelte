@@ -14,11 +14,12 @@
   import NumberInput from "./NumberInput.svelte";
   import TextInput from "./TextInput.svelte";
   import PokemonMovesetTab from "$lib/components/PokemonMovesTab.svelte";
-  import { BaseDirectory, writeBinaryFile } from "@tauri-apps/api/fs";
+  import { BaseDirectory, writeFile } from "@tauri-apps/plugin-fs";
   import { selectedWiki } from "../../store";
   import { addMoves, base64ToArray } from "$lib/utils";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
+  import type { QueryResult } from "@tauri-apps/plugin-sql";
 
   let pokemonSearch: [number, string] = [0, ""];
   let newSpriteImage: string = "";
@@ -138,16 +139,16 @@
           "no_change",
         ],
       )
-      .then((res) => {
+      .then((res: QueryResult) => {
         // Write image to file
         const imageBytes = base64ToArray(
           newSpriteImage.replace("data:image/png;base64,", ""),
           "image/png",
         );
-        writeBinaryFile(
+        writeFile(
           `${$selectedWiki.name}/dist/docs/img/pokemon/${newPokemon.name}.png`,
-          imageBytes,
-          { dir: BaseDirectory.AppData },
+          new Uint8Array(imageBytes),
+          { baseDir: BaseDirectory.AppData },
         ).catch((err) => {
           toastStore.trigger(
             getToastSettings(
@@ -167,13 +168,13 @@
           secondaryMoveId: null,
           secondaryMove: "",
         }));
-        addMoves(moveset, res.lastInsertId, $db).catch((err) => {
+        addMoves(moveset, res.lastInsertId as number, $db).catch((err) => {
           toastStore.trigger(getToastSettings(ToastType.SUCCESS, err));
         });
 
         // Add new pokemon to pokemonList
         $pokemonList.push([
-          res.lastInsertId,
+          res?.lastInsertId as number,
           newPokemon.dex_number,
           newPokemon.name,
           newPokemon.types,

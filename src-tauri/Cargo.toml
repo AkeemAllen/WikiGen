@@ -7,33 +7,40 @@ license = ""
 repository = ""
 default-run = "wiki_gen"
 edition = "2021"
-rust-version = "1.76"
+rust-version = "1.85"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.5.1", features = [] }
+tauri-build = { version = "2", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde_yaml = "0.9.32"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.6.1", features = ["updater", "api-all", "test"] }
-reqwest = { version = "0.12.1", features = ["blocking", "json"] }
+tauri = { version = "2", features = ["test"] }
 indexmap = { version = "2.2.6", features = ["serde"] }
-sqlx = { version = "0.7", features = ["runtime-tokio", "tls-rustls"] }
+sqlx = { version = "0.8", features = ["runtime-tokio", "tls-rustls"] }
 sysinfo = "0.30.10"
 image = "0.25.1"
 chrono = "0.4.38"
 futures = "0.3.30"
+tauri-plugin-updater = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-os = "2"
+tauri-plugin-cli = "2"
+tauri-plugin-process = "2"
+tauri-plugin-store = "2"
 
 [dependencies.tauri-plugin-sql]
-git = "https://github.com/tauri-apps/plugins-workspace"
-branch = "v1"
 features = ["sqlite"]
+version = "2"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
 # If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
 # DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-global-shortcut = "2"

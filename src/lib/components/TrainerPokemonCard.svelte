@@ -1,7 +1,7 @@
 <script lang="ts">
   import IconTrash from "@tabler/icons-svelte/icons/trash";
   import { type TrainerPokemon } from "../../store/gameRoutes";
-  import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
+  import { BaseDirectory, readFile } from "@tauri-apps/plugin-fs";
   import { selectedWiki } from "../../store";
   import capitalizeWords from "$lib/utils/capitalizeWords";
 
@@ -11,9 +11,9 @@
   export let deletePokemon = (id: string, name: string) => {};
 
   async function getSpriteImage(pokemonName: string): Promise<string> {
-    return await readBinaryFile(
+    return await readFile(
       `${$selectedWiki.name}/dist/docs/img/pokemon/${pokemonName}.png`,
-      { dir: BaseDirectory.AppData },
+      { baseDir: BaseDirectory.AppData },
     )
       .then((res) => {
         const blob = new Blob([res], { type: "image/png" });

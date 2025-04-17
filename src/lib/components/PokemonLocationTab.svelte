@@ -11,8 +11,8 @@
   import { type WildEncounter, routes } from "../../store/gameRoutes";
   import NumberInput from "./NumberInput.svelte";
   import { getToastStore } from "@skeletonlabs/skeleton";
-  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
-  import { invoke } from "@tauri-apps/api";
+  import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
+  import { invoke } from "@tauri-apps/api/core";
   import { selectedWiki } from "../../store";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import { generatePokemonPages } from "$lib/utils/generators";
@@ -123,7 +123,7 @@
     await writeTextFile(
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify($routes),
-      { dir: BaseDirectory.AppData },
+      { baseDir: BaseDirectory.AppData },
     )
       .then(() => {
         generateRoutePage(location.route);
@@ -168,7 +168,7 @@
     await writeTextFile(
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify($routes),
-      { dir: BaseDirectory.AppData },
+      { baseDir: BaseDirectory.AppData },
     )
       .then(() => {
         generateRoutePage(location.route);
@@ -234,7 +234,7 @@
     await writeTextFile(
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify($routes),
-      { dir: BaseDirectory.AppData },
+      { baseDir: BaseDirectory.AppData },
     ).then(() => {
       generateRoutePage(routeName);
       let updatedLocations: WildEncounter[] = [];

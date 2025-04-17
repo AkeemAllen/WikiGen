@@ -3,9 +3,9 @@
   import {
     BaseDirectory,
     copyFile,
-    removeFile,
+    remove,
     writeTextFile,
-  } from "@tauri-apps/api/fs";
+  } from "@tauri-apps/plugin-fs";
   import { routes } from "../../../store/gameRoutes";
   import { selectedWiki } from "../../../store";
   import { sortRoutesByPosition } from "$lib/utils";
@@ -13,7 +13,7 @@
   import { getToastStore, popup } from "@skeletonlabs/skeleton";
   import IconDotsVertical from "@tabler/icons-svelte/icons/dots-vertical";
   import { cloneDeep } from "$lib/utils/cloneDeep";
-  import { invoke } from "@tauri-apps/api/tauri";
+  import { invoke } from "@tauri-apps/api/core";
   import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
@@ -51,11 +51,14 @@
         copyFile(
           `${$selectedWiki.name}/dist/docs/img/routes/${originalRouteName}.png`,
           `${$selectedWiki.name}/dist/docs/img/routes/${newName}.png`,
-          { dir: BaseDirectory.AppData },
+          {
+            fromPathBaseDir: BaseDirectory.AppData,
+            toPathBaseDir: BaseDirectory.AppData,
+          },
         ).then(() => {
-          removeFile(
+          remove(
             `${$selectedWiki.name}/dist/docs/img/routes/${originalRouteName}.png`,
-            { dir: BaseDirectory.AppData },
+            { baseDir: BaseDirectory.AppData },
           );
         });
       })
@@ -117,12 +120,15 @@
     await writeTextFile(
       `${$selectedWiki.name}/data/routes.json`,
       JSON.stringify(sortRoutesByPosition($routes)),
-      { dir: BaseDirectory.AppData },
+      { baseDir: BaseDirectory.AppData },
     ).then(() => {
       copyFile(
         `${$selectedWiki.name}/dist/docs/img/routes/${routeName}.png`,
         `${$selectedWiki.name}/dist/docs/img/routes/${routeName} copy.png`,
-        { dir: BaseDirectory.AppData },
+        {
+          fromPathBaseDir: BaseDirectory.AppData,
+          toPathBaseDir: BaseDirectory.AppData,
+        },
       );
     });
   }

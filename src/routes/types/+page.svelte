@@ -5,10 +5,10 @@
   import TextInput from "$lib/components/TextInput.svelte";
   import {
     BaseDirectory,
-    readBinaryFile,
-    writeBinaryFile,
+    readFile,
+    writeFile,
     writeTextFile,
-  } from "@tauri-apps/api/fs";
+  } from "@tauri-apps/plugin-fs";
   import { selectedWiki } from "../../store";
   import { getToastStore } from "@skeletonlabs/skeleton";
   import { base64ToArray } from "$lib/utils";
@@ -30,16 +30,16 @@
     await writeTextFile(
       `${$selectedWiki.name}/data/types.json`,
       JSON.stringify({ types: $types }),
-      { dir: BaseDirectory.AppData },
+      { baseDir: BaseDirectory.AppData },
     ).then(() => {
       const imageBytes = base64ToArray(
         newTypeImage.replace("data:image/png;base64,", ""),
         "image/png",
       );
-      writeBinaryFile(
+      writeFile(
         `${$selectedWiki.name}/dist/docs/img/types/${newType}.png`,
-        imageBytes,
-        { dir: BaseDirectory.AppData },
+        new Uint8Array(imageBytes),
+        { baseDir: BaseDirectory.AppData },
       ).then(() => {
         newType = "";
         newTypeImage = "";
@@ -57,7 +57,7 @@
     await writeTextFile(
       `${$selectedWiki.name}/data/types.json`,
       JSON.stringify({ types: $types }),
-      { dir: BaseDirectory.AppData },
+      { baseDir: BaseDirectory.AppData },
     ).then(() => {
       toastStore.trigger({
         message: "Type deleted successfully",
@@ -67,10 +67,9 @@
   }
   async function getTypeImage(type: string): Promise<string> {
     let sprite = "";
-    await readBinaryFile(
-      `${$selectedWiki.name}/dist/docs/img/types/${type}.png`,
-      { dir: BaseDirectory.AppData },
-    )
+    await readFile(`${$selectedWiki.name}/dist/docs/img/types/${type}.png`, {
+      baseDir: BaseDirectory.AppData,
+    })
       .then((res) => {
         const blob = new Blob([res], { type: "image/png" });
         sprite = URL.createObjectURL(blob);

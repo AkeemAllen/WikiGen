@@ -4,7 +4,7 @@ use std::{
 };
 
 use serde_yaml::{Mapping, Value};
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 use crate::structs::mkdocs_structs::{
     MKDocsConfig, MarkdownExtension, Palette, Plugin, PymdownxTabbed, PymdownxTaskList, Search,
@@ -107,7 +107,7 @@ pub fn get_yaml(
 
 #[tauri::command]
 pub fn update_yaml(wiki_name: &str, app_handle: AppHandle) -> Result<String, String> {
-    let data_dir = app_handle.path_resolver().app_data_dir().unwrap();
+    let data_dir = app_handle.path().app_data_dir().unwrap();
     let dist_folder = data_dir.join(wiki_name).join("dist");
 
     let mkdocs_yaml_file_path = dist_folder.join("mkdocs.yml");
