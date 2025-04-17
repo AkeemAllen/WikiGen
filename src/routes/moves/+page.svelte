@@ -11,14 +11,14 @@
   import { moveList, type Move } from "../../store/moves";
   import { pokemonList } from "../../store/pokemon";
   import { types as pokemonTypes } from "../../store/types";
-  import { invoke } from "@tauri-apps/api/tauri";
+  import { invoke } from "@tauri-apps/api/core";
   import { db } from "../../store/db";
   import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
   import BaseModal from "$lib/components/BaseModal.svelte";
   import { DataHandler } from "@vincjo/datatables";
   import IconTrash from "@tabler/icons-svelte/icons/trash";
   import IconEdit from "@tabler/icons-svelte/icons/edit";
-  import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
+  import { BaseDirectory, readFile } from "@tauri-apps/plugin-fs";
   import MultiSelect from "svelte-multiselect";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
@@ -209,7 +209,7 @@
           getToastSettings(ToastType.SUCCESS, "Move created!"),
         );
         newMoveModalOpen = false;
-        $moveList.push([res.lastInsertId, newMove.name]);
+        $moveList.push([res.lastInsertId as number, newMove.name]);
 
         newMove = {
           damage_class: "status",
@@ -340,9 +340,9 @@
 
   async function getSpriteImage(pokemonName: string): Promise<string> {
     let sprite = "";
-    await readBinaryFile(
+    await readFile(
       `${$selectedWiki.name}/dist/docs/img/pokemon/${pokemonName}.png`,
-      { dir: BaseDirectory.AppData },
+      { baseDir: BaseDirectory.AppData },
     )
       .then((res) => {
         const blob = new Blob([res], { type: "image/png" });

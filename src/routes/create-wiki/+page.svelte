@@ -1,68 +1,68 @@
 <script lang="ts">
-import Button from "$lib/components/Button.svelte";
-import TextInput from "$lib/components/TextInput.svelte";
-import { getToastStore, type ToastSettings } from "@skeletonlabs/skeleton";
-import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
-import { invoke } from "@tauri-apps/api/tauri";
-import { wikis, type WikiSettings } from "../../store";
+  import Button from "$lib/components/Button.svelte";
+  import TextInput from "$lib/components/TextInput.svelte";
+  import { getToastStore, type ToastSettings } from "@skeletonlabs/skeleton";
+  import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
+  import { invoke } from "@tauri-apps/api/core";
+  import { wikis, type WikiSettings } from "../../store";
 
-const toastStore = getToastStore();
+  const toastStore = getToastStore();
 
-let wikiName = "";
-let wikiCodeName = "";
-let wikiDescription = "";
-let wikiAuthor = "";
-let settings: WikiSettings = {
-  deployment_url: "",
-};
-
-let loading: boolean = false;
-
-$: wikiCodeName = wikiName.toLowerCase().replaceAll(" ", "-");
-$: siteUrl = `https://${wikiAuthor}.github.io/${wikiCodeName}`;
-$: repoUrl = `https://github.com/${wikiAuthor}/${wikiCodeName}`;
-$: siteName = wikiName;
-
-async function createWiki() {
-  loading = true;
-
-  $wikis[wikiCodeName] = {
-    name: wikiCodeName,
-    description: wikiDescription,
-    author: wikiAuthor,
-    site_name: siteName,
-    repo_url: repoUrl,
-    site_url: siteUrl,
-    settings: settings,
+  let wikiName = "";
+  let wikiCodeName = "";
+  let wikiDescription = "";
+  let wikiAuthor = "";
+  let settings: WikiSettings = {
+    deployment_url: "",
   };
-  await writeTextFile("wikis.json", JSON.stringify($wikis), {
-    dir: BaseDirectory.AppData,
-  });
-  await invoke("create_wiki", {
-    wikiName: wikiCodeName,
-    wikiDescription,
-    wikiAuthor,
-    siteName,
-  })
-    .then((result) => {
-      loading = false;
-      toastStore.trigger({
-        message: result as string,
-        timeout: 5000,
-        hoverable: true,
-        background: "variant-filled-success",
-      });
-    })
-    .catch((error) => {
-      loading = false;
-      toastStore.trigger({
-        message: error as string,
-        timeout: 5000,
-        hoverable: true,
-        background: "variant-filled-error",
-      });
+
+  let loading: boolean = false;
+
+  $: wikiCodeName = wikiName.toLowerCase().replaceAll(" ", "-");
+  $: siteUrl = `https://${wikiAuthor}.github.io/${wikiCodeName}`;
+  $: repoUrl = `https://github.com/${wikiAuthor}/${wikiCodeName}`;
+  $: siteName = wikiName;
+
+  async function createWiki() {
+    loading = true;
+
+    $wikis[wikiCodeName] = {
+      name: wikiCodeName,
+      description: wikiDescription,
+      author: wikiAuthor,
+      site_name: siteName,
+      repo_url: repoUrl,
+      site_url: siteUrl,
+      settings: settings,
+    };
+    await writeTextFile("wikis.json", JSON.stringify($wikis), {
+      baseDir: BaseDirectory.AppData,
     });
-}
+    await invoke("create_wiki", {
+      wikiName: wikiCodeName,
+      wikiDescription,
+      wikiAuthor,
+      siteName,
+    })
+      .then((result) => {
+        loading = false;
+        toastStore.trigger({
+          message: result as string,
+          timeout: 5000,
+          hoverable: true,
+          background: "variant-filled-success",
+        });
+      })
+      .catch((error) => {
+        loading = false;
+        toastStore.trigger({
+          message: error as string,
+          timeout: 5000,
+          hoverable: true,
+          background: "variant-filled-error",
+        });
+      });
+  }
 </script>
 
 <div class="grid grid-cols-3 gap-16 self-center p-4">
@@ -135,12 +135,12 @@ async function createWiki() {
     <Button
       class="w-32"
       disabled={wikiDescription === "" ||
-          wikiName === "" ||
-          wikiAuthor === "" ||
-          loading === true}
+        wikiName === "" ||
+        wikiAuthor === "" ||
+        loading === true}
       onClick={createWiki}
       title="Create Wiki"
-      loading={loading}
+      {loading}
     />
   </div>
 </div>

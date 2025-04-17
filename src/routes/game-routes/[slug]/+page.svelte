@@ -10,12 +10,12 @@
   import { selectedWiki } from "../../../store";
   import {
     BaseDirectory,
-    createDir,
+    create,
     exists,
-    readBinaryFile,
-    removeFile,
-    writeBinaryFile,
-  } from "@tauri-apps/api/fs";
+    readFile,
+    remove,
+    writeFile,
+  } from "@tauri-apps/plugin-fs";
   import { onMount } from "svelte";
   import { base64ToArray } from "$lib/utils";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
@@ -27,9 +27,9 @@
   let newRouteImage: string = "";
 
   onMount(async () => {
-    newRouteImage = await readBinaryFile(
+    newRouteImage = await readFile(
       `${$selectedWiki.name}/dist/docs/img/routes/${data.title}.png`,
-      { dir: BaseDirectory.AppData },
+      { baseDir: BaseDirectory.AppData },
     )
       .then((res) => {
         const blob = new Blob([res], { type: "image/png" });
@@ -61,14 +61,13 @@
     const routeImagesDirectoryExists = await exists(
       `${$selectedWiki.name}/dist/docs/img/routes`,
       {
-        dir: BaseDirectory.AppData,
+        baseDir: BaseDirectory.AppData,
       },
     );
 
     if (!routeImagesDirectoryExists) {
-      await createDir(`${$selectedWiki.name}/dist/docs/img/routes`, {
-        dir: BaseDirectory.AppData,
-        recursive: true,
+      await create(`${$selectedWiki.name}/dist/docs/img/routes`, {
+        baseDir: BaseDirectory.AppData,
       });
     }
 
@@ -76,17 +75,17 @@
       const previousImageExists = await exists(
         `${$selectedWiki.name}/dist/docs/img/routes/${data.title}.png`,
         {
-          dir: BaseDirectory.AppData,
+          baseDir: BaseDirectory.AppData,
         },
       );
 
       if (!previousImageExists) {
         return;
       }
-      await removeFile(
+      await remove(
         `${$selectedWiki.name}/dist/docs/img/routes/${data.title}.png`,
         {
-          dir: BaseDirectory.AppData,
+          baseDir: BaseDirectory.AppData,
         },
       );
       return;
@@ -97,10 +96,10 @@
       "image/png",
     );
 
-    await writeBinaryFile(
+    await writeFile(
       `${$selectedWiki.name}/dist/docs/img/routes/${data.title}.png`,
-      imageBytes,
-      { dir: BaseDirectory.AppData },
+      new Uint8Array(imageBytes),
+      { baseDir: BaseDirectory.AppData },
     )
       .then(() => {
         toastStore.trigger(

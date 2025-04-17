@@ -15,12 +15,12 @@
     type TrainerPokemon,
   } from "../../../store/gameRoutes";
   import TextInput from "../TextInput.svelte";
-  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+  import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
   import { setUniquePokemonId, sortTrainersByPosition } from "$lib/utils";
   import AutoComplete from "../AutoComplete.svelte";
   import TrainerPokemonCard from "../TrainerPokemonCard.svelte";
   import MultiSelect from "svelte-multiselect";
-  import { invoke } from "@tauri-apps/api/tauri";
+  import { invoke } from "@tauri-apps/api/core";
   import TrainerMenu from "../modals/TrainerMenu.svelte";
   import EditTrainerPokemonModal from "../modals/EditTrainerPokemonModal.svelte";
   import { shortcut } from "@svelte-put/shortcut";

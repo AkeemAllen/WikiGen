@@ -36,14 +36,10 @@
 
   import "../app.pcss";
   import { selectedWiki, wikis, user, type User, type Wiki } from "../store";
-  import {
-    checkUpdate,
-    installUpdate,
-    onUpdaterEvent,
-  } from "@tauri-apps/api/updater";
+  import { check } from "@tauri-apps/plugin-updater";
   import { onMount } from "svelte";
-  import { relaunch } from "@tauri-apps/api/process";
-  import { invoke } from "@tauri-apps/api";
+  import { relaunch } from "@tauri-apps/plugin-process";
+  import { invoke } from "@tauri-apps/api/core";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import { loadWikiData } from "$lib/utils/loadWiki";
   import CreateWikiModal from "$lib/components/modals/CreateWikiModal.svelte";
@@ -51,12 +47,12 @@
   import SelectInput from "$lib/components/SelectInput.svelte";
   import { goto } from "$app/navigation";
   import logo from "$lib/assets/icon.png";
-  // import { PUBLIC_CLIENT_ID } from "$env/static/public";
-  import { WebviewWindow } from "@tauri-apps/api/window";
-  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+  import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
+  import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
   import { appDataDir } from "@tauri-apps/api/path";
-  import { type } from "@tauri-apps/api/os";
+  import { type } from "@tauri-apps/plugin-os";
   import LoadingModal from "$lib/components/modals/LoadingModal.svelte";
+  import { load } from "@tauri-apps/plugin-store";
 
   initializeStores();
 
@@ -82,7 +78,7 @@
   async function getMkdocsDirectory(wikiName: string): Promise<string> {
     const appData = await appDataDir();
     let mkdocsFilePath = `${appData}${wikiName}/dist`;
-    osType = await type();
+    osType = type();
     if (osType === "Windows_NT") {
       mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
     } else if (osType === "Darwin") {
@@ -91,74 +87,65 @@
     return mkdocsFilePath;
   }
 
+  async function checkForUpdate() {
+    const update = await check();
+    if (update?.available) {
+      displayUpdateButton = true;
+    }
+  }
   onMount(() => {
-    async function runMigrations() {
-      invoke("run_migrations")
-        .then((res) => {
-          runningMigrations = false;
-          if (res !== "skipping") {
-            toastStore.trigger(
-              getToastSettings(
-                ToastType.SUCCESS,
-                "Migrations ran successfully",
-              ),
-            );
-          }
-        })
-        .catch((err) => {
-          toastStore.trigger(
-            getToastSettings(
-              ToastType.ERROR,
-              `Error running migrations: ${err}`,
-            ),
-          );
-        });
-    }
-    async function checkForUpdate() {
-      const { shouldUpdate } = await checkUpdate();
-      if (shouldUpdate) {
-        displayUpdateButton = true;
-      }
-    }
+    // async function runMigrations() {
+    //   invoke("run_migrations")
+    //     .then((res) => {
+    //       runningMigrations = false;
+    //       if (res !== "skipping") {
+    //         toastStore.trigger(
+    //           getToastSettings(
+    //             ToastType.SUCCESS,
+    //             "Migrations ran successfully",
+    //           ),
+    //         );
+    //       }
+    //     })
+    //     .catch((err) => {
+    //       toastStore.trigger(
+    //         getToastSettings(
+    //           ToastType.ERROR,
+    //           `Error running migrations: ${err}`,
+    //         ),
+    //       );
+    //     });
+    // }
+    // runMigrations();
 
     checkForUpdate();
-    runMigrations();
   });
 
   const toastStore = getToastStore();
 
   async function updateApp() {
     updaterModalOpen = true;
-    const unlisten = await onUpdaterEvent(({ error, status }) => {
-      if (status === "PENDING") {
-        updateStatus = "Update is pending...";
-        toastStore.trigger(
-          getToastSettings(ToastType.INFO, "Update is pending..."),
-        );
-      }
-
-      if (status === "DONE") {
-        updateStatus = "Update applied successfully";
-        toastStore.trigger(
-          getToastSettings(ToastType.INFO, "Update applied successfully"),
-        );
-      }
-
-      if (status === "ERROR") {
-        updateStatus = `Error applying update: ${error}`;
-        toastStore.trigger(
-          getToastSettings(ToastType.ERROR, `Error applying update: ${error}`),
-        );
-      }
-    });
-    await installUpdate()
+    const update = await check();
+    await update
+      ?.downloadAndInstall((progress) => {
+        switch (progress.event) {
+          case "Started":
+            updateStatus = "Update Started";
+            break;
+          case "Progress":
+            updateStatus = `Update In Progress`;
+            break;
+          case "Finished":
+            updateStatus = "Update Completed";
+            break;
+        }
+      })
       .then(() => {
         relaunch().catch((err) => {
           toastStore.trigger(
             getToastSettings(ToastType.ERROR, `Error relaunching app: ${err}`),
           );
         });
-        unlisten();
       })
       .catch((err) => {
         toastStore.trigger(
@@ -205,28 +192,46 @@
 
     url.search = params.toString();
 
-    const webview = new WebviewWindow("GithubAccessRequest", {
+    const webview = new WebviewWindow("github-access-request", {
       url: url.toString(),
       title: "Github Access Request",
       alwaysOnTop: true,
     });
 
-    const unlisten = await webview.listen("loading-token", (event: any) => {
-      let data = parseJwt(event.payload.token);
-      localStorage.setItem("token", event.payload.token);
-      $user = data;
-      signingIntoGithub = false;
+    const unlisten = await webview.listen(
+      "token-loaded",
+      async (event: any) => {
+        const store = await load("store.json");
+        const token = await store.get<string>("token");
 
-      webview.close();
-    });
+        if (token === undefined || token === "") {
+          webview.close();
+          toastStore.trigger(
+            getToastSettings(
+              ToastType.ERROR,
+              `Failed to load token: token is ${token}`,
+            ),
+          );
+        }
+
+        let data = parseJwt(token as string);
+
+        $user = data;
+        signingIntoGithub = false;
+
+        webview.close();
+      },
+    );
 
     webview.onCloseRequested(() => {
       unlisten();
     });
   }
 
-  function signOut() {
-    localStorage.removeItem("token");
+  async function signOut() {
+    const store = await load("store.json");
+    await store.delete("token");
+    await store.save();
     $user = {
       userName: "",
       avatarUrl: "",
@@ -297,7 +302,7 @@
         if ($selectedWiki.settings.deployment_url === "") {
           $wikis[$selectedWiki.name].settings.deployment_url = res.ssh_url;
           await writeTextFile("wikis.json", JSON.stringify($wikis), {
-            dir: BaseDirectory.AppData,
+            baseDir: BaseDirectory.AppData,
           });
         }
         deployingWiki = true;
@@ -555,15 +560,6 @@
               <IconTestPipe slot="icon" size={16} color="indigo" />
             </NavButton> -->
         </div>
-        <!-- <div class="flex flex-row items-center justify-between w-[12rem]">
-            <p>
-              {$selectedWiki.name ? $selectedWiki.site_name : "Select Wiki"}
-            </p>
-            <span use:popup={wikiSelectPopup} class="hover:cursor-pointer">
-              <IconDotsVertical size={"20"} />
-            </span>
-          </div>
-          <WikiSelectMenu /> -->
       </div>
     {/if}
   </svelte:fragment>

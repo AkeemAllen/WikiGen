@@ -4,8 +4,8 @@ import type { Pokemon, PokemonMove, MoveSetChange } from "../store/pokemon";
 import { Operation } from "../store/pokemon";
 import { db } from "../store/db";
 import { moveList } from "../store/moves";
-import type Database from "tauri-plugin-sql-api";
-import type { QueryResult } from "tauri-plugin-sql-api";
+import type Database from "@tauri-apps/plugin-sql";
+import type { QueryResult } from "@tauri-apps/plugin-sql";
 
 export async function addMoves(
   moveAdditions: MoveSetChange[],

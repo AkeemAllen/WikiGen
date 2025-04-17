@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
-  import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
+  import { BaseDirectory, readFile } from "@tauri-apps/plugin-fs";
   import { selectedWiki } from "../../store";
   import {
     routes,
@@ -99,9 +99,9 @@
           });
 
         // Reading in image separately
-        pokemonSprite = await readBinaryFile(
+        pokemonSprite = await readFile(
           `${$selectedWiki.name}/dist/docs/img/pokemon/${res[0].name}.png`,
-          { dir: BaseDirectory.AppData },
+          { baseDir: BaseDirectory.AppData },
         )
           .then((res) => {
             const blob = new Blob([res], { type: "image/png" });

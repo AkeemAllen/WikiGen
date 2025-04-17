@@ -8,8 +8,8 @@ use std::{
 
 use pokemon_migrations::{add_all_missing_pokemon, check_if_pokemon_already_migrated};
 use serde::{Deserialize, Serialize};
-use sqlx::{Error, Executor, Pool, Sqlite};
-use tauri::AppHandle;
+use sqlx::{Error, Pool, Sqlite};
+use tauri::{AppHandle, Manager};
 
 use crate::{database::get_sqlite_connection, helpers::copy_recursively, logger};
 
@@ -52,8 +52,8 @@ struct MigrationJson {
 #[tauri::command]
 pub async fn run_migrations(app_handle: AppHandle) -> Result<String, String> {
     // check for migrations folder for current app version. If not present or folder empty, return early.
-    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    let resources_path = app_handle.path_resolver().resource_dir().unwrap();
+    let base_path = app_handle.path().app_data_dir().unwrap();
+    let resources_path = app_handle.path().resource_dir().unwrap();
 
     let migrations_file_path = resources_path
         .join("resources")

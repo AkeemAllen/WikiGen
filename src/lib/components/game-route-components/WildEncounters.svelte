@@ -3,7 +3,7 @@
     getToastStore,
     type AutocompleteOption,
   } from "@skeletonlabs/skeleton";
-  import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
+  import { BaseDirectory, readFile } from "@tauri-apps/plugin-fs";
   import { selectedWiki } from "../../../store";
   import { routes, type WildEncounter } from "../../../store/gameRoutes";
   import { pokemonList } from "../../../store/pokemon";
@@ -146,9 +146,9 @@
   async function getSpriteImage(pokemonName: string): Promise<string> {
     let sprite = "";
     let spriteName = pokemonName.toLowerCase().replaceAll(" ", "-");
-    await readBinaryFile(
+    await readFile(
       `${$selectedWiki.name}/dist/docs/img/pokemon/${spriteName}.png`,
-      { dir: BaseDirectory.AppData },
+      { baseDir: BaseDirectory.AppData },
     )
       .then((res) => {
         const blob = new Blob([res], { type: "image/png" });

@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
 
   // import { getToastStore } from "@skeletonlabs/skeleton";
-  import { type } from "@tauri-apps/api/os";
+  import { type } from "@tauri-apps/plugin-os";
   import { appDataDir } from "@tauri-apps/api/path";
   // import { invoke } from "@tauri-apps/api/tauri";
   import { selectedWiki } from "../../store";
@@ -65,8 +65,8 @@
   async function getMkdocsDirectory(wikiName: string): Promise<string> {
     const appData = await appDataDir();
     let mkdocsFilePath = `${appData}${wikiName}/dist`;
-    const osType = await type();
-    if (osType === "Windows_NT") {
+    const osType = type();
+    if (osType === "windows") {
       mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
     }
     return mkdocsFilePath;

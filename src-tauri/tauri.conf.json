@@ -1,108 +1,74 @@
 {
-  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
     "beforeBuildCommand": "pnpm run build",
     "beforeDevCommand": "pnpm run dev",
-    "devPath": "http://localhost:5173",
-    "distDir": "../build",
-    "withGlobalTauri": true
+    "frontendDist": "../build",
+    "devUrl": "http://localhost:5173"
   },
-  "package": {
-    "productName": "WikiGen",
-    "version": "1.8.1"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": true,
-      "fs": {
-        "all": true,
-        "copyFile": true,
-        "createDir": true,
-        "exists": true,
-        "readDir": true,
-        "readFile": true,
-        "removeDir": true,
-        "removeFile": true,
-        "renameFile": true,
-        "writeFile": true,
-        "scope": ["$APPDATA/**", "$RESOURCE/**"]
-      },
-      "os": {
-        "all": true
-      },
-      "shell": {
-        "all": true,
-        "execute": true,
-        "open": false,
-        "scope": [
-          {
-            "name": "git-commands",
-            "cmd": "git",
-            "args": true
-          }
-        ],
-        "sidecar": false
-      }
+  "bundle": {
+    "active": true,
+    "category": "DeveloperTool",
+    "copyright": "",
+    "targets": "all",
+    "externalBin": [],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "certificateThumbprint": "5E7ECE9CB31FCB9F3C58BC835868FCF24E4595F0",
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "http://timestamp.comodoca.com"
     },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
+    "longDescription": "",
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": "",
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null
+    },
+    "resources": ["resources/**/*"],
+    "shortDescription": "",
+    "linux": {
       "deb": {
         "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.wikigen.dev",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": ["resources/**"],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": "5E7ECE9CB31FCB9F3C58BC835868FCF24E4595F0",
-        "digestAlgorithm": "sha256",
-        "timestampUrl": "http://timestamp.comodoca.com"
       }
     },
-    "security": {
-      "csp": null,
-      "dangerousRemoteDomainIpcAccess": [
-        {
-          "domain": "wikigen-auth.fly.dev",
-          "windows": ["GithubAccessRequest"],
-          "enableTauriAPI": true
-        }
-      ]
+    "createUpdaterArtifacts": "v1Compatible"
+  },
+  "productName": "WikiGen",
+  "mainBinaryName": "WikiGen",
+  "version": "1.8.2",
+  "identifier": "com.wikigen.dev",
+  "plugins": {
+    "cli": {
+      "description": "CLI plugin for WikiGen"
     },
     "updater": {
-      "active": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDRFNUFDQzNFQjA2NDUxMjQKUldRa1VXU3dQc3hhVGtpRllIbjZiV09VZEl0U0xYTHUzcEdUYnlvaFpoYXlXT21vN0orcVI2S3kK",
       "endpoints": [
-        "https://gist.github.com/AkeemAllen/45b036d6d2330074b996823297c1d125/raw"
-      ],
-      "dialog": false,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDRFNUFDQzNFQjA2NDUxMjQKUldRa1VXU3dQc3hhVGtpRllIbjZiV09VZEl0U0xYTHUzcEdUYnlvaFpoYXlXT21vN0orcVI2S3kK"
-    },
+        "https://gist.github.com/AkeemAllen/38cc49c99d6e6c74680d05c053519ca9/raw"
+      ]
+    }
+  },
+  "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "fullscreen": false,
         "height": 900,
         "resizable": true,
         "title": "WikiGen",
-        "width": 1400
+        "width": 1400,
+        "useHttpsScheme": true
       }
-    ]
+    ],
+    "security": {
+      "csp": null
+    }
   }
 }

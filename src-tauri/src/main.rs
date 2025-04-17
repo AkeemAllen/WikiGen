@@ -9,6 +9,7 @@ mod structs;
 mod tests;
 mod wiki_preparation;
 
+use database::load_token;
 use helpers::mkdocs_process::{check_process_status, kill_mkdocs_process, spawn_mkdocs_process};
 use page_generators::ability_page::generate_ability_page_with_handle;
 use page_generators::game_routes::{
@@ -32,9 +33,16 @@ use wiki_preparation::yaml_declaration::update_yaml;
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_sql::Builder::default().build())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_cli::init())
+        .plugin(tauri_plugin_store::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             create_wiki,
+            load_token,
             spawn_mkdocs_process,
             kill_mkdocs_process,
             check_process_status,

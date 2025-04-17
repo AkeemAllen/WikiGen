@@ -1,7 +1,7 @@
 <script lang="ts">
   import BaseModal from "$lib/components/BaseModal.svelte";
   import Button from "$lib/components/Button.svelte";
-  import { BaseDirectory, removeDir, writeTextFile } from "@tauri-apps/api/fs";
+  import { BaseDirectory, remove, writeTextFile } from "@tauri-apps/plugin-fs";
   import { wikis, selectedWiki } from "../../../store";
   import { getToastStore } from "@skeletonlabs/skeleton";
   import MultiSelect from "svelte-multiselect";
@@ -19,8 +19,8 @@
 
   async function deleteWikis() {
     for (const wiki of wikisToDelete) {
-      await removeDir(wiki, {
-        dir: BaseDirectory.AppData,
+      await remove(wiki, {
+        baseDir: BaseDirectory.AppData,
         recursive: true,
       }).then(() => {
         directoriesRemoved = true;
@@ -30,7 +30,7 @@
       );
     }
     await writeTextFile("wikis.json", JSON.stringify($wikis), {
-      dir: BaseDirectory.AppData,
+      baseDir: BaseDirectory.AppData,
     }).then(() => {
       wikiJsonUpdated = true;
     });

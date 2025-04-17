@@ -125,13 +125,13 @@
         class="rounded-md bg-indigo-300 px-3 py-2 hover:cursor-pointer hover:bg-indigo-600"
         on:click={prevTrainerPokemon}
       >
-        <IconChevronLeft size={16} color="white" strokeWidth={3} />
+        <IconChevronLeft size={16} color="white" stroke={3} />
       </button>
       <button
         class="rounded-md bg-indigo-300 px-3 py-2 hover:cursor-pointer hover:bg-indigo-600"
         on:click={nextTrainerPokemon}
       >
-        <IconChevronRight size={16} color="white" strokeWidth={3} />
+        <IconChevronRight size={16} color="white" stroke={3} />
       </button>
     </div>
   </div>

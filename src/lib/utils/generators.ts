@@ -1,7 +1,6 @@
-import { invoke } from "@tauri-apps/api";
-import { ToastType, getToastSettings } from "./toasts";
+import { invoke } from "@tauri-apps/api/core";
 import type { Routes } from "../../store/gameRoutes";
-import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
 
 export async function generatePokemonPages(
   pokemonIds: number[],
@@ -37,7 +36,7 @@ export async function generateRoutePages(
 
 export async function updateRoutes(routes: Routes, wikiName: string) {
   return writeTextFile(`${wikiName}/data/routes.json`, JSON.stringify(routes), {
-    dir: BaseDirectory.AppData,
+    baseDir: BaseDirectory.AppData,
   }).catch((err) => {
     return err;
   });

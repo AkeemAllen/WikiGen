@@ -23,6 +23,8 @@
   let oldRoutePosition: number = 0;
   let loading = false;
 
+  $: console.log("Routes", $routes.routes);
+
   async function createNewRoute() {
     if (routeName.trim() === "") {
       return;

@@ -10,7 +10,7 @@
   } from "../../store/abilities";
   import { selectedWiki } from "../../store";
   import { getToastStore } from "@skeletonlabs/skeleton";
-  import { invoke } from "@tauri-apps/api";
+  import { invoke } from "@tauri-apps/api/core";
   import { db } from "../../store/db";
   import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
   import { isNullEmptyOrUndefined } from "$lib/utils";
