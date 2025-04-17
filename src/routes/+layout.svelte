@@ -87,6 +87,12 @@
     return mkdocsFilePath;
   }
 
+  async function checkForUpdate() {
+    const update = await check();
+    if (update?.available) {
+      displayUpdateButton = true;
+    }
+  }
   onMount(() => {
     // async function runMigrations() {
     //   invoke("run_migrations")
@@ -110,15 +116,9 @@
     //       );
     //     });
     // }
-    async function checkForUpdate() {
-      const update = await check();
-      if (update?.available) {
-        displayUpdateButton = true;
-      }
-    }
+    // runMigrations();
 
     checkForUpdate();
-    // runMigrations();
   });
 
   const toastStore = getToastStore();
@@ -185,8 +185,7 @@
 
   async function signInToGithub() {
     signingIntoGithub = true;
-    // const url = new URL("https://github.com/login/oauth/authorize");
-    const url = new URL("http://localhost:8080/testing");
+    const url = new URL("https://github.com/login/oauth/authorize");
     const params = new URLSearchParams();
     params.append("client_id", "Ov23li9oWejO62cA6Kee");
     params.append("scope", "read:user public_repo");
