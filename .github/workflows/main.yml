@@ -86,7 +86,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Added More convenient Wiki Deployment
+            \n- Sharpening Tools: Upgraded to Tauri v2
             "
           releaseDraft: false
           prerelease: false
