@@ -272,10 +272,13 @@
       return;
     }
     deployingWiki = true;
+    const store = await load("store.json");
+    const token = await store.get<string>("token");
+
     await fetch("https://wikigen-auth.fly.dev/create-repo", {
       method: "POST",
       body: JSON.stringify({
-        token: localStorage.getItem("token"),
+        token: token,
         wikiName: $selectedWiki.name,
       }),
       headers: {
