@@ -61,7 +61,9 @@
   const modalRegistry: Record<string, ModalComponent> = {};
   let updaterModalOpen = false;
   let displayUpdateButton = false;
-  let updateStatus = "";
+  let updateStatus = "Updating";
+  // let downloadProgress = 0;
+  // let contentLength = 0;
   let runningMigrations = false;
   let createWikiModalOpen = false;
   let deleteWikiModalOpen = false;
@@ -126,44 +128,40 @@
   async function updateApp() {
     updaterModalOpen = true;
     const update = await check();
+    if (!update) return;
+
     await update
-      ?.downloadAndInstall((progress) => {
+      .downloadAndInstall((progress) => {
         switch (progress.event) {
           case "Started":
             updateStatus = "Update Started";
+            // contentLength = progress.data.contentLength as number;
             break;
           case "Progress":
             updateStatus = `Update In Progress`;
+            // downloadProgress += progress.data.chunkLength as number;
             break;
           case "Finished":
             updateStatus = "Update Completed";
             break;
         }
       })
-      .then(() => {
-        relaunch().catch((err) => {
-          toastStore.trigger(
-            getToastSettings(ToastType.ERROR, `Error relaunching app: ${err}`),
-          );
-        });
-      })
       .catch((err) => {
         toastStore.trigger(
           getToastSettings(ToastType.ERROR, `Error installing update: ${err}`),
         );
       });
+    await relaunch().catch((err) => {
+      toastStore.trigger(
+        getToastSettings(ToastType.ERROR, `Error relaunching app: ${err}`),
+      );
+    });
   }
 
   function loadSelectedWiki(e: any) {
     $selectedWiki = $wikis[e.target.value];
     loadWikiData($selectedWiki, toastStore);
     goto("/");
-  }
-
-  function isActivePage(pageName: string) {
-    if ($page.url.pathname.includes(pageName)) return true;
-
-    return false;
   }
 
   async function backupWiki() {

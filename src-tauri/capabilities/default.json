@@ -9,6 +9,7 @@
     "core:webview:allow-webview-close",
     "core:window:allow-destroy",
     "core:window:allow-close",
+    "process:default",
     "fs:default",
     {
       "identifier": "fs:allow-exists",
