@@ -22,21 +22,25 @@
   import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
-  export let routeName: string = "";
-  let pokemonName: string = "";
-  let encounterArea: string = "grass";
-  let currentWildEncounterIndex: number;
-  let currentEncounterType: string;
-  let editEncounterModalOpen: boolean = false;
-  let encounterRate: number = 0;
-  let areaLevels = cloneDeep(
+  interface Props {
+    routeName?: string;
+  }
+
+  let { routeName = $bindable("") }: Props = $props();
+  let pokemonName: string = $state("");
+  let encounterArea: string = $state("grass");
+  let currentWildEncounterIndex: number = $state();
+  let currentEncounterType: string = $state();
+  let editEncounterModalOpen: boolean = $state(false);
+  let encounterRate: number = $state(0);
+  let areaLevels = $state(cloneDeep(
     $routes.routes[routeName].wild_encounter_area_levels,
-  );
-  let originalAreaLevels = cloneDeep(areaLevels);
-  let routeWildEncounters: { [key: string]: WildEncounter[] } = cloneDeep(
+  ));
+  let originalAreaLevels = $state(cloneDeep(areaLevels));
+  let routeWildEncounters: { [key: string]: WildEncounter[] } = $state(cloneDeep(
     $routes.routes[routeName].wild_encounters,
-  );
-  let originalRouteWildEncounters = cloneDeep(routeWildEncounters);
+  ));
+  let originalRouteWildEncounters = $state(cloneDeep(routeWildEncounters));
   let pokemonListOptions: AutocompleteOption<string | number>[] =
     $pokemonList.map(([id, _, name]) => ({
       label: capitalizeWords(name),
@@ -252,7 +256,7 @@
         {#each encounters as encounter, index}
           <button
             class="group card relative grid !bg-transparent p-2 shadow-md transition ease-in-out hover:scale-110 hover:cursor-pointer"
-            on:click={() => {
+            onclick={() => {
               editEncounterModalOpen = true;
               currentEncounterType = _encounterType;
               currentWildEncounterIndex = index;
@@ -276,7 +280,7 @@
             <a
               class="invisible absolute right-2 top-2 z-20 rounded-md bg-red-200 p-1 hover:scale-110 group-hover:visible"
               type="button"
-              on:click={(e) => {
+              onclick={(e) => {
                 e.stopPropagation();
                 deleteEncounter(encounter.name, _encounterType);
               }}

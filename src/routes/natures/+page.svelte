@@ -22,18 +22,18 @@
 
   const toastStore = getToastStore();
 
-  let natureSearch: [number, string] = [0, ""];
+  let natureSearch: [number, string] = $state([0, ""]);
 
-  let nature: Nature = {} as Nature;
-  let originalNatureDetails: Nature = {} as Nature;
+  let nature: Nature = $state({} as Nature);
+  let originalNatureDetails: Nature = $state({} as Nature);
 
-  let newNatureModalOpen: boolean = false;
-  let newNature: Nature = {} as Nature;
+  let newNatureModalOpen: boolean = $state(false);
+  let newNature: Nature = $state({} as Nature);
 
-  $: natureListOptions = $naturesList.map(([id, name]) => ({
+  let natureListOptions = $derived($naturesList.map(([id, name]) => ({
     label: name,
     value: id,
-  }));
+  })));
 
   const natureOptions = [
     null,
@@ -255,7 +255,7 @@
       <input
         type="checkbox"
         checked={Boolean(nature.is_modified)}
-        on:change={setModified}
+        onchange={setModified}
         class="text-sm font-medium leading-6 text-gray-900"
       />
       Mark Nature as Modified

@@ -21,9 +21,9 @@
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import type { QueryResult } from "@tauri-apps/plugin-sql";
 
-  let pokemonSearch: [number, string] = [0, ""];
-  let newSpriteImage: string = "";
-  let newPokemon: Pokemon = {
+  let pokemonSearch: [number, string] = $state([0, ""]);
+  let newSpriteImage: string = $state("");
+  let newPokemon: Pokemon = $state({
     dex_number: 0,
     name: "",
     types: "normal",
@@ -36,10 +36,10 @@
     sp_attack: 0,
     sp_defense: 0,
     speed: 0,
-  } as Pokemon;
-  let copiedMoveset: PokemonMove[] = [];
+  } as Pokemon);
+  let copiedMoveset: PokemonMove[] = $state([]);
 
-  let tabSet: number = 0;
+  let tabSet: number = $state(0);
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
     value: id,
@@ -238,7 +238,7 @@
     type="file"
     accept="image/png"
     class="mt-2"
-    on:change={onImageUpload}
+    onchange={onImageUpload}
   />
 </div>
 
@@ -265,16 +265,18 @@
   <Tab bind:group={tabSet} name="pokemon-moves" value={1} class="text-sm"
     >Moves</Tab
   >
-  <svelte:fragment slot="panel">
-    {#if tabSet === 0}
-      <PokemonDetailsTab bind:pokemon={newPokemon} isNewPokemon={true} />
-    {/if}
-    {#if tabSet === 1}
-      <PokemonMovesetTab
-        moveset={copiedMoveset}
-        pokemonId={0}
-        generatePokemonPage={() => {}}
-      />
-    {/if}
-  </svelte:fragment>
+  {#snippet panel()}
+  
+      {#if tabSet === 0}
+        <PokemonDetailsTab bind:pokemon={newPokemon} isNewPokemon={true} />
+      {/if}
+      {#if tabSet === 1}
+        <PokemonMovesetTab
+          moveset={copiedMoveset}
+          pokemonId={0}
+          generatePokemonPage={() => {}}
+        />
+      {/if}
+    
+  {/snippet}
 </TabGroup>

@@ -14,8 +14,8 @@
   import { base64ToArray } from "$lib/utils";
 
   const toastStore = getToastStore();
-  let newType = "";
-  let newTypeImage = "";
+  let newType = $state("");
+  let newTypeImage = $state("");
 
   async function addType() {
     if (newType === "") return;
@@ -128,7 +128,7 @@
       type="file"
       accept="image/png"
       class="mt-2"
-      on:change={onImageUpload}
+      onchange={onImageUpload}
       placeholder=""
     />
   </div>
@@ -155,7 +155,7 @@
           {/await}
           <button
             class="btn rounded-sm p-2 hover:cursor-pointer hover:bg-gray-300"
-            on:click={() => deleteType(type)}
+            onclick={() => deleteType(type)}
           >
             <IconTrash size={16} />
           </button>

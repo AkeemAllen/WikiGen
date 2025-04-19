@@ -20,39 +20,43 @@
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
-  export let pokemonId: number;
-  export let generatePokemonPage: Function;
-  export let moveset: PokemonMove[] = [];
+  interface Props {
+    pokemonId: number;
+    generatePokemonPage: Function;
+    moveset?: PokemonMove[];
+  }
 
-  let searchValue: string = "";
-  let modifyMovesetModalOpen: boolean = false;
-  let addMoveModalOpen: boolean = false;
-  let newMove: PokemonMove = {
+  let { pokemonId = $bindable(), generatePokemonPage, moveset = $bindable([]) }: Props = $props();
+
+  let searchValue: string = $state("");
+  let modifyMovesetModalOpen: boolean = $state(false);
+  let addMoveModalOpen: boolean = $state(false);
+  let newMove: PokemonMove = $state({
     id: 0,
     name: "",
     learn_method: "",
     level_learned: 0,
-  };
+  });
 
-  let editMoveModalOpen: boolean = false;
-  let moveToEditLearnMethods: string[] = [];
-  let moveToEdit: PokemonMove = {
+  let editMoveModalOpen: boolean = $state(false);
+  let moveToEditLearnMethods: string[] = $state([]);
+  let moveToEdit: PokemonMove = $state({
     id: 0,
     name: "",
     learn_method: "",
     level_learned: 0,
-  };
+  });
 
-  let newLearnMethods: string[] = [];
+  let newLearnMethods: string[] = $state([]);
 
   const toastStore = getToastStore();
 
-  $: moveListOptions = $moveList
+  let moveListOptions = $derived($moveList
     .map(([id, name]) => ({
       label: name,
       value: id,
     }))
-    .filter((move) => !moveset.some((m) => m.id === move.value));
+    .filter((move) => !moveset.some((m) => m.id === move.value)));
 
   const rowsPerPageOptions = [
     { label: "5", value: 5 },
@@ -62,11 +66,11 @@
     { label: "100", value: 100 },
   ];
 
-  $: handler = new DataHandler(moveset, {
+  let handler = $derived(new DataHandler(moveset, {
     rowsPerPage: 5,
-  });
-  $: rows = handler.getRows();
-  $: rowsPerPage = handler.getRowsPerPage();
+  }));
+  let rows = $derived(handler.getRows());
+  let rowsPerPage = $derived(handler.getRowsPerPage());
 
   async function deleteMove(moveId: number) {
     await $db
@@ -304,7 +308,7 @@
             <td>{row.level_learned}</td>
             <td
               class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-              on:click={() => {
+              onclick={() => {
                 moveToEdit = row;
                 editMoveModalOpen = true;
                 moveToEditLearnMethods = row.learn_method.split(",");
@@ -314,7 +318,7 @@
             </td>
             <td
               class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-              on:click={() => deleteMove(row.id)}
+              onclick={() => deleteMove(row.id)}
             >
               <IconTrash size={18} class="text-gray-500" />
             </td>

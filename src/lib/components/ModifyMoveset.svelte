@@ -24,15 +24,25 @@
 
   const toastStore = getToastStore();
 
-  export let open: boolean = false;
-  export let pokemonId: number;
-  export let generatePokemonPage: Function;
-  let moveSetChangeList: MoveSetChange[] = [];
-  export let onClose: Function = () => {
+  let moveSetChangeList: MoveSetChange[] = $state([]);
+  interface Props {
+    open?: boolean;
+    pokemonId: number;
+    generatePokemonPage: Function;
+    onClose?: Function;
+    moveset: PokemonMove[];
+  }
+
+  let {
+    open = $bindable(false),
+    pokemonId,
+    generatePokemonPage,
+    onClose = () => {
     open = false;
     moveSetChangeList = [];
-  };
-  export let moveset: PokemonMove[];
+  },
+    moveset = $bindable()
+  }: Props = $props();
 
   const moveListOptions = $moveList.map(([id, name]) => ({
     label: name,
@@ -189,7 +199,7 @@
           </td>
           <td
             class="w-5 rounded-sm px-6 py-0 pb-1 hover:cursor-pointer hover:bg-gray-300"
-            on:click={() => removeMoveSetChange(index)}
+            onclick={() => removeMoveSetChange(index)}
           >
             <IconTrash size={18} class="mt-4 text-gray-500" />
           </td>

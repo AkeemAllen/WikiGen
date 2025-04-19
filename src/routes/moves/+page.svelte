@@ -28,32 +28,32 @@
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
-  let tabSet: number = 0;
+  let tabSet: number = $state(0);
 
-  let moveSearch: [number, string] = [0, ""];
-  let pokemonSearch: string = "";
+  let moveSearch: [number, string] = $state([0, ""]);
+  let pokemonSearch: string = $state("");
 
-  let newMoveModalOpen: boolean = false;
-  let newMove: Move = {
+  let newMoveModalOpen: boolean = $state(false);
+  let newMove: Move = $state({
     damage_class: "status",
     type: "normal",
-  } as Move;
-  let move: Move = {} as Move;
-  let originalMoveDetails: Move = {} as Move;
+  } as Move);
+  let move: Move = $state({} as Move);
+  let originalMoveDetails: Move = $state({} as Move);
 
-  let addMoveModalOpen: boolean = false;
-  let editMoveModalOpen: boolean = false;
-  let newMoveLearner: MoveLearner = {
+  let addMoveModalOpen: boolean = $state(false);
+  let editMoveModalOpen: boolean = $state(false);
+  let newMoveLearner: MoveLearner = $state({
     pokemonId: 0,
     name: "",
     learn_method: "",
     level_learned: 0,
-  };
+  });
 
-  let moveListOptions = $moveList.map(([id, name]) => ({
+  let moveListOptions = $state($moveList.map(([id, name]) => ({
     label: name,
     value: id,
-  }));
+  })));
 
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
@@ -66,8 +66,8 @@
     learn_method: string;
     level_learned: number;
   };
-  let pokemonWhoCanLearnMove: MoveLearner[] = [];
-  let newLearnMethods: string[] = [];
+  let pokemonWhoCanLearnMove: MoveLearner[] = $state([]);
+  let newLearnMethods: string[] = $state([]);
 
   const rowsPerPageOptions = [
     { label: "5", value: 5 },
@@ -77,11 +77,11 @@
     { label: "100", value: 100 },
   ];
 
-  $: handler = new DataHandler(pokemonWhoCanLearnMove, {
+  let handler = $derived(new DataHandler(pokemonWhoCanLearnMove, {
     rowsPerPage: 5,
-  });
-  $: rows = handler.getRows();
-  $: rowsPerPage = handler.getRowsPerPage();
+  }));
+  let rows = $derived(handler.getRows());
+  let rowsPerPage = $derived(handler.getRowsPerPage());
 
   async function generatePokemonPage(pokemonId: number) {
     await generatePokemonPages([pokemonId], $selectedWiki.name)
@@ -522,144 +522,146 @@
     <Tab bind:group={tabSet} value={1} name="pokemon" class="text-sm"
       >Pokemon</Tab
     >
-    <svelte:fragment slot="panel">
-      {#if tabSet === 0}
-        <div class="ml-2 mt-4">
-          <div class="grid grid-cols-2 gap-x-10 gap-y-5 pr-4">
-            <NumberInput
-              label="Power"
-              id="power"
-              bind:value={move.power}
-              max={255}
-            />
-            <SelectInput
-              label="Type"
-              id="type"
-              bind:value={move.type}
-              options={$pokemonTypes.map((type) => {
-                return {
-                  label: capitalizeWords(type),
-                  value: type,
-                };
-              })}
-            />
-            <NumberInput
-              label="Accuracy"
-              id="accuracy"
-              bind:value={move.accuracy}
-              max={100}
-            />
-            <!-- Highest PP move is 40, but setting it to 100 for future proofing -->
-            <NumberInput label="PP" id="pp" bind:value={move.pp} max={100} />
-            <SelectInput
-              label="Damage Class"
-              id="damage-class"
-              bind:value={move.damage_class}
-              options={[
-                { label: "status", value: "status" },
-                { label: "physical", value: "physical" },
-                { label: "special", value: "special" },
-              ]}
-            />
-            <TextInput
-              label="Machine Name"
-              id="machine-name"
-              bind:value={move.machine_name}
-            />
-          </div>
-        </div>
-        {#if !move.is_new}
-          <label class="block text-sm font-medium leading-6 text-gray-900">
-            <input
-              type="checkbox"
-              checked={Boolean(move.is_modified)}
-              on:change={setModified}
-              class="text-sm font-medium leading-6 text-gray-900"
-            />
-            Mark Move as Modified
-          </label>
-        {/if}
-      {/if}
-      {#if tabSet === 1}
-        <div class="mt-4 space-y-4 overflow-x-auto px-4">
-          <header class="flex items-center justify-between gap-4">
-            <div class="flex gap-x-3">
-              <TextInput
-                id="pokemon"
-                bind:value={pokemonSearch}
-                inputHandler={() => handler.search(pokemonSearch)}
-                placeholder="Search pokemon"
+    {#snippet panel()}
+      
+        {#if tabSet === 0}
+          <div class="ml-2 mt-4">
+            <div class="grid grid-cols-2 gap-x-10 gap-y-5 pr-4">
+              <NumberInput
+                label="Power"
+                id="power"
+                bind:value={move.power}
+                max={255}
               />
-              <Button
-                title="Add Move To Pokemon"
-                class="mt-2 w-48"
-                onClick={() => {
-                  addMoveModalOpen = true;
-                }}
+              <SelectInput
+                label="Type"
+                id="type"
+                bind:value={move.type}
+                options={$pokemonTypes.map((type) => {
+                  return {
+                    label: capitalizeWords(type),
+                    value: type,
+                  };
+                })}
+              />
+              <NumberInput
+                label="Accuracy"
+                id="accuracy"
+                bind:value={move.accuracy}
+                max={100}
+              />
+              <!-- Highest PP move is 40, but setting it to 100 for future proofing -->
+              <NumberInput label="PP" id="pp" bind:value={move.pp} max={100} />
+              <SelectInput
+                label="Damage Class"
+                id="damage-class"
+                bind:value={move.damage_class}
+                options={[
+                  { label: "status", value: "status" },
+                  { label: "physical", value: "physical" },
+                  { label: "special", value: "special" },
+                ]}
+              />
+              <TextInput
+                label="Machine Name"
+                id="machine-name"
+                bind:value={move.machine_name}
               />
             </div>
-            <aside class="flex items-center gap-x-3">
-              <p class="mt-2">Show</p>
-              <SelectInput
-                bind:value={$rowsPerPage}
-                options={rowsPerPageOptions}
+          </div>
+          {#if !move.is_new}
+            <label class="block text-sm font-medium leading-6 text-gray-900">
+              <input
+                type="checkbox"
+                checked={Boolean(move.is_modified)}
+                onchange={setModified}
+                class="text-sm font-medium leading-6 text-gray-900"
               />
-            </aside>
-          </header>
-          <table
-            class="table table-hover table-compact w-full table-auto bg-white"
-          >
-            <thead>
-              <tr class="bg-white">
-                <ThSort {handler} orderBy="name">Pokemon Name</ThSort>
-                <ThSort {handler} orderBy="learn_method">Learn Method</ThSort>
-                <ThSort {handler} orderBy="level_learned">Learn Level</ThSort>
-              </tr>
-            </thead>
-            <tbody>
-              {#each $rows as row}
-                <tr>
-                  <td class="flex flex-row gap-1 self-center">
-                    {#await getSpriteImage(row.name) then spriteUrl}
-                      <img
-                        src={spriteUrl}
-                        alt={row.name}
-                        class="m-0 justify-self-center"
-                        width="30"
-                        height="30"
-                      />
-                    {/await}
-                    <span class="self-center">
-                      {capitalizeWords(row.name.replace("-", " "))}
-                    </span>
-                  </td>
-                  <td>{row.learn_method}</td>
-                  <td>{row.level_learned}</td>
-                  <td
-                    class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-                    on:click={() => {
+              Mark Move as Modified
+            </label>
+          {/if}
+        {/if}
+        {#if tabSet === 1}
+          <div class="mt-4 space-y-4 overflow-x-auto px-4">
+            <header class="flex items-center justify-between gap-4">
+              <div class="flex gap-x-3">
+                <TextInput
+                  id="pokemon"
+                  bind:value={pokemonSearch}
+                  inputHandler={() => handler.search(pokemonSearch)}
+                  placeholder="Search pokemon"
+                />
+                <Button
+                  title="Add Move To Pokemon"
+                  class="mt-2 w-48"
+                  onClick={() => {
+                    addMoveModalOpen = true;
+                  }}
+                />
+              </div>
+              <aside class="flex items-center gap-x-3">
+                <p class="mt-2">Show</p>
+                <SelectInput
+                  bind:value={$rowsPerPage}
+                  options={rowsPerPageOptions}
+                />
+              </aside>
+            </header>
+            <table
+              class="table table-hover table-compact w-full table-auto bg-white"
+            >
+              <thead>
+                <tr class="bg-white">
+                  <ThSort {handler} orderBy="name">Pokemon Name</ThSort>
+                  <ThSort {handler} orderBy="learn_method">Learn Method</ThSort>
+                  <ThSort {handler} orderBy="level_learned">Learn Level</ThSort>
+                </tr>
+              </thead>
+              <tbody>
+                {#each $rows as row}
+                  <tr>
+                    <td class="flex flex-row gap-1 self-center">
+                      {#await getSpriteImage(row.name) then spriteUrl}
+                        <img
+                          src={spriteUrl}
+                          alt={row.name}
+                          class="m-0 justify-self-center"
+                          width="30"
+                          height="30"
+                        />
+                      {/await}
+                      <span class="self-center">
+                        {capitalizeWords(row.name.replace("-", " "))}
+                      </span>
+                    </td>
+                    <td>{row.learn_method}</td>
+                    <td>{row.level_learned}</td>
+                    <td
+                      class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
+                      onclick={() => {
                       newMoveLearner = row;
                       editMoveModalOpen = true;
                       newLearnMethods = row.learn_method.split(",");
                     }}
-                  >
-                    <IconEdit size={18} class="text-gray-500" />
-                  </td>
-                  <td
-                    class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-                    on:click={() => deleteMoveFromPokemon(row.pokemonId)}
-                  >
-                    <IconTrash size={18} class="text-gray-500" />
-                  </td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-          <footer class="flex">
-            <Pagination {handler} />
-          </footer>
-        </div>
-      {/if}
-    </svelte:fragment>
+                    >
+                      <IconEdit size={18} class="text-gray-500" />
+                    </td>
+                    <td
+                      class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
+                      onclick={() => deleteMoveFromPokemon(row.pokemonId)}
+                    >
+                      <IconTrash size={18} class="text-gray-500" />
+                    </td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+            <footer class="flex">
+              <Pagination {handler} />
+            </footer>
+          </div>
+        {/if}
+      
+      {/snippet}
   </TabGroup>
 {/if}

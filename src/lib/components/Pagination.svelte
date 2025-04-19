@@ -1,9 +1,13 @@
 <script lang="ts">
 import type { DataHandler } from "@vincjo/datatables";
-export let handler: DataHandler;
-$: pageNumber = handler.getPageNumber();
-$: pageCount = handler.getPageCount();
-$: pages = handler.getPages({ ellipsis: true });
+  interface Props {
+    handler: DataHandler;
+  }
+
+  let { handler }: Props = $props();
+let pageNumber = $derived(handler.getPageNumber());
+let pageCount = $derived(handler.getPageCount());
+let pages = $derived(handler.getPages({ ellipsis: true }));
 </script>
 
 <!-- Desktop buttons -->
@@ -12,7 +16,7 @@ $: pages = handler.getPages({ ellipsis: true });
     type="button"
     class="hover:variant-soft-primary"
     class:disabled={$pageNumber === 1}
-    on:click={() => handler.setPage("previous")}
+    onclick={() => handler.setPage("previous")}
   >
     ←
   </button>
@@ -22,7 +26,7 @@ $: pages = handler.getPages({ ellipsis: true });
       class="hover:variant-soft-primary"
       class:active={$pageNumber === page}
       class:ellipse={page === null}
-      on:click={() => handler.setPage(page)}
+      onclick={() => handler.setPage(page)}
     >
       {page ?? "..."}
     </button>
@@ -31,7 +35,7 @@ $: pages = handler.getPages({ ellipsis: true });
     type="button"
     class="hover:variant-soft-primary"
     class:disabled={$pageNumber === $pageCount}
-    on:click={() => handler.setPage("next")}
+    onclick={() => handler.setPage("next")}
   >
     →
   </button>
@@ -43,7 +47,7 @@ $: pages = handler.getPages({ ellipsis: true });
     type="button"
     class="variant-ghost-surface btn mb-2 mr-2 hover:variant-soft-primary"
     class:disabled={$pageNumber === 1}
-    on:click={() => handler.setPage("previous")}
+    onclick={() => handler.setPage("previous")}
   >
     ←
   </button>
@@ -51,7 +55,7 @@ $: pages = handler.getPages({ ellipsis: true });
     type="button"
     class="variant-ghost-surface btn mb-2 hover:variant-soft-primary"
     class:disabled={$pageNumber === $pageCount}
-    on:click={() => handler.setPage("next")}
+    onclick={() => handler.setPage("next")}
   >
     →
   </button>
