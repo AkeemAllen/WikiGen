@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import BaseModal from "$lib/components/BaseModal.svelte";
   import Button from "$lib/components/Button.svelte";
   import TextInput from "$lib/components/TextInput.svelte";
@@ -14,16 +16,18 @@
 
   const toastStore = getToastStore();
 
-  let routeName: string = "";
-  let routeToUpdate: string = "";
-  let newRouteModalOpen: boolean = false;
-  let encounterTypeModalOpen: boolean = false;
-  let positionModalOpen: boolean = false;
-  let newEncounterType: string = "";
-  let oldRoutePosition: number = 0;
-  let loading = false;
+  let routeName: string = $state("");
+  let routeToUpdate: string = $state("");
+  let newRouteModalOpen: boolean = $state(false);
+  let encounterTypeModalOpen: boolean = $state(false);
+  let positionModalOpen: boolean = $state(false);
+  let newEncounterType: string = $state("");
+  let oldRoutePosition: number = $state(0);
+  let loading = $state(false);
 
-  $: console.log("Routes", $routes.routes);
+  run(() => {
+    console.log("Routes", $routes.routes);
+  });
 
   async function createNewRoute() {
     if (routeName.trim() === "") {
@@ -176,7 +180,7 @@
         {encounterType}
         <button
           class="btn rounded-sm p-2 hover:cursor-pointer hover:bg-gray-300"
-          on:click={() => deleteEncounterType(encounterType)}
+          onclick={() => deleteEncounterType(encounterType)}
         >
           <IconTrash size={16} />
         </button>

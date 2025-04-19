@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from "svelte/legacy";
+
   import { type TrainerPokemon } from "../../../store/gameRoutes";
   import BaseModal from "../BaseModal.svelte";
   import NumberInput from "../NumberInput.svelte";
@@ -16,20 +18,26 @@
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
 
-  export let pokemon: TrainerPokemon = {} as TrainerPokemon;
-  let originalPokemonAttributes = cloneDeep(pokemon);
-  export let open: boolean = false;
-  export let trainerToUpdate: string;
-  export let trainerVersions: string[] = [];
-
-  $: if (pokemon.unique_id !== originalPokemonAttributes.unique_id) {
-    originalPokemonAttributes = cloneDeep(pokemon);
+  interface Props {
+    pokemon?: TrainerPokemon;
+    open?: boolean;
+    trainerToUpdate: string;
+    trainerVersions?: string[];
+    savePokemonChanges?: any;
+    nextTrainerPokemon?: any;
+    prevTrainerPokemon?: any;
   }
 
-  export let savePokemonChanges = (trainerToUpdate: string) => {};
-
-  export let nextTrainerPokemon = () => {};
-  export let prevTrainerPokemon = () => {};
+  let {
+    pokemon = $bindable({} as TrainerPokemon),
+    open = $bindable(false),
+    trainerToUpdate,
+    trainerVersions = [],
+    savePokemonChanges = (trainerToUpdate: string) => {},
+    nextTrainerPokemon = () => {},
+    prevTrainerPokemon = () => {},
+  }: Props = $props();
+  let originalPokemonAttributes = $state(cloneDeep(pokemon));
 
   let abilityListOptions = $abilitiesList.map(([id, name]) => ({
     label: name,
@@ -47,6 +55,11 @@
   }));
 
   let moveListOptions = $moveList.map(([id, name]) => name);
+  run(() => {
+    if (pokemon.unique_id !== originalPokemonAttributes.unique_id) {
+      originalPokemonAttributes = cloneDeep(pokemon);
+    }
+  });
 </script>
 
 <BaseModal bind:open class="grid w-[40rem] grid-cols-2 gap-5">
@@ -123,13 +136,13 @@
     <div class="flex flex-row gap-5">
       <button
         class="rounded-md bg-indigo-300 px-3 py-2 hover:cursor-pointer hover:bg-indigo-600"
-        on:click={prevTrainerPokemon}
+        onclick={prevTrainerPokemon}
       >
         <IconChevronLeft size={16} color="white" stroke={3} />
       </button>
       <button
         class="rounded-md bg-indigo-300 px-3 py-2 hover:cursor-pointer hover:bg-indigo-600"
-        on:click={nextTrainerPokemon}
+        onclick={nextTrainerPokemon}
       >
         <IconChevronRight size={16} color="white" stroke={3} />
       </button>

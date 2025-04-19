@@ -1,9 +1,13 @@
 <script lang="ts">
   import BaseModal from "../BaseModal.svelte";
-  export let loading = false;
-  export let onClose = () => {};
-  export let message = "";
-  // export let progress: number = 0;
+  interface Props {
+    loading?: boolean;
+    onClose?: any;
+    message?: string; // export let progress: number = 0;
+  }
+
+  let { loading = $bindable(false), onClose = () => {}, message = "" }: Props = $props();
+  
   // export let max = 0;
   // let percentage = 0;
 

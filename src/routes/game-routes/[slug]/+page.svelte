@@ -22,9 +22,9 @@
   import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
 
   const toastStore = getToastStore();
-  export let data;
-  let tabSet: number = 0;
-  let newRouteImage: string = "";
+  let { data } = $props();
+  let tabSet: number = $state(0);
+  let newRouteImage: string = $state("");
 
   onMount(async () => {
     newRouteImage = await readFile(
@@ -149,7 +149,7 @@
   <Tab bind:group={tabSet} name="properties" value={2} class="text-sm"
     >Properties</Tab
   >
-  <svelte:fragment slot="panel">
+  <div slot="panel">
     {#if tabSet === 0}
       <WildEncounters routeName={data.title} />
     {/if}
@@ -170,7 +170,7 @@
         {#if newRouteImage !== ""}
           <button
             class="flex flex-row items-center gap-2 text-white bg-[#111827] rounded-2xl text-[14px] pt-[4px] pb-[5px] pl-3 pr-3"
-            on:click={() => {
+            onclick={() => {
               newRouteImage = "";
             }}
           >
@@ -183,7 +183,7 @@
           type="file"
           accept="image/png"
           class="mt-2"
-          on:change={onImageUpload}
+          onchange={onImageUpload}
         />
       </div>
       <div class="w-36">
@@ -203,5 +203,9 @@
         />
       </div>
     {/if}
-  </svelte:fragment>
+  </div>
+  <!-- {#snippet panel()}
+
+
+  {/snippet} -->
 </TabGroup>

@@ -25,24 +25,26 @@
 
   const toastStore = getToastStore();
 
-  let itemSearch: [number, string] = [0, ""];
+  let itemSearch: [number, string] = $state([0, ""]);
 
-  let item: Item = {} as Item;
-  let originalItemDetails: Item = {} as Item;
-  let spriteImage: string = "";
+  let item: Item = $state({} as Item);
+  let originalItemDetails: Item = $state({} as Item);
+  let spriteImage: string = $state("");
 
-  let tabSet: number = 0;
+  let tabSet: number = $state(0);
 
-  let itemLocations: ItemLocation[] = [];
+  let itemLocations: ItemLocation[] = $state([]);
 
-  let newItem: Item = {} as Item;
-  let newSpriteImage: string = "";
-  let newItemModalOpen: boolean = false;
+  let newItem: Item = $state({} as Item);
+  let newSpriteImage: string = $state("");
+  let newItemModalOpen: boolean = $state(false);
 
-  $: itemListOptions = $itemsList.map(([id, name]) => ({
-    label: name,
-    value: id,
-  }));
+  let itemListOptions = $derived(
+    $itemsList.map(([id, name]) => ({
+      label: name,
+      value: id,
+    })),
+  );
 
   async function generateItemLocationPage() {
     await invoke("generate_item_location_page_with_handle", {
@@ -240,7 +242,7 @@
       type="file"
       accept="image/png"
       class="mt-2"
-      on:change={onImageUpload}
+      onchange={onImageUpload}
     />
   </div>
   <div>
@@ -253,7 +255,7 @@
         id="effect"
         bind:value={newItem.effect}
         class="block h-32 w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-      />
+      ></textarea>
     </div>
   </div>
   <Button
@@ -329,14 +331,14 @@
           id="effect"
           bind:value={item.effect}
           class="block h-20 w-[50rem] rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-        />
+        ></textarea>
       </div>
     </div>
     <TabGroup>
       <Tab bind:group={tabSet} name="item-locations" value={0} class="text-sm"
         >Item Locations</Tab
       >
-      <svelte:fragment slot="panel">
+      <div slot="panel">
         {#if tabSet === 0}
           <ItemLocationTable
             {itemLocations}
@@ -344,14 +346,16 @@
             generatePage={generateItemLocationPage}
           />
         {/if}
-      </svelte:fragment>
+      </div>
+      <!-- {#snippet panel()}
+          {/snippet} -->
     </TabGroup>
     {#if !item.is_new}
       <label class="block text-sm font-medium leading-6 text-gray-900">
         <input
           type="checkbox"
           checked={Boolean(item.is_modified)}
-          on:change={setModified}
+          onchange={setModified}
           class="text-sm font-medium leading-6 text-gray-900"
         />
         Mark Item as Modified

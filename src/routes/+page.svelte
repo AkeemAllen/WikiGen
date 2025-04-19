@@ -17,7 +17,7 @@
 
   const toastStore = getToastStore();
 
-  let createWikiModalOpen = false;
+  let createWikiModalOpen = $state(false);
 </script>
 
 <CreateWikiModal bind:open={createWikiModalOpen} />
@@ -32,7 +32,7 @@
             class="bg-gray-100 p-3 rounded-md border-2
             hover:bg-indigo-600 hover:text-white hover:font-semibold
             hover:ring hover:ring-indigo-500 ease-in-out duration-200"
-            on:click={() => {
+            onclick={() => {
               $selectedWiki = $wikis[codeName];
               loadWikiData($selectedWiki, toastStore);
             }}>{properties.site_name}</button
@@ -44,7 +44,7 @@
         border-2 hover:bg-indigo-600 hover:text-white hover:ring
         hover:ring-indigo-500 ease-in-out duration-200"
         use:popup={addIconToolTip}
-        on:click={() => (createWikiModalOpen = true)}
+        onclick={() => (createWikiModalOpen = true)}
       >
         <IconPlus size={25} />
       </button>

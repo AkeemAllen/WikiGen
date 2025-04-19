@@ -22,18 +22,27 @@
 
   const toastStore = getToastStore();
 
-  let natureSearch: [number, string] = [0, ""];
+  let natureSearch: [number, string] = $state([0, ""]);
 
-  let nature: Nature = {} as Nature;
-  let originalNatureDetails: Nature = {} as Nature;
+  let nature: Nature = $state({} as Nature);
+  let originalNatureDetails: Nature = $state({} as Nature);
 
-  let newNatureModalOpen: boolean = false;
-  let newNature: Nature = {} as Nature;
+  let newNatureModalOpen: boolean = $state(false);
+  let newNature: Nature = $state({
+    id: 0,
+    name: "",
+    increased_stat: null,
+    decreased_stat: null,
+    is_new: 1,
+    is_modified: 0,
+  });
 
-  $: natureListOptions = $naturesList.map(([id, name]) => ({
-    label: name,
-    value: id,
-  }));
+  let natureListOptions = $derived(
+    $naturesList.map(([id, name]) => ({
+      label: name,
+      value: id,
+    })),
+  );
 
   const natureOptions = [
     null,
@@ -117,7 +126,7 @@
 
     await $db
       .execute(
-        "INSERT INTO abilities (name, increased_stat, decreased_stat, is_new) VALUES ($1, $2, $3, $4);",
+        "INSERT INTO natures (name, increased_stat, decreased_stat, is_new) VALUES ($1, $2, $3, $4);",
         [
           newNature.name,
           newNature.increased_stat,
@@ -131,12 +140,19 @@
           background: "variant-filled-success",
         });
         newNatureModalOpen = false;
-        newNature = {} as Nature;
+        newNature = {
+          id: 0,
+          name: "",
+          increased_stat: null,
+          decreased_stat: null,
+          is_new: 1,
+          is_modified: 0,
+        };
 
         // Update the natures list
-        $db.select("SELECT id, name FROM natures").then((abilities: any) => {
+        $db.select("SELECT id, name FROM natures").then((natures: any) => {
           naturesList.set(
-            abilities.map((nature: SearchNature) => [nature.id, nature.name]),
+            natures.map((nature: SearchNature) => [nature.id, nature.name]),
           );
         });
         generateNaturePage();
@@ -255,7 +271,7 @@
       <input
         type="checkbox"
         checked={Boolean(nature.is_modified)}
-        on:change={setModified}
+        onchange={setModified}
         class="text-sm font-medium leading-6 text-gray-900"
       />
       Mark Nature as Modified

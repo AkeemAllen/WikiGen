@@ -20,31 +20,40 @@
 
   const toastStore = getToastStore();
 
-  let searchValue: string = "";
-  let addLocationModalOpen: boolean = false;
-  let editLocationModalOpen: boolean = false;
-  export let pokemonId: number;
-  export let pokemonDexNumber: number;
-  export let pokemonName: string;
-  export let pokemonLocations: WildEncounter[] = [];
+  let searchValue: string = $state("");
+  let addLocationModalOpen: boolean = $state(false);
+  let editLocationModalOpen: boolean = $state(false);
+  interface Props {
+    pokemonId: number;
+    pokemonDexNumber: number;
+    pokemonName: string;
+    pokemonLocations?: WildEncounter[];
+  }
 
-  let newLocation: WildEncounter = {
+  let {
+    pokemonId,
+    pokemonDexNumber,
+    pokemonName,
+    pokemonLocations = $bindable([])
+  }: Props = $props();
+
+  let newLocation: WildEncounter = $state({
     id: 0,
     name: "",
     encounter_area: "",
     encounter_rate: 0,
     route: "",
     special_note: "",
-  };
+  });
 
-  let locationToEdit: WildEncounter = {
+  let locationToEdit: WildEncounter = $state({
     id: 0,
     name: "",
     encounter_area: "",
     encounter_rate: 0,
     route: "",
     special_note: "",
-  };
+  });
 
   let routeListOptions = Object.keys($routes.routes).map((route) => ({
     label: route,
@@ -64,11 +73,11 @@
     { label: "100", value: 100 },
   ];
 
-  $: handler = new DataHandler(pokemonLocations, {
+  let handler = $derived(new DataHandler(pokemonLocations, {
     rowsPerPage: 5,
-  });
-  $: rows = handler.getRows();
-  $: rowsPerPage = handler.getRowsPerPage();
+  }));
+  let rows = $derived(handler.getRows());
+  let rowsPerPage = $derived(handler.getRowsPerPage());
 
   async function generateRoutePage(routeName: string) {
     invoke("generate_route_pages_with_handle", {
@@ -367,7 +376,7 @@
           <td>{row.special_note}</td>
           <td
             class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-            on:click={() => {
+            onclick={() => {
               locationToEdit = { ...row };
               editLocationModalOpen = true;
             }}
@@ -376,7 +385,7 @@
           </td>
           <td
             class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-            on:click={() => {
+            onclick={() => {
               deletePokemonFromLocation(row.route, row.encounter_area, row.id);
             }}
           >
