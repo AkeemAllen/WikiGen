@@ -39,10 +39,12 @@
   let newSpriteImage: string = $state("");
   let newItemModalOpen: boolean = $state(false);
 
-  let itemListOptions = $derived($itemsList.map(([id, name]) => ({
-    label: name,
-    value: id,
-  })));
+  let itemListOptions = $derived(
+    $itemsList.map(([id, name]) => ({
+      label: name,
+      value: id,
+    })),
+  );
 
   async function generateItemLocationPage() {
     await invoke("generate_item_location_page_with_handle", {
@@ -253,7 +255,7 @@
         id="effect"
         bind:value={newItem.effect}
         class="block h-32 w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-></textarea>
+      ></textarea>
     </div>
   </div>
   <Button
@@ -329,24 +331,24 @@
           id="effect"
           bind:value={item.effect}
           class="block h-20 w-[50rem] rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-></textarea>
+        ></textarea>
       </div>
     </div>
     <TabGroup>
       <Tab bind:group={tabSet} name="item-locations" value={0} class="text-sm"
         >Item Locations</Tab
       >
-      {#snippet panel()}
-          
-          {#if tabSet === 0}
-            <ItemLocationTable
-              {itemLocations}
-              itemName={item.name}
-              generatePage={generateItemLocationPage}
-            />
-          {/if}
-        
-          {/snippet}
+      <div slot="panel">
+        {#if tabSet === 0}
+          <ItemLocationTable
+            {itemLocations}
+            itemName={item.name}
+            generatePage={generateItemLocationPage}
+          />
+        {/if}
+      </div>
+      <!-- {#snippet panel()}
+          {/snippet} -->
     </TabGroup>
     {#if !item.is_new}
       <label class="block text-sm font-medium leading-6 text-gray-900">

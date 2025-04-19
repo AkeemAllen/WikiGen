@@ -149,61 +149,63 @@
   <Tab bind:group={tabSet} name="properties" value={2} class="text-sm"
     >Properties</Tab
   >
-  {#snippet panel()}
-  
-      {#if tabSet === 0}
-        <WildEncounters routeName={data.title} />
-      {/if}
-      {#if tabSet === 1}
-        <TrainerEncounters routeName={data.title} />
-      {/if}
-      {#if tabSet === 2}
-        <Button title="Save Changes" onClick={saveChanges} class="w-32" />
-        <div class="mb-4 mt-4">
-          <label
-            for="sprite-image"
-            class="block text-sm font-medium leading-6 text-gray-900"
-            >Route Image</label
-          >
-          {#if newRouteImage !== ""}
-            <img src={newRouteImage} alt="Route" />
-          {/if}
-          {#if newRouteImage !== ""}
-            <button
-              class="flex flex-row items-center gap-2 text-white bg-[#111827] rounded-2xl text-[14px] pt-[4px] pb-[5px] pl-3 pr-3"
-              onclick={() => {
+  <div slot="panel">
+    {#if tabSet === 0}
+      <WildEncounters routeName={data.title} />
+    {/if}
+    {#if tabSet === 1}
+      <TrainerEncounters routeName={data.title} />
+    {/if}
+    {#if tabSet === 2}
+      <Button title="Save Changes" onClick={saveChanges} class="w-32" />
+      <div class="mb-4 mt-4">
+        <label
+          for="sprite-image"
+          class="block text-sm font-medium leading-6 text-gray-900"
+          >Route Image</label
+        >
+        {#if newRouteImage !== ""}
+          <img src={newRouteImage} alt="Route" />
+        {/if}
+        {#if newRouteImage !== ""}
+          <button
+            class="flex flex-row items-center gap-2 text-white bg-[#111827] rounded-2xl text-[14px] pt-[4px] pb-[5px] pl-3 pr-3"
+            onclick={() => {
               newRouteImage = "";
             }}
-            >
-              <IconTrash size={14} />
-              Clear Image</button
-            >
-          {/if}
-          <input
-            id="sprite-image"
-            type="file"
-            accept="image/png"
-            class="mt-2"
-            onchange={onImageUpload}
-          />
-        </div>
-        <div class="w-36">
-          <SelectInput
-            label="Render Route Page"
-            bind:value={$routes.routes[data.title].render}
-            options={[
-              {
-                value: true,
-                label: "True",
-              },
-              {
-                value: false,
-                label: "False",
-              },
-            ]}
-          />
-        </div>
-      {/if}
-    
-  {/snippet}
+          >
+            <IconTrash size={14} />
+            Clear Image</button
+          >
+        {/if}
+        <input
+          id="sprite-image"
+          type="file"
+          accept="image/png"
+          class="mt-2"
+          onchange={onImageUpload}
+        />
+      </div>
+      <div class="w-36">
+        <SelectInput
+          label="Render Route Page"
+          bind:value={$routes.routes[data.title].render}
+          options={[
+            {
+              value: true,
+              label: "True",
+            },
+            {
+              value: false,
+              label: "False",
+            },
+          ]}
+        />
+      </div>
+    {/if}
+  </div>
+  <!-- {#snippet panel()}
+
+
+  {/snippet} -->
 </TabGroup>

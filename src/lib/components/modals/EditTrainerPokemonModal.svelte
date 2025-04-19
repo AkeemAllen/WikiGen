@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
+  import { run } from "svelte/legacy";
 
   import { type TrainerPokemon } from "../../../store/gameRoutes";
   import BaseModal from "../BaseModal.svelte";
@@ -18,10 +18,6 @@
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
 
-  let originalPokemonAttributes = $state(cloneDeep(pokemon));
-
-
-
   interface Props {
     pokemon?: TrainerPokemon;
     open?: boolean;
@@ -39,8 +35,9 @@
     trainerVersions = [],
     savePokemonChanges = (trainerToUpdate: string) => {},
     nextTrainerPokemon = () => {},
-    prevTrainerPokemon = () => {}
+    prevTrainerPokemon = () => {},
   }: Props = $props();
+  let originalPokemonAttributes = $state(cloneDeep(pokemon));
 
   let abilityListOptions = $abilitiesList.map(([id, name]) => ({
     label: name,

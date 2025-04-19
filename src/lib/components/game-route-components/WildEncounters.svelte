@@ -29,18 +29,22 @@
   let { routeName = $bindable("") }: Props = $props();
   let pokemonName: string = $state("");
   let encounterArea: string = $state("grass");
-  let currentWildEncounterIndex: number = $state();
-  let currentEncounterType: string = $state();
+  let currentWildEncounterIndex: number = $state(0);
+  let currentEncounterType: string = $state("");
   let editEncounterModalOpen: boolean = $state(false);
   let encounterRate: number = $state(0);
-  let areaLevels = $state(cloneDeep(
-    $routes.routes[routeName].wild_encounter_area_levels,
-  ));
-  let originalAreaLevels = $state(cloneDeep(areaLevels));
-  let routeWildEncounters: { [key: string]: WildEncounter[] } = $state(cloneDeep(
-    $routes.routes[routeName].wild_encounters,
-  ));
-  let originalRouteWildEncounters = $state(cloneDeep(routeWildEncounters));
+  let areaLevels = $state(
+    cloneDeep($routes.routes[routeName].wild_encounter_area_levels),
+  );
+  let originalAreaLevels = $state(
+    cloneDeep($routes.routes[routeName].wild_encounter_area_levels),
+  );
+  let routeWildEncounters: { [key: string]: WildEncounter[] } = $state(
+    cloneDeep($routes.routes[routeName].wild_encounters),
+  );
+  let originalRouteWildEncounters = $state(
+    cloneDeep($routes.routes[routeName].wild_encounters),
+  );
   let pokemonListOptions: AutocompleteOption<string | number>[] =
     $pokemonList.map(([id, _, name]) => ({
       label: capitalizeWords(name),
@@ -171,9 +175,10 @@
 <BaseModal bind:open={editEncounterModalOpen}>
   <NumberInput
     label="Encounter Rate"
-    bind:value={routeWildEncounters[currentEncounterType][
-      currentWildEncounterIndex
-    ].encounter_rate}
+    bind:value={
+      routeWildEncounters[currentEncounterType][currentWildEncounterIndex]
+        .encounter_rate
+    }
     class="w-32"
     max={100}
   />
@@ -243,8 +248,8 @@
         {capitalizeWords(_encounterType)} Encounters
         <WildEncounterAreaMenu
           {index}
-          bind:encounterArea={_encounterType}
-          bind:routeName
+          encounterArea={_encounterType}
+          {routeName}
         />
       </strong>
       <TextInput
@@ -277,6 +282,7 @@
                 {encounter.encounter_rate}%
               </p>
             </div>
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
             <a
               class="invisible absolute right-2 top-2 z-20 rounded-md bg-red-200 p-1 hover:scale-110 group-hover:visible"
               type="button"

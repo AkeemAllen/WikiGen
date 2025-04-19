@@ -51,14 +51,16 @@
   let positionModalOpen: boolean = $state(false);
   let spriteName: string = $state("");
 
-  let routeTrainers: { [key: string]: TrainerInfo } = $state(cloneDeep(
-    $routes.routes[routeName].trainers,
-  ));
-  let originalTrainers = $state(cloneDeep(routeTrainers));
-  let trainerOptions = $derived(Object.keys(routeTrainers).map((trainer) => ({
-    label: trainer,
-    value: trainer,
-  })));
+  let routeTrainers: { [key: string]: TrainerInfo } = $state(
+    cloneDeep($routes.routes[routeName].trainers),
+  );
+  let originalTrainers = $state(cloneDeep($routes.routes[routeName].trainers));
+  let trainerOptions = $derived(
+    Object.keys(routeTrainers).map((trainer) => ({
+      label: trainer,
+      value: trainer,
+    })),
+  );
 
   let pokemonListOptions: AutocompleteOption<string | number>[] =
     $pokemonList.map(([id, _, name]) => ({

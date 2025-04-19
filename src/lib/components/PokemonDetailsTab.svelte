@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
+  import { run } from "svelte/legacy";
 
   import SelectInput from "$lib/components/SelectInput.svelte";
   import AutoComplete from "$lib/components/AutoComplete.svelte";
@@ -14,11 +14,11 @@
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   interface Props {
-    pokemon?: Pokemon;
-    isNewPokemon?: boolean;
+    pokemon: Pokemon;
+    isNewPokemon: boolean;
   }
 
-  let { pokemon = $bindable({} as Pokemon), isNewPokemon = false }: Props = $props();
+  let { pokemon = $bindable(), isNewPokemon = false }: Props = $props();
 
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
@@ -70,7 +70,7 @@
     hidden_ability = capitalizeWords(pokemon.hidden_ability);
   }
 
-  let types: string[] = $state();
+  let types: string[] = $state([]);
   function setTypes() {
     types = pokemon.types.split(",");
     if (types.length === 1) {

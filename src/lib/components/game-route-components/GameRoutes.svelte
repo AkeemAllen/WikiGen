@@ -25,13 +25,26 @@
     oldRoutePosition?: number;
   }
 
-  let { positionModalOpen = $bindable(false), routeToUpdate = $bindable(""), oldRoutePosition = $bindable(0) }: Props = $props();
+  let {
+    positionModalOpen = $bindable(false),
+    routeToUpdate = $bindable(""),
+    oldRoutePosition = $bindable(0),
+  }: Props = $props();
 
   let newRouteName: string = $state("");
-  let routeBeingEdited: string = $state();
+  let routeBeingEdited: string = $state("");
 
   async function renameRoute(originalRouteName: string, newName: string) {
     if (originalRouteName === newName) return;
+
+    for (let [routeName, _] of Object.entries($routes.routes)) {
+      if (routeName === newName) {
+        toastStore.trigger(
+          getToastSettings(ToastType.ERROR, "Route name already exists"),
+        );
+        return;
+      }
+    }
 
     let updatedRoutes = { ...$routes };
     for (let [routeName, properties] of Object.entries(updatedRoutes.routes)) {

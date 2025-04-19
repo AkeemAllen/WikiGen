@@ -82,76 +82,76 @@
   <Tab bind:group={tabSet} name="new-pokemon" value={2} class="text-sm"
     >Create New Pokemon</Tab
   >
-  {#snippet panel()}
-  
-      {#if tabSet === 0}
-        <PokemonPanel />
-      {/if}
-      {#if tabSet === 1}
-        <Button
-          title="Generate All Pokemon Pages"
-          onClick={() => (pageGenerationWarningModalOpen = true)}
-          disabled={loading === true}
-          {loading}
-          class="mb-3"
-        />
-        {#if loading}
-          <p class="text-sm italic text-gray-500 mb-3 align-middle">
-            Generating {Object.keys($pokemonList).length} Pokemon Pages...This may
-            take a while
-          </p>
-        {/if}
-        <p class="text-sm text-gray-500 italic">
-          Pages will be generated for all pokemon with pokedex number in this
-          range: {startingPokemon[1]}
-          - {endingPokemon[1]}
+  <div slot="panel">
+    {#if tabSet === 0}
+      <PokemonPanel />
+    {/if}
+    {#if tabSet === 1}
+      <Button
+        title="Generate All Pokemon Pages"
+        onClick={() => (pageGenerationWarningModalOpen = true)}
+        disabled={loading === true}
+        {loading}
+        class="mb-3"
+      />
+      {#if loading}
+        <p class="text-sm italic text-gray-500 mb-3 align-middle">
+          Generating {Object.keys($pokemonList).length} Pokemon Pages...This may
+          take a while
         </p>
-        <p class="text-sm text-gray-500 italic mb-4">
-          Total Pages: {rangeTotal <= 0 ? 0 : `>=${rangeTotal + 1}`}
-        </p>
-        <div class="flex gap-16">
-          <!-- Only 1025 pokemon exist in the game right now. But setting ranges to 2000 for future proofing -->
-          <AutoComplete
-            label="Starting Pokemon"
-            bind:value={startingPokemon[2]}
-            placeholder="Search Pokemon"
-            options={pokemonListOptions}
-            popupId="starting-pokemon-search"
-            onSelection={(e) => {
-              startingPokemon = [
-                e.detail.value,
-                e.detail.dex_number,
-                e.detail.label,
-              ];
-            }}
-          />
-          <AutoComplete
-            label="Ending Pokemon"
-            bind:value={endingPokemon[2]}
-            placeholder="Search Pokemon"
-            options={pokemonListOptions}
-            popupId="ending-pokemon-search"
-            onSelection={(e) => {
-              endingPokemon = [
-                e.detail.value,
-                e.detail.dex_number,
-                e.detail.label,
-              ];
-            }}
-          />
-        </div>
-        <Button
-          class=" mt-4 w-40"
-          title="Generate Pages"
-          onClick={() =>
-            generatePokemonPagesInRange(startingPokemon[1], endingPokemon[1])}
-          disabled={loading || startingPokemon[1] === 0 || endingPokemon[1] === 0}
-          {loading}
+      {/if}
+      <p class="text-sm text-gray-500 italic">
+        Pages will be generated for all pokemon with pokedex number in this
+        range: {startingPokemon[1]}
+        - {endingPokemon[1]}
+      </p>
+      <p class="text-sm text-gray-500 italic mb-4">
+        Total Pages: {rangeTotal <= 0 ? 0 : `>=${rangeTotal + 1}`}
+      </p>
+      <div class="flex gap-16">
+        <!-- Only 1025 pokemon exist in the game right now. But setting ranges to 2000 for future proofing -->
+        <AutoComplete
+          label="Starting Pokemon"
+          bind:value={startingPokemon[2]}
+          placeholder="Search Pokemon"
+          options={pokemonListOptions}
+          popupId="starting-pokemon-search"
+          onSelection={(e) => {
+            startingPokemon = [
+              e.detail.value,
+              e.detail.dex_number,
+              e.detail.label,
+            ];
+          }}
         />
-      {/if}
-      {#if tabSet === 2}
-        <NewPokemonPanel />
-      {/if}
-    
-  {/snippet}
+        <AutoComplete
+          label="Ending Pokemon"
+          bind:value={endingPokemon[2]}
+          placeholder="Search Pokemon"
+          options={pokemonListOptions}
+          popupId="ending-pokemon-search"
+          onSelection={(e) => {
+            endingPokemon = [
+              e.detail.value,
+              e.detail.dex_number,
+              e.detail.label,
+            ];
+          }}
+        />
+      </div>
+      <Button
+        class=" mt-4 w-40"
+        title="Generate Pages"
+        onClick={() =>
+          generatePokemonPagesInRange(startingPokemon[1], endingPokemon[1])}
+        disabled={loading || startingPokemon[1] === 0 || endingPokemon[1] === 0}
+        {loading}
+      />
+    {/if}
+    {#if tabSet === 2}
+      <NewPokemonPanel />
+    {/if}
+  </div>
+  <!-- {#snippet panel()}
+  {/snippet} -->
 </TabGroup>
