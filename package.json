@@ -23,7 +23,7 @@
     "@tauri-apps/plugin-process": "^2.2.1",
     "@tauri-apps/plugin-sql": "^2.2.0",
     "@tauri-apps/plugin-updater": "^2.7.1",
-    "@types/node": "^20.17.30",
+    "@types/node": "^22.14.1",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.3",
     "postcss-load-config": "^5.1.0",
