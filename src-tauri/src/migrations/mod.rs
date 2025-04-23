@@ -142,14 +142,16 @@ pub async fn run_migrations(
             Err(err) => {
                 if err.to_string().contains("no such table") {
                     create_migrations_table(&conn).await?;
+                    let existing_migration_names = Vec::new();
+                    existing_migration_names
                 } else {
                     logger::write_log(
                         &wiki_path,
                         logger::LogLevel::MigrationError,
                         &format!("Failed to fetch existing migrations: {}", err),
                     );
+                    continue;
                 }
-                continue;
             }
         };
 
