@@ -1,6 +1,6 @@
 [package]
 name = "wiki_gen"
-version = "1.8.5"
+version = "1.8.6"
 description = "A Desktop Application to generate wikis for Pokemon Rom Hacks"
 authors = ["Akeem Allen"]
 license = ""
@@ -31,6 +31,7 @@ tauri-plugin-os = "2"
 tauri-plugin-cli = "2"
 tauri-plugin-process = "2"
 tauri-plugin-store = "2"
+tokio = { version = "1.44.2", features = ["full"] }
 
 [dependencies.tauri-plugin-sql]
 features = ["sqlite"]

@@ -74,7 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Sharpening Tools: Upgraded Svelte to v5 and packages on frontend
+            \n- Improved Migration System for database updates
             "
           releaseDraft: false
           prerelease: false

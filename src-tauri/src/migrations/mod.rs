@@ -1,4 +1,4 @@
-mod pokemon_migrations;
+// mod pokemon_migrations;
 
 use std::{
     collections::HashMap,
@@ -6,12 +6,11 @@ use std::{
     path::PathBuf,
 };
 
-use pokemon_migrations::{add_all_missing_pokemon, check_if_pokemon_already_migrated};
 use serde::{Deserialize, Serialize};
-use sqlx::{Error, Pool, Sqlite};
+use sqlx::{FromRow, Pool, Sqlite};
 use tauri::{AppHandle, Manager};
 
-use crate::{database::get_sqlite_connection, helpers::copy_recursively, logger};
+use crate::{database::get_sqlite_connection, logger};
 
 pub type Wikis = HashMap<String, Wiki>;
 
@@ -37,42 +36,53 @@ pub struct Manifest {
     pub version: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, FromRow)]
 pub struct Migration {
     pub name: String,
     pub app_version: String,
+    pub execution_order: i32,
     pub sql: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct MigrationJson {
-    migrations_present: bool,
-}
-
 #[tauri::command]
-pub async fn run_migrations(app_handle: AppHandle) -> Result<String, String> {
-    // check for migrations folder for current app version. If not present or folder empty, return early.
+pub async fn check_and_run_migrations(app_handle: AppHandle) -> Result<String, String> {
     let base_path = app_handle.path().app_data_dir().unwrap();
     let resources_path = app_handle.path().resource_dir().unwrap();
 
-    let migrations_file_path = resources_path
-        .join("resources")
-        .join("migrations")
-        .join("migration.json");
-    let migration_file = match File::open(&migrations_file_path) {
-        Ok(file) => file,
-        Err(err) => return Err(format!("Failed to read migrations file: {}", err)),
-    };
-    let mut migration_json: MigrationJson = match serde_json::from_reader(migration_file) {
-        Ok(migration_json) => migration_json,
-        Err(err) => return Err(format!("Failed to parse migrations file: {}", err)),
-    };
+    let migrations = gather_migrations(&resources_path)?;
+    run_migrations(migrations, &base_path).await?;
 
-    if migration_json.migrations_present == false {
-        return Ok("skipping".to_string());
+    Ok("Migration Completed".to_string())
+}
+
+pub fn gather_migrations(resources_path: &PathBuf) -> Result<Vec<Migration>, String> {
+    let migrations_folder = resources_path.join("resources").join("migrations");
+    if !migrations_folder.exists() || !migrations_folder.is_dir() {
+        return Err("No migrations folder found".to_string());
     }
 
-    println!("Running Migrations");
+    let mut migrations: Vec<Migration> = Vec::new();
+
+    let migrations_from_file = fs::read_dir(migrations_folder).unwrap();
+
+    for migration in migrations_from_file {
+        let migration_path = migration.unwrap().path();
+        if migration_path.is_file() {
+            let migration_content = fs::read_to_string(migration_path).unwrap();
+            let migration: Migration = serde_json::from_str(&migration_content).unwrap();
+            migrations.push(migration);
+        }
+    }
+
+    migrations.sort_by(|a, b| a.execution_order.cmp(&b.execution_order));
+
+    return Ok(migrations);
+}
+
+pub async fn run_migrations(
+    migrations: Vec<Migration>,
+    base_path: &PathBuf,
+) -> Result<String, String> {
     let wiki_json_file_path = base_path.join("wikis.json");
     let wikis_file = match File::open(&wiki_json_file_path) {
         Ok(file) => file,
@@ -90,9 +100,21 @@ pub async fn run_migrations(app_handle: AppHandle) -> Result<String, String> {
             return Err(format!("Wiki path does not exist: {:?}", wiki_path));
         }
 
-        // Create versioned backups
-
         let sqlite_file_path = wiki_path.join(format!("{}.db", wiki_name));
+
+        // Create backup
+        if let Err(err) = std::fs::copy(
+            sqlite_file_path.clone(),
+            wiki_path.join(format!("{}.db.bak", wiki_name)),
+        ) {
+            logger::write_log(
+                &wiki_path,
+                logger::LogLevel::MigrationError,
+                &format!("Failed to create backup: {}", err),
+            );
+            continue;
+        };
+
         let conn = match get_sqlite_connection(sqlite_file_path).await {
             Ok(conn) => conn,
             Err(err) => {
@@ -105,28 +127,46 @@ pub async fn run_migrations(app_handle: AppHandle) -> Result<String, String> {
             }
         };
 
-        match create_migrations_table(&conn).await {
-            Ok(_) => {
-                println!("Migrations table created: {wiki_name}")
+        let existing_migrations = match sqlx::query_as::<_, Migration>("SELECT * FROM migrations")
+            .fetch_all(&conn)
+            .await
+        {
+            Ok(mut migrations) => {
+                migrations.sort_by(|a, b| a.execution_order.cmp(&b.execution_order));
+                let existing_migration_names = migrations
+                    .iter()
+                    .map(|m| m.name.clone())
+                    .collect::<Vec<String>>();
+                existing_migration_names
             }
             Err(err) => {
-                logger::write_log(
-                    &wiki_path,
-                    logger::LogLevel::MigrationError,
-                    &format!("Failed to create migrations table: {}", err),
-                );
-                continue;
+                if err.to_string().contains("no such table") {
+                    create_migrations_table(&conn).await?;
+                    let existing_migration_names = Vec::new();
+                    existing_migration_names
+                } else {
+                    logger::write_log(
+                        &wiki_path,
+                        logger::LogLevel::MigrationError,
+                        &format!("Failed to fetch existing migrations: {}", err),
+                    );
+                    continue;
+                }
             }
         };
 
-        // Add Migration function call here
-        match migrate_hisuian_forms(&conn, &resources_path, &wiki_path).await {
-            Ok(_) => {}
-            Err(err) => {
+        for migration in migrations.iter() {
+            // We check if the migration has already been executed
+            // If it has, we skip it
+            if existing_migrations.contains(&migration.name) {
+                continue;
+            }
+
+            if let Err(err) = execute_migration(&conn, migration).await {
                 logger::write_log(
                     &wiki_path,
                     logger::LogLevel::MigrationError,
-                    &format!("Failed to migrate hisuian forms: {}", err),
+                    &format!("Failed to execute migration {}: {}", migration.name, err),
                 );
                 continue;
             }
@@ -139,102 +179,51 @@ pub async fn run_migrations(app_handle: AppHandle) -> Result<String, String> {
         );
     }
 
-    migration_json.migrations_present = false;
-    match fs::write(
-        &migrations_file_path,
-        serde_json::to_string(&mut migration_json).unwrap(),
-    ) {
-        Ok(_) => {}
-        Err(err) => {
-            let message = format!("Failed to update migration json: {err}");
-            logger::write_log(&base_path, logger::LogLevel::Error, &message);
-            return Err(message);
-        }
-    };
-
     Ok("Migrations Successful".to_string())
 }
 
-async fn create_migrations_table(conn: &Pool<Sqlite>) -> Result<(), Error> {
+async fn execute_migration(conn: &Pool<Sqlite>, migration: &Migration) -> Result<(), String> {
+    if let Err(err) = sqlx::query(&migration.sql).execute(conn).await {
+        return Err(err.to_string());
+    }
+    insert_migration(conn, &migration).await?;
+
+    Ok(())
+}
+
+async fn create_migrations_table(conn: &Pool<Sqlite>) -> Result<(), String> {
     let migration: Migration = Migration {
         name: "create_migrations_table".to_string(),
         app_version: "1.7.5".to_string(),
+        execution_order: 1,
         sql: "CREATE TABLE IF NOT EXISTS migrations (
                     id INTEGER PRIMARY KEY,
                     name TEXT NOT NULL,
                     app_version TEXT NOT NULL,
+                    execution_order INTEGER NOT NULL,
                     sql TEXT NOT NULL
                 )"
         .to_string(),
     };
-    match sqlx::query(&migration.sql).execute(conn).await {
-        Ok(_) => insert_migration(conn, &migration)
-            .await
-            .expect("Failed to Insert Migration"),
-        Err(err) => return Err(err),
-    };
 
-    Ok(())
-}
-
-async fn update_mega_sharpedo_typo(conn: &Pool<Sqlite>) -> Result<(), Error> {
-    let migration: Migration = Migration {
-        name: "update_mega_sharpedo_typo".to_string(),
-        app_version: "1.7.5".to_string(),
-        sql: "UPDATE pokemon SET name = 'mega-sharpedo' WHERE name = 'meag-sharpedo' AND id = 1095"
-            .to_string(),
-    };
-
-    match sqlx::query(&migration.sql).execute(conn).await {
-        Ok(_) => insert_migration(conn, &migration)
-            .await
-            .expect("Failed to Insert Migration"),
-        Err(err) => return Err(err),
-    };
-
-    Ok(())
-}
-
-async fn migrate_hisuian_forms(
-    conn: &Pool<Sqlite>,
-    resources_path: &PathBuf,
-    wiki_path: &PathBuf,
-) -> Result<(), String> {
-    let is_already_migrated = check_if_pokemon_already_migrated("growlithe-hisuian", conn).await;
-
-    if !is_already_migrated {
-        // run true migrations
-        match add_all_missing_pokemon(conn, resources_path).await {
-            Ok(_) => {
-                let wiki_sprite_dir = wiki_path
-                    .join("dist")
-                    .join("docs")
-                    .join("img")
-                    .join("pokemon");
-                fs::remove_dir_all(&wiki_sprite_dir).unwrap();
-                copy_recursively(
-                    resources_path
-                        .join("resources")
-                        .join("generator_assets")
-                        .join("pokemon_sprites"),
-                    &wiki_sprite_dir,
-                )
-                .expect("Failed to copy sprites");
-            }
-            Err(err) => return Err(err),
-        }
+    if let Err(err) = sqlx::query(&migration.sql).execute(conn).await {
+        return Err(err.to_string());
     }
+    insert_migration(conn, &migration).await?;
 
     Ok(())
 }
 
 async fn insert_migration(conn: &Pool<Sqlite>, migration: &Migration) -> Result<(), String> {
-    match sqlx::query("INSERT INTO migrations (name, app_version, sql) VALUES (?, ?, ?)")
-        .bind(&migration.name)
-        .bind(&migration.app_version)
-        .bind(&migration.sql)
-        .execute(conn)
-        .await
+    match sqlx::query(
+        "INSERT INTO migrations (name, app_version, execution_order, sql) VALUES (?, ?, ?, ?)",
+    )
+    .bind(&migration.name)
+    .bind(&migration.app_version)
+    .bind(&migration.execution_order)
+    .bind(&migration.sql)
+    .execute(conn)
+    .await
     {
         Ok(_) => {}
         Err(err) => return Err(format!("Failed to insert migration: {}", err)),

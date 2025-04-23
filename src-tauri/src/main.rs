@@ -28,7 +28,7 @@ use wiki_preparation::backup_wiki::backup_wiki;
 use wiki_preparation::create_wiki::create_wiki;
 use wiki_preparation::deploy_wiki::deploy_wiki;
 
-use migrations::run_migrations;
+use migrations::check_and_run_migrations;
 use wiki_preparation::yaml_declaration::update_yaml;
 
 fn main() {
@@ -44,6 +44,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             create_wiki,
             load_token,
+            check_and_run_migrations,
             spawn_mkdocs_process,
             kill_mkdocs_process,
             check_process_status,
@@ -59,7 +60,6 @@ fn main() {
             generate_item_location_page_with_handle,
             remove_pokemon_page_with_old_dex_number,
             update_pokemon_pages_with_stripped_name_with_handle,
-            run_migrations
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

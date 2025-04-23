@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
+  import { run } from "svelte/legacy";
 
   import { page } from "$app/stores";
   import NavButton from "$lib/components/NavButton.svelte";
@@ -56,7 +56,7 @@
   import LoadingModal from "$lib/components/modals/LoadingModal.svelte";
   import { load } from "@tauri-apps/plugin-store";
   interface Props {
-    children?: import('svelte').Snippet;
+    children?: import("svelte").Snippet;
   }
 
   let { children }: Props = $props();
@@ -150,6 +150,10 @@
             break;
         }
       })
+      .then(() => {
+        // Run Migrations
+        checkAndRunMigrations();
+      })
       .catch((err) => {
         toastStore.trigger(
           getToastSettings(ToastType.ERROR, `Error installing update: ${err}`),
@@ -158,6 +162,14 @@
     await relaunch().catch((err) => {
       toastStore.trigger(
         getToastSettings(ToastType.ERROR, `Error relaunching app: ${err}`),
+      );
+    });
+  }
+
+  async function checkAndRunMigrations() {
+    await invoke("check_and_run_migrations").catch((err) => {
+      toastStore.trigger(
+        getToastSettings(ToastType.ERROR, `Error running migrations: ${err}`),
       );
     });
   }
@@ -416,211 +428,196 @@
 <Modal components={modalRegistry} />
 <AppShell class="h-screen bg-indigo-100">
   {#snippet header()}
-  
-      <div
-        class="bg-white h-[60px] px-4 flex border-b border-indigo-100 items-center justify-between"
-      >
-        <button onclick={navigateToSelectWikisPage}>
-          <div class="flex flex-row items-center">
-            <img src={logo} alt="WikiGen Logo" width="40rem" />
-            <h1>WikiGen</h1>
-          </div>
-        </button>
-        <div class="flex flex-row items-center gap-1">
-          {#if !$user.isConnected}
-            <button
-              class="p-2 rounded-md text-sm text-gray-400 hover:bg-gray-100"
-              onclick={signInToGithub}>Sign in to github</button
-            >
-          {:else}
-            <div
-              class="flex flex-row items-center gap-2 hover:cursor-pointer hover:bg-gray-200 rounded-2xl py-2 px-4"
-              use:popup={{
-                event: "click",
-                target: "profileMenu",
-              }}
-            >
-              <img
-                src={$user.avatarUrl}
-                alt="Avatar"
-                class="rounded-full ring-1 ring-inset ring-gray-300 border-0 h-7"
-              />
-              <IconChevronDown size={16} color="gray" />
-            </div>
-            <ul
-              class="card z-10 w-36 grid-cols-1 p-2 shadow-xl"
-              data-popup="profileMenu"
-            >
-              <button
-                onclick={deployWiki}
-                class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-                >Deploy Wiki</button
-              >
-              <button
-                onclick={signOut}
-                class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-                >Sign Out</button
-              >
-            </ul>
-          {/if}
+    <div
+      class="bg-white h-[60px] px-4 flex border-b border-indigo-100 items-center justify-between"
+    >
+      <button onclick={navigateToSelectWikisPage}>
+        <div class="flex flex-row items-center">
+          <img src={logo} alt="WikiGen Logo" width="40rem" />
+          <h1>WikiGen</h1>
         </div>
+      </button>
+      <div class="flex flex-row items-center gap-1">
+        {#if !$user.isConnected}
+          <button
+            class="p-2 rounded-md text-sm text-gray-400 hover:bg-gray-100"
+            onclick={signInToGithub}>Sign in to github</button
+          >
+        {:else}
+          <div
+            class="flex flex-row items-center gap-2 hover:cursor-pointer hover:bg-gray-200 rounded-2xl py-2 px-4"
+            use:popup={{
+              event: "click",
+              target: "profileMenu",
+            }}
+          >
+            <img
+              src={$user.avatarUrl}
+              alt="Avatar"
+              class="rounded-full ring-1 ring-inset ring-gray-300 border-0 h-7"
+            />
+            <IconChevronDown size={16} color="gray" />
+          </div>
+          <ul
+            class="card z-10 w-36 grid-cols-1 p-2 shadow-xl"
+            data-popup="profileMenu"
+          >
+            <button
+              onclick={deployWiki}
+              class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+              >Deploy Wiki</button
+            >
+            <button
+              onclick={signOut}
+              class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+              >Sign Out</button
+            >
+          </ul>
+        {/if}
       </div>
-    
+    </div>
   {/snippet}
   {#snippet sidebarLeft()}
-  
-      {#if $selectedWiki.name !== ""}
-        <div
-          class="flex h-full flex-col bg-white gap-4 bg-touch-indigo p-4 pt-2 w-[12rem] border-r border-indigo-100"
-        >
-          <div class="flex grow flex-col">
-            <NavButton
-              name="Home"
-              route="/home"
-              active={$page.url.pathname.includes("home")}
-            >
-              {#snippet icon()}
-                        <IconHome
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("home") && "text-indigo-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <NavButton
-              name="Pokemon"
-              route="/pokemon"
-              active={$page.url.pathname.includes("pokemon")}
-            >
-              {#snippet icon()}
-                        <IconPokeball
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("pokemon") && "text-indigo-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <NavButton
-              name="Routes"
-              route="/game-routes"
-              active={$page.url.pathname.includes("game-routes")}
-            >
-              {#snippet icon()}
-                        <IconMapRoute
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("game-routes") && "text-indigo-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <NavButton
-              name="Moves"
-              route="/moves"
-              active={$page.url.pathname.includes("moves")}
-            >
-              {#snippet icon()}
-                        <IconDisc
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("moves") && "text-indigo-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <NavButton
-              name="Types"
-              route="/types"
-              active={$page.url.pathname.includes("types")}
-            >
-              {#snippet icon()}
-                        <IconFlame
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("types") && "text-indigo-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <p class="mb-2 mt-4 text-sm text-slate-400 font-semibold">
-              Attributes
-            </p>
-            <NavButton
-              name="Items"
-              route="/items"
-              active={$page.url.pathname.includes("items")}
-            >
-              {#snippet icon()}
-                        <IconBottle
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("items") && "text-indigo-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <NavButton
-              name="Abiities"
-              route="/abilities"
-              active={$page.url.pathname.includes("abilities")}
-            >
-              {#snippet icon()}
-                        <IconTreadmill
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("abilities") && "text-indigo-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <NavButton
-              name="Natures"
-              route="/natures"
-              active={$page.url.pathname.includes("natures")}
-            >
-              {#snippet icon()}
-                        <IconSeedling
-                  
-                  size={20}
-                  class={`${$page.url.pathname.includes("natures") && "text-indigo-500"}`}
-                />
-                      {/snippet}
-            </NavButton>
-            <!-- <NavButton
+    {#if $selectedWiki.name !== ""}
+      <div
+        class="flex h-full flex-col bg-white gap-4 bg-touch-indigo p-4 pt-2 w-[12rem] border-r border-indigo-100"
+      >
+        <div class="flex grow flex-col">
+          <NavButton
+            name="Home"
+            route="/home"
+            active={$page.url.pathname.includes("home")}
+          >
+            {#snippet icon()}
+              <IconHome
+                size={20}
+                class={`${$page.url.pathname.includes("home") && "text-indigo-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <NavButton
+            name="Pokemon"
+            route="/pokemon"
+            active={$page.url.pathname.includes("pokemon")}
+          >
+            {#snippet icon()}
+              <IconPokeball
+                size={20}
+                class={`${$page.url.pathname.includes("pokemon") && "text-indigo-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <NavButton
+            name="Routes"
+            route="/game-routes"
+            active={$page.url.pathname.includes("game-routes")}
+          >
+            {#snippet icon()}
+              <IconMapRoute
+                size={20}
+                class={`${$page.url.pathname.includes("game-routes") && "text-indigo-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <NavButton
+            name="Moves"
+            route="/moves"
+            active={$page.url.pathname.includes("moves")}
+          >
+            {#snippet icon()}
+              <IconDisc
+                size={20}
+                class={`${$page.url.pathname.includes("moves") && "text-indigo-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <NavButton
+            name="Types"
+            route="/types"
+            active={$page.url.pathname.includes("types")}
+          >
+            {#snippet icon()}
+              <IconFlame
+                size={20}
+                class={`${$page.url.pathname.includes("types") && "text-indigo-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <p class="mb-2 mt-4 text-sm text-slate-400 font-semibold">
+            Attributes
+          </p>
+          <NavButton
+            name="Items"
+            route="/items"
+            active={$page.url.pathname.includes("items")}
+          >
+            {#snippet icon()}
+              <IconBottle
+                size={20}
+                class={`${$page.url.pathname.includes("items") && "text-indigo-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <NavButton
+            name="Abiities"
+            route="/abilities"
+            active={$page.url.pathname.includes("abilities")}
+          >
+            {#snippet icon()}
+              <IconTreadmill
+                size={20}
+                class={`${$page.url.pathname.includes("abilities") && "text-indigo-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <NavButton
+            name="Natures"
+            route="/natures"
+            active={$page.url.pathname.includes("natures")}
+          >
+            {#snippet icon()}
+              <IconSeedling
+                size={20}
+                class={`${$page.url.pathname.includes("natures") && "text-indigo-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <!-- <NavButton
                 name="Wiki Testing"
                 route="/wiki-testing"
                 active={$page.url.pathname.includes("wiki-testing")}
               >
                 <IconTestPipe slot="icon" size={16} color="indigo" />
               </NavButton> -->
-          </div>
         </div>
-      {/if}
-    
+      </div>
+    {/if}
   {/snippet}
   {#snippet pageHeader()}
-  
-      <div class="flex flex-row justify-end mr-10 gap-x-3 items-center"></div>
-    
+    <div class="flex flex-row justify-end mr-10 gap-x-3 items-center"></div>
   {/snippet}
   <div class="my-3 mr-5 ml-5 p-2 bg-white rounded-md">
     {@render children?.()}
   </div>
   {#snippet footer()}
-  
-      {#if $selectedWiki.name !== ""}
-        <div
-          class="flex flex-row w-full p-2 justify-end pr-5 gap-x-3 bg-white items-center border-t border-indigo-100"
-        >
-          <button
-            class="self-center p-2 rounded-md
+    {#if $selectedWiki.name !== ""}
+      <div
+        class="flex flex-row w-full p-2 justify-end pr-5 gap-x-3 bg-white items-center border-t border-indigo-100"
+      >
+        <button
+          class="self-center p-2 rounded-md
             shadow-sm ring-1 ring-inset ring-gray-300
             text-gray-500
               border-0 hover:bg-indigo-500 hover:ring-0 hover:text-white ease-in-out duration-200"
-            onclick={() => (createWikiModalOpen = true)}
-          >
-            <IconPlus size={20} />
-          </button>
-          <!-- <div data-popup="addIconToolTip">
+          onclick={() => (createWikiModalOpen = true)}
+        >
+          <IconPlus size={20} />
+        </button>
+        <!-- <div data-popup="addIconToolTip">
             <p class="card p-1 text-sm">Create New Wiki</p>
             <div class="arrow bg-surface-100-800-token"></div>
           </div> -->
-          <!-- <button
+        <!-- <button
             class="self-center p-2 rounded-md
             shadow-sm ring-1 ring-inset ring-gray-300
             text-gray-500
@@ -638,52 +635,60 @@
 
             <div class="arrow bg-surface-100-800-token" />
           </div> -->
-          <!-- <div class="flex flex-row w-full p-2 justify-end mr-10 gap-x-3"> -->
-          <button
-            class="self-center p-2 rounded-md
+        <!-- <div class="flex flex-row w-full p-2 justify-end mr-10 gap-x-3"> -->
+        <button
+          class="self-center p-2 rounded-md
               shadow-sm ring-1 ring-inset ring-gray-300
               text-gray-500
                 border-0 hover:bg-indigo-100 hover:ring-0 hover:text-white ease-in-out duration-200"
-            onclick={backupWiki}
-          >
-            <IconDeviceFloppy size={20} />
-          </button>
-          <!-- <div data-popup="backupWikiToolTip">
+          onclick={checkAndRunMigrations}
+        >
+          Test Migrations
+        </button>
+        <button
+          class="self-center p-2 rounded-md
+              shadow-sm ring-1 ring-inset ring-gray-300
+              text-gray-500
+                border-0 hover:bg-indigo-100 hover:ring-0 hover:text-white ease-in-out duration-200"
+          onclick={backupWiki}
+        >
+          <IconDeviceFloppy size={20} />
+        </button>
+        <!-- <div data-popup="backupWikiToolTip">
             <p class="card p-1 text-sm">Backup Wiki</p>
             <div class="arrow bg-surface-100-800-token"></div>
           </div> -->
-          <button
-            class="self-center p-2 rounded-md
+        <button
+          class="self-center p-2 rounded-md
               shadow-sm ring-1 ring-inset ring-gray-300
               text-gray-500
                 border-0 hover:bg-red-400 hover:ring-0 hover:text-white ease-in-out duration-200"
-            onclick={() => (deleteWikiModalOpen = true)}
-          >
-            <IconTrash size={20} />
-          </button>
-          <SelectInput
-            options={Object.entries($wikis).map(([name, props]) => ({
-              label: props.site_name,
-              value: name,
-            }))}
-            value={$selectedWiki.name}
-            onChange={loadSelectedWiki}
-            class="w-[17rem] mt-0"
-          />
-          {#if displayUpdateButton}
-            <button
-              class="flex items-center gap-1 shadow-sm border-0
+          onclick={() => (deleteWikiModalOpen = true)}
+        >
+          <IconTrash size={20} />
+        </button>
+        <SelectInput
+          options={Object.entries($wikis).map(([name, props]) => ({
+            label: props.site_name,
+            value: name,
+          }))}
+          value={$selectedWiki.name}
+          onChange={loadSelectedWiki}
+          class="w-[17rem] mt-0"
+        />
+        {#if displayUpdateButton}
+          <button
+            class="flex items-center gap-1 shadow-sm border-0
             text-sm text-gray-500 ring-inset ring-gray-300 hover:bg-indigo-600
             hover:text-white ease-in-out duration-200 rounded-md p-2"
-              onclick={() => updateApp()}
-            >
-              <IconDownload size={18} />
-              Update Available!
-            </button>
-          {/if}
-        </div>
-      {/if}
-      <!-- </div> -->
-    
+            onclick={() => updateApp()}
+          >
+            <IconDownload size={18} />
+            Update Available!
+          </button>
+        {/if}
+      </div>
+    {/if}
+    <!-- </div> -->
   {/snippet}
 </AppShell>
