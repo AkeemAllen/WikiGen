@@ -1,4 +1,4 @@
-use crate::migrations::{gather_migrations, run_migrations, Migration};
+use crate::migrations::{gather_migrations, run_migrations};
 
 #[test]
 fn test_gather_migrations() {
