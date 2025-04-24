@@ -49,13 +49,16 @@ pub async fn check_and_run_migrations(app_handle: AppHandle) -> Result<String, S
     let base_path = app_handle.path().app_data_dir().unwrap();
     let resources_path = app_handle.path().resource_dir().unwrap();
 
-    let migrations = gather_migrations(&resources_path)?;
+    let migrations = gather_migrations(&base_path, &resources_path)?;
     run_migrations(migrations, &base_path).await?;
 
     Ok("Migration Completed".to_string())
 }
 
-pub fn gather_migrations(resources_path: &PathBuf) -> Result<Vec<Migration>, String> {
+pub fn gather_migrations(
+    base_path: &PathBuf,
+    resources_path: &PathBuf,
+) -> Result<Vec<Migration>, String> {
     let migrations_folder = resources_path.join("resources").join("migrations");
     if !migrations_folder.exists() || !migrations_folder.is_dir() {
         return Err("No migrations folder found".to_string());
@@ -67,9 +70,19 @@ pub fn gather_migrations(resources_path: &PathBuf) -> Result<Vec<Migration>, Str
 
     for migration in migrations_from_file {
         let migration_path = migration.unwrap().path();
-        if migration_path.is_file() {
+        if migration_path.is_file() && migration_path.extension().unwrap() == "json" {
             let migration_content = fs::read_to_string(migration_path).unwrap();
-            let migration: Migration = serde_json::from_str(&migration_content).unwrap();
+            let migration: Migration = match serde_json::from_str(&migration_content) {
+                Ok(m) => m,
+                Err(e) => {
+                    logger::write_log(
+                        base_path,
+                        logger::LogLevel::MigrationError,
+                        &format!("Failed to parse migration: {}", e),
+                    );
+                    continue;
+                }
+            };
             migrations.push(migration);
         }
     }
