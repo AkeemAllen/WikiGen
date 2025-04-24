@@ -1,6 +1,6 @@
 {
-  "name": "migration-test-add-table",
-  "app_version": "1.8.5",
+  "name": "migration-test-2-add-table",
+  "app_version": "1.8.9",
   "execution_order": 1,
   "sql": "CREATE TABLE migration_test (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL);"
 }
