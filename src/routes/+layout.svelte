@@ -50,7 +50,11 @@
   import { goto } from "$app/navigation";
   import logo from "$lib/assets/icon.png";
   import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
-  import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
+  import {
+    BaseDirectory,
+    readTextFile,
+    writeTextFile,
+  } from "@tauri-apps/plugin-fs";
   import { appDataDir } from "@tauri-apps/api/path";
   import { type } from "@tauri-apps/plugin-os";
   import LoadingModal from "$lib/components/modals/LoadingModal.svelte";
@@ -85,9 +89,9 @@
     const appData = await appDataDir();
     let mkdocsFilePath = `${appData}${wikiName}/dist`;
     osType = type();
-    if (osType === "Windows_NT") {
+    if (osType === "windows") {
       mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
-    } else if (osType === "Darwin") {
+    } else if (osType === "macos") {
       mkdocsFilePath = mkdocsFilePath.replace(/\s/g, "\\ ");
     }
     return mkdocsFilePath;
@@ -99,30 +103,31 @@
       displayUpdateButton = true;
     }
   }
-  onMount(() => {
-    // async function runMigrations() {
-    //   invoke("run_migrations")
-    //     .then((res) => {
-    //       runningMigrations = false;
-    //       if (res !== "skipping") {
-    //         toastStore.trigger(
-    //           getToastSettings(
-    //             ToastType.SUCCESS,
-    //             "Migrations ran successfully",
-    //           ),
-    //         );
-    //       }
-    //     })
-    //     .catch((err) => {
-    //       toastStore.trigger(
-    //         getToastSettings(
-    //           ToastType.ERROR,
-    //           `Error running migrations: ${err}`,
-    //         ),
-    //       );
-    //     });
-    // }
-    // runMigrations();
+  onMount(async () => {
+    const new_migrations_present = await readTextFile(
+      `/resources/migrations/new_migrations_present.txt`,
+      {
+        baseDir: BaseDirectory.Resource,
+      },
+    );
+
+    if (new_migrations_present.trim() === "true") {
+      await checkAndRunMigrations().then(() => {
+        toastStore.trigger(
+          getToastSettings(
+            ToastType.SUCCESS,
+            "Migrations completed successfully",
+          ),
+        );
+        writeTextFile(
+          `/resources/migrations/new_migrations_present.txt`,
+          "false",
+          {
+            baseDir: BaseDirectory.Resource,
+          },
+        );
+      });
+    }
 
     checkForUpdate();
   });
@@ -149,10 +154,6 @@
             updateStatus = "Update Completed";
             break;
         }
-      })
-      .then(() => {
-        // Run Migrations
-        checkAndRunMigrations();
       })
       .catch((err) => {
         toastStore.trigger(
