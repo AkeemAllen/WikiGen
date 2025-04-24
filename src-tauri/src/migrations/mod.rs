@@ -71,10 +71,16 @@ pub fn gather_migrations(
     for migration in migrations_from_file {
         let migration_path = migration.unwrap().path();
         if migration_path.is_file() && migration_path.extension().unwrap() == "json" {
+            logger::write_log(
+                base_path,
+                logger::LogLevel::Debug,
+                &format!("Reading migration file: {}", migration_path.display()),
+            );
             let migration_content = fs::read_to_string(migration_path).unwrap();
             let migration: Migration = match serde_json::from_str(&migration_content) {
                 Ok(m) => m,
                 Err(e) => {
+                    println!("Error: {}", e);
                     logger::write_log(
                         base_path,
                         logger::LogLevel::MigrationError,
@@ -175,7 +181,7 @@ pub async fn run_migrations(
                 continue;
             }
 
-            if let Err(err) = execute_migration(&conn, migration).await {
+            if let Err(err) = execute_migration(&wiki_path, &conn, migration).await {
                 logger::write_log(
                     &wiki_path,
                     logger::LogLevel::MigrationError,
@@ -195,7 +201,16 @@ pub async fn run_migrations(
     Ok("Migrations Successful".to_string())
 }
 
-async fn execute_migration(conn: &Pool<Sqlite>, migration: &Migration) -> Result<(), String> {
+async fn execute_migration(
+    wiki_path: &PathBuf,
+    conn: &Pool<Sqlite>,
+    migration: &Migration,
+) -> Result<(), String> {
+    logger::write_log(
+        &wiki_path,
+        logger::LogLevel::Debug,
+        &format!("Executing migration: {}", migration.name),
+    );
     if let Err(err) = sqlx::query(&migration.sql).execute(conn).await {
         return Err(err.to_string());
     }
