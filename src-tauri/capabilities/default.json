@@ -11,6 +11,8 @@
     "core:window:allow-close",
     "process:default",
     "fs:default",
+    "fs:allow-resource-read-recursive",
+    "fs:allow-resource-write-recursive",
     {
       "identifier": "fs:allow-exists",
       "allow": [

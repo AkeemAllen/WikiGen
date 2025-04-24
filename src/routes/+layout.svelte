@@ -105,11 +105,13 @@
   }
   onMount(async () => {
     const new_migrations_present = await readTextFile(
-      `/resources/migrations/new_migrations_present.txt`,
+      `resources/migrations/new_migrations_present.txt`,
       {
         baseDir: BaseDirectory.Resource,
       },
     );
+
+    console.log(new_migrations_present);
 
     if (new_migrations_present.trim() === "true") {
       await checkAndRunMigrations().then(() => {
@@ -120,7 +122,7 @@
           ),
         );
         writeTextFile(
-          `/resources/migrations/new_migrations_present.txt`,
+          `resources/migrations/new_migrations_present.txt`,
           "false",
           {
             baseDir: BaseDirectory.Resource,
@@ -637,15 +639,6 @@
             <div class="arrow bg-surface-100-800-token" />
           </div> -->
         <!-- <div class="flex flex-row w-full p-2 justify-end mr-10 gap-x-3"> -->
-        <button
-          class="self-center p-2 rounded-md
-              shadow-sm ring-1 ring-inset ring-gray-300
-              text-gray-500
-                border-0 hover:bg-indigo-100 hover:ring-0 hover:text-white ease-in-out duration-200"
-          onclick={checkAndRunMigrations}
-        >
-          Test Migrations
-        </button>
         <button
           class="self-center p-2 rounded-md
               shadow-sm ring-1 ring-inset ring-gray-300
