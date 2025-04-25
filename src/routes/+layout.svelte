@@ -103,6 +103,7 @@
       displayUpdateButton = true;
     }
   }
+
   onMount(async () => {
     const new_migrations_present = await readTextFile(
       `resources/migrations/new_migrations_present.txt`,
@@ -439,6 +440,17 @@
         </div>
       </button>
       <div class="flex flex-row items-center gap-1">
+        {#if displayUpdateButton}
+          <button
+            class="flex items-center gap-1 border-0
+                    text-sm text-gray-400 ring-gray-300 hover:bg-indigo-600
+                    hover:text-white ease-in-out duration-200 rounded-md p-2"
+            onclick={() => updateApp()}
+          >
+            <IconDownload size={16} />
+            Update Available!
+          </button>
+        {/if}
         {#if !$user.isConnected}
           <button
             class="p-2 rounded-md text-sm text-gray-400 hover:bg-gray-100"
@@ -668,17 +680,6 @@
           onChange={loadSelectedWiki}
           class="w-[17rem] mt-0"
         />
-        {#if displayUpdateButton}
-          <button
-            class="flex items-center gap-1 shadow-sm border-0
-            text-sm text-gray-500 ring-inset ring-gray-300 hover:bg-indigo-600
-            hover:text-white ease-in-out duration-200 rounded-md p-2"
-            onclick={() => updateApp()}
-          >
-            <IconDownload size={18} />
-            Update Available!
-          </button>
-        {/if}
       </div>
     {/if}
     <!-- </div> -->

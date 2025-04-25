@@ -36,18 +36,12 @@ export async function load({ params }: { params: { slug: string } }) {
       baseDir: BaseDirectory.AppData,
     }).catch((err) => {
       console.log(err);
-      // getToastStore().trigger(
-      //   getToastSettings(ToastType.ERROR, `Error writing wikis.json: ${err}`),
-      // );
     });
   }
   const contents = await readTextFile("wikis.json", {
     baseDir: BaseDirectory.AppData,
   }).catch((err) => {
     console.log(err);
-    // getToastStore().trigger(
-    //   getToastSettings(ToastType.ERROR, `Error reading wikis.json: ${err}`),
-    // );
   });
   wikis.set(JSON.parse(contents as string));
 }
