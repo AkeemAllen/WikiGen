@@ -111,8 +111,6 @@
       },
     );
 
-    console.log(new_migrations_present);
-
     if (new_migrations_present.trim() === "true") {
       await checkAndRunMigrations().then(() => {
         toastStore.trigger(
