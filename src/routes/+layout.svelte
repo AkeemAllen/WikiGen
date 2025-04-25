@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from "svelte/legacy";
+
   import { page } from "$app/stores";
   import NavButton from "$lib/components/NavButton.svelte";
   import BaseModal from "$lib/components/BaseModal.svelte";
@@ -36,14 +38,10 @@
 
   import "../app.pcss";
   import { selectedWiki, wikis, user, type User, type Wiki } from "../store";
-  import {
-    checkUpdate,
-    installUpdate,
-    onUpdaterEvent,
-  } from "@tauri-apps/api/updater";
+  import { check } from "@tauri-apps/plugin-updater";
   import { onMount } from "svelte";
-  import { relaunch } from "@tauri-apps/api/process";
-  import { invoke } from "@tauri-apps/api";
+  import { relaunch } from "@tauri-apps/plugin-process";
+  import { invoke } from "@tauri-apps/api/core";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import { loadWikiData } from "$lib/utils/loadWiki";
   import CreateWikiModal from "$lib/components/modals/CreateWikiModal.svelte";
@@ -51,132 +49,142 @@
   import SelectInput from "$lib/components/SelectInput.svelte";
   import { goto } from "$app/navigation";
   import logo from "$lib/assets/icon.png";
-  // import { PUBLIC_CLIENT_ID } from "$env/static/public";
-  import { WebviewWindow } from "@tauri-apps/api/window";
-  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+  import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
+  import {
+    BaseDirectory,
+    readTextFile,
+    writeTextFile,
+  } from "@tauri-apps/plugin-fs";
   import { appDataDir } from "@tauri-apps/api/path";
-  import { type } from "@tauri-apps/api/os";
+  import { type } from "@tauri-apps/plugin-os";
   import LoadingModal from "$lib/components/modals/LoadingModal.svelte";
+  import { load } from "@tauri-apps/plugin-store";
+  interface Props {
+    children?: import("svelte").Snippet;
+  }
+
+  let { children }: Props = $props();
 
   initializeStores();
 
   storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
   const modalRegistry: Record<string, ModalComponent> = {};
-  let updaterModalOpen = false;
-  let displayUpdateButton = false;
-  let updateStatus = "";
-  let runningMigrations = false;
-  let createWikiModalOpen = false;
-  let deleteWikiModalOpen = false;
-  let deployingWiki = false;
-  let deployWikiFinalStepsModal = false;
-  let signingIntoGithub = false;
-  let osType = "";
+  let updaterModalOpen = $state(false);
+  let displayUpdateButton = $state(false);
+  let updateStatus = $state("Updating");
+  let runningMigrations = $state(false);
+  let createWikiModalOpen = $state(false);
+  let deleteWikiModalOpen = $state(false);
+  let deployingWiki = $state(false);
+  let deployWikiFinalStepsModal = $state(false);
+  let signingIntoGithub = $state(false);
+  let osType = $state("");
 
-  let mkdocsFilePath: string = "";
-  $: getMkdocsDirectory($selectedWiki.name).then((response) => {
-    mkdocsFilePath = response;
-  });
+  let mkdocsFilePath: string = $state("");
 
   async function getMkdocsDirectory(wikiName: string): Promise<string> {
     const appData = await appDataDir();
     let mkdocsFilePath = `${appData}${wikiName}/dist`;
-    osType = await type();
-    if (osType === "Windows_NT") {
+    osType = type();
+    if (osType === "windows") {
       mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
-    } else if (osType === "Darwin") {
+    } else if (osType === "macos") {
       mkdocsFilePath = mkdocsFilePath.replace(/\s/g, "\\ ");
     }
     return mkdocsFilePath;
   }
 
-  onMount(() => {
-    async function runMigrations() {
-      invoke("run_migrations")
-        .then((res) => {
-          runningMigrations = false;
-          if (res !== "skipping") {
-            toastStore.trigger(
-              getToastSettings(
-                ToastType.SUCCESS,
-                "Migrations ran successfully",
-              ),
-            );
-          }
-        })
-        .catch((err) => {
+  async function checkForUpdate() {
+    const update = await check();
+    if (update?.available) {
+      displayUpdateButton = true;
+    }
+  }
+
+  onMount(async () => {
+    setInterval(checkForUpdate, 60000);
+
+    const new_migrations_present = await readTextFile(
+      `resources/migrations/new_migrations_present.txt`,
+      {
+        baseDir: BaseDirectory.Resource,
+      },
+    ).catch((error) => {
+      console.error("Error reading new_migrations_present.txt:", error);
+      return "false";
+    });
+
+    if (new_migrations_present.trim() === "true") {
+      await checkAndRunMigrations()
+        .then(() => {
           toastStore.trigger(
             getToastSettings(
-              ToastType.ERROR,
-              `Error running migrations: ${err}`,
+              ToastType.SUCCESS,
+              "Migrations completed successfully",
             ),
           );
+          writeTextFile(
+            `resources/migrations/new_migrations_present.txt`,
+            "false",
+            {
+              baseDir: BaseDirectory.Resource,
+            },
+          );
+        })
+        .catch((error) => {
+          console.error("Error running migrations:", error);
         });
     }
-    async function checkForUpdate() {
-      const { shouldUpdate } = await checkUpdate();
-      if (shouldUpdate) {
-        displayUpdateButton = true;
-      }
-    }
-
-    checkForUpdate();
-    runMigrations();
   });
 
   const toastStore = getToastStore();
 
   async function updateApp() {
     updaterModalOpen = true;
-    const unlisten = await onUpdaterEvent(({ error, status }) => {
-      if (status === "PENDING") {
-        updateStatus = "Update is pending...";
-        toastStore.trigger(
-          getToastSettings(ToastType.INFO, "Update is pending..."),
-        );
-      }
+    const update = await check();
+    if (!update) return;
 
-      if (status === "DONE") {
-        updateStatus = "Update applied successfully";
-        toastStore.trigger(
-          getToastSettings(ToastType.INFO, "Update applied successfully"),
-        );
-      }
-
-      if (status === "ERROR") {
-        updateStatus = `Error applying update: ${error}`;
-        toastStore.trigger(
-          getToastSettings(ToastType.ERROR, `Error applying update: ${error}`),
-        );
-      }
-    });
-    await installUpdate()
-      .then(() => {
-        relaunch().catch((err) => {
-          toastStore.trigger(
-            getToastSettings(ToastType.ERROR, `Error relaunching app: ${err}`),
-          );
-        });
-        unlisten();
+    await update
+      .downloadAndInstall((progress) => {
+        switch (progress.event) {
+          case "Started":
+            updateStatus = "Update Started";
+            // contentLength = progress.data.contentLength as number;
+            break;
+          case "Progress":
+            updateStatus = `Update In Progress`;
+            // downloadProgress += progress.data.chunkLength as number;
+            break;
+          case "Finished":
+            updateStatus = "Update Completed";
+            break;
+        }
       })
       .catch((err) => {
         toastStore.trigger(
           getToastSettings(ToastType.ERROR, `Error installing update: ${err}`),
         );
       });
+    await relaunch().catch((err) => {
+      toastStore.trigger(
+        getToastSettings(ToastType.ERROR, `Error relaunching app: ${err}`),
+      );
+    });
+  }
+
+  async function checkAndRunMigrations() {
+    await invoke("check_and_run_migrations").catch((err) => {
+      toastStore.trigger(
+        getToastSettings(ToastType.ERROR, `Error running migrations: ${err}`),
+      );
+    });
   }
 
   function loadSelectedWiki(e: any) {
     $selectedWiki = $wikis[e.target.value];
     loadWikiData($selectedWiki, toastStore);
     goto("/");
-  }
-
-  function isActivePage(pageName: string) {
-    if ($page.url.pathname.includes(pageName)) return true;
-
-    return false;
   }
 
   async function backupWiki() {
@@ -205,28 +213,46 @@
 
     url.search = params.toString();
 
-    const webview = new WebviewWindow("GithubAccessRequest", {
+    const webview = new WebviewWindow("github-access-request", {
       url: url.toString(),
       title: "Github Access Request",
       alwaysOnTop: true,
     });
 
-    const unlisten = await webview.listen("loading-token", (event: any) => {
-      let data = parseJwt(event.payload.token);
-      localStorage.setItem("token", event.payload.token);
-      $user = data;
-      signingIntoGithub = false;
+    const unlisten = await webview.listen(
+      "token-loaded",
+      async (event: any) => {
+        const store = await load("store.json");
+        const token = await store.get<string>("token");
 
-      webview.close();
-    });
+        if (token === undefined || token === "") {
+          webview.close();
+          toastStore.trigger(
+            getToastSettings(
+              ToastType.ERROR,
+              `Failed to load token: token is ${token}`,
+            ),
+          );
+        }
+
+        let data = parseJwt(token as string);
+
+        $user = data;
+        signingIntoGithub = false;
+
+        webview.close();
+      },
+    );
 
     webview.onCloseRequested(() => {
       unlisten();
     });
   }
 
-  function signOut() {
-    localStorage.removeItem("token");
+  async function signOut() {
+    const store = await load("store.json");
+    await store.delete("token");
+    await store.save();
     $user = {
       userName: "",
       avatarUrl: "",
@@ -269,10 +295,13 @@
       return;
     }
     deployingWiki = true;
+    const store = await load("store.json");
+    const token = await store.get<string>("token");
+
     await fetch("https://wikigen-auth.fly.dev/create-repo", {
       method: "POST",
       body: JSON.stringify({
-        token: localStorage.getItem("token"),
+        token: token,
         wikiName: $selectedWiki.name,
       }),
       headers: {
@@ -297,7 +326,7 @@
         if ($selectedWiki.settings.deployment_url === "") {
           $wikis[$selectedWiki.name].settings.deployment_url = res.ssh_url;
           await writeTextFile("wikis.json", JSON.stringify($wikis), {
-            dir: BaseDirectory.AppData,
+            baseDir: BaseDirectory.AppData,
           });
         }
         deployingWiki = true;
@@ -330,6 +359,11 @@
     $selectedWiki = { name: "" } as Wiki;
     goto("/");
   }
+  run(() => {
+    getMkdocsDirectory($selectedWiki.name).then((response) => {
+      mkdocsFilePath = response;
+    });
+  });
 </script>
 
 <LoadingModal
@@ -400,21 +434,32 @@
 <Toast position="br" rounded="rounded-none" padding="px-4 py-2" max={10} />
 <Modal components={modalRegistry} />
 <AppShell class="h-screen bg-indigo-100">
-  <svelte:fragment slot="header">
+  {#snippet header()}
     <div
       class="bg-white h-[60px] px-4 flex border-b border-indigo-100 items-center justify-between"
     >
-      <button on:click={navigateToSelectWikisPage}>
+      <button onclick={navigateToSelectWikisPage}>
         <div class="flex flex-row items-center">
           <img src={logo} alt="WikiGen Logo" width="40rem" />
           <h1>WikiGen</h1>
         </div>
       </button>
       <div class="flex flex-row items-center gap-1">
+        {#if displayUpdateButton}
+          <button
+            class="flex items-center gap-1 border-0
+                    text-sm text-gray-400 ring-gray-300 hover:bg-indigo-600
+                    hover:text-white ease-in-out duration-200 rounded-md p-2"
+            onclick={() => updateApp()}
+          >
+            <IconDownload size={16} />
+            Update Available!
+          </button>
+        {/if}
         {#if !$user.isConnected}
           <button
             class="p-2 rounded-md text-sm text-gray-400 hover:bg-gray-100"
-            on:click={signInToGithub}>Sign in to github</button
+            onclick={signInToGithub}>Sign in to github</button
           >
         {:else}
           <div
@@ -436,12 +481,12 @@
             data-popup="profileMenu"
           >
             <button
-              on:click={deployWiki}
+              onclick={deployWiki}
               class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
               >Deploy Wiki</button
             >
             <button
-              on:click={signOut}
+              onclick={signOut}
               class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
               >Sign Out</button
             >
@@ -449,8 +494,8 @@
         {/if}
       </div>
     </div>
-  </svelte:fragment>
-  <svelte:fragment slot="sidebarLeft">
+  {/snippet}
+  {#snippet sidebarLeft()}
     {#if $selectedWiki.name !== ""}
       <div
         class="flex h-full flex-col bg-white gap-4 bg-touch-indigo p-4 pt-2 w-[12rem] border-r border-indigo-100"
@@ -461,55 +506,60 @@
             route="/home"
             active={$page.url.pathname.includes("home")}
           >
-            <IconHome
-              slot="icon"
-              size={20}
-              class={`${$page.url.pathname.includes("home") && "text-indigo-500"}`}
-            />
+            {#snippet icon()}
+              <IconHome
+                size={20}
+                class={`${$page.url.pathname.includes("home") && "text-indigo-500"}`}
+              />
+            {/snippet}
           </NavButton>
           <NavButton
             name="Pokemon"
             route="/pokemon"
             active={$page.url.pathname.includes("pokemon")}
           >
-            <IconPokeball
-              slot="icon"
-              size={20}
-              class={`${$page.url.pathname.includes("pokemon") && "text-indigo-500"}`}
-            />
+            {#snippet icon()}
+              <IconPokeball
+                size={20}
+                class={`${$page.url.pathname.includes("pokemon") && "text-indigo-500"}`}
+              />
+            {/snippet}
           </NavButton>
           <NavButton
             name="Routes"
             route="/game-routes"
             active={$page.url.pathname.includes("game-routes")}
           >
-            <IconMapRoute
-              slot="icon"
-              size={20}
-              class={`${$page.url.pathname.includes("game-routes") && "text-indigo-500"}`}
-            />
+            {#snippet icon()}
+              <IconMapRoute
+                size={20}
+                class={`${$page.url.pathname.includes("game-routes") && "text-indigo-500"}`}
+              />
+            {/snippet}
           </NavButton>
           <NavButton
             name="Moves"
             route="/moves"
             active={$page.url.pathname.includes("moves")}
           >
-            <IconDisc
-              slot="icon"
-              size={20}
-              class={`${$page.url.pathname.includes("moves") && "text-indigo-500"}`}
-            />
+            {#snippet icon()}
+              <IconDisc
+                size={20}
+                class={`${$page.url.pathname.includes("moves") && "text-indigo-500"}`}
+              />
+            {/snippet}
           </NavButton>
           <NavButton
             name="Types"
             route="/types"
             active={$page.url.pathname.includes("types")}
           >
-            <IconFlame
-              slot="icon"
-              size={20}
-              class={`${$page.url.pathname.includes("types") && "text-indigo-500"}`}
-            />
+            {#snippet icon()}
+              <IconFlame
+                size={20}
+                class={`${$page.url.pathname.includes("types") && "text-indigo-500"}`}
+              />
+            {/snippet}
           </NavButton>
           <p class="mb-2 mt-4 text-sm text-slate-400 font-semibold">
             Attributes
@@ -519,116 +569,110 @@
             route="/items"
             active={$page.url.pathname.includes("items")}
           >
-            <IconBottle
-              slot="icon"
-              size={20}
-              class={`${$page.url.pathname.includes("items") && "text-indigo-500"}`}
-            />
+            {#snippet icon()}
+              <IconBottle
+                size={20}
+                class={`${$page.url.pathname.includes("items") && "text-indigo-500"}`}
+              />
+            {/snippet}
           </NavButton>
           <NavButton
             name="Abiities"
             route="/abilities"
             active={$page.url.pathname.includes("abilities")}
           >
-            <IconTreadmill
-              slot="icon"
-              size={20}
-              class={`${$page.url.pathname.includes("abilities") && "text-indigo-500"}`}
-            />
+            {#snippet icon()}
+              <IconTreadmill
+                size={20}
+                class={`${$page.url.pathname.includes("abilities") && "text-indigo-500"}`}
+              />
+            {/snippet}
           </NavButton>
           <NavButton
             name="Natures"
             route="/natures"
             active={$page.url.pathname.includes("natures")}
           >
-            <IconSeedling
-              slot="icon"
-              size={20}
-              class={`${$page.url.pathname.includes("natures") && "text-indigo-500"}`}
-            />
+            {#snippet icon()}
+              <IconSeedling
+                size={20}
+                class={`${$page.url.pathname.includes("natures") && "text-indigo-500"}`}
+              />
+            {/snippet}
           </NavButton>
           <!-- <NavButton
-              name="Wiki Testing"
-              route="/wiki-testing"
-              active={$page.url.pathname.includes("wiki-testing")}
-            >
-              <IconTestPipe slot="icon" size={16} color="indigo" />
-            </NavButton> -->
+                name="Wiki Testing"
+                route="/wiki-testing"
+                active={$page.url.pathname.includes("wiki-testing")}
+              >
+                <IconTestPipe slot="icon" size={16} color="indigo" />
+              </NavButton> -->
         </div>
-        <!-- <div class="flex flex-row items-center justify-between w-[12rem]">
-            <p>
-              {$selectedWiki.name ? $selectedWiki.site_name : "Select Wiki"}
-            </p>
-            <span use:popup={wikiSelectPopup} class="hover:cursor-pointer">
-              <IconDotsVertical size={"20"} />
-            </span>
-          </div>
-          <WikiSelectMenu /> -->
       </div>
     {/if}
-  </svelte:fragment>
-  <svelte:fragment slot="pageHeader">
+  {/snippet}
+  {#snippet pageHeader()}
     <div class="flex flex-row justify-end mr-10 gap-x-3 items-center"></div>
-  </svelte:fragment>
+  {/snippet}
   <div class="my-3 mr-5 ml-5 p-2 bg-white rounded-md">
-    <slot />
+    {@render children?.()}
   </div>
-  <svelte:fragment slot="footer">
+  {#snippet footer()}
     {#if $selectedWiki.name !== ""}
       <div
         class="flex flex-row w-full p-2 justify-end pr-5 gap-x-3 bg-white items-center border-t border-indigo-100"
       >
         <button
           class="self-center p-2 rounded-md
-          shadow-sm ring-1 ring-inset ring-gray-300
-          text-gray-500
-            border-0 hover:bg-indigo-500 hover:ring-0 hover:text-white ease-in-out duration-200"
-          on:click={() => (createWikiModalOpen = true)}
+            shadow-sm ring-1 ring-inset ring-gray-300
+            text-gray-500
+              border-0 hover:bg-indigo-500 hover:ring-0 hover:text-white ease-in-out duration-200"
+          onclick={() => (createWikiModalOpen = true)}
         >
           <IconPlus size={20} />
         </button>
         <!-- <div data-popup="addIconToolTip">
-          <p class="card p-1 text-sm">Create New Wiki</p>
-          <div class="arrow bg-surface-100-800-token"></div>
-        </div> -->
+            <p class="card p-1 text-sm">Create New Wiki</p>
+            <div class="arrow bg-surface-100-800-token"></div>
+          </div> -->
         <!-- <button
-          class="self-center p-2 rounded-md
-          shadow-sm ring-1 ring-inset ring-gray-300
-          text-gray-500
-            border-0 hover:bg-indigo-600 hover:text-white hover:ring-0 ease-in-out duration-200"
-          use:popup={{
-            event: "hover",
-            target: "previewWikiToolTip",
-            placement: "bottom",
-          }}
-        >
-          <IconTestPipe size={20} />
-        </button>
-        <div data-popup="previewWikiToolTip">
-          <p class="card p-1 text-sm">Preview Wiki</p>
+            class="self-center p-2 rounded-md
+            shadow-sm ring-1 ring-inset ring-gray-300
+            text-gray-500
+              border-0 hover:bg-indigo-600 hover:text-white hover:ring-0 ease-in-out duration-200"
+            use:popup={{
+              event: "hover",
+              target: "previewWikiToolTip",
+              placement: "bottom",
+            }}
+          >
+            <IconTestPipe size={20} />
+          </button>
+          <div data-popup="previewWikiToolTip">
+            <p class="card p-1 text-sm">Preview Wiki</p>
 
-          <div class="arrow bg-surface-100-800-token" />
-        </div> -->
+            <div class="arrow bg-surface-100-800-token" />
+          </div> -->
         <!-- <div class="flex flex-row w-full p-2 justify-end mr-10 gap-x-3"> -->
         <button
           class="self-center p-2 rounded-md
-            shadow-sm ring-1 ring-inset ring-gray-300
-            text-gray-500
-              border-0 hover:bg-indigo-100 hover:ring-0 hover:text-white ease-in-out duration-200"
-          on:click={backupWiki}
+              shadow-sm ring-1 ring-inset ring-gray-300
+              text-gray-500
+                border-0 hover:bg-indigo-100 hover:ring-0 hover:text-white ease-in-out duration-200"
+          onclick={backupWiki}
         >
           <IconDeviceFloppy size={20} />
         </button>
         <!-- <div data-popup="backupWikiToolTip">
-          <p class="card p-1 text-sm">Backup Wiki</p>
-          <div class="arrow bg-surface-100-800-token"></div>
-        </div> -->
+            <p class="card p-1 text-sm">Backup Wiki</p>
+            <div class="arrow bg-surface-100-800-token"></div>
+          </div> -->
         <button
           class="self-center p-2 rounded-md
-            shadow-sm ring-1 ring-inset ring-gray-300
-            text-gray-500
-              border-0 hover:bg-red-400 hover:ring-0 hover:text-white ease-in-out duration-200"
-          on:click={() => (deleteWikiModalOpen = true)}
+              shadow-sm ring-1 ring-inset ring-gray-300
+              text-gray-500
+                border-0 hover:bg-red-400 hover:ring-0 hover:text-white ease-in-out duration-200"
+          onclick={() => (deleteWikiModalOpen = true)}
         >
           <IconTrash size={20} />
         </button>
@@ -641,19 +685,8 @@
           onChange={loadSelectedWiki}
           class="w-[17rem] mt-0"
         />
-        {#if displayUpdateButton}
-          <button
-            class="flex items-center gap-1 shadow-sm border-0
-          text-sm text-gray-500 ring-inset ring-gray-300 hover:bg-indigo-600
-          hover:text-white ease-in-out duration-200 rounded-md p-2"
-            on:click={() => updateApp()}
-          >
-            <IconDownload size={18} />
-            Update Available!
-          </button>
-        {/if}
       </div>
     {/if}
     <!-- </div> -->
-  </svelte:fragment>
+  {/snippet}
 </AppShell>

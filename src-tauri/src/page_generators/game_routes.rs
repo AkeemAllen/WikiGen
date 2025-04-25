@@ -8,11 +8,11 @@ use std::{
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use serde_yaml::{Mapping, Value};
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 use crate::{
     database::{get_mkdocs_config, get_routes},
-    helpers::{capitalize, capitalize_and_remove_hyphens, get_pokemon_dex_formatted_name},
+    helpers::{capitalize_and_remove_hyphens, get_pokemon_dex_formatted_name},
     logger,
 };
 
@@ -71,8 +71,8 @@ pub async fn generate_route_pages_with_handle(
     route_names: Vec<&str>,
     app_handle: AppHandle,
 ) -> Result<String, String> {
-    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
-    let resources_path = app_handle.path_resolver().resource_dir().unwrap();
+    let base_path = app_handle.path().app_data_dir().unwrap();
+    let resources_path = app_handle.path().resource_dir().unwrap();
 
     unsafe {
         TRAINER_POKEMON_TEMPLATE = match read_to_string(
@@ -104,7 +104,7 @@ pub async fn delete_route_page_from_mkdocs(
     route_name: &str,
     app_handle: AppHandle,
 ) -> Result<String, String> {
-    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    let base_path = app_handle.path().app_data_dir().unwrap();
 
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
     let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {

@@ -15,12 +15,12 @@
     type TrainerPokemon,
   } from "../../../store/gameRoutes";
   import TextInput from "../TextInput.svelte";
-  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
+  import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
   import { setUniquePokemonId, sortTrainersByPosition } from "$lib/utils";
   import AutoComplete from "../AutoComplete.svelte";
   import TrainerPokemonCard from "../TrainerPokemonCard.svelte";
   import MultiSelect from "svelte-multiselect";
-  import { invoke } from "@tauri-apps/api/tauri";
+  import { invoke } from "@tauri-apps/api/core";
   import TrainerMenu from "../modals/TrainerMenu.svelte";
   import EditTrainerPokemonModal from "../modals/EditTrainerPokemonModal.svelte";
   import { shortcut } from "@svelte-put/shortcut";
@@ -32,29 +32,35 @@
 
   const toastStore = getToastStore();
 
-  export let routeName: string;
-  let trainerName: string = "";
-  let pokemonSearchName: string = "";
-  let level: number = 0;
+  interface Props {
+    routeName: string;
+  }
 
-  let editPokemonModalOpen: boolean = false;
-  let trainerToUpdate: string = "";
-  let currentTrainerPokemon: TrainerPokemon = {} as TrainerPokemon;
-  let currentTrainerVersions: string[] = [];
+  let { routeName }: Props = $props();
+  let trainerName: string = $state("");
+  let pokemonSearchName: string = $state("");
+  let level: number = $state(0);
 
-  let spriteModalOpen: boolean = false;
-  let trainerVersionsModalOpen: boolean = false;
-  let positionModalOpen: boolean = false;
-  let spriteName: string = "";
+  let editPokemonModalOpen: boolean = $state(false);
+  let trainerToUpdate: string = $state("");
+  let currentTrainerPokemon: TrainerPokemon = $state({} as TrainerPokemon);
+  let currentTrainerVersions: string[] = $state([]);
 
-  let routeTrainers: { [key: string]: TrainerInfo } = cloneDeep(
-    $routes.routes[routeName].trainers,
+  let spriteModalOpen: boolean = $state(false);
+  let trainerVersionsModalOpen: boolean = $state(false);
+  let positionModalOpen: boolean = $state(false);
+  let spriteName: string = $state("");
+
+  let routeTrainers: { [key: string]: TrainerInfo } = $state(
+    cloneDeep($routes.routes[routeName].trainers),
   );
-  let originalTrainers = cloneDeep(routeTrainers);
-  $: trainerOptions = Object.keys(routeTrainers).map((trainer) => ({
-    label: trainer,
-    value: trainer,
-  }));
+  let originalTrainers = $state(cloneDeep($routes.routes[routeName].trainers));
+  let trainerOptions = $derived(
+    Object.keys(routeTrainers).map((trainer) => ({
+      label: trainer,
+      value: trainer,
+    })),
+  );
 
   let pokemonListOptions: AutocompleteOption<string | number>[] =
     $pokemonList.map(([id, _, name]) => ({
@@ -360,7 +366,7 @@
         {#each trainerInfo.pokemon_team as pokemon}
           <button
             class="group card relative grid !bg-transparent p-2 shadow-md transition ease-in-out hover:scale-110 hover:cursor-pointer"
-            on:click={() => {
+            onclick={() => {
               editPokemonModalOpen = true;
               currentTrainerPokemon = cloneDeep(pokemon);
               trainerToUpdate = name;

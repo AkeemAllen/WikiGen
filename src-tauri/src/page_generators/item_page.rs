@@ -6,7 +6,7 @@ use std::{
 
 use serde_yaml::{Mapping, Value};
 use sqlx::FromRow;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 use crate::{
     database::{get_mkdocs_config, get_sqlite_connection},
@@ -36,7 +36,7 @@ pub async fn generate_items_page_with_handle(
     wiki_name: &str,
     app_handle: AppHandle,
 ) -> Result<String, String> {
-    let base_path = app_handle.path_resolver().app_data_dir().unwrap();
+    let base_path = app_handle.path().app_data_dir().unwrap();
     let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
     let conn = match get_sqlite_connection(sqlite_path).await {
         Ok(conn) => conn,

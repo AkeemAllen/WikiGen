@@ -9,6 +9,7 @@ mod structs;
 mod tests;
 mod wiki_preparation;
 
+use database::load_token;
 use helpers::mkdocs_process::{check_process_status, kill_mkdocs_process, spawn_mkdocs_process};
 use page_generators::ability_page::generate_ability_page_with_handle;
 use page_generators::game_routes::{
@@ -25,14 +26,23 @@ use wiki_preparation::backup_wiki::backup_wiki;
 use wiki_preparation::create_wiki::create_wiki;
 use wiki_preparation::deploy_wiki::deploy_wiki;
 
-use migrations::run_migrations;
+use migrations::check_and_run_migrations;
 use wiki_preparation::yaml_declaration::update_yaml;
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_sql::Builder::default().build())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_cli::init())
+        .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
             create_wiki,
+            load_token,
+            check_and_run_migrations,
             spawn_mkdocs_process,
             kill_mkdocs_process,
             check_process_status,
@@ -47,7 +57,6 @@ fn main() {
             delete_route_page_from_mkdocs,
             remove_pokemon_page_with_old_dex_number,
             update_pokemon_pages_with_stripped_name_with_handle,
-            run_migrations
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

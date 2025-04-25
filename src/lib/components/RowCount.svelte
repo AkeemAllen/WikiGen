@@ -1,6 +1,10 @@
 <script lang="ts">
   import type { DataHandler } from "@vincjo/datatables";
-  export let handler: DataHandler;
+  interface Props {
+    handler: DataHandler;
+  }
+
+  let { handler }: Props = $props();
   const rowCount = handler.getRowCount();
 </script>
 

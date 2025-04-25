@@ -1,13 +1,26 @@
 <script lang="ts">
-export let id = "";
-export let label = "";
-export let placeholder = "";
-export let min = 0;
-export let max = 2000; // Arbitrary default
-export let value: number | null = 0;
-export let disabled = false;
-let className: string = "";
-export { className as class };
+  interface Props {
+    id?: string;
+    label?: string;
+    placeholder?: string;
+    min?: number;
+    max?: number; // Arbitrary default
+    value?: number | null;
+    disabled?: boolean;
+    class?: string;
+  }
+
+  let {
+    id = "",
+    label = "",
+    placeholder = "",
+    min = 0,
+    max = 2000,
+    value = $bindable(0),
+    disabled = false,
+    class: className = ""
+  }: Props = $props();
+
 </script>
 
 <div class={className}>

@@ -1,8 +1,12 @@
 <script lang="ts">
   import type { DataHandler } from "@vincjo/datatables";
-  export let handler: DataHandler;
-  export let filterBy: string;
-  let value: string;
+  interface Props {
+    handler: DataHandler;
+    filterBy: string;
+  }
+
+  let { handler, filterBy }: Props = $props();
+  let value: string = $state();
 </script>
 
 <th>
@@ -11,7 +15,7 @@
     type="text"
     placeholder="Filter"
     bind:value
-    on:input={() => {
+    oninput={() => {
       if (filterBy) handler.filter(value, filterBy);
     }}
   />

@@ -4,25 +4,25 @@
   import {
     BaseDirectory,
     exists,
-    readBinaryFile,
+    readFile,
     readTextFile,
-    removeFile,
-    writeBinaryFile,
+    remove,
+    writeFile,
     writeTextFile,
-  } from "@tauri-apps/api/fs";
+  } from "@tauri-apps/plugin-fs";
   import { selectedWiki } from "../../store";
   import Button from "$lib/components/Button.svelte";
   import { onMount } from "svelte";
 
-  let homePageImage: string = "";
-  let generalInfo = "";
+  let homePageImage: string = $state("");
+  let generalInfo = $state("");
 
   const toastStore = getToastStore();
 
   onMount(async () => {
-    homePageImage = await readBinaryFile(
+    homePageImage = await readFile(
       `${$selectedWiki.name}/dist/docs/img/logo.png`,
-      { dir: BaseDirectory.AppData },
+      { baseDir: BaseDirectory.AppData },
     )
       .then((res) => {
         const blob = new Blob([res], { type: "image/png" });
@@ -33,7 +33,7 @@
       });
     generalInfo = await readTextFile(
       `${$selectedWiki.name}/dist/docs/index.md`,
-      { dir: BaseDirectory.AppData },
+      { baseDir: BaseDirectory.AppData },
     ).then((res) => {
       return res.replace('<img alt="home-page" src="img/logo.png">\n\n', "");
     });
@@ -46,15 +46,15 @@
       const previousImageExists = await exists(
         `${$selectedWiki.name}/dist/docs/img/logo.png`,
         {
-          dir: BaseDirectory.AppData,
+          baseDir: BaseDirectory.AppData,
         },
       );
 
       if (!previousImageExists) {
         return;
       }
-      await removeFile(`${$selectedWiki.name}/dist/docs/img/logo.png`, {
-        dir: BaseDirectory.AppData,
+      await remove(`${$selectedWiki.name}/dist/docs/img/logo.png`, {
+        baseDir: BaseDirectory.AppData,
       });
       return;
     }
@@ -63,10 +63,10 @@
       homePageImage.replace("data:image/png;base64,", ""),
       "image/png",
     );
-    await writeBinaryFile(
+    await writeFile(
       `${$selectedWiki.name}/dist/docs/img/logo.png`,
-      imageBytes,
-      { dir: BaseDirectory.AppData },
+      new Uint8Array(imageBytes),
+      { baseDir: BaseDirectory.AppData },
     ).catch((e) => {
       console.error(e);
     });
@@ -86,7 +86,7 @@
     await writeTextFile(
       `${$selectedWiki.name}/dist/docs/index.md`,
       uploadedInfo,
-      { dir: BaseDirectory.AppData },
+      { baseDir: BaseDirectory.AppData },
     ).then(() => {
       toastStore.trigger({
         message: "Changes saved!",
@@ -138,7 +138,7 @@
     type="file"
     accept="image/png"
     class="mt-2"
-    on:change={onImageUpload}
+    onchange={onImageUpload}
   />
 </div>
 <div class="mt-4">
@@ -150,8 +150,8 @@
       id="effect"
       bind:value={generalInfo}
       spellcheck="false"
-      on:keydown={captureTab}
+      onkeydown={captureTab}
       class="block h-48 w-[50rem] rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-    />
+></textarea>
   </div>
 </div>

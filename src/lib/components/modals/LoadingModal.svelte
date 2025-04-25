@@ -1,8 +1,26 @@
-<script>
+<script lang="ts">
   import BaseModal from "../BaseModal.svelte";
-  export let loading = false;
-  export let onClose = () => {};
-  export let message = "";
+  interface Props {
+    loading?: boolean;
+    onClose?: any;
+    message?: string; // export let progress: number = 0;
+  }
+
+  let { loading = $bindable(false), onClose = () => {}, message = "" }: Props = $props();
+  
+  // export let max = 0;
+  // let percentage = 0;
+
+  // $: calcPercentage();
+
+  // function calcPercentage() {
+  //   let percentageCompletion = (progress / max) * 100;
+  //   if (isNaN(percentageCompletion)) {
+  //     percentage = 0;
+  //   }
+
+  //   percentage = Math.round(percentageCompletion);
+  // }
 </script>
 
 <BaseModal bind:open={loading} close={onClose} class="w-[30rem]">
@@ -23,4 +41,8 @@
     >
     <p>{message}</p>
   </div>
+  <!-- {#if max !== 0}
+    <progress {max} value={progress} />
+    <p>{percentage}%</p>
+  {/if} -->
 </BaseModal>

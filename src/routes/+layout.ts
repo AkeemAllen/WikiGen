@@ -1,11 +1,12 @@
 /**@type {import('./$types').PageLoad} */
 import {
   BaseDirectory,
-  createDir,
+  create,
   exists,
+  mkdir,
   readTextFile,
   writeTextFile,
-} from "@tauri-apps/api/fs";
+} from "@tauri-apps/plugin-fs";
 import { wikis } from "../store";
 import { getToastStore } from "@skeletonlabs/skeleton";
 import { ToastType, getToastSettings } from "$lib/utils/toasts";
@@ -19,33 +20,28 @@ export async function load({ params }: { params: { slug: string } }) {
   //
   // The directory_existence folder just serves as a placeholder to ensure the appData directory is created.
   const appDataDirectoryExists = await exists("directory_existence", {
-    dir: BaseDirectory.AppData,
+    baseDir: BaseDirectory.AppData,
   });
   if (!appDataDirectoryExists) {
-    await createDir("directory_existence", {
-      dir: BaseDirectory.AppData,
-      recursive: true,
+    await mkdir("directory_existence", {
+      baseDir: BaseDirectory.AppData,
     });
   }
 
   const wikiJsonExists = await exists("wikis.json", {
-    dir: BaseDirectory.AppData,
+    baseDir: BaseDirectory.AppData,
   });
   if (!wikiJsonExists) {
     await writeTextFile("wikis.json", JSON.stringify(wikis), {
-      dir: BaseDirectory.AppData,
+      baseDir: BaseDirectory.AppData,
     }).catch((err) => {
-      getToastStore().trigger(
-        getToastSettings(ToastType.ERROR, `Error writing wikis.json: ${err}`),
-      );
+      console.log(err);
     });
   }
   const contents = await readTextFile("wikis.json", {
-    dir: BaseDirectory.AppData,
+    baseDir: BaseDirectory.AppData,
   }).catch((err) => {
-    getToastStore().trigger(
-      getToastSettings(ToastType.ERROR, `Error reading wikis.json: ${err}`),
-    );
+    console.log(err);
   });
   wikis.set(JSON.parse(contents as string));
 }

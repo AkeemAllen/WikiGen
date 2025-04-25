@@ -14,15 +14,17 @@
   import NumberInput from "./NumberInput.svelte";
   import TextInput from "./TextInput.svelte";
   import PokemonMovesetTab from "$lib/components/PokemonMovesTab.svelte";
-  import { BaseDirectory, writeBinaryFile } from "@tauri-apps/api/fs";
+  import { BaseDirectory, writeFile } from "@tauri-apps/plugin-fs";
   import { selectedWiki } from "../../store";
   import { addMoves, base64ToArray } from "$lib/utils";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
+  import type { QueryResult } from "@tauri-apps/plugin-sql";
 
-  let pokemonSearch: [number, string] = [0, ""];
-  let newSpriteImage: string = "";
-  let newPokemon: Pokemon = {
+  let pokemonSearch: [number, string] = $state([0, ""]);
+  let newSpriteImage: string = $state("");
+  let newPokemon: Pokemon = $state({
+    id: 0,
     dex_number: 0,
     name: "",
     types: "normal",
@@ -35,10 +37,16 @@
     sp_attack: 0,
     sp_defense: 0,
     speed: 0,
-  } as Pokemon;
-  let copiedMoveset: PokemonMove[] = [];
+    evolution_method: "no_change",
+    evolved_pokemon: null,
+    evolution_item: null,
+    evolution_level: null,
+    evolution_other: null,
+    render: "false",
+  });
+  let copiedMoveset: PokemonMove[] = $state([]);
 
-  let tabSet: number = 0;
+  let tabSet: number = $state(0);
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
     value: id,
@@ -138,16 +146,16 @@
           "no_change",
         ],
       )
-      .then((res) => {
+      .then((res: QueryResult) => {
         // Write image to file
         const imageBytes = base64ToArray(
           newSpriteImage.replace("data:image/png;base64,", ""),
           "image/png",
         );
-        writeBinaryFile(
+        writeFile(
           `${$selectedWiki.name}/dist/docs/img/pokemon/${newPokemon.name}.png`,
-          imageBytes,
-          { dir: BaseDirectory.AppData },
+          new Uint8Array(imageBytes),
+          { baseDir: BaseDirectory.AppData },
         ).catch((err) => {
           toastStore.trigger(
             getToastSettings(
@@ -167,13 +175,13 @@
           secondaryMoveId: null,
           secondaryMove: "",
         }));
-        addMoves(moveset, res.lastInsertId, $db).catch((err) => {
+        addMoves(moveset, res.lastInsertId as number, $db).catch((err) => {
           toastStore.trigger(getToastSettings(ToastType.SUCCESS, err));
         });
 
         // Add new pokemon to pokemonList
         $pokemonList.push([
-          res.lastInsertId,
+          res?.lastInsertId as number,
           newPokemon.dex_number,
           newPokemon.name,
           newPokemon.types,
@@ -237,7 +245,7 @@
     type="file"
     accept="image/png"
     class="mt-2"
-    on:change={onImageUpload}
+    onchange={onImageUpload}
   />
 </div>
 
@@ -246,7 +254,7 @@
     label="Pokemon Name*"
     bind:value={newPokemon.name}
     class="w-40"
-    inputHandler={(e) => {
+    inputHandler={(e: any) => {
       newPokemon.name = e.target.value.toLowerCase().replaceAll(" ", "-");
     }}
   />
@@ -264,7 +272,7 @@
   <Tab bind:group={tabSet} name="pokemon-moves" value={1} class="text-sm"
     >Moves</Tab
   >
-  <svelte:fragment slot="panel">
+  <div slot="panel">
     {#if tabSet === 0}
       <PokemonDetailsTab bind:pokemon={newPokemon} isNewPokemon={true} />
     {/if}
@@ -275,5 +283,7 @@
         generatePokemonPage={() => {}}
       />
     {/if}
-  </svelte:fragment>
+  </div>
+  <!-- {#snippet panel()}
+  {/snippet} -->
 </TabGroup>

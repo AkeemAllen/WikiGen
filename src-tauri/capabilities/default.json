@@ -1,0 +1,76 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-capability",
+  "description": "Capability for the main window",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:webview:allow-create-webview-window",
+    "core:webview:allow-webview-close",
+    "core:window:allow-destroy",
+    "core:window:allow-close",
+    "process:default",
+    "fs:default",
+    "fs:allow-resource-read-recursive",
+    "fs:allow-resource-write-recursive",
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [
+        {
+          "path": "$APPDATA/**/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-create",
+      "allow": [
+        {
+          "path": "$APPDATA/**/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-app-read-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/**/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-app-write-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/**/*"
+        }
+      ]
+    },
+    "sql:default",
+    {
+      "identifier": "sql:allow-load",
+      "allow": [
+        {
+          "path": "$APPDATA/**/*"
+        }
+      ]
+    },
+    {
+      "identifier": "sql:allow-execute",
+      "allow": [
+        {
+          "path": "$APPDATA/**/*"
+        }
+      ]
+    },
+    "updater:default",
+    {
+      "identifier": "updater:allow-check",
+      "allow": [
+        {
+          "path": "$APPDATA/**/*"
+        }
+      ]
+    },
+    "store:default"
+  ]
+}

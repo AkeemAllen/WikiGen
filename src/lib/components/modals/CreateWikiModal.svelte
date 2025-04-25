@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import IconPlus from "@tabler/icons-svelte/icons/plus";
   import { wikis, selectedWiki } from "../../../store";
   import {
@@ -10,21 +12,27 @@
   import BaseModal from "$lib/components/BaseModal.svelte";
   import TextInput from "$lib/components/TextInput.svelte";
   import Button from "$lib/components/Button.svelte";
-  import { BaseDirectory, writeTextFile } from "@tauri-apps/api/fs";
-  import { invoke } from "@tauri-apps/api";
+  import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
+  import { invoke } from "@tauri-apps/api/core";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
 
-  export let open = false;
+  interface Props {
+    open?: boolean;
+  }
 
-  let wikiName = "";
-  let wikiCodeName = "";
-  let wikiDescription = "";
+  let { open = $bindable(false) }: Props = $props();
 
-  let loading: boolean = false;
+  let wikiName = $state("");
+  let wikiCodeName = $state("");
+  let wikiDescription = $state("");
 
-  $: wikiCodeName = wikiName.toLowerCase().replaceAll(" ", "-");
+  let loading: boolean = $state(false);
+
+  run(() => {
+    wikiCodeName = wikiName.toLowerCase().replaceAll(" ", "-");
+  });
 
   async function createWiki() {
     loading = true;
@@ -40,7 +48,7 @@
     };
 
     await writeTextFile("wikis.json", JSON.stringify($wikis), {
-      dir: BaseDirectory.AppData,
+      baseDir: BaseDirectory.AppData,
     });
     await invoke("create_wiki", {
       wikiName: wikiCodeName,
@@ -94,7 +102,7 @@
       class="mt-2 block w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
       placeholder="Wiki Description"
       bind:value={wikiDescription}
-    />
+></textarea>
   </div>
   <Button
     class="w-32"

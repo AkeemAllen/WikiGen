@@ -10,12 +10,8 @@
   } from "../../store/items";
   import { selectedWiki } from "../../store";
   import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
-  import { invoke } from "@tauri-apps/api";
-  import {
-    writeBinaryFile,
-    BaseDirectory,
-    readBinaryFile,
-  } from "@tauri-apps/api/fs";
+  import { invoke } from "@tauri-apps/api/core";
+  import { writeFile, BaseDirectory, readFile } from "@tauri-apps/plugin-fs";
   import TextInput from "$lib/components/TextInput.svelte";
   import { db } from "../../store/db";
   import { base64ToArray, isNullEmptyOrUndefined } from "$lib/utils";
@@ -29,24 +25,26 @@
 
   const toastStore = getToastStore();
 
-  let itemSearch: [number, string] = [0, ""];
+  let itemSearch: [number, string] = $state([0, ""]);
 
-  let item: Item = {} as Item;
-  let originalItemDetails: Item = {} as Item;
-  let spriteImage: string = "";
+  let item: Item = $state({} as Item);
+  let originalItemDetails: Item = $state({} as Item);
+  let spriteImage: string = $state("");
 
-  let tabSet: number = 0;
+  let tabSet: number = $state(0);
 
-  let itemLocations: ItemLocation[] = [];
+  let itemLocations: ItemLocation[] = $state([]);
 
-  let newItem: Item = {} as Item;
-  let newSpriteImage: string = "";
-  let newItemModalOpen: boolean = false;
+  let newItem: Item = $state({} as Item);
+  let newSpriteImage: string = $state("");
+  let newItemModalOpen: boolean = $state(false);
 
-  $: itemListOptions = $itemsList.map(([id, name]) => ({
-    label: name,
-    value: id,
-  }));
+  let itemListOptions = $derived(
+    $itemsList.map(([id, name]) => ({
+      label: name,
+      value: id,
+    })),
+  );
 
   // async function generateItemLocationPage() {
   //   await invoke("generate_item_location_page_with_handle", {
@@ -89,7 +87,7 @@
 
     await $db
       .select<Item[]>("SELECT * FROM items WHERE id = $1;", [itemSearch[0]])
-      .then(async (res) => {
+      .then(async (res: any) => {
         item = res[0];
         originalItemDetails = cloneDeep(item);
 
@@ -111,15 +109,15 @@
           });
 
         // Reading in image separately
-        spriteImage = await readBinaryFile(
+        spriteImage = await readFile(
           `${$selectedWiki.name}/dist/docs/img/items/${item.name}.png`,
-          { dir: BaseDirectory.AppData },
+          { baseDir: BaseDirectory.AppData },
         )
-          .then((res) => {
+          .then((res: any) => {
             const blob = new Blob([res], { type: "image/png" });
             return URL.createObjectURL(blob);
           })
-          .catch((err) => {
+          .catch((err: any) => {
             console.log(err);
             if (err.includes("No such file or directory")) {
               return "404";
@@ -159,10 +157,11 @@
           newSpriteImage.replace("data:image/png;base64,", ""),
           "image/png",
         );
-        writeBinaryFile(
+        const contents = new Uint8Array(imageBytes);
+        writeFile(
           `${$selectedWiki.name}/dist/docs/img/items/${newItem.name}.png`,
-          imageBytes,
-          { dir: BaseDirectory.AppData },
+          contents,
+          { baseDir: BaseDirectory.AppData },
         ).then(() => {
           newSpriteImage = "";
         });
@@ -180,7 +179,7 @@
         });
         generateItemPage();
       })
-      .catch((err) => {
+      .catch((err: any) => {
         toastStore.trigger(
           getToastSettings(ToastType.ERROR, "Error creating new item!"),
         );
@@ -248,7 +247,7 @@
       type="file"
       accept="image/png"
       class="mt-2"
-      on:change={onImageUpload}
+      onchange={onImageUpload}
     />
   </div>
   <div>
@@ -261,7 +260,7 @@
         id="effect"
         bind:value={newItem.effect}
         class="block h-32 w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-      />
+      ></textarea>
     </div>
   </div>
   <Button
@@ -337,14 +336,14 @@
           id="effect"
           bind:value={item.effect}
           class="block h-20 w-[50rem] rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-        />
+        ></textarea>
       </div>
     </div>
     <TabGroup>
       <Tab bind:group={tabSet} name="item-locations" value={0} class="text-sm"
         >Item Locations</Tab
       >
-      <svelte:fragment slot="panel">
+      <div slot="panel">
         {#if tabSet === 0}
           <ItemLocationTable
             {itemLocations}
@@ -352,14 +351,16 @@
             generatePage={generateItemPage}
           />
         {/if}
-      </svelte:fragment>
+      </div>
+      <!-- {#snippet panel()}
+          {/snippet} -->
     </TabGroup>
     {#if !item.is_new}
       <label class="block text-sm font-medium leading-6 text-gray-900">
         <input
           type="checkbox"
           checked={Boolean(item.is_modified)}
-          on:change={setModified}
+          onchange={setModified}
           class="text-sm font-medium leading-6 text-gray-900"
         />
         Mark Item as Modified

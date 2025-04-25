@@ -10,26 +10,26 @@
   import { selectedWiki } from "../../../store";
   import {
     BaseDirectory,
-    createDir,
+    create,
     exists,
-    readBinaryFile,
-    removeFile,
-    writeBinaryFile,
-  } from "@tauri-apps/api/fs";
+    readFile,
+    remove,
+    writeFile,
+  } from "@tauri-apps/plugin-fs";
   import { onMount } from "svelte";
   import { base64ToArray } from "$lib/utils";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
 
   const toastStore = getToastStore();
-  export let data;
-  let tabSet: number = 0;
-  let newRouteImage: string = "";
+  let { data } = $props();
+  let tabSet: number = $state(0);
+  let newRouteImage: string = $state("");
 
   onMount(async () => {
-    newRouteImage = await readBinaryFile(
+    newRouteImage = await readFile(
       `${$selectedWiki.name}/dist/docs/img/routes/${data.title}.png`,
-      { dir: BaseDirectory.AppData },
+      { baseDir: BaseDirectory.AppData },
     )
       .then((res) => {
         const blob = new Blob([res], { type: "image/png" });
@@ -61,14 +61,13 @@
     const routeImagesDirectoryExists = await exists(
       `${$selectedWiki.name}/dist/docs/img/routes`,
       {
-        dir: BaseDirectory.AppData,
+        baseDir: BaseDirectory.AppData,
       },
     );
 
     if (!routeImagesDirectoryExists) {
-      await createDir(`${$selectedWiki.name}/dist/docs/img/routes`, {
-        dir: BaseDirectory.AppData,
-        recursive: true,
+      await create(`${$selectedWiki.name}/dist/docs/img/routes`, {
+        baseDir: BaseDirectory.AppData,
       });
     }
 
@@ -76,17 +75,17 @@
       const previousImageExists = await exists(
         `${$selectedWiki.name}/dist/docs/img/routes/${data.title}.png`,
         {
-          dir: BaseDirectory.AppData,
+          baseDir: BaseDirectory.AppData,
         },
       );
 
       if (!previousImageExists) {
         return;
       }
-      await removeFile(
+      await remove(
         `${$selectedWiki.name}/dist/docs/img/routes/${data.title}.png`,
         {
-          dir: BaseDirectory.AppData,
+          baseDir: BaseDirectory.AppData,
         },
       );
       return;
@@ -97,10 +96,10 @@
       "image/png",
     );
 
-    await writeBinaryFile(
+    await writeFile(
       `${$selectedWiki.name}/dist/docs/img/routes/${data.title}.png`,
-      imageBytes,
-      { dir: BaseDirectory.AppData },
+      new Uint8Array(imageBytes),
+      { baseDir: BaseDirectory.AppData },
     )
       .then(() => {
         toastStore.trigger(
@@ -150,7 +149,7 @@
   <Tab bind:group={tabSet} name="properties" value={2} class="text-sm"
     >Properties</Tab
   >
-  <svelte:fragment slot="panel">
+  <div slot="panel">
     {#if tabSet === 0}
       <WildEncounters routeName={data.title} />
     {/if}
@@ -171,7 +170,7 @@
         {#if newRouteImage !== ""}
           <button
             class="flex flex-row items-center gap-2 text-white bg-[#111827] rounded-2xl text-[14px] pt-[4px] pb-[5px] pl-3 pr-3"
-            on:click={() => {
+            onclick={() => {
               newRouteImage = "";
             }}
           >
@@ -184,7 +183,7 @@
           type="file"
           accept="image/png"
           class="mt-2"
-          on:change={onImageUpload}
+          onchange={onImageUpload}
         />
       </div>
       <div class="w-36">
@@ -204,5 +203,9 @@
         />
       </div>
     {/if}
-  </svelte:fragment>
+  </div>
+  <!-- {#snippet panel()}
+
+
+  {/snippet} -->
 </TabGroup>

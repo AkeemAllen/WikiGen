@@ -1,10 +1,6 @@
-use std::{
-    env,
-    io::{self, BufRead, BufReader, Read, Write},
-    process::{Command, Stdio},
-};
+use std::{env, process::Command};
 
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 use crate::logger::{self, LogLevel};
 
@@ -14,7 +10,7 @@ pub async fn deploy_wiki(
     ssh_url: &str,
     app_handle: AppHandle,
 ) -> Result<String, String> {
-    let data_dir = app_handle.path_resolver().app_data_dir().unwrap();
+    let data_dir = app_handle.path().app_data_dir().unwrap();
     let base_path = data_dir.join(wiki_name);
     let dist_directory = base_path.join("dist");
 

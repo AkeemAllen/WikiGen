@@ -11,13 +11,13 @@
   import { ToastType, getToastSettings } from "$lib/utils/toasts";
   import { generatePokemonPages } from "$lib/utils/generators";
 
-  let startingPokemon: [number, number, string] = [0, 0, ""];
-  let endingPokemon: [number, number, string] = [0, 0, ""];
-  $: rangeTotal = endingPokemon[1] - startingPokemon[1];
+  let startingPokemon: [number, number, string] = $state([0, 0, ""]);
+  let endingPokemon: [number, number, string] = $state([0, 0, ""]);
+  let rangeTotal = $derived(endingPokemon[1] - startingPokemon[1]);
 
-  let tabSet: number = 0;
-  let loading: boolean = false;
-  let pageGenerationWarningModalOpen: boolean = false;
+  let tabSet: number = $state(0);
+  let loading: boolean = $state(false);
+  let pageGenerationWarningModalOpen: boolean = $state(false);
 
   let pokemonListOptions = $pokemonList.map(([id, dex_number, name]) => ({
     label: `${dex_number} - ${capitalizeWords(name)}`,
@@ -82,7 +82,7 @@
   <Tab bind:group={tabSet} name="new-pokemon" value={2} class="text-sm"
     >Create New Pokemon</Tab
   >
-  <svelte:fragment slot="panel">
+  <div slot="panel">
     {#if tabSet === 0}
       <PokemonPanel />
     {/if}
@@ -151,5 +151,7 @@
     {#if tabSet === 2}
       <NewPokemonPanel />
     {/if}
-  </svelte:fragment>
+  </div>
+  <!-- {#snippet panel()}
+  {/snippet} -->
 </TabGroup>

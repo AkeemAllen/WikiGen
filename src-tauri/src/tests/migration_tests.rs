@@ -1,12 +1,31 @@
-use crate::{database::get_sqlite_connection, migrations::create_categories_table};
+use crate::migrations::{gather_migrations, run_migrations};
 
-#[tokio::test]
-async fn test_create_categories_table() {
+#[test]
+fn test_gather_migrations() {
+    let resources_path = std::path::PathBuf::from("/Applications/WikiGen.app/Contents/Resources");
     let base_path =
         std::path::PathBuf::from("/Users/akeemallen/Library/Application Support/com.wikigen.dev");
 
-    let sqlite_file_path = base_path.join("testing").join("testing.db");
+    match gather_migrations(&base_path, &resources_path) {
+        Ok(migrations) => migrations,
+        Err(err) => panic!("Error checking for migrations: {}", err),
+    };
+}
 
-    let conn = get_sqlite_connection(sqlite_file_path).await.unwrap();
-    create_categories_table(&conn).await.unwrap();
+#[tokio::test]
+async fn test_run_migrations() {
+    let resources_path = std::path::PathBuf::from("/Applications/WikiGen.app/Contents/Resources");
+
+    let base_path =
+        std::path::PathBuf::from("/Users/akeemallen/Library/Application Support/com.wikigen.dev");
+
+    let migrations = match gather_migrations(&base_path, &resources_path) {
+        Ok(migrations) => migrations,
+        Err(err) => panic!("Error checking for migrations: {}", err),
+    };
+
+    match run_migrations(migrations, &base_path).await {
+        Ok(migrations) => migrations,
+        Err(err) => panic!("Error checking for migrations: {}", err),
+    };
 }

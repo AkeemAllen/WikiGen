@@ -11,14 +11,14 @@
   import { moveList, type Move } from "../../store/moves";
   import { pokemonList } from "../../store/pokemon";
   import { types as pokemonTypes } from "../../store/types";
-  import { invoke } from "@tauri-apps/api/tauri";
+  import { invoke } from "@tauri-apps/api/core";
   import { db } from "../../store/db";
   import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
   import BaseModal from "$lib/components/BaseModal.svelte";
   import { DataHandler } from "@vincjo/datatables";
   import IconTrash from "@tabler/icons-svelte/icons/trash";
   import IconEdit from "@tabler/icons-svelte/icons/edit";
-  import { BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
+  import { BaseDirectory, readFile } from "@tauri-apps/plugin-fs";
   import MultiSelect from "svelte-multiselect";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
@@ -28,32 +28,34 @@
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
 
   const toastStore = getToastStore();
-  let tabSet: number = 0;
+  let tabSet: number = $state(0);
 
-  let moveSearch: [number, string] = [0, ""];
-  let pokemonSearch: string = "";
+  let moveSearch: [number, string] = $state([0, ""]);
+  let pokemonSearch: string = $state("");
 
-  let newMoveModalOpen: boolean = false;
-  let newMove: Move = {
+  let newMoveModalOpen: boolean = $state(false);
+  let newMove: Move = $state({
     damage_class: "status",
     type: "normal",
-  } as Move;
-  let move: Move = {} as Move;
-  let originalMoveDetails: Move = {} as Move;
+  } as Move);
+  let move: Move = $state({} as Move);
+  let originalMoveDetails: Move = $state({} as Move);
 
-  let addMoveModalOpen: boolean = false;
-  let editMoveModalOpen: boolean = false;
-  let newMoveLearner: MoveLearner = {
+  let addMoveModalOpen: boolean = $state(false);
+  let editMoveModalOpen: boolean = $state(false);
+  let newMoveLearner: MoveLearner = $state({
     pokemonId: 0,
     name: "",
     learn_method: "",
     level_learned: 0,
-  };
+  });
 
-  let moveListOptions = $moveList.map(([id, name]) => ({
-    label: name,
-    value: id,
-  }));
+  let moveListOptions = $state(
+    $moveList.map(([id, name]) => ({
+      label: name,
+      value: id,
+    })),
+  );
 
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
@@ -66,8 +68,8 @@
     learn_method: string;
     level_learned: number;
   };
-  let pokemonWhoCanLearnMove: MoveLearner[] = [];
-  let newLearnMethods: string[] = [];
+  let pokemonWhoCanLearnMove: MoveLearner[] = $state([]);
+  let newLearnMethods: string[] = $state([]);
 
   const rowsPerPageOptions = [
     { label: "5", value: 5 },
@@ -77,11 +79,13 @@
     { label: "100", value: 100 },
   ];
 
-  $: handler = new DataHandler(pokemonWhoCanLearnMove, {
-    rowsPerPage: 5,
-  });
-  $: rows = handler.getRows();
-  $: rowsPerPage = handler.getRowsPerPage();
+  let handler = $derived(
+    new DataHandler(pokemonWhoCanLearnMove, {
+      rowsPerPage: 5,
+    }),
+  );
+  let rows = $derived(handler.getRows());
+  let rowsPerPage = $derived(handler.getRowsPerPage());
 
   async function generatePokemonPage(pokemonId: number) {
     await generatePokemonPages([pokemonId], $selectedWiki.name)
@@ -209,7 +213,7 @@
           getToastSettings(ToastType.SUCCESS, "Move created!"),
         );
         newMoveModalOpen = false;
-        $moveList.push([res.lastInsertId, newMove.name]);
+        $moveList.push([res.lastInsertId as number, newMove.name]);
 
         newMove = {
           damage_class: "status",
@@ -340,9 +344,9 @@
 
   async function getSpriteImage(pokemonName: string): Promise<string> {
     let sprite = "";
-    await readBinaryFile(
+    await readFile(
       `${$selectedWiki.name}/dist/docs/img/pokemon/${pokemonName}.png`,
-      { dir: BaseDirectory.AppData },
+      { baseDir: BaseDirectory.AppData },
     )
       .then((res) => {
         const blob = new Blob([res], { type: "image/png" });
@@ -364,7 +368,7 @@
   <TextInput
     label="New Move Name"
     bind:value={newMove.name}
-    inputHandler={(e) => {
+    inputHandler={(e: any) => {
       newMove.name = e.target.value.toLowerCase().replaceAll(" ", "-");
     }}
   />
@@ -522,7 +526,7 @@
     <Tab bind:group={tabSet} value={1} name="pokemon" class="text-sm"
       >Pokemon</Tab
     >
-    <svelte:fragment slot="panel">
+    <div slot="panel">
       {#if tabSet === 0}
         <div class="ml-2 mt-4">
           <div class="grid grid-cols-2 gap-x-10 gap-y-5 pr-4">
@@ -573,7 +577,7 @@
             <input
               type="checkbox"
               checked={Boolean(move.is_modified)}
-              on:change={setModified}
+              onchange={setModified}
               class="text-sm font-medium leading-6 text-gray-900"
             />
             Mark Move as Modified
@@ -637,7 +641,7 @@
                   <td>{row.level_learned}</td>
                   <td
                     class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-                    on:click={() => {
+                    onclick={() => {
                       newMoveLearner = row;
                       editMoveModalOpen = true;
                       newLearnMethods = row.learn_method.split(",");
@@ -647,7 +651,7 @@
                   </td>
                   <td
                     class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-                    on:click={() => deleteMoveFromPokemon(row.pokemonId)}
+                    onclick={() => deleteMoveFromPokemon(row.pokemonId)}
                   >
                     <IconTrash size={18} class="text-gray-500" />
                   </td>
@@ -660,6 +664,9 @@
           </footer>
         </div>
       {/if}
-    </svelte:fragment>
+    </div>
+    <!-- {#snippet panel()}
+
+      {/snippet} -->
   </TabGroup>
 {/if}

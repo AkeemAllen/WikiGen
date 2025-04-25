@@ -1,4 +1,4 @@
-import Database from "tauri-plugin-sql-api";
+import Database from "@tauri-apps/plugin-sql";
 import type { Wiki } from "../../store";
 import { db } from "../../store/db";
 import { get } from "svelte/store";
@@ -7,7 +7,7 @@ import { itemsList, type SearchItem } from "../../store/items";
 import { abilitiesList, type SearchAbility } from "../../store/abilities";
 import { naturesList, type SearchNature } from "../../store/natures";
 import { moveList, type SearchMove } from "../../store/moves";
-import { BaseDirectory, readTextFile } from "@tauri-apps/api/fs";
+import { BaseDirectory, readTextFile } from "@tauri-apps/plugin-fs";
 import { routes } from "../../store/gameRoutes";
 import { sortRoutesByPosition } from "$lib/utils";
 import { types } from "../../store/types";
@@ -15,7 +15,7 @@ import { ToastType, getToastSettings } from "./toasts";
 
 async function loadRoutes(wikiName: string) {
   const routesFromFile = await readTextFile(`${wikiName}/data/routes.json`, {
-    dir: BaseDirectory.AppData,
+    baseDir: BaseDirectory.AppData,
   });
 
   routes.set(sortRoutesByPosition(JSON.parse(routesFromFile as string)));
@@ -23,7 +23,7 @@ async function loadRoutes(wikiName: string) {
 
 async function loadTypes(wikiName: string) {
   const typesFromFile: any = await readTextFile(`${wikiName}/data/types.json`, {
-    dir: BaseDirectory.AppData,
+    baseDir: BaseDirectory.AppData,
   });
   types.set(JSON.parse(typesFromFile)["types"]);
 }
