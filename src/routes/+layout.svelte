@@ -73,8 +73,6 @@
   let updaterModalOpen = $state(false);
   let displayUpdateButton = $state(false);
   let updateStatus = $state("Updating");
-  // let downloadProgress = 0;
-  // let contentLength = 0;
   let runningMigrations = $state(false);
   let createWikiModalOpen = $state(false);
   let deleteWikiModalOpen = $state(false);
@@ -105,32 +103,39 @@
   }
 
   onMount(async () => {
+    setInterval(checkForUpdate, 60000);
+
     const new_migrations_present = await readTextFile(
       `resources/migrations/new_migrations_present.txt`,
       {
         baseDir: BaseDirectory.Resource,
       },
-    );
+    ).catch((error) => {
+      console.error("Error reading new_migrations_present.txt:", error);
+      return "false";
+    });
 
     if (new_migrations_present.trim() === "true") {
-      await checkAndRunMigrations().then(() => {
-        toastStore.trigger(
-          getToastSettings(
-            ToastType.SUCCESS,
-            "Migrations completed successfully",
-          ),
-        );
-        writeTextFile(
-          `resources/migrations/new_migrations_present.txt`,
-          "false",
-          {
-            baseDir: BaseDirectory.Resource,
-          },
-        );
-      });
+      await checkAndRunMigrations()
+        .then(() => {
+          toastStore.trigger(
+            getToastSettings(
+              ToastType.SUCCESS,
+              "Migrations completed successfully",
+            ),
+          );
+          writeTextFile(
+            `resources/migrations/new_migrations_present.txt`,
+            "false",
+            {
+              baseDir: BaseDirectory.Resource,
+            },
+          );
+        })
+        .catch((error) => {
+          console.error("Error running migrations:", error);
+        });
     }
-
-    checkForUpdate();
   });
 
   const toastStore = getToastStore();
