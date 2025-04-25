@@ -254,44 +254,6 @@ async fn create_migrations_table(conn: &Pool<Sqlite>) -> Result<(), String> {
     Ok(())
 }
 
-async fn add_item_categories(conn: &Pool<Sqlite>) -> Result<(), String> {
-    let migration: Migration = Migration {
-        name: "add_item_categories".to_string(),
-        app_version: "1.9.0".to_string(),
-        sql: "INSERT INTO item_categories".to_string(),
-    };
-
-    match sqlx::query(&migration.sql).execute(conn).await {
-        Ok(_) => insert_migration(conn, &migration).await?,
-        Err(err) => {
-            return Err(format!(
-                "Failed to execute add_item_categories migration: {}",
-                err
-            ))
-        }
-    };
-
-    Ok(())
-}
-
-pub async fn create_categories_table(conn: &Pool<Sqlite>) -> Result<(), Error> {
-    let migration: Migration = Migration {
-        name: "create_categories_table".to_string(),
-        app_version: "1.9.0".to_string(),
-        sql: "CREATE TABLE IF NOT EXISTS item_categories (
-                    id INTEGER PRIMARY KEY,
-                    name TEXT NOT NULL
-                )"
-        .to_string(),
-    };
-    match sqlx::query(&migration.sql).execute(conn).await {
-        Ok(_) => {}
-        Err(err) => return Err(err),
-    };
-
-    Ok(())
-}
-
 async fn insert_migration(conn: &Pool<Sqlite>, migration: &Migration) -> Result<(), String> {
     match sqlx::query(
         "INSERT INTO migrations (name, app_version, execution_order, sql) VALUES (?, ?, ?, ?)",
