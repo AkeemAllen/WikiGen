@@ -1,0 +1,6 @@
+{
+  "name": "create-categories-table",
+  "app_version": "1.9.1",
+  "execution_order": 1,
+  "sql": "CREATE TABLE IF NOT EXISTS item_categories (id INTEGER PRIMARY KEY, name TEXT NOT NULL)"
+}

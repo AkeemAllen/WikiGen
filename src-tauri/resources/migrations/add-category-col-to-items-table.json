@@ -1,0 +1,6 @@
+{
+  "name": "add-category-col-to-items-table",
+  "app_version": "1.9.1",
+  "execution_order": 3,
+  "sql": "ALTER TABLE items ADD COLUMN category TEXT"
+}

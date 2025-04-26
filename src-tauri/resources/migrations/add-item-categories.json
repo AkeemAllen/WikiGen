@@ -1,0 +1,6 @@
+{
+  "name": "create-categories-table",
+  "app_version": "1.9.1",
+  "execution_order": 2,
+  "sql": "INSERT INTO item_categories (name) VALUES ('Misc'), ('Battle'), ('Held'), ('Medicine'), ('Pokeballs'), ('Berries'), ('Machines'), ('General'), ('Key')"
+}

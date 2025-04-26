@@ -1,0 +1,6 @@
+{
+  "name": "migration-test-2-delete-table",
+  "app_version": "1.9.1",
+  "execution_order": 1,
+  "sql": "DROP TABLE IF EXISTS migration_test;"
+}
