@@ -1,0 +1,6 @@
+{
+  "name": "update-items-machine",
+  "app_version": "1.9.1",
+  "execution_order": 4,
+  "sql": "UPDATE items SET category='Machines' WHERE name GLOB 'tm[0-9]*' OR name GLOB 'hm[0-9]*' OR name GLOB 'tr[0-9]*';"
+}

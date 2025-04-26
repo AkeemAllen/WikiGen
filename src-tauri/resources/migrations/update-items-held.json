@@ -1,0 +1,6 @@
+{
+  "name": "update-items-held",
+  "app_version": "1.9.1",
+  "execution_order": 4,
+  "sql": "UPDATE items SET category='Held' WHERE effect LIKE 'Held%' and name NOT LIKE '%berry%';"
+}

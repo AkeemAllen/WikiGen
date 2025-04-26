@@ -1,0 +1,6 @@
+{
+  "name": "update-items-berries",
+  "app_version": "1.9.1",
+  "execution_order": 4,
+  "sql": "UPDATE items SET category='Berries' WHERE name LIKE '%berry';"
+}

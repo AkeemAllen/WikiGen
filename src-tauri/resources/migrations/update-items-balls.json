@@ -1,0 +1,6 @@
+{
+  "name": "update-items-balls",
+  "app_version": "1.9.1",
+  "execution_order": 4,
+  "sql": "UPDATE items SET category='Pokeballs' WHERE name LIKE '%ball%' AND effect NOT LIKE 'Held%' AND effect NOT LIKE '%XXX%';"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "update-items-medicine",
+  "app_version": "1.9.1",
+  "execution_order": 4,
+  "sql": "UPDATE items SET category='Medicine' WHERE  effect LIKE '%Used on a party Pok%' AND effect NOT LIKE '%in battle%' AND name NOT LIKE '%berry%' AND name NOT LIKE '%stone%' AND name NOT LIKE '%wing%';"
+}

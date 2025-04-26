@@ -1,0 +1,6 @@
+{
+  "name": "update-items-misc",
+  "app_version": "1.9.1",
+  "execution_order": 6,
+  "sql": "UPDATE items SET category='Misc' WHERE category IS NULL;"
+}

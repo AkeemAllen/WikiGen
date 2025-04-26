@@ -1,0 +1,6 @@
+{
+  "name": "update-items-battle",
+  "app_version": "1.9.1",
+  "execution_order": 4,
+  "sql": "UPDATE items SET category='Battle' WHERE effect LIKE '%Used on a party Pok%' AND effect LIKE '%in battle%' AND name NOT LIKE '%berry%';"
+}
