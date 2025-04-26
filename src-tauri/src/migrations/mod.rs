@@ -1,5 +1,3 @@
-// mod pokemon_migrations;
-
 use std::{
     collections::HashMap,
     fs::{self, File},
@@ -186,18 +184,6 @@ pub async fn run_migrations(
                     &wiki_path,
                     logger::LogLevel::MigrationError,
                     &format!("Failed to execute migration {}: {}", migration.name, err),
-                );
-                continue;
-            }
-        }
-
-        match add_item_categories(&conn).await {
-            Ok(_) => {}
-            Err(err) => {
-                logger::write_log(
-                    &wiki_path,
-                    logger::LogLevel::MigrationError,
-                    &format!("Failed to migrate hisuian forms: {}", err),
                 );
                 continue;
             }

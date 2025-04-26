@@ -6,10 +6,12 @@ fn test_gather_migrations() {
     let base_path =
         std::path::PathBuf::from("/Users/akeemallen/Library/Application Support/com.wikigen.dev");
 
-    match gather_migrations(&base_path, &resources_path) {
+    let migrations = match gather_migrations(&base_path, &resources_path) {
         Ok(migrations) => migrations,
         Err(err) => panic!("Error checking for migrations: {}", err),
     };
+
+    assert!(!migrations.is_empty());
 }
 
 #[tokio::test]
