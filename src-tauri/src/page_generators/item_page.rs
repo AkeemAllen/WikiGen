@@ -12,7 +12,7 @@ use tauri::{AppHandle, Manager};
 use crate::{
     database::{get_mkdocs_config, get_sqlite_connection},
     helpers::{capitalize_and_remove_hyphens, FALSE, TRUE},
-    logger,
+    logger::{write_log, LogLevel},
 };
 
 #[derive(Debug, Clone, FromRow)]
@@ -43,7 +43,7 @@ pub async fn generate_items_page_with_handle(
     let conn = match get_sqlite_connection(sqlite_path).await {
         Ok(conn) => conn,
         Err(err) => {
-            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            write_log(&base_path.join(wiki_name), LogLevel::Error, &err);
             return Err(err);
         }
     };
@@ -55,11 +55,7 @@ pub async fn generate_items_page_with_handle(
         Ok(items) => items,
         Err(err) => {
             let message = format!("Failed to get items: {}", err);
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
+            write_log(&base_path.join(wiki_name), LogLevel::Error, &message);
             return Err(message);
         }
     };
@@ -72,11 +68,7 @@ pub async fn generate_items_page_with_handle(
             Ok(item_locations) => item_locations,
             Err(err) => {
                 let message = format!("Failed to fetch item locations: {err}");
-                logger::write_log(
-                    &base_path.join(wiki_name),
-                    logger::LogLevel::Error,
-                    &message,
-                );
+                write_log(&base_path.join(wiki_name), LogLevel::Error, &message);
                 return Err(message);
             }
         };
@@ -94,7 +86,7 @@ pub fn generate_items_page(
     let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
         Ok(config) => config,
         Err(err) => {
-            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            write_log(&base_path.join(wiki_name), LogLevel::Error, &err);
             return Err(err);
         }
     };
@@ -108,11 +100,7 @@ pub fn generate_items_page(
         Ok(file) => file,
         Err(err) => {
             let message = format!("Failed to create item information file: {err}");
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
+            write_log(&base_path.join(wiki_name), LogLevel::Error, &message);
             return Err(message);
         }
     };
@@ -155,9 +143,9 @@ pub fn generate_items_page(
         ) {
             Ok(file) => file,
             Err(err) => {
-                logger::write_log(
+                write_log(
                     &base_path.join(wiki_name),
-                    logger::LogLevel::Error,
+                    LogLevel::Error,
                     &format!("Failed to remove item information page: {}", err),
                 );
             }
@@ -175,11 +163,7 @@ pub fn generate_items_page(
             Ok(file) => file,
             Err(err) => {
                 let message = format!("Failed to update mkdocs yaml file: {err}");
-                logger::write_log(
-                    &base_path.join(wiki_name),
-                    logger::LogLevel::Error,
-                    &message,
-                );
+                write_log(&base_path.join(wiki_name), LogLevel::Error, &message);
                 return Err(message);
             }
         }
@@ -191,11 +175,7 @@ pub fn generate_items_page(
         Ok(_) => {}
         Err(err) => {
             let message = format!("Failed to write item changes file: {err}");
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
+            write_log(&base_path.join(wiki_name), LogLevel::Error, &message);
             return Err(message);
         }
     }
@@ -223,11 +203,7 @@ pub fn generate_items_page(
         Ok(_) => {}
         Err(err) => {
             let message = format!("Failed to update mkdocs yaml file: {err}");
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
+            write_log(&base_path.join(wiki_name), LogLevel::Error, &message);
             return Err(message);
         }
     }
