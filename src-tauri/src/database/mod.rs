@@ -1,10 +1,14 @@
-use std::path::PathBuf;
+use std::{fs, path::PathBuf};
 
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 use tauri::{Emitter, Manager};
 use tauri_plugin_store::StoreExt;
 
-use crate::{logger, page_generators::game_routes::Routes, structs::mkdocs_structs::MKDocsConfig};
+use crate::{
+    logger::{self, write_log, LogLevel},
+    page_generators::game_routes::Routes,
+    structs::mkdocs_structs::MKDocsConfig,
+};
 
 pub async fn get_sqlite_connection(
     sqlite_file_path: std::path::PathBuf,
@@ -90,5 +94,23 @@ pub fn load_token(token: &str, app: tauri::AppHandle) -> Result<(), String> {
         }
     }
 
+    Ok(())
+}
+
+pub fn update_mkdocs_yaml(
+    wiki_name: &str,
+    base_path: &PathBuf,
+    mkdocs_config: &MKDocsConfig,
+) -> Result<(), String> {
+    let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
+
+    if let Err(err) = fs::write(
+        mkdocs_yaml_file_path,
+        serde_yaml::to_string(&mkdocs_config).unwrap(),
+    ) {
+        let message = format!("{wiki_name}: Failed to update mkdocs yaml file: {err}");
+        write_log(&base_path, LogLevel::Error, &message);
+        return Err(message);
+    }
     Ok(())
 }

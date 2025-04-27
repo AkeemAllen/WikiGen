@@ -10,7 +10,7 @@ use sqlx::FromRow;
 use tauri::{AppHandle, Manager};
 
 use crate::{
-    database::{get_mkdocs_config, get_sqlite_connection},
+    database::{get_mkdocs_config, get_sqlite_connection, update_mkdocs_yaml},
     helpers::{capitalize_and_remove_hyphens, FALSE, TRUE},
     logger::{write_log, LogLevel},
 };
@@ -40,6 +40,7 @@ pub async fn generate_items_page_with_handle(
 ) -> Result<String, String> {
     let base_path = app_handle.path().app_data_dir().unwrap();
     let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
+
     let conn = match get_sqlite_connection(sqlite_path).await {
         Ok(conn) => conn,
         Err(err) => {
@@ -163,28 +164,16 @@ pub fn generate_items_page(
             .as_sequence_mut()
             .unwrap()
             .remove(page_index);
-        match fs::write(
-            &mkdocs_yaml_file_path,
-            serde_yaml::to_string(&mkdocs_config).unwrap(),
-        ) {
-            Ok(file) => file,
-            Err(err) => {
-                let message = format!("{wiki_name}: Failed to update mkdocs yaml file: {err}");
-                write_log(&base_path, LogLevel::Error, &message);
-                return Err(message);
-            }
-        }
+
+        update_mkdocs_yaml(wiki_name, base_path, &mkdocs_config)?;
 
         return Ok("No Item information to generate. Item Information page removed".to_string());
     }
 
-    match item_information_file.write_all(format!("{}", items_markdown).as_bytes()) {
-        Ok(_) => {}
-        Err(err) => {
-            let message = format!("{wiki_name}: Failed to write item changes file: {err}");
-            write_log(&base_path, LogLevel::Error, &message);
-            return Err(message);
-        }
+    if let Err(err) = item_information_file.write_all(format!("{}", items_markdown).as_bytes()) {
+        let message = format!("{wiki_name}: Failed to write item changes file: {err}");
+        write_log(&base_path, LogLevel::Error, &message);
+        return Err(message);
     }
 
     if item_page_exists {
@@ -203,17 +192,7 @@ pub fn generate_items_page(
         .unwrap()
         .insert(1, Value::Mapping(item_changes));
 
-    match fs::write(
-        mkdocs_yaml_file_path,
-        serde_yaml::to_string(&mkdocs_config).unwrap(),
-    ) {
-        Ok(_) => {}
-        Err(err) => {
-            let message = format!("{wiki_name}: Failed to update mkdocs yaml file: {err}");
-            write_log(&base_path, LogLevel::Error, &message);
-            return Err(message);
-        }
-    }
+    update_mkdocs_yaml(wiki_name, base_path, &mkdocs_config)?;
 
     Ok("Items Page Generated".to_string())
 }
@@ -230,6 +209,7 @@ pub fn generate_item_modifications(items: &[Item]) -> String {
         .collect::<Vec<String>>();
     let mut item_modifications_markdown = String::new();
     let mut category_collection = String::new();
+
     item_modifications_markdown.push_str("### Modifications\n");
 
     unique_categories.sort();
@@ -278,6 +258,11 @@ pub fn generate_item_modifications(items: &[Item]) -> String {
 
         category_collection.push_str(&format!("\n???+ note \"{category}\"\n{item_entries_div}"));
     }
+
+    if category_collection.is_empty() {
+        return String::new();
+    }
+
     item_modifications_markdown.push_str(&category_collection);
 
     return item_modifications_markdown;
