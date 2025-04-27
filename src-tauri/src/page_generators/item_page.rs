@@ -1,4 +1,5 @@
 use std::{
+    collections::HashSet,
     fs::{self, File},
     io::Write,
     path::PathBuf,
@@ -18,6 +19,7 @@ use crate::{
 pub struct Item {
     pub name: String,
     pub effect: String,
+    pub category: String,
     pub is_modified: i32,
     pub is_new: i32,
 }
@@ -128,7 +130,8 @@ pub fn generate_items_page(
     }
 
     let mut items_markdown = String::new();
-    let item_changes_markdown = generate_item_changes(&items);
+    let item_changes_markdown = generate_item_modifications(&items);
+    // let item_modifications_markdown = generate_item_modifications(&items);
     let item_locations_markdown = generate_item_locations(&item_locations);
 
     if !item_changes_markdown.is_empty() {
@@ -198,7 +201,7 @@ pub fn generate_items_page(
     }
 
     if item_page_exists {
-        return Ok("Item Changes Page Updated".to_string());
+        return Ok("Item Page Updated".to_string());
     }
 
     let mut item_changes = Mapping::new();
@@ -230,6 +233,71 @@ pub fn generate_items_page(
     }
 
     Ok("Items Page Generated".to_string())
+}
+
+pub fn generate_item_modifications(items: &[Item]) -> String {
+    let categories = items
+        .iter()
+        .map(|item| item.category.clone())
+        .collect::<Vec<String>>();
+    let mut unique_categories = categories
+        .into_iter()
+        .collect::<HashSet<String>>()
+        .into_iter()
+        .collect::<Vec<String>>();
+    let mut item_modifications_markdown = String::new();
+    let mut category_collection = String::new();
+    item_modifications_markdown.push_str("### Modifications\n");
+
+    unique_categories.sort();
+
+    for category in unique_categories {
+        let mut category_items = items
+            .iter()
+            .filter(|item| item.category == category)
+            .collect::<Vec<&Item>>();
+
+        // Sorting so that new items are listed first
+        category_items.sort_by(|a, b| b.is_new.cmp(&a.is_new));
+
+        // Collecting the number of new items so I can split the list with a new line
+        // once we start going through modified entries
+        let num_of_new_items = category_items
+            .iter()
+            .filter(|item| item.is_new == TRUE)
+            .count();
+
+        let mut item_entries = String::new();
+
+        for (index, item) in category_items.iter().enumerate() {
+            if item.is_new == FALSE && item.is_modified == FALSE {
+                continue;
+            }
+
+            if index == num_of_new_items && num_of_new_items > 0 {
+                item_entries.push('\n');
+            }
+
+            let item_entry = format!(
+                "\t| {} | {} |\n",
+                format!(
+                    "{}<br/>{}",
+                    format!("![{}](img/items/{}.png)", &item.name, &item.name),
+                    capitalize_and_remove_hyphens(&item.name)
+                ),
+                &item.effect.replace("\n", "")
+            );
+
+            item_entries.push_str(&item_entry);
+        }
+
+        let item_entries_div = format!("\n<div class=\"item-entries\">{item_entries}</div>");
+
+        category_collection.push_str(&format!("\n???+ note \"{category}\"\n{item_entries_div}"));
+    }
+    item_modifications_markdown.push_str(&category_collection);
+
+    return item_modifications_markdown;
 }
 
 pub fn generate_item_changes(items: &[Item]) -> String {

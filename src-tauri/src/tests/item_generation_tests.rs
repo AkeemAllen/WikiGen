@@ -13,12 +13,36 @@ fn test_generate_items_page_created() {
     let base_path =
         std::path::PathBuf::from("/Users/akeemallen/Library/Application Support/com.wikigen.dev");
 
-    let items = vec![Item {
-        name: "leftovers".to_string(),
-        effect: "leftovers".to_string(),
-        is_modified: 1,
-        is_new: 0,
-    }];
+    let items = vec![
+        Item {
+            name: "leftovers".to_string(),
+            effect: "leftovers".to_string(),
+            category: "Held".to_string(),
+            is_modified: 1,
+            is_new: 0,
+        },
+        Item {
+            name: "leftovers".to_string(),
+            effect: "leftovers".to_string(),
+            category: "Held".to_string(),
+            is_modified: 1,
+            is_new: 0,
+        },
+        Item {
+            name: "poke-ball".to_string(),
+            effect: "pokeball".to_string(),
+            category: "Pokeball".to_string(),
+            is_modified: 0,
+            is_new: 1,
+        },
+        Item {
+            name: "poke-ball".to_string(),
+            effect: "pokeball".to_string(),
+            category: "Pokeball".to_string(),
+            is_modified: 0,
+            is_new: 1,
+        },
+    ];
 
     let item_locations = vec![ItemLocation {
         item_name: "leftovers".to_string(),
