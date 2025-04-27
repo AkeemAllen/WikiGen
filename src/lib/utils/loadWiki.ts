@@ -3,7 +3,7 @@ import type { Wiki } from "../../store";
 import { db } from "../../store/db";
 import { get } from "svelte/store";
 import { pokemonList, type SearchPokemon } from "../../store/pokemon";
-import { itemsList, type SearchItem } from "../../store/items";
+import { itemCategories, itemsList, type SearchItem } from "../../store/items";
 import { abilitiesList, type SearchAbility } from "../../store/abilities";
 import { naturesList, type SearchNature } from "../../store/natures";
 import { moveList, type SearchMove } from "../../store/moves";
@@ -53,6 +53,14 @@ export async function loadWikiData(wiki: Wiki, toastStore: any) {
         .select("SELECT id, name FROM items")
         .then((items: any) => {
           itemsList.set(items.map((item: SearchItem) => [item.id, item.name]));
+        });
+
+      get(db)
+        .select("SELECT name FROM item_categories")
+        .then((categories: any) => {
+          itemCategories.set(
+            categories.map((category: SearchItem) => category.name),
+          );
         });
 
       // Load Abilities

@@ -4,6 +4,7 @@ export type Item = {
   id: number;
   name: string;
   effect: string;
+  category: string;
   is_modified: number;
   is_new: number;
 };
@@ -23,3 +24,4 @@ export type SearchItem = {
 };
 
 export let itemsList = writable<[number, string][]>([]);
+export let itemCategories = writable<string[]>([]);

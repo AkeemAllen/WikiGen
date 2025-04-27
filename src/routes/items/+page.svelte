@@ -4,6 +4,7 @@
   import BaseModal from "$lib/components/BaseModal.svelte";
   import {
     type Item,
+    itemCategories,
     type ItemLocation,
     itemsList,
     type SearchItem,
@@ -22,6 +23,7 @@
   import objectIsEmpty from "$lib/utils/objectIsEmpty";
   import ItemLocationTable from "$lib/components/ItemLocationTable.svelte";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
+  import SelectInput from "$lib/components/SelectInput.svelte";
 
   const toastStore = getToastStore();
 
@@ -35,7 +37,15 @@
 
   let itemLocations: ItemLocation[] = $state([]);
 
-  let newItem: Item = $state({} as Item);
+  let newItem: Item = $state({
+    id: 0,
+    name: "",
+    effect: "",
+    category: "Misc",
+    is_new: TRUE,
+    is_modified: FALSE,
+  });
+
   let newSpriteImage: string = $state("");
   let newItemModalOpen: boolean = $state(false);
 
@@ -43,6 +53,13 @@
     $itemsList.map(([id, name]) => ({
       label: name,
       value: id,
+    })),
+  );
+
+  let categoryOptions = $derived(
+    $itemCategories.map((category) => ({
+      label: category,
+      value: category,
     })),
   );
 
@@ -130,8 +147,8 @@
   async function saveItemChanges() {
     await $db
       .execute(
-        "UPDATE items SET effect = $1, is_modified = $2 WHERE id = $3;",
-        [item.effect, item.is_modified, itemSearch[0]],
+        "UPDATE items SET effect = $1, is_modified = $2, category = $3 WHERE id = $4;",
+        [item.effect, item.is_modified, item.category, itemSearch[0]],
       )
       .then(() => {
         originalItemDetails = cloneDeep(item);
@@ -145,11 +162,10 @@
   }
 
   async function createItem() {
-    newItem.is_new = TRUE;
     await $db
       .execute(
-        "INSERT INTO items (name, effect, is_new) VALUES ($1, $2, $3);",
-        [newItem.name, newItem.effect, newItem.is_new],
+        "INSERT INTO items (name, effect, category, is_new) VALUES ($1, $2, $3, $4);",
+        [newItem.name, newItem.effect, newItem.category, newItem.is_new],
       )
       .then(() => {
         // Write image to file
@@ -181,7 +197,10 @@
       })
       .catch((err: any) => {
         toastStore.trigger(
-          getToastSettings(ToastType.ERROR, "Error creating new item!"),
+          getToastSettings(
+            ToastType.ERROR,
+            `Error creating new item: ${err.toString()}`,
+          ),
         );
       });
   }
@@ -263,6 +282,18 @@
       ></textarea>
     </div>
   </div>
+  <div>
+    <label
+      for="category"
+      class="block text-sm font-medium leading-6 text-gray-900">Category</label
+    >
+    <SelectInput
+      id="category"
+      bind:value={newItem.category}
+      options={categoryOptions}
+      placeholder="Select a category"
+    />
+  </div>
   <Button
     title="Create Item"
     class="w-32"
@@ -338,6 +369,20 @@
           class="block h-20 w-[50rem] rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
         ></textarea>
       </div>
+    </div>
+    <div>
+      <label
+        for="category"
+        class="block text-sm font-medium leading-6 text-gray-900"
+        >Category</label
+      >
+      <SelectInput
+        id="category"
+        bind:value={item.category}
+        options={categoryOptions}
+        placeholder="Select a category"
+        class="w-[17rem]"
+      />
     </div>
     <TabGroup>
       <Tab bind:group={tabSet} name="item-locations" value={0} class="text-sm"
