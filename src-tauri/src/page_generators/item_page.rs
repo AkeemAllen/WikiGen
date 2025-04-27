@@ -43,7 +43,7 @@ pub async fn generate_items_page_with_handle(
     let conn = match get_sqlite_connection(sqlite_path).await {
         Ok(conn) => conn,
         Err(err) => {
-            write_log(&base_path.join(wiki_name), LogLevel::Error, &err);
+            write_log(&base_path, LogLevel::Error, &err);
             return Err(err);
         }
     };
@@ -55,7 +55,7 @@ pub async fn generate_items_page_with_handle(
         Ok(items) => items,
         Err(err) => {
             let message = format!("Failed to get items: {}", err);
-            write_log(&base_path.join(wiki_name), LogLevel::Error, &message);
+            write_log(&base_path, LogLevel::Error, &message);
             return Err(message);
         }
     };
@@ -68,7 +68,7 @@ pub async fn generate_items_page_with_handle(
             Ok(item_locations) => item_locations,
             Err(err) => {
                 let message = format!("Failed to fetch item locations: {err}");
-                write_log(&base_path.join(wiki_name), LogLevel::Error, &message);
+                write_log(&base_path, LogLevel::Error, &message);
                 return Err(message);
             }
         };
@@ -86,7 +86,7 @@ pub fn generate_items_page(
     let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
         Ok(config) => config,
         Err(err) => {
-            write_log(&base_path.join(wiki_name), LogLevel::Error, &err);
+            write_log(&base_path, LogLevel::Error, &err);
             return Err(err);
         }
     };
@@ -100,7 +100,7 @@ pub fn generate_items_page(
         Ok(file) => file,
         Err(err) => {
             let message = format!("Failed to create item information file: {err}");
-            write_log(&base_path.join(wiki_name), LogLevel::Error, &message);
+            write_log(&base_path, LogLevel::Error, &message);
             return Err(message);
         }
     };
@@ -144,7 +144,7 @@ pub fn generate_items_page(
             Ok(file) => file,
             Err(err) => {
                 write_log(
-                    &base_path.join(wiki_name),
+                    &base_path,
                     LogLevel::Error,
                     &format!("Failed to remove item information page: {}", err),
                 );
@@ -163,7 +163,7 @@ pub fn generate_items_page(
             Ok(file) => file,
             Err(err) => {
                 let message = format!("Failed to update mkdocs yaml file: {err}");
-                write_log(&base_path.join(wiki_name), LogLevel::Error, &message);
+                write_log(&base_path, LogLevel::Error, &message);
                 return Err(message);
             }
         }
@@ -175,7 +175,7 @@ pub fn generate_items_page(
         Ok(_) => {}
         Err(err) => {
             let message = format!("Failed to write item changes file: {err}");
-            write_log(&base_path.join(wiki_name), LogLevel::Error, &message);
+            write_log(&base_path, LogLevel::Error, &message);
             return Err(message);
         }
     }
@@ -203,7 +203,7 @@ pub fn generate_items_page(
         Ok(_) => {}
         Err(err) => {
             let message = format!("Failed to update mkdocs yaml file: {err}");
-            write_log(&base_path.join(wiki_name), LogLevel::Error, &message);
+            write_log(&base_path, LogLevel::Error, &message);
             return Err(message);
         }
     }
