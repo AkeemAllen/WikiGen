@@ -1,4 +1,7 @@
-use std::{fs, path::PathBuf};
+use std::{
+    fs::{self, File},
+    path::PathBuf,
+};
 
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 use tauri::{Emitter, Manager};
@@ -113,4 +116,62 @@ pub fn update_mkdocs_yaml(
         return Err(message);
     }
     Ok(())
+}
+
+pub fn create_docs_file(
+    wiki_name: &str,
+    base_path: &PathBuf,
+    file_name: &str,
+) -> Result<File, String> {
+    let file = match File::create(
+        base_path
+            .join(wiki_name)
+            .join("dist")
+            .join("docs")
+            .join(format!("{}.md", file_name)),
+    ) {
+        Ok(file) => file,
+        Err(err) => {
+            let message = format!("{wiki_name}: Failed to create {file_name} file: {err}");
+            write_log(&base_path, LogLevel::Error, &message);
+            return Err(message);
+        }
+    };
+
+    Ok(file)
+}
+
+pub fn remove_docs_file(
+    wiki_name: &str,
+    base_path: &PathBuf,
+    file_name: &str,
+) -> Result<(), String> {
+    let file_path = base_path
+        .join(wiki_name)
+        .join("dist")
+        .join("docs")
+        .join(format!("{}.md", file_name));
+
+    if let Err(err) = fs::remove_file(file_path) {
+        let message = format!("{wiki_name}: Failed to remove {file_name} file: {err}");
+        write_log(&base_path, LogLevel::Error, &message);
+        return Err(message);
+    }
+    Ok(())
+}
+
+pub fn page_exists_in_mkdocs(mut mkdocs_config: MKDocsConfig, page_title: &str) -> (bool, usize) {
+    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
+    let mut item_page_exists = false;
+    let mut page_index = 0;
+    for (index, entry) in nav_entries.iter_mut().enumerate() {
+        let map_entries = entry.as_mapping_mut().unwrap();
+        if let Some(_) = map_entries.get_mut(serde_yaml::Value::String(page_title.to_string())) {
+            item_page_exists = true;
+            page_index = index;
+            break;
+        }
+    }
+
+    (item_page_exists, page_index)
 }

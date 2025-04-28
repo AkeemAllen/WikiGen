@@ -1,5 +1,6 @@
 use std::{
     collections::HashSet,
+    f32::consts::E,
     fs::{self, File},
     io::Write,
     path::PathBuf,
@@ -10,7 +11,10 @@ use sqlx::FromRow;
 use tauri::{AppHandle, Manager};
 
 use crate::{
-    database::{get_mkdocs_config, get_sqlite_connection, update_mkdocs_yaml},
+    database::{
+        create_docs_file, get_mkdocs_config, get_sqlite_connection, page_exists_in_mkdocs,
+        remove_docs_file, update_mkdocs_yaml,
+    },
     helpers::{capitalize_and_remove_hyphens, FALSE, TRUE},
     logger::{write_log, LogLevel},
 };
@@ -95,36 +99,14 @@ pub fn generate_items_page(
             return Err(err);
         }
     };
-    let mut item_information_file = match File::create(
-        base_path
-            .join(wiki_name)
-            .join("dist")
-            .join("docs")
-            .join("item_information.md"),
-    ) {
-        Ok(file) => file,
-        Err(err) => {
-            let message = format!("{wiki_name}: Failed to create item information file: {err}");
-            write_log(&base_path, LogLevel::Error, &message);
-            return Err(message);
-        }
-    };
 
-    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
-    let mut item_page_exists = false;
-    let mut page_index = 0;
-    for (index, entry) in nav_entries.iter_mut().enumerate() {
-        let map_entries = entry.as_mapping_mut().unwrap();
-        if let Some(_) = map_entries.get_mut(Value::String("Item Information".to_string())) {
-            item_page_exists = true;
-            page_index = index;
-            break;
-        }
-    }
+    let mut item_information_file = create_docs_file(wiki_name, base_path, "item_information")?;
+
+    let (item_page_exists, page_index) =
+        page_exists_in_mkdocs(mkdocs_config.clone(), "Item Information");
 
     let mut items_markdown = String::new();
     let item_changes_markdown = generate_item_modifications(&items);
-    // let item_modifications_markdown = generate_item_modifications(&items);
     let item_locations_markdown = generate_item_locations(&item_locations);
 
     if !item_changes_markdown.is_empty() {
@@ -139,25 +121,7 @@ pub fn generate_items_page(
             return Ok("No Item Information to generate".to_string());
         }
 
-        match fs::remove_file(
-            base_path
-                .join(wiki_name)
-                .join("dist")
-                .join("docs")
-                .join("item_information.md"),
-        ) {
-            Ok(file) => file,
-            Err(err) => {
-                write_log(
-                    &base_path,
-                    LogLevel::Error,
-                    &format!(
-                        "{wiki_name}: Failed to remove item information page: {}",
-                        err
-                    ),
-                );
-            }
-        }
+        remove_docs_file(wiki_name, base_path, "item_information")?;
 
         mkdocs_config
             .nav
