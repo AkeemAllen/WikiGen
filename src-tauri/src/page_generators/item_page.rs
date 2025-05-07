@@ -43,6 +43,14 @@ pub async fn generate_items_page_with_handle(
     app_handle: AppHandle,
 ) -> Result<String, String> {
     let base_path = app_handle.path().app_data_dir().unwrap();
+    let templates_path = app_handle
+        .path()
+        .resource_dir()
+        .unwrap()
+        .join("resources")
+        .join("generator_assets")
+        .join("templates");
+
     let sqlite_path = base_path.join(wiki_name).join(format!("{}.db", wiki_name));
 
     let conn = match get_sqlite_connection(sqlite_path).await {
@@ -82,7 +90,13 @@ pub async fn generate_items_page_with_handle(
             }
         };
 
-    return generate_items_page(wiki_name, &base_path, &items, &item_locations);
+    return generate_items_page(
+        wiki_name,
+        &base_path,
+        &items,
+        &item_locations,
+        &templates_path,
+    );
 }
 
 pub fn generate_items_page(
@@ -90,7 +104,35 @@ pub fn generate_items_page(
     base_path: &PathBuf,
     items: &[Item],
     item_locations: &[ItemLocation],
+    templates_path: &PathBuf,
 ) -> Result<String, String> {
+    let mut item_information_file = create_docs_file(wiki_name, base_path, "item_information")?;
+
+    let mut items_markdown = String::new();
+
+    let item_entry_template = match fs::read_to_string(
+        templates_path
+            .join("item_templates")
+            .join("item_entry_template.md"),
+    ) {
+        Ok(template) => template,
+        Err(err) => {
+            let message = format!("{wiki_name}: Failed to read template file: {err}",);
+            write_log(&base_path, LogLevel::Error, &message);
+            return Err(message);
+        }
+    };
+
+    let item_changes_markdown = generate_item_modifications(&items, item_entry_template);
+    let item_locations_markdown = generate_item_locations(&item_locations);
+
+    if !item_changes_markdown.is_empty() {
+        items_markdown.push_str(&item_changes_markdown);
+    }
+    if !item_locations_markdown.is_empty() {
+        items_markdown.push_str(&format!("\n{}", &item_locations_markdown));
+    }
+
     let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
     let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
         Ok(config) => config,
@@ -100,21 +142,8 @@ pub fn generate_items_page(
         }
     };
 
-    let mut item_information_file = create_docs_file(wiki_name, base_path, "item_information")?;
-
     let (item_page_exists, page_index) =
         page_exists_in_mkdocs(mkdocs_config.clone(), "Item Information");
-
-    let mut items_markdown = String::new();
-    let item_changes_markdown = generate_item_modifications(&items);
-    let item_locations_markdown = generate_item_locations(&item_locations);
-
-    if !item_changes_markdown.is_empty() {
-        items_markdown.push_str(&item_changes_markdown);
-    }
-    if !item_locations_markdown.is_empty() {
-        items_markdown.push_str(&format!("\n{}", &item_locations_markdown));
-    }
 
     if items_markdown.is_empty() {
         if !item_page_exists {
@@ -161,7 +190,7 @@ pub fn generate_items_page(
     Ok("Items Page Generated".to_string())
 }
 
-pub fn generate_item_modifications(items: &[Item]) -> String {
+pub fn generate_item_modifications(items: &[Item], item_entry_template: String) -> String {
     let categories = items
         .iter()
         .map(|item| item.category.clone())
@@ -205,22 +234,20 @@ pub fn generate_item_modifications(items: &[Item]) -> String {
                 item_entries.push('\n');
             }
 
-            let item_entry = format!(
-                "\t| {} | {} |\n",
-                format!(
-                    "{}<br/>{}",
-                    format!("![{}](img/items/{}.png)", &item.name, &item.name),
-                    capitalize_and_remove_hyphens(&item.name)
-                ),
-                &item.effect.replace("\n", "")
-            );
+            let item_entry = item_entry_template
+                .clone()
+                .replace("{{item_name}}", &item.name)
+                .replace("{{item_effect}}", &item.effect)
+                .replace("{{item_title}}", &capitalize_and_remove_hyphens(&item.name));
 
-            item_entries.push_str(&item_entry);
+            item_entries.push_str(&format!("\n\t{}", &item_entry));
         }
 
-        let item_entries_div = format!("\n<div class=\"item-entries\">{item_entries}</div>");
+        let item_entries_div = format!("\t<div style=\"display: grid; gap: 10px; padding-left: 2rem; padding-right: 2rem; max-width: 35rem\">{item_entries}</div>");
 
-        category_collection.push_str(&format!("\n???+ note \"{category}\"\n{item_entries_div}"));
+        category_collection.push_str(&format!(
+            "<details class=\"note\" open=\"open\"><summary>{category}</summary>{item_entries_div}</details>"
+        ));
     }
 
     if category_collection.is_empty() {

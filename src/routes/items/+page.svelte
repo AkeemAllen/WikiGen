@@ -32,6 +32,7 @@
   let item: Item = $state({} as Item);
   let originalItemDetails: Item = $state({} as Item);
   let spriteImage: string = $state("");
+  let version: string = $state("v1");
 
   let tabSet: number = $state(0);
 
@@ -63,20 +64,26 @@
     })),
   );
 
-  // async function generateItemLocationPage() {
-  //   await invoke("generate_item_location_page_with_handle", {
-  //     wikiName: $selectedWiki.name,
-  //   })
-  //     .then((res) => {
-  //       toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
-  //     })
-  //     .catch((err) => {
-  //       toastStore.trigger(getToastSettings(ToastType.ERROR, err));
-  //     });
-  // }
+  async function generateItemLocationPage() {
+    await invoke("generate_item_location_page_with_handle", {
+      wikiName: $selectedWiki.name,
+    })
+      .then((res) => {
+        toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
+      })
+      .catch((err) => {
+        toastStore.trigger(getToastSettings(ToastType.ERROR, err));
+      });
+  }
 
   async function generateItemPage() {
-    await invoke("generate_items_page_with_handle", {
+    let invokationMethod = "generate_items_page_with_handle";
+
+    if (version === "v1") {
+      invokationMethod = "generate_item_changes_page_with_handle";
+    }
+
+    await invoke(invokationMethod, {
       wikiName: $selectedWiki.name,
     })
       .then(() => {
@@ -327,6 +334,13 @@
     class="mt-2 w-32"
     disabled={isEqual(item, originalItemDetails)}
   />
+  <SelectInput
+    options={[
+      { label: "v1", value: "v1" },
+      { label: "v2", value: "v2" },
+    ]}
+    bind:value={version}
+  />
   <Button
     title="Add New Item"
     class="ml-auto mr-3 mt-2 w-32"
@@ -393,7 +407,13 @@
           <ItemLocationTable
             {itemLocations}
             itemName={item.name}
-            generatePage={generateItemPage}
+            generatePage={() => {
+              if (version === "v1") {
+                generateItemLocationPage();
+                return;
+              }
+              generateItemPage();
+            }}
           />
         {/if}
       </div>

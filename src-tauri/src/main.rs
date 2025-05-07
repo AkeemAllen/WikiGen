@@ -16,6 +16,9 @@ use page_generators::game_routes::{
     delete_route_page_from_mkdocs, generate_route_pages_with_handle,
 };
 use page_generators::item_page::generate_items_page_with_handle;
+use page_generators::item_page_v1::{
+    generate_item_changes_page_with_handle, generate_item_location_page_with_handle,
+};
 use page_generators::nature_page::generate_nature_page_with_handle;
 use page_generators::pokemon_pages::{
     generate_pokemon_pages_from_list, remove_pokemon_page_with_old_dex_number,
@@ -51,6 +54,11 @@ fn main() {
             backup_wiki,
             deploy_wiki,
             generate_items_page_with_handle,
+            /*
+                The below two item generation functions are here to handle V1 of Item Page generation
+            */
+            generate_item_changes_page_with_handle,
+            generate_item_location_page_with_handle,
             generate_nature_page_with_handle,
             generate_ability_page_with_handle,
             update_yaml,
