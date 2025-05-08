@@ -193,8 +193,10 @@ pub fn generate_items_page(
 pub fn generate_item_modifications(items: &[Item], item_entry_template: String) -> String {
     let categories = items
         .iter()
+        .filter(|item| item.is_new == TRUE || item.is_modified == TRUE)
         .map(|item| item.category.clone())
         .collect::<Vec<String>>();
+
     let mut unique_categories = categories
         .into_iter()
         .collect::<HashSet<String>>()

@@ -24,6 +24,13 @@ fn test_generate_items_page_created() {
         Item {
             name: "leftovers".to_string(),
             effect: "leftovers".to_string(),
+            category: "Misc".to_string(),
+            is_modified: 0,
+            is_new: 0,
+        },
+        Item {
+            name: "leftovers".to_string(),
+            effect: "leftovers".to_string(),
             category: "Held".to_string(),
             is_modified: 1,
             is_new: 0,
