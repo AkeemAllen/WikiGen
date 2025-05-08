@@ -1,8 +1,4 @@
-use std::{
-    fs::{self, File},
-    io::Write,
-    path::PathBuf,
-};
+use std::{io::Write, path::PathBuf};
 
 use serde_yaml::{Mapping, Value};
 use sqlx::FromRow;
