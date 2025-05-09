@@ -1,16 +1,16 @@
-use std::{
-    fs::{self, File},
-    io::Write,
-};
+use std::io::Write;
 
 use serde_yaml::{Mapping, Value};
 use sqlx::FromRow;
 use tauri::{AppHandle, Manager};
 
 use crate::{
-    database::{get_mkdocs_config, get_sqlite_connection},
+    database::{
+        create_docs_file, get_mkdocs_config, get_sqlite_connection, page_exists_in_mkdocs,
+        remove_docs_file, update_mkdocs_yaml,
+    },
     helpers::{capitalize_and_remove_hyphens, FALSE, TRUE},
-    logger,
+    logger::{self, write_log, LogLevel},
 };
 
 #[derive(Debug, Clone, FromRow)]
@@ -61,45 +61,6 @@ pub fn generate_ability_page(
     abilities: &[Ability],
     base_path: &std::path::PathBuf,
 ) -> Result<String, String> {
-    let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
-        Ok(config) => config,
-        Err(err) => {
-            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
-            return Err(err);
-        }
-    };
-    let mut ability_changes_file = match File::create(
-        base_path
-            .join(wiki_name)
-            .join("dist")
-            .join("docs")
-            .join("ability_changes.md"),
-    ) {
-        Ok(file) => file,
-        Err(err) => {
-            let message = format!("Failed to create ability changes file: {err}");
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
-            return Err(message);
-        }
-    };
-
-    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
-    let mut ability_page_exists = false;
-    let mut page_index = 0;
-    for (index, entry) in nav_entries.iter_mut().enumerate() {
-        let map_entries = entry.as_mapping_mut().unwrap();
-        if let Some(_) = map_entries.get_mut(Value::String("Ability Changes".to_string())) {
-            ability_page_exists = true;
-            page_index = index;
-            break;
-        }
-    }
-
     let mut ability_changes_markdown = String::new();
     let mut ability_new = String::new();
     let mut ability_modified = String::new();
@@ -147,67 +108,46 @@ pub fn generate_ability_page(
         ability_changes_markdown.push_str(&entry);
     }
 
+    let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
+    let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
+        Ok(config) => config,
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
+
+    let (page_exists, page_index) = page_exists_in_mkdocs(mkdocs_config.clone(), "Ability Changes");
+
     if ability_changes_markdown.is_empty() {
-        if !ability_page_exists {
+        if !page_exists {
             return Ok("No Ability changes to generate".to_string());
         }
 
-        match fs::remove_file(
-            base_path
-                .join(wiki_name)
-                .join("dist")
-                .join("docs")
-                .join("ability_changes.md"),
-        ) {
-            Ok(file) => file,
-            Err(err) => {
-                let message = format!("Failed to remove ability changes file: {err}");
-                logger::write_log(
-                    &base_path.join(wiki_name),
-                    logger::LogLevel::Error,
-                    &message,
-                );
-            }
-        }
+        remove_docs_file(wiki_name, base_path, "ability_changes.md")?;
 
         mkdocs_config
             .nav
             .as_sequence_mut()
             .unwrap()
             .remove(page_index);
-        match fs::write(
-            &mkdocs_yaml_file_path,
-            serde_yaml::to_string(&mkdocs_config).unwrap(),
-        ) {
-            Ok(file) => file,
-            Err(err) => {
-                let message = format!("Failed to update mkdocs yaml file: {err}");
-                logger::write_log(
-                    &base_path.join(wiki_name),
-                    logger::LogLevel::Error,
-                    &message,
-                );
-                return Err(message);
-            }
-        }
+
+        update_mkdocs_yaml(wiki_name, base_path, &mkdocs_config)?;
 
         return Ok("No Ability changes to generate. Ability Changes page removed".to_string());
     }
 
-    match ability_changes_file.write_all(format!("{}", ability_changes_markdown).as_bytes()) {
-        Ok(_) => {}
-        Err(err) => {
-            let message = format!("Failed to write to ability changes file: {err}");
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
-            return Err(message);
-        }
+    let mut ability_changes_file = create_docs_file(wiki_name, base_path, "ability_changes.md")?;
+
+    if let Err(err) =
+        ability_changes_file.write_all(format!("{}", ability_changes_markdown).as_bytes())
+    {
+        let message = format!("{wiki_name}: Failed to write ability changes file: {err}");
+        write_log(&base_path, LogLevel::Error, &message);
+        return Err(message);
     }
 
-    if ability_page_exists {
+    if page_exists {
         return Ok("Ability Changes Page Updated".to_string());
     }
 
@@ -223,21 +163,7 @@ pub fn generate_ability_page(
         .unwrap()
         .insert(1, Value::Mapping(ability_changes));
 
-    match fs::write(
-        mkdocs_yaml_file_path,
-        serde_yaml::to_string(&mkdocs_config).unwrap(),
-    ) {
-        Ok(_) => {}
-        Err(err) => {
-            let message = format!("Failed to update mkdocs yaml file: {err}");
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
-            return Err(message);
-        }
-    }
+    update_mkdocs_yaml(wiki_name, base_path, &mkdocs_config)?;
 
     Ok("Abilities Page Generated".to_string())
 }
