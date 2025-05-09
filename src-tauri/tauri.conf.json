@@ -37,7 +37,7 @@
   },
   "productName": "WikiGen",
   "mainBinaryName": "WikiGen",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "identifier": "com.wikigen.dev",
   "plugins": {
     "cli": {
