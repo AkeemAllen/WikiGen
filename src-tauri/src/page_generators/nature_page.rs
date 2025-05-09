@@ -1,16 +1,16 @@
-use std::{
-    fs::{self, File},
-    io::Write,
-};
+use std::io::Write;
 
 use serde_yaml::{Mapping, Value};
 use sqlx::FromRow;
 use tauri::{AppHandle, Manager};
 
 use crate::{
-    database::{get_mkdocs_config, get_sqlite_connection},
+    database::{
+        create_docs_file, get_mkdocs_config, get_sqlite_connection, page_exists_in_mkdocs,
+        remove_docs_file, update_mkdocs_yaml,
+    },
     helpers::{capitalize, capitalize_and_remove_hyphens, FALSE, TRUE},
-    logger,
+    logger::{self, write_log, LogLevel},
 };
 
 #[derive(Debug, Clone, FromRow)]
@@ -61,46 +61,6 @@ pub fn generate_nature_page(
     natures: &[Nature],
     base_path: &std::path::PathBuf,
 ) -> Result<String, String> {
-    let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
-    let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
-        Ok(config) => config,
-        Err(err) => {
-            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
-            return Err(err);
-        }
-    };
-
-    let mut nature_changes_file = match File::create(
-        base_path
-            .join(wiki_name)
-            .join("dist")
-            .join("docs")
-            .join("nature_changes.md"),
-    ) {
-        Ok(file) => file,
-        Err(err) => {
-            let message = format!("Failed to create nature changes file: {err}");
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
-            return Err(message);
-        }
-    };
-
-    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
-    let mut nature_page_exists = false;
-    let mut page_index = 0;
-    for (index, entry) in nav_entries.iter_mut().enumerate() {
-        let map_entries = entry.as_mapping_mut().unwrap();
-        if let Some(_) = map_entries.get_mut(Value::String("Nature Changes".to_string())) {
-            nature_page_exists = true;
-            page_index = index;
-            break;
-        }
-    }
-
     let mut nature_changes_markdown = String::new();
     let mut nature_new = String::new();
     let mut nature_modified = String::new();
@@ -159,67 +119,46 @@ pub fn generate_nature_page(
         nature_changes_markdown.push_str(&entry);
     }
 
+    let mkdocs_yaml_file_path = base_path.join(wiki_name).join("dist").join("mkdocs.yml");
+    let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
+        Ok(config) => config,
+        Err(err) => {
+            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+            return Err(err);
+        }
+    };
+
+    let (page_exists, page_index) = page_exists_in_mkdocs(mkdocs_config.clone(), "Nature Changes");
+
     if nature_changes_markdown.is_empty() {
-        if !nature_page_exists {
+        if !page_exists {
             return Ok("No Nature changes to generate".to_string());
         }
 
-        match fs::remove_file(
-            base_path
-                .join(wiki_name)
-                .join("dist")
-                .join("docs")
-                .join("nature_changes.md"),
-        ) {
-            Ok(file) => file,
-            Err(err) => {
-                let message = format!("Failed to remove nature changes file: {err}");
-                logger::write_log(
-                    &base_path.join(wiki_name),
-                    logger::LogLevel::Error,
-                    &message,
-                );
-            }
-        }
+        remove_docs_file(wiki_name, base_path, "nature_changes.md")?;
 
         mkdocs_config
             .nav
             .as_sequence_mut()
             .unwrap()
             .remove(page_index);
-        match fs::write(
-            &mkdocs_yaml_file_path,
-            serde_yaml::to_string(&mkdocs_config).unwrap(),
-        ) {
-            Ok(file) => file,
-            Err(err) => {
-                let message = format!("Failed to update mkdocs yaml file: {err}");
-                logger::write_log(
-                    &base_path.join(wiki_name),
-                    logger::LogLevel::Error,
-                    &message,
-                );
-                return Err(message);
-            }
-        }
+
+        update_mkdocs_yaml(wiki_name, base_path, &mkdocs_config)?;
 
         return Ok("No Nature changes to generate. Nature Changes page removed".to_string());
     }
 
-    match nature_changes_file.write_all(format!("{}", nature_changes_markdown).as_bytes()) {
-        Ok(_) => {}
-        Err(err) => {
-            let message = format!("Failed to write to nature changes file: {err}");
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
-            return Err(message);
-        }
+    let mut nature_changes_file = create_docs_file(wiki_name, base_path, "nature_changes.md")?;
+
+    if let Err(err) =
+        nature_changes_file.write_all(format!("{}", nature_changes_markdown).as_bytes())
+    {
+        let message = format!("{wiki_name}: Failed to write nature changes file: {err}");
+        write_log(&base_path, LogLevel::Error, &message);
+        return Err(message);
     }
 
-    if nature_page_exists {
+    if page_exists {
         return Ok("Nature Changes Page Updated".to_string());
     }
 
@@ -235,21 +174,7 @@ pub fn generate_nature_page(
         .unwrap()
         .insert(1, Value::Mapping(nature_changes));
 
-    match fs::write(
-        mkdocs_yaml_file_path,
-        serde_yaml::to_string(&mkdocs_config).unwrap(),
-    ) {
-        Ok(_) => {}
-        Err(err) => {
-            let message = format!("Failed to update mkdocs yaml file: {err}");
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
-            return Err(message);
-        }
-    }
+    update_mkdocs_yaml(wiki_name, base_path, &mkdocs_config)?;
 
     Ok("Natures Page Generated".to_string())
 }

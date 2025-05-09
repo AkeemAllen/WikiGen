@@ -9,7 +9,7 @@ use sqlx::Sqlite;
 use tauri::{AppHandle, Manager};
 
 use crate::{
-    database::{get_mkdocs_config, get_routes, get_sqlite_connection},
+    database::{get_mkdocs_config, get_routes, get_sqlite_connection, update_mkdocs_yaml},
     helpers::{capitalize, capitalize_and_remove_hyphens, get_pokemon_dex_formatted_name},
     logger,
     page_generators::pokemon_page_generator_functions::{
@@ -26,12 +26,12 @@ pub async fn update_pokemon_pages_with_stripped_name_with_handle(
     app_handle: AppHandle,
 ) -> Result<(), String> {
     let base_path = app_handle.path().app_data_dir().unwrap();
-    let result = match update_pokemon_pages_with_stripped_name(wiki_name, &base_path) {
-        Ok(_) => (),
-        Err(err) => return Err(err),
-    };
 
-    Ok(result)
+    if let Err(err) = update_pokemon_pages_with_stripped_name(wiki_name, &base_path) {
+        return Err(err);
+    }
+
+    Ok(())
 }
 
 pub fn update_pokemon_pages_with_stripped_name(
@@ -52,11 +52,8 @@ pub fn update_pokemon_pages_with_stripped_name(
     let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
     for entry in nav_entries {
         let map_entries = entry.as_mapping_mut().unwrap();
-        match map_entries.get_mut(Value::String("Pokemon".to_string())) {
-            Some(map_entry) => {
-                mkdocs_pokemon = map_entry.as_sequence_mut().unwrap();
-            }
-            None => {}
+        if let Some(map_entry) = map_entries.get_mut(Value::String("Pokemon".to_string())) {
+            mkdocs_pokemon = map_entry.as_sequence_mut().unwrap();
         }
     }
 
@@ -89,25 +86,15 @@ pub fn update_pokemon_pages_with_stripped_name(
         new_entry.insert(Value::String(new_key), Value::String(value.to_string()));
         new_page_entries.push(Value::Mapping(new_entry));
     }
+
     mkdocs_pokemon.clear();
+
     for new_entry in new_page_entries {
         mkdocs_pokemon.push(Value::Mapping(new_entry.as_mapping().unwrap().clone()));
     }
-    match fs::write(
-        &mkdocs_yaml_file_path,
-        serde_yaml::to_string(&mut mkdocs_config).unwrap(),
-    ) {
-        Ok(_) => {}
-        Err(err) => {
-            let message = format!("Failed to update mkdocs yaml: {err}");
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
-            return Err(message);
-        }
-    };
+
+    update_mkdocs_yaml(wiki_name, base_path, &mkdocs_config)?;
+
     Ok(())
 }
 
@@ -134,11 +121,8 @@ pub async fn remove_pokemon_page_with_old_dex_number(
     let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
     for entry in nav_entries {
         let map_entries = entry.as_mapping_mut().unwrap();
-        match map_entries.get_mut(Value::String("Pokemon".to_string())) {
-            Some(map_entry) => {
-                mkdocs_pokemon = map_entry.as_sequence_mut().unwrap();
-            }
-            None => {}
+        if let Some(map_entry) = map_entries.get_mut(Value::String("Pokemon".to_string())) {
+            mkdocs_pokemon = map_entry.as_sequence_mut().unwrap();
         }
     }
 
@@ -173,26 +157,8 @@ pub async fn remove_pokemon_page_with_old_dex_number(
             &pokedex_markdown_file_name, pokemon_name
         ));
     if pokemon_page_path.try_exists().unwrap_or(false) {
-        match fs::remove_file(pokemon_page_path) {
-            Ok(_) => {}
-            Err(err) => {
-                let message = format!("Failed to remove pokemon page: {err}");
-                logger::write_log(
-                    &base_path.join(wiki_name),
-                    logger::LogLevel::Error,
-                    &message,
-                );
-                return Err(message);
-            }
-        }
-    }
-    match fs::write(
-        &mkdocs_yaml_file_path,
-        serde_yaml::to_string(&mut mkdocs_config).unwrap(),
-    ) {
-        Ok(_) => {}
-        Err(err) => {
-            let message = format!("Failed to update mkdocs yaml: {err}");
+        if let Err(err) = fs::remove_file(pokemon_page_path) {
+            let message = format!("Failed to remove pokemon page: {err}");
             logger::write_log(
                 &base_path.join(wiki_name),
                 logger::LogLevel::Error,
@@ -200,7 +166,10 @@ pub async fn remove_pokemon_page_with_old_dex_number(
             );
             return Err(message);
         }
-    };
+    }
+
+    update_mkdocs_yaml(wiki_name, &base_path, &mkdocs_config)?;
+
     Ok("".to_string())
 }
 
@@ -344,25 +313,6 @@ pub fn generate_pokemon_pages(
         }
     };
 
-    let template = match read_to_string(
-        resources_path
-            .join("resources")
-            .join("generator_assets")
-            .join("templates")
-            .join("pokemon_page_template.md"),
-    ) {
-        Ok(template) => template,
-        Err(err) => {
-            let message = format!("Failed to read template file: {err}");
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
-            return Err(message);
-        }
-    };
-
     let mut mkdocs_pokemon: &mut Vec<Value> = &mut Vec::new();
 
     let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
@@ -430,19 +380,16 @@ pub fn generate_pokemon_pages(
             })
             .collect::<Vec<_>>();
 
-        let pokemon_markdown_string = generate_page_from_template(
-            &template,
-            &pokemon,
-            &current_pokemon_movset,
-            &current_pokemon_locations,
-        );
-
-        match markdown_file.write_all(format!("{pokemon_markdown_string}").as_bytes()) {
+        let template = match read_to_string(
+            resources_path
+                .join("resources")
+                .join("generator_assets")
+                .join("templates")
+                .join("pokemon_page_template.md"),
+        ) {
+            Ok(template) => template,
             Err(err) => {
-                let message = format!(
-                    "Error writing to markdown file for {}: {}",
-                    pokemon.name, err
-                );
+                let message = format!("Failed to read template file: {err}");
                 logger::write_log(
                     &base_path.join(wiki_name),
                     logger::LogLevel::Error,
@@ -450,7 +397,26 @@ pub fn generate_pokemon_pages(
                 );
                 return Err(message);
             }
-            _ => {}
+        };
+
+        let pokemon_markdown_string = generate_page_from_template(
+            &template,
+            &pokemon,
+            &current_pokemon_movset,
+            &current_pokemon_locations,
+        );
+
+        if let Err(err) = markdown_file.write_all(format!("{pokemon_markdown_string}").as_bytes()) {
+            let message = format!(
+                "Error writing to markdown file for {}: {}",
+                pokemon.name, err
+            );
+            logger::write_log(
+                &base_path.join(wiki_name),
+                logger::LogLevel::Error,
+                &message,
+            );
+            return Err(message);
         };
 
         let mut pokemon_page_entry = Mapping::new();
@@ -476,21 +442,7 @@ pub fn generate_pokemon_pages(
         }
     }
 
-    match fs::write(
-        &mkdocs_yaml_file_path,
-        serde_yaml::to_string(&mut mkdocs_config).unwrap(),
-    ) {
-        Ok(_) => {}
-        Err(err) => {
-            let message = format!("Failed to update mkdocs yaml: {err}");
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
-            return Err(message);
-        }
-    };
+    update_mkdocs_yaml(wiki_name, base_path, &mkdocs_config)?;
 
     return Ok("Pokemon Pages Generated".to_string());
 }

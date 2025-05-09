@@ -11,9 +11,9 @@ use serde_yaml::{Mapping, Value};
 use tauri::{AppHandle, Manager};
 
 use crate::{
-    database::{get_mkdocs_config, get_routes},
+    database::{get_mkdocs_config, get_routes, update_mkdocs_yaml},
     helpers::{capitalize_and_remove_hyphens, get_pokemon_dex_formatted_name},
-    logger,
+    logger::{self, write_log, LogLevel},
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -114,16 +114,14 @@ pub async fn delete_route_page_from_mkdocs(
             return Err(err);
         }
     };
-    let mut mkdocs_routes: &mut Vec<Value> = &mut Vec::new();
 
     let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
+
+    let mut mkdocs_routes: &mut Vec<Value> = &mut Vec::new();
     for entry in nav_entries {
         let map_entries = entry.as_mapping_mut().unwrap();
-        match map_entries.get_mut(Value::String("Routes".to_string())) {
-            Some(map_entry) => {
-                mkdocs_routes = map_entry.as_sequence_mut().unwrap();
-            }
-            None => {}
+        if let Some(map_entry) = map_entries.get_mut(Value::String("Routes".to_string())) {
+            mkdocs_routes = map_entry.as_sequence_mut().unwrap();
         }
     }
 
@@ -143,34 +141,18 @@ pub async fn delete_route_page_from_mkdocs(
         .join("docs")
         .join("routes")
         .join(format!("{route_name}.md"));
-    match fs::remove_file(route_file_path) {
-        Ok(_) => {}
-        Err(err) => {
-            let message = format!("Failed to delete route file: {err}");
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
-            return Err(message);
-        }
+
+    if let Err(err) = fs::remove_file(route_file_path) {
+        let message = format!("Failed to delete route file: {err}");
+        logger::write_log(
+            &base_path.join(wiki_name),
+            logger::LogLevel::Error,
+            &message,
+        );
+        return Err(message);
     }
 
-    match fs::write(
-        mkdocs_yaml_file_path,
-        serde_yaml::to_string(&mkdocs_config.clone()).unwrap(),
-    ) {
-        Ok(_) => {}
-        Err(err) => {
-            let message = format!("Failed to update mkdocs yaml: {err}");
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
-            return Err(message);
-        }
-    };
+    update_mkdocs_yaml(wiki_name, &base_path, &mkdocs_config)?;
 
     Ok("Route Page Deleted".to_string())
 }
@@ -200,36 +182,13 @@ pub fn generate_route_pages(
             return Err(err);
         }
     };
-
-    let template = match read_to_string(
-        resources_path
-            .join("resources")
-            .join("generator_assets")
-            .join("templates")
-            .join("route_page_template.md"),
-    ) {
-        Ok(template) => template,
-        Err(err) => {
-            let message = format!("Failed to read template file: {err}",);
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
-            return Err(message);
-        }
-    };
+    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
 
     let mut mkdocs_routes: &mut Vec<Value> = &mut Vec::new();
-
-    let nav_entries = mkdocs_config.nav.as_sequence_mut().unwrap();
     for entry in nav_entries {
         let map_entries = entry.as_mapping_mut().unwrap();
-        match map_entries.get_mut(Value::String("Routes".to_string())) {
-            Some(map_entry) => {
-                mkdocs_routes = map_entry.as_sequence_mut().unwrap();
-            }
-            None => {}
+        if let Some(map_entry) = map_entries.get_mut(Value::String("Routes".to_string())) {
+            mkdocs_routes = map_entry.as_sequence_mut().unwrap();
         }
     }
 
@@ -252,25 +211,6 @@ pub fn generate_route_pages(
             continue;
         }
 
-        // Function originally created to delete previous route structure
-        // Might be able to delete this block
-        if page_entry_exists && docs_path.join("routes").join(route_name).is_dir() {
-            match fs::remove_dir_all(docs_path.join("routes").join(route_name)) {
-                Ok(_) => {}
-                Err(err) => {
-                    let message = format!("Failed to delete route directory: {err}",);
-                    logger::write_log(
-                        &base_path.join(wiki_name),
-                        logger::LogLevel::Error,
-                        &message,
-                    );
-                    return Err(message);
-                }
-            };
-            mkdocs_routes.remove(page_position);
-            page_entry_exists = false;
-        }
-
         if route_properties.render == false && page_entry_exists {
             mkdocs_routes.remove(page_position);
             continue;
@@ -279,6 +219,33 @@ pub fn generate_route_pages(
         if route_properties.render == false {
             continue;
         }
+
+        let template = match read_to_string(
+            resources_path
+                .join("resources")
+                .join("generator_assets")
+                .join("templates")
+                .join("route_page_template.md"),
+        ) {
+            Ok(template) => template,
+            Err(err) => {
+                let message = format!("Failed to read template file: {err}",);
+                logger::write_log(
+                    &base_path.join(wiki_name),
+                    logger::LogLevel::Error,
+                    &message,
+                );
+                return Err(message);
+            }
+        };
+
+        let route_page_markdown = generate_route_page_from_template(
+            wiki_name,
+            route_name,
+            route_properties,
+            &template,
+            &docs_path,
+        );
 
         let mut markdown_file =
             match File::create(docs_path.join("routes").join(format!("{}.md", route_name))) {
@@ -294,25 +261,10 @@ pub fn generate_route_pages(
                 }
             };
 
-        let route_page_markdown = generate_route_page_from_template(
-            wiki_name,
-            route_name,
-            route_properties,
-            &template,
-            &docs_path,
-        );
-
-        match markdown_file.write_all(route_page_markdown.as_bytes()) {
-            Ok(_) => {}
-            Err(e) => {
-                let message = format!("Failed to write to file: {e}",);
-                logger::write_log(
-                    &base_path.join(wiki_name),
-                    logger::LogLevel::Error,
-                    &message,
-                );
-                continue;
-            }
+        if let Err(err) = markdown_file.write_all(format!("{}", route_page_markdown).as_bytes()) {
+            let message = format!("{wiki_name}: Failed to write route markdown file: {err}");
+            write_log(&base_path, LogLevel::Error, &message);
+            return Err(message);
         }
 
         let mut route_page_entry = Mapping::new();
@@ -324,6 +276,7 @@ pub fn generate_route_pages(
         if !page_entry_exists {
             mkdocs_routes.push(Value::Mapping(route_page_entry));
         }
+
         mkdocs_routes.sort_by(|a, b| {
             let first = a.as_mapping().unwrap().keys().next().unwrap();
             let second = b.as_mapping().unwrap().keys().next().unwrap();
@@ -342,21 +295,7 @@ pub fn generate_route_pages(
         })
     }
 
-    match fs::write(
-        mkdocs_yaml_file_path,
-        serde_yaml::to_string(&mkdocs_config.clone()).unwrap(),
-    ) {
-        Ok(_) => {}
-        Err(err) => {
-            let message = format!("Failed to update mkdocs yaml: {err}",);
-            logger::write_log(
-                &base_path.join(wiki_name),
-                logger::LogLevel::Error,
-                &message,
-            );
-            return Err(message);
-        }
-    };
+    update_mkdocs_yaml(wiki_name, base_path, &mkdocs_config)?;
 
     Ok("Route Page Generated".to_string())
 }
@@ -541,6 +480,7 @@ fn evaluate_attribute(attribute: &str) -> String {
     }
 }
 
+#[allow(static_mut_refs)]
 fn generate_trainer_entry(trainer_info: &TrainerInfo, version: &str) -> String {
     let mut pokemon_team = String::new();
     for pokemon in &trainer_info.pokemon_team {

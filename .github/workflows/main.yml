@@ -74,7 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Improved Migration System for database updates
+            \n- Slight cleanup of generaton functions
             "
           releaseDraft: false
           prerelease: false
