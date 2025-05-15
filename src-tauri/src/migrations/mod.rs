@@ -44,6 +44,44 @@ pub struct Migration {
     pub sql: String,
 }
 
+impl Migration {
+    pub async fn insert_migration(&self, conn: &Pool<Sqlite>) -> Result<(), String> {
+        match sqlx::query(
+            "INSERT INTO migrations (name, app_version, execution_order, sql) VALUES (?, ?, ?, ?)",
+        )
+        .bind(&self.name)
+        .bind(&self.app_version)
+        .bind(self.execution_order)
+        .bind(&self.sql)
+        .execute(conn)
+        .await
+        {
+            Ok(_) => {}
+            Err(err) => return Err(format!("Failed to insert migration: {}", err)),
+        };
+
+        Ok(())
+    }
+
+    pub async fn execute_migration(
+        &self,
+        wiki_path: &PathBuf,
+        conn: &Pool<Sqlite>,
+    ) -> Result<(), String> {
+        logger::write_log(
+            &wiki_path,
+            logger::LogLevel::Debug,
+            &format!("Executing migration: {}", self.name),
+        );
+        if let Err(err) = sqlx::query(&self.sql).execute(conn).await {
+            return Err(err.to_string());
+        }
+        self.insert_migration(conn).await?;
+
+        Ok(())
+    }
+}
+
 #[tauri::command]
 pub async fn check_and_run_migrations(app_handle: AppHandle) -> Result<String, String> {
     let base_path = app_handle.path().app_data_dir().unwrap();
@@ -181,7 +219,7 @@ pub async fn run_migrations(
                 continue;
             }
 
-            if let Err(err) = execute_migration(&wiki_path, &conn, migration).await {
+            if let Err(err) = migration.execute_migration(&wiki_path, &conn).await {
                 logger::write_log(
                     &wiki_path,
                     logger::LogLevel::MigrationError,
@@ -199,24 +237,6 @@ pub async fn run_migrations(
     }
 
     Ok("Migrations Successful".to_string())
-}
-
-async fn execute_migration(
-    wiki_path: &PathBuf,
-    conn: &Pool<Sqlite>,
-    migration: &Migration,
-) -> Result<(), String> {
-    logger::write_log(
-        &wiki_path,
-        logger::LogLevel::Debug,
-        &format!("Executing migration: {}", migration.name),
-    );
-    if let Err(err) = sqlx::query(&migration.sql).execute(conn).await {
-        return Err(err.to_string());
-    }
-    insert_migration(conn, &migration).await?;
-
-    Ok(())
 }
 
 async fn create_migrations_table(conn: &Pool<Sqlite>) -> Result<(), String> {
@@ -237,25 +257,7 @@ async fn create_migrations_table(conn: &Pool<Sqlite>) -> Result<(), String> {
     if let Err(err) = sqlx::query(&migration.sql).execute(conn).await {
         return Err(err.to_string());
     }
-    insert_migration(conn, &migration).await?;
-
-    Ok(())
-}
-
-async fn insert_migration(conn: &Pool<Sqlite>, migration: &Migration) -> Result<(), String> {
-    match sqlx::query(
-        "INSERT INTO migrations (name, app_version, execution_order, sql) VALUES (?, ?, ?, ?)",
-    )
-    .bind(&migration.name)
-    .bind(&migration.app_version)
-    .bind(&migration.execution_order)
-    .bind(&migration.sql)
-    .execute(conn)
-    .await
-    {
-        Ok(_) => {}
-        Err(err) => return Err(format!("Failed to insert migration: {}", err)),
-    };
+    migration.insert_migration(conn).await?;
 
     Ok(())
 }
