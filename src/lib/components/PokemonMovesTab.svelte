@@ -19,6 +19,7 @@
   import { getToastStore } from "@skeletonlabs/skeleton";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
+  import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
   interface Props {
     pokemonId: number;
@@ -26,7 +27,11 @@
     moveset?: PokemonMove[];
   }
 
-  let { pokemonId = $bindable(), generatePokemonPage, moveset = $bindable([]) }: Props = $props();
+  let {
+    pokemonId = $bindable(),
+    generatePokemonPage,
+    moveset = $bindable([]),
+  }: Props = $props();
 
   let searchValue: string = $state("");
   let modifyMovesetModalOpen: boolean = $state(false);
@@ -51,12 +56,14 @@
 
   const toastStore = getToastStore();
 
-  let moveListOptions = $derived($moveList
-    .map(([id, name]) => ({
-      label: name,
-      value: id,
-    }))
-    .filter((move) => !moveset.some((m) => m.id === move.value)));
+  let moveListOptions = $derived(
+    $moveList
+      .map(([id, name]) => ({
+        label: name,
+        value: id,
+      }))
+      .filter((move) => !moveset.some((m) => m.id === move.value)),
+  );
 
   const rowsPerPageOptions = [
     { label: "5", value: 5 },
@@ -66,9 +73,11 @@
     { label: "100", value: 100 },
   ];
 
-  let handler = $derived(new DataHandler(moveset, {
-    rowsPerPage: 5,
-  }));
+  let handler = $derived(
+    new DataHandler(moveset, {
+      rowsPerPage: 5,
+    }),
+  );
   let rows = $derived(handler.getRows());
   let rowsPerPage = $derived(handler.getRowsPerPage());
 
@@ -167,6 +176,12 @@
           getToastSettings(ToastType.ERROR, `Error updating move: ${err}`),
         );
       });
+  }
+
+  function openModifyMoveSetWindow() {
+    const movesetWindow = new WebviewWindow("modify-moveset-window", {
+      url: "/modifymoveset",
+    });
   }
 </script>
 
@@ -278,7 +293,7 @@
         />
         <Button
           title="Modify Moveset"
-          onClick={() => (modifyMovesetModalOpen = true)}
+          onClick={() => openModifyMoveSetWindow()}
           class="mt-2"
         />
         <Button
