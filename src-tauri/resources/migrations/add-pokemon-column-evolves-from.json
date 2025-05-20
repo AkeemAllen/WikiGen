@@ -1,0 +1,6 @@
+{
+  "name": "add-pokemon-column-evolves_from",
+  "app_version": "1.9.2",
+  "execution_order": 1,
+  "sql": "ALTER TABLE pokemon ADD COLUMN evolves_from TEXT;"
+}
