@@ -241,7 +241,7 @@
           bind:value={pokemon.evolves_from}
           placeholder="Evolves From"
           options={pokemonListOptions}
-          popupId="evolved-pokemon-popup"
+          popupId="evolves-from-popup"
           onSelection={(e) => {
             pokemon.evolves_from = e.detail.label;
           }}
@@ -253,7 +253,7 @@
           bind:value={pokemon.evolves_into}
           placeholder="Evolves To"
           options={pokemonListOptions}
-          popupId="evolved-pokemon-popup"
+          popupId="evolves-into-popup"
           onSelection={(e) => {
             pokemon.evolves_into = e.detail.label;
           }}
