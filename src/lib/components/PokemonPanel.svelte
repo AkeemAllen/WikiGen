@@ -151,7 +151,6 @@
       pokemon.evolution_item = null;
       pokemon.evolution_level = null;
       pokemon.evolution_other = null;
-      pokemon.evolves_into = null;
     } else if (pokemon.evolution_method === "level_up") {
       pokemon.evolution_item = null;
       pokemon.evolution_other = null;
