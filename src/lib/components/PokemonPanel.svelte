@@ -151,7 +151,7 @@
       pokemon.evolution_item = null;
       pokemon.evolution_level = null;
       pokemon.evolution_other = null;
-      pokemon.evolved_pokemon = null;
+      pokemon.evolves_into = null;
     } else if (pokemon.evolution_method === "level_up") {
       pokemon.evolution_item = null;
       pokemon.evolution_other = null;
@@ -179,21 +179,23 @@
           evolution_item = $2,
           evolution_level = $3,
           evolution_other = $4,
-          evolved_pokemon = $5,
+          evolves_into = $5,
           render = "${pokemon.render}",
           ability_1 = $6,
           ability_2 = $7,
-          hidden_ability = $8
+          hidden_ability = $8,
+          evolves_from = $9
         WHERE id = ${pokemon.id};`,
         [
           pokemon.evolution_method,
           pokemon.evolution_item,
           pokemon.evolution_level,
           pokemon.evolution_other,
-          pokemon.evolved_pokemon,
+          pokemon.evolves_into,
           pokemon.ability_1?.toLowerCase().split(" ").join("-"),
           pokemon.ability_2?.toLowerCase().split(" ").join("-"),
           pokemon.hidden_ability?.toLowerCase().split(" ").join("-"),
+          pokemon.evolves_from,
         ],
       )
       .then(() => {

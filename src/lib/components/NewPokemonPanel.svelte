@@ -38,7 +38,7 @@
     sp_defense: 0,
     speed: 0,
     evolution_method: "no_change",
-    evolved_pokemon: null,
+    evolves_into: null,
     evolution_item: null,
     evolution_level: null,
     evolution_other: null,

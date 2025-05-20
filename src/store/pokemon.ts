@@ -25,7 +25,8 @@ export type Pokemon = {
   evolution_level: number | null;
   evolution_item: string | null;
   evolution_other: string | null;
-  evolved_pokemon: string | null;
+  evolves_into: string | null;
+  evolves_from: string | null;
   render: "true" | "false";
 };
 

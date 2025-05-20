@@ -235,20 +235,30 @@
           label="Evolution Other"
         />
       {/if}
-      {#if pokemon.evolution_method !== "no_change"}
-        <div class="w-44">
-          <AutoComplete
-            label="Evolves To"
-            bind:value={pokemon.evolved_pokemon}
-            placeholder="Evolves To"
-            options={pokemonListOptions}
-            popupId="evolved-pokemon-popup"
-            onSelection={(e) => {
-              pokemon.evolved_pokemon = e.detail.label;
-            }}
-          />
-        </div>
-      {/if}
+      <div class="w-44">
+        <AutoComplete
+          label="Evolves From"
+          bind:value={pokemon.evolves_from}
+          placeholder="Evolves From"
+          options={pokemonListOptions}
+          popupId="evolved-pokemon-popup"
+          onSelection={(e) => {
+            pokemon.evolves_from = e.detail.label;
+          }}
+        />
+      </div>
+      <div class="w-44">
+        <AutoComplete
+          label="Evolves To"
+          bind:value={pokemon.evolves_into}
+          placeholder="Evolves To"
+          options={pokemonListOptions}
+          popupId="evolved-pokemon-popup"
+          onSelection={(e) => {
+            pokemon.evolves_into = e.detail.label;
+          }}
+        />
+      </div>
     {/if}
   </div>
   <p class="mt-10 text-lg">Stats</p>

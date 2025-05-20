@@ -31,8 +31,8 @@ pub fn create_evolution_table(pokemon: &DBPokemon) -> String {
         _ => no_change,
     };
 
-    let evolved_pokemon = match &pokemon.evolved_pokemon {
-        Some(evolved_pokemon) => evolved_pokemon,
+    let evolves_into = match &pokemon.evolves_into {
+        Some(evolves_into) => evolves_into,
         None => "Evolution Missing",
     };
 
@@ -43,7 +43,7 @@ pub fn create_evolution_table(pokemon: &DBPokemon) -> String {
         ",
         capitalize(&method),
         item_level_note,
-        &evolved_pokemon
+        &evolves_into
     );
 }
 

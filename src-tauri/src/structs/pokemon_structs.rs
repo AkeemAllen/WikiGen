@@ -43,7 +43,7 @@ pub struct DBPokemon {
     pub evolution_level: Option<u32>,
     pub evolution_item: Option<String>,
     pub evolution_other: Option<String>,
-    pub evolved_pokemon: Option<String>,
+    pub evolves_into: Option<String>,
     pub render: String,
 }
 
@@ -68,7 +68,7 @@ pub struct EvolutionChange {
     pub level: Option<u32>,
     pub item: Option<String>,
     pub other: Option<String>,
-    pub evolved_pokemon: EvolvedPokemon,
+    pub evolves: EvolvedPokemon,
     pub method: String,
 }
 
