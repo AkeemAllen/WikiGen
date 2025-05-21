@@ -5,6 +5,7 @@
   import { selectedWiki } from "../../store";
   import { pokemonList } from "../../store/pokemon";
   import NewPokemonPanel from "$lib/components/NewPokemonPanel.svelte";
+  import ModifyMovesetsPanel from "$lib/components/ModifyMovesets.svelte";
   import BaseModal from "$lib/components/BaseModal.svelte";
   import AutoComplete from "$lib/components/AutoComplete.svelte";
   import capitalizeWords from "$lib/utils/capitalizeWords";
@@ -82,6 +83,9 @@
   <Tab bind:group={tabSet} name="new-pokemon" value={2} class="text-sm"
     >Create New Pokemon</Tab
   >
+  <Tab bind:group={tabSet} name="modify-movesets" value={3} class="text-sm"
+    >Modify Movesets</Tab
+  >
   <div slot="panel">
     {#if tabSet === 0}
       <PokemonPanel />
@@ -150,6 +154,9 @@
     {/if}
     {#if tabSet === 2}
       <NewPokemonPanel />
+    {/if}
+    {#if tabSet === 3}
+      <ModifyMovesetsPanel />
     {/if}
   </div>
   <!-- {#snippet panel()}
