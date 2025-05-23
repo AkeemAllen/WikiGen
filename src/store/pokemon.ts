@@ -89,5 +89,5 @@ export const PokemonTypes = [
 
 export let pokemonList = writable<[number, number, string, string][]>([]);
 export let pokemonUnderMoveModification = writable<{
-  [key: string]: PokemonMove[];
+  [key: string]: { moves: PokemonMove[]; sprite: string };
 }>({});

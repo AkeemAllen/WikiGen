@@ -12,6 +12,9 @@
   import { db } from "../../store/db";
   import TextInput from "./TextInput.svelte";
   import { moveList } from "../../store/moves";
+  import { readFile } from "@tauri-apps/plugin-fs";
+  import { selectedWiki } from "../../store";
+  import { BaseDirectory } from "@tauri-apps/plugin-fs";
 
   let toastStore = getToastStore();
 
@@ -51,6 +54,15 @@
       return;
     }
 
+    if ($pokemonUnderMoveModification[pokemonSearch[1]]) {
+      return;
+    }
+
+    $pokemonUnderMoveModification[pokemonSearch[1]] = {
+      moves: [],
+      sprite: "",
+    };
+
     // Gather moveset
     await $db
       .select<PokemonMove[]>(
@@ -60,7 +72,7 @@
         [pokemonSearch[0]],
       )
       .then((res) => {
-        $pokemonUnderMoveModification[pokemonSearch[1]] = res;
+        $pokemonUnderMoveModification[pokemonSearch[1]]["moves"] = res;
       })
       .catch((err) => {
         toastStore.trigger(
@@ -69,6 +81,21 @@
             `Error loading Pokemon moveset!: \n ${err}`,
           ),
         );
+      });
+
+    $pokemonUnderMoveModification[pokemonSearch[1]]["sprite"] = await readFile(
+      `${$selectedWiki.name}/dist/docs/img/pokemon/${pokemonSearch[1]}.png`,
+      { baseDir: BaseDirectory.AppData },
+    )
+      .then((res) => {
+        const blob = new Blob([res], { type: "image/png" });
+        return URL.createObjectURL(blob);
+      })
+      .catch((err) => {
+        if (err.includes("No such file or directory")) {
+          return "404";
+        }
+        return "Error loading image";
       });
   }
 </script>
@@ -95,14 +122,19 @@
     </div>
 
     <div class="grid grid-cols-2 gap-4">
-      {#each Object.entries($pokemonUnderMoveModification) as [name, moveset]}
+      {#each Object.entries($pokemonUnderMoveModification) as [name, { moves: moveset, sprite }]}
         <div class="text-center mt-4">
-          <p>
-            {name}
-          </p>
+          <img src={sprite} alt={name} width="80" class="m-auto" />
           <div class="grid grid-cols-2 gap-2 bg-white rounded-lg shadow-md p-4">
             <div>
               <h3>TMs</h3>
+              {#each moveset.filter((pokemonMove) => pokemonMove.learn_method === "machine") as pokemonMove}
+                <div
+                  class="rounded-md mt-2 shadow-sm p-1 bg-gray-200 self-center"
+                >
+                  {pokemonMove.name}
+                </div>
+              {/each}
             </div>
             <div>
               <h3>Level Up</h3>
