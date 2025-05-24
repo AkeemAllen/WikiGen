@@ -170,7 +170,7 @@
           id: move.id,
           operation: "add",
           move: move.name,
-          method: move.learn_method.split(",") as LearnMethod[],
+          method: move.learn_method,
           level: move.level_learned,
           secondaryMoveId: null,
           secondaryMove: "",

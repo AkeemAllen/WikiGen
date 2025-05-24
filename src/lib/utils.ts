@@ -20,7 +20,7 @@ export async function addMoves(
       movesToInsert += `(${pokemonId}, ${move.id}, '${move.method.join(",")}', ${move.level})`;
       break;
     }
-    movesToInsert += `(${pokemonId}, ${move.id}, '${move.method.join(",")}', ${move.level}), `;
+    movesToInsert += `(${pokemonId}, ${move.id}, '${move.method}', ${move.level}), `;
   }
   return await database.execute(`INSERT INTO pokemon_movesets (pokemon, move, learn_method, level_learned)
           VALUES ${movesToInsert}`);
@@ -146,7 +146,7 @@ export async function modifyMoveSet(
         pokemonMoveset.push({
           id: move.id,
           name: move.move,
-          learn_method: move.method.join(","),
+          learn_method: move.method,
           level_learned: move.level,
         });
       });
@@ -175,7 +175,7 @@ export async function modifyMoveSet(
         let index = pokemonMoveset.findIndex((m) => m.id === move.id);
         pokemonMoveset[index].id = move.secondaryMoveId as number;
         pokemonMoveset[index].name = move.secondaryMove;
-        pokemonMoveset[index].learn_method = move.method.join(",");
+        pokemonMoveset[index].learn_method = move.method;
         pokemonMoveset[index].level_learned = move.level;
       });
     });

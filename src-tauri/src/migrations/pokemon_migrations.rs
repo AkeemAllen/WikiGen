@@ -189,7 +189,7 @@ pub async fn add_all_missing_pokemon(
             };
             let moveset_query = format!(
                 "INSERT INTO pokemon_movesets (pokemon, move, level_learned, learn_method) VALUES ({}, {}, {}, \"{}\")",
-                id, move_db_data.id, move_data.level_learned, move_data.learn_method.join(", ")
+                id, move_db_data.id, move_data.level_learned, move_data.learn_method
             );
             sqlx::query(&moveset_query)
                 .execute(wiki_db_conn)
