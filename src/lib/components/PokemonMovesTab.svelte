@@ -177,12 +177,6 @@
         );
       });
   }
-
-  function openModifyMoveSetWindow() {
-    const movesetWindow = new WebviewWindow("modify-moveset-window", {
-      url: "/modifymoveset",
-    });
-  }
 </script>
 
 <BaseModal
@@ -272,15 +266,6 @@
   />
 </BaseModal>
 
-<BaseModal bind:open={modifyMovesetModalOpen}>
-  <ModifyMoveset
-    bind:moveset
-    bind:pokemonId
-    bind:open={modifyMovesetModalOpen}
-    {generatePokemonPage}
-  />
-</BaseModal>
-
 <div>
   <div class="mt-4 space-y-4 overflow-x-auto px-4">
     <header class="flex items-center justify-between gap-4">
@@ -290,11 +275,6 @@
           bind:value={searchValue}
           inputHandler={() => handler.search(searchValue)}
           placeholder="Search move name..."
-        />
-        <Button
-          title="Modify Moveset"
-          onClick={() => openModifyMoveSetWindow()}
-          class="mt-2"
         />
         <Button
           title="Add Move"
