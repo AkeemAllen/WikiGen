@@ -523,9 +523,9 @@
     <Tab bind:group={tabSet} value={0} name="details" class="text-sm"
       >Details</Tab
     >
-    <Tab bind:group={tabSet} value={1} name="pokemon" class="text-sm"
+    <!-- <Tab bind:group={tabSet} value={1} name="pokemon" class="text-sm"
       >Pokemon</Tab
-    >
+    > -->
     <div slot="panel">
       {#if tabSet === 0}
         <div class="ml-2 mt-4">
@@ -665,8 +665,5 @@
         </div>
       {/if}
     </div>
-    <!-- {#snippet panel()}
-
-      {/snippet} -->
   </TabGroup>
 {/if}
