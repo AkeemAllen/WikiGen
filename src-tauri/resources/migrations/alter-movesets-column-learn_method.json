@@ -1,0 +1,6 @@
+{
+  "name": "alter-movesets-column-learn_method",
+  "app_version": "1.9.2",
+  "execution_order": 1,
+  "sql": "ALTER TABLE pokemon_movesets RENAME TO old_pokemon_movesets; CREATE TABLE pokemon_movesets (pokemon INTEGER NOT NULL, move INTEGER NOT NULL, learn_method TEXT NOT NULL, level_learned INTEGER, PRIMARY KEY(pokemon,move,learn_method), FOREIGN KEY(move) REFERENCES moves(id), FOREIGN KEY(pokemon) REFERENCES pokemon(id)); INSERT INTO pokemon_movesets (pokemon, move, learn_method, level_learned) SELECT pokemon, move, learn_method, level_learned FROM old_pokemon_movesets; DROP TABLE old_pokemon_movesets;"
+}
