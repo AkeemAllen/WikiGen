@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getToastStore } from "@skeletonlabs/skeleton";
+  import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
   import {
     pokemonList,
     pokemonUnderMoveModification,
@@ -20,6 +20,7 @@
 
   let pokemonSearch: [number, string] = $state([0, ""]);
   let moveSearch: string = $state("flame");
+  let tabSet: number = $state(0);
 
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
@@ -98,7 +99,39 @@
         return "Error loading image";
       });
   }
+
+  function onDragStart(e: DragEvent) {
+    if (e.dataTransfer === null) return;
+    e.dataTransfer.setData("text", (e.target as HTMLElement).id);
+  }
+
+  function onDragDrop(e: DragEvent, pokemonName: string) {
+    if (e.dataTransfer === null) return;
+    e.preventDefault();
+    let data: string = e.dataTransfer.getData("text");
+    let moveId = $moveList.find(([id, name]) => name === data)?.[0] as number;
+
+    if (
+      $pokemonUnderMoveModification[pokemonName]["moves"].find(
+        (move) => move.id === moveId,
+      )
+    )
+      return;
+
+    let newMove: PokemonMove = {
+      id: moveId,
+      name: data,
+      learn_method: "machine",
+      level_learned: 0,
+    };
+    $pokemonUnderMoveModification[pokemonName]["moves"] = [
+      newMove,
+      ...$pokemonUnderMoveModification[pokemonName]["moves"],
+    ];
+  }
 </script>
+
+<div></div>
 
 <div class="grid grid-cols-3 gap-4">
   <section class="col-span-2">
@@ -114,7 +147,7 @@
         showChevron={false}
       />
       <Button
-        title="Search"
+        title="Add"
         onClick={addPokemonToModifyMovesets}
         disabled={pokemonSearch[0] === 0}
         class="mt-2 w-32"
@@ -125,21 +158,43 @@
       {#each Object.entries($pokemonUnderMoveModification) as [name, { moves: moveset, sprite }]}
         <div class="text-center mt-4">
           <img src={sprite} alt={name} width="80" class="m-auto" />
-          <div class="grid grid-cols-2 gap-2 bg-white rounded-lg shadow-md p-4">
-            <div>
-              <h3>TMs</h3>
-              {#each moveset.filter((pokemonMove) => pokemonMove.learn_method === "machine") as pokemonMove}
+          <TabGroup
+            border=""
+            justify="justify-center"
+            class="p-3 shadow-lg rounded-lg"
+          >
+            <Tab bind:group={tabSet} name="machines" value={0} class="text-sm">
+              Machines
+            </Tab>
+            <Tab bind:group={tabSet} name="level-up" value={1} class="text-sm">
+              Level-Up
+            </Tab>
+            <div slot="panel">
+              {#if tabSet === 0}
                 <div
-                  class="rounded-md mt-2 shadow-sm p-1 bg-gray-200 self-center"
+                  ondragover={(e) => e.preventDefault()}
+                  ondrop={(e) => onDragDrop(e, name)}
+                  role="none"
                 >
-                  {pokemonMove.name}
+                  <div class="grid grid-cols-2 gap-2">
+                    {#each moveset.filter((pokemonMove) => pokemonMove.learn_method === "machine") as pokemonMove}
+                      <div
+                        class="rounded-md mt-2 shadow-sm p-1 bg-gray-200 self-center"
+                      >
+                        {pokemonMove.name}
+                      </div>
+                    {/each}
+                  </div>
                 </div>
-              {/each}
+              {/if}
+              {#if tabSet === 1}
+                <div></div>
+              {/if}
             </div>
-            <div>
-              <h3>Level Up</h3>
-            </div>
-          </div>
+          </TabGroup>
+          <!-- <div
+            class="grid grid-cols-2 gap-2 bg-white rounded-lg shadow-md p-4"
+          ></div> -->
         </div>
       {/each}
     </div>
@@ -153,9 +208,13 @@
       />
     </div>
     <div class="flex flex-col">
-      {#each searchMoves as move}
+      {#each searchMoves as move, i}
         <div
           class="rounded-md mt-2 shadow-sm p-1 pl-4 bg-gray-200 w-[80%] self-center"
+          draggable={true}
+          ondragstart={onDragStart}
+          id={move}
+          role="none"
         >
           {move}
         </div>

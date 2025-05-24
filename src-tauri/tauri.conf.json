@@ -59,7 +59,8 @@
         "resizable": true,
         "title": "WikiGen",
         "width": 1400,
-        "useHttpsScheme": true
+        "useHttpsScheme": true,
+        "dragDropEnabled": false
       }
     ],
     "security": {
