@@ -250,30 +250,6 @@
         toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
       });
   }
-
-  // function nextPokemon() {
-  //   if (pokemonId === 1025) {
-  //     toastStore.trigger({
-  //       message: "No more Pokemon",
-  //       timeout: 3000,
-  //       background: "variant-filled-error",
-  //     });
-  //     return;
-  //   }
-  //   setPokemonDetails(pokemonId + 1);
-  // }
-
-  // function prevPokemon() {
-  //   if (pokemonId === 1) {
-  //     toastStore.trigger({
-  //       message: "No more Pokemon",
-  //       timeout: 3000,
-  //       background: "variant-filled-error",
-  //     });
-  //     return;
-  //   }
-  //   setPokemonDetails(pokemonId - 1);
-  // }
 </script>
 
 <div class="flex flex-row gap-7">
@@ -349,8 +325,6 @@
         />
       {/if}
     </div>
-    <!-- {#snippet panel()}
-    {/snippet} -->
   </TabGroup>
 {/if}
 
