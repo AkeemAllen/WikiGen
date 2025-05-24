@@ -237,18 +237,6 @@
       {/if}
       <div class="w-44">
         <AutoComplete
-          label="Evolves From"
-          bind:value={pokemon.evolves_from}
-          placeholder="Evolves From"
-          options={pokemonListOptions}
-          popupId="evolves-from-popup"
-          onSelection={(e) => {
-            pokemon.evolves_from = e.detail.label;
-          }}
-        />
-      </div>
-      <div class="w-44">
-        <AutoComplete
           label="Evolves To"
           bind:value={pokemon.evolves_into}
           placeholder="Evolves To"

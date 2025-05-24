@@ -26,7 +26,6 @@ export type Pokemon = {
   evolution_item: string | null;
   evolution_other: string | null;
   evolves_into: string | null;
-  evolves_from: string | null;
   render: "true" | "false";
 };
 
@@ -46,7 +45,7 @@ export type MoveSetChange = {
   id: number;
   operation: string;
   move: string;
-  method: LearnMethod[];
+  method: string;
   level: number;
   secondaryMoveId: number | null | undefined;
   secondaryMove: string;
@@ -89,5 +88,9 @@ export const PokemonTypes = [
 
 export let pokemonList = writable<[number, number, string, string][]>([]);
 export let pokemonUnderMoveModification = writable<{
-  [key: string]: { moves: PokemonMove[]; sprite: string };
+  [key: string]: {
+    currentMoves: PokemonMove[];
+    sprite: string;
+    movesToAddOrEdit: PokemonMove[];
+  };
 }>({});

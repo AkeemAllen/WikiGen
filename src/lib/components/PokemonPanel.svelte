@@ -183,7 +183,6 @@
           ability_1 = $6,
           ability_2 = $7,
           hidden_ability = $8,
-          evolves_from = $9
         WHERE id = ${pokemon.id};`,
         [
           pokemon.evolution_method,
@@ -194,7 +193,6 @@
           pokemon.ability_1?.toLowerCase().split(" ").join("-"),
           pokemon.ability_2?.toLowerCase().split(" ").join("-"),
           pokemon.hidden_ability?.toLowerCase().split(" ").join("-"),
-          pokemon.evolves_from,
         ],
       )
       .then(() => {
