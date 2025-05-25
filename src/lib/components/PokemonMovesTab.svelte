@@ -11,10 +11,7 @@
   import Button from "./Button.svelte";
   import BaseModal from "./BaseModal.svelte";
   import AutoComplete from "./AutoComplete.svelte";
-  import ModifyMoveset from "./ModifyMoveset.svelte";
-  import { shortcut } from "@svelte-put/shortcut";
   import { moveList } from "../../store/moves";
-  import MultiSelect from "svelte-multiselect";
   import { db } from "../../store/db";
   import { getToastStore } from "@skeletonlabs/skeleton";
   import capitalizeWords from "$lib/utils/capitalizeWords";
@@ -26,10 +23,13 @@
     moveset?: PokemonMove[];
   }
 
-  let { pokemonId = $bindable(), generatePokemonPage, moveset = $bindable([]) }: Props = $props();
+  let {
+    pokemonId = $bindable(),
+    generatePokemonPage,
+    moveset = $bindable([]),
+  }: Props = $props();
 
   let searchValue: string = $state("");
-  let modifyMovesetModalOpen: boolean = $state(false);
   let addMoveModalOpen: boolean = $state(false);
   let newMove: PokemonMove = $state({
     id: 0,
@@ -39,7 +39,6 @@
   });
 
   let editMoveModalOpen: boolean = $state(false);
-  let moveToEditLearnMethods: string[] = $state([]);
   let moveToEdit: PokemonMove = $state({
     id: 0,
     name: "",
@@ -47,16 +46,14 @@
     level_learned: 0,
   });
 
-  let newLearnMethods: string[] = $state([]);
-
   const toastStore = getToastStore();
 
-  let moveListOptions = $derived($moveList
-    .map(([id, name]) => ({
+  let moveListOptions = $derived(
+    $moveList.map(([id, name]) => ({
       label: name,
       value: id,
-    }))
-    .filter((move) => !moveset.some((m) => m.id === move.value)));
+    })),
+  );
 
   const rowsPerPageOptions = [
     { label: "5", value: 5 },
@@ -66,21 +63,23 @@
     { label: "100", value: 100 },
   ];
 
-  let handler = $derived(new DataHandler(moveset, {
-    rowsPerPage: 5,
-  }));
+  let handler = $derived(
+    new DataHandler(moveset, {
+      rowsPerPage: 5,
+    }),
+  );
   let rows = $derived(handler.getRows());
   let rowsPerPage = $derived(handler.getRowsPerPage());
 
-  async function deleteMove(moveId: number) {
+  async function deleteMove(moveId: number, learn_method: string) {
     await $db
       .execute(
-        `DELETE FROM pokemon_movesets WHERE pokemon = $1 AND move = $2`,
-        [pokemonId, moveId],
+        `DELETE FROM pokemon_movesets WHERE pokemon = $1 AND move = $2 AND learn_method = $3`,
+        [pokemonId, moveId, learn_method],
       )
       .then(() => {
         const updatedMoves: PokemonMove[] = moveset.filter(
-          (move) => move.id !== moveId,
+          (move) => move.id !== moveId && move.learn_method !== learn_method,
         );
         moveset = updatedMoves;
         toastStore.trigger(
@@ -95,29 +94,21 @@
       });
   }
 
-  async function addMove() {
+  export async function addMove() {
     await $db
       .execute(
-        `INSERT INTO pokemon_movesets (pokemon, move, learn_method, level_learned)
-    VALUES ($1, $2, $3, $4)`,
-        [
-          pokemonId,
-          newMove.id,
-          newLearnMethods.join(","),
-          newMove.level_learned,
-        ],
+        `INSERT INTO pokemon_movesets (pokemon, move, learn_method, level_learned) VALUES ($1, $2, $3, $4)`,
+        [pokemonId, newMove.id, newMove.learn_method, newMove.level_learned],
       )
       .then(() => {
-        moveset = [
-          ...moveset,
-          {
-            id: newMove.id,
-            name: newMove.name,
-            learn_method: newLearnMethods.join(","),
-            level_learned: newMove.level_learned,
-          },
-        ];
+        moveset = [...moveset, newMove];
         addMoveModalOpen = false;
+        newMove = {
+          id: 0,
+          name: "",
+          learn_method: "",
+          level_learned: 0,
+        };
         toastStore.trigger(
           getToastSettings(ToastType.SUCCESS, "Move added successfully"),
         );
@@ -133,9 +124,7 @@
   async function editMove() {
     await $db
       .execute(
-        `UPDATE pokemon_movesets
-    SET learn_method = $1, level_learned = $2
-    WHERE pokemon = $3 AND move = $4`,
+        `UPDATE pokemon_movesets SET learn_method = $1, level_learned = $2 WHERE pokemon = $3 AND move = $4`,
         [
           moveToEdit.learn_method,
           moveToEdit.level_learned,
@@ -155,7 +144,6 @@
           return move;
         });
         moveToEdit = { id: 0, name: "", learn_method: "", level_learned: 0 };
-        moveToEditLearnMethods = [];
         editMoveModalOpen = false;
         toastStore.trigger(
           getToastSettings(ToastType.SUCCESS, "Move updated successfully"),
@@ -196,18 +184,16 @@
       class="mb-2 block text-sm font-medium leading-6 text-gray-900"
       >Learn Method(s)</label
     >
-    <MultiSelect
+    <SelectInput
       id="methods"
-      bind:selected={newLearnMethods}
-      options={["level-up", "machine"]}
-      on:change={(e) => {
-        newMove.learn_method = newLearnMethods.join(",");
-        console.log(newMove.learn_method);
-      }}
-      style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
+      bind:value={newMove.learn_method}
+      options={["level-up", "machine"].map((option) => ({
+        label: option,
+        value: option,
+      }))}
     />
   </div>
-  {#if newLearnMethods.includes("level-up")}
+  {#if newMove.learn_method === "level-up"}
     <NumberInput
       id="level-learned"
       bind:value={newMove.level_learned}
@@ -231,18 +217,16 @@
       class="mb-2 block text-sm font-medium leading-6 text-gray-900"
       >Learn Method(s)</label
     >
-    <MultiSelect
+    <SelectInput
       id="methods"
-      bind:selected={moveToEditLearnMethods}
-      options={["level-up", "machine"]}
-      on:change={(e) => {
-        moveToEdit.learn_method = moveToEditLearnMethods.join(",");
-        console.log(moveToEdit.learn_method);
-      }}
-      style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
+      bind:value={moveToEdit.learn_method}
+      options={["level-up", "machine"].map((option) => ({
+        label: option,
+        value: option,
+      }))}
     />
   </div>
-  {#if moveToEditLearnMethods.includes("level-up")}
+  {#if moveToEdit.learn_method === "level-up"}
     <NumberInput
       id="level-learned"
       bind:value={moveToEdit.level_learned}
@@ -257,15 +241,6 @@
   />
 </BaseModal>
 
-<BaseModal bind:open={modifyMovesetModalOpen}>
-  <ModifyMoveset
-    bind:moveset
-    bind:pokemonId
-    bind:open={modifyMovesetModalOpen}
-    {generatePokemonPage}
-  />
-</BaseModal>
-
 <div>
   <div class="mt-4 space-y-4 overflow-x-auto px-4">
     <header class="flex items-center justify-between gap-4">
@@ -275,11 +250,6 @@
           bind:value={searchValue}
           inputHandler={() => handler.search(searchValue)}
           placeholder="Search move name..."
-        />
-        <Button
-          title="Modify Moveset"
-          onClick={() => (modifyMovesetModalOpen = true)}
-          class="mt-2"
         />
         <Button
           title="Add Move"
@@ -311,14 +281,13 @@
               onclick={() => {
                 moveToEdit = row;
                 editMoveModalOpen = true;
-                moveToEditLearnMethods = row.learn_method.split(",");
               }}
             >
               <IconEdit size={18} class="text-gray-500" />
             </td>
             <td
               class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-              onclick={() => deleteMove(row.id)}
+              onclick={() => deleteMove(row.id, row.learn_method)}
             >
               <IconTrash size={18} class="text-gray-500" />
             </td>
@@ -331,15 +300,3 @@
     </footer>
   </div>
 </div>
-
-<svelte:window
-  use:shortcut={{
-    trigger: {
-      key: "m",
-      modifier: "ctrl",
-      callback: () => {
-        modifyMovesetModalOpen = true;
-      },
-    },
-  }}
-/>

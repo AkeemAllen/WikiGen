@@ -1,0 +1,6 @@
+{
+  "name": "alter-pokemon-column-evolved-pokemon",
+  "app_version": "1.9.2",
+  "execution_order": 1,
+  "sql": "ALTER TABLE pokemon RENAME COLUMN evolved_pokemon TO evolves_into;"
+}

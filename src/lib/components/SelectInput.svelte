@@ -13,7 +13,7 @@
     onChange?: EventHandler<Event, HTMLSelectElement>;
     topMargin?: boolean;
     class?: string;
-    [key: string]: any
+    [key: string]: any;
   }
 
   let {
@@ -22,11 +22,10 @@
     value = $bindable(""),
     options = [],
     onChange = () => {},
-    topMargin = true,
+    topMargin = false,
     class: className = "",
     ...rest
   }: Props = $props();
-  
 </script>
 
 <div class="min-w-20 {className}">

@@ -25,7 +25,7 @@ export type Pokemon = {
   evolution_level: number | null;
   evolution_item: string | null;
   evolution_other: string | null;
-  evolved_pokemon: string | null;
+  evolves_into: string | null;
   render: "true" | "false";
 };
 
@@ -39,16 +39,6 @@ export type PokemonMove = {
   name: string;
   learn_method: string;
   level_learned: number;
-};
-
-export type MoveSetChange = {
-  id: number;
-  operation: string;
-  move: string;
-  method: LearnMethod[];
-  level: number;
-  secondaryMoveId: number | null | undefined;
-  secondaryMove: string;
 };
 
 export type LearnMethod = "level-up" | "machine" | "tutor" | "egg";
@@ -87,3 +77,12 @@ export const PokemonTypes = [
 ];
 
 export let pokemonList = writable<[number, number, string, string][]>([]);
+export let pokemonUnderMoveModification = writable<{
+  [key: string]: {
+    currentMoves: PokemonMove[];
+    sprite: string;
+    movesToAdd: PokemonMove[];
+    movesToEdit: PokemonMove[];
+    movesToDelete: PokemonMove[];
+  };
+}>({});

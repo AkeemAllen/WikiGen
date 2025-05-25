@@ -151,7 +151,6 @@
       pokemon.evolution_item = null;
       pokemon.evolution_level = null;
       pokemon.evolution_other = null;
-      pokemon.evolved_pokemon = null;
     } else if (pokemon.evolution_method === "level_up") {
       pokemon.evolution_item = null;
       pokemon.evolution_other = null;
@@ -179,18 +178,18 @@
           evolution_item = $2,
           evolution_level = $3,
           evolution_other = $4,
-          evolved_pokemon = $5,
+          evolves_into = $5,
           render = "${pokemon.render}",
           ability_1 = $6,
           ability_2 = $7,
-          hidden_ability = $8
+          hidden_ability = $8,
         WHERE id = ${pokemon.id};`,
         [
           pokemon.evolution_method,
           pokemon.evolution_item,
           pokemon.evolution_level,
           pokemon.evolution_other,
-          pokemon.evolved_pokemon,
+          pokemon.evolves_into,
           pokemon.ability_1?.toLowerCase().split(" ").join("-"),
           pokemon.ability_2?.toLowerCase().split(" ").join("-"),
           pokemon.hidden_ability?.toLowerCase().split(" ").join("-"),
@@ -251,30 +250,6 @@
         toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
       });
   }
-
-  // function nextPokemon() {
-  //   if (pokemonId === 1025) {
-  //     toastStore.trigger({
-  //       message: "No more Pokemon",
-  //       timeout: 3000,
-  //       background: "variant-filled-error",
-  //     });
-  //     return;
-  //   }
-  //   setPokemonDetails(pokemonId + 1);
-  // }
-
-  // function prevPokemon() {
-  //   if (pokemonId === 1) {
-  //     toastStore.trigger({
-  //       message: "No more Pokemon",
-  //       timeout: 3000,
-  //       background: "variant-filled-error",
-  //     });
-  //     return;
-  //   }
-  //   setPokemonDetails(pokemonId - 1);
-  // }
 </script>
 
 <div class="flex flex-row gap-7">
@@ -350,8 +325,6 @@
         />
       {/if}
     </div>
-    <!-- {#snippet panel()}
-    {/snippet} -->
   </TabGroup>
 {/if}
 

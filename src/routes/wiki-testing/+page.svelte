@@ -1,11 +1,8 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
-  import { onMount } from "svelte";
-
+  import { run } from "svelte/legacy";
   // import { getToastStore } from "@skeletonlabs/skeleton";
-  import { type } from "@tauri-apps/plugin-os";
   import { appDataDir } from "@tauri-apps/api/path";
+  import { type } from "@tauri-apps/plugin-os";
   // import { invoke } from "@tauri-apps/api/tauri";
   import { selectedWiki } from "../../store";
 
@@ -63,7 +60,7 @@
   // }
   async function getMkdocsDirectory(wikiName: string): Promise<string> {
     const appData = await appDataDir();
-    let mkdocsFilePath = `${appData}${wikiName}/dist`;
+    let mkdocsFilePath = `${appData}/${wikiName}/dist`;
     const osType = type();
     if (osType === "windows") {
       mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
@@ -132,6 +129,12 @@
     >
     and then run
     <code class="rounded-md bg-gray-200 px-1">mkdocs serve</code>
+  </p>
+  <p>
+    Note: If you run into Issue running <code
+      class="rounded-md bg-gray-200 px-1">mkdocs serve</code
+    >, try
+    <code class="rounded-md bg-gray-200 px-1">python -m mkdocs serve</code>
   </p>
   <p class="text-sm">
     4. You should now see the server running on

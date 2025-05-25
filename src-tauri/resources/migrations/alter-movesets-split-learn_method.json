@@ -1,0 +1,6 @@
+{
+  "name": "alter-movesets-split-learn_method",
+  "app_version": "1.9.2",
+  "execution_order": 2,
+  "sql": "INSERT INTO pokemon_movesets (pokemon, move, learn_method, level_learned) SELECT pokemon, move, CASE WHEN learn_method LIKE 'level-up, machine' THEN 'machine' WHEN learn_method LIKE 'machine, level-up' THEN 'level-up' END, level_learned FROM pokemon_movesets WHERE learn_method IN ('level-up, machine', 'machine, level-up'); UPDATE pokemon_movesets SET learn_method = CASE WHEN learn_method = 'level-up, machine' THEN 'level-up' WHEN learn_method = 'machine, level-up' THEN 'machine' END WHERE learn_method IN ('level-up, machine', 'machine, level-up');"
+}

@@ -25,6 +25,7 @@ export async function load({ params }: { params: { slug: string } }) {
   if (!appDataDirectoryExists) {
     await mkdir("directory_existence", {
       baseDir: BaseDirectory.AppData,
+      recursive: true,
     });
   }
 

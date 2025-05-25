@@ -37,7 +37,7 @@
   },
   "productName": "WikiGen",
   "mainBinaryName": "WikiGen",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "identifier": "com.wikigen.dev",
   "plugins": {
     "cli": {
@@ -59,7 +59,8 @@
         "resizable": true,
         "title": "WikiGen",
         "width": 1400,
-        "useHttpsScheme": true
+        "useHttpsScheme": true,
+        "dragDropEnabled": false
       }
     ],
     "security": {

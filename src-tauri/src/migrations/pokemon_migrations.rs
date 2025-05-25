@@ -131,7 +131,7 @@ pub async fn add_all_missing_pokemon(
                     evolution_level,
                     evolution_item,
                     evolution_other,
-                    evolved_pokemon,
+                    evolves_into,
                     render
                 )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)"
@@ -153,7 +153,7 @@ pub async fn add_all_missing_pokemon(
             .bind(pokemon_db_data.evolution_level)
             .bind(pokemon_db_data.evolution_item)
             .bind(pokemon_db_data.evolution_other)
-            .bind(pokemon_db_data.evolved_pokemon)
+            .bind(pokemon_db_data.evolves_into)
             .bind(pokemon_db_data.render)
             .execute(wiki_db_conn)
             .await
@@ -189,7 +189,7 @@ pub async fn add_all_missing_pokemon(
             };
             let moveset_query = format!(
                 "INSERT INTO pokemon_movesets (pokemon, move, level_learned, learn_method) VALUES ({}, {}, {}, \"{}\")",
-                id, move_db_data.id, move_data.level_learned, move_data.learn_method.join(", ")
+                id, move_db_data.id, move_data.level_learned, move_data.learn_method
             );
             sqlx::query(&moveset_query)
                 .execute(wiki_db_conn)

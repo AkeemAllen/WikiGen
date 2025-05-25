@@ -1,25 +1,6 @@
-use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use std::{collections::HashMap, fmt, str::FromStr};
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Pokemon {
-    pub pokemon: IndexMap<u32, PokemonData>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct PokemonData {
-    pub id: u32,
-    pub name: String,
-    pub types: Vec<String>,
-    pub abilities: Vec<String>,
-    pub stats: Stats,
-    pub moves: HashMap<String, Move>,
-    pub sprite: String,
-    pub evolution: Evolution,
-    pub forms: HashMap<String, PokemonForm>,
-}
+use std::{fmt, str::FromStr};
 
 #[derive(Debug, Serialize, Deserialize, Clone, FromRow)]
 pub struct DBPokemon {
@@ -43,7 +24,7 @@ pub struct DBPokemon {
     pub evolution_level: Option<u32>,
     pub evolution_item: Option<String>,
     pub evolution_other: Option<String>,
-    pub evolved_pokemon: Option<String>,
+    pub evolves_into: Option<String>,
     pub render: String,
 }
 
@@ -63,27 +44,8 @@ pub struct PokemonMove {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct EvolutionChange {
-    pub id: u32,
-    pub level: Option<u32>,
-    pub item: Option<String>,
-    pub other: Option<String>,
-    pub evolved_pokemon: EvolvedPokemon,
-    pub method: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Ability {
     pub effect: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct PokemonForm {
-    pub types: Vec<String>,
-    pub abilities: Vec<String>,
-    pub stats: Stats,
-    pub sprite: String,
-    pub moves: HashMap<String, Move>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -96,36 +58,7 @@ pub struct Stats {
     pub speed: u32,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Move {
-    pub level_learned: u32,
-    pub learn_method: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Evolution {
-    pub level: u32,
-    pub item: String,
-    pub other: String,
-    pub evolves_to: EvolvedPokemon,
-    pub method: EvolutionMethod,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, FromRow)]
-pub struct EvolvedPokemon {
-    pub id: u32,
-    pub pokemon_name: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(rename_all = "snake_case")]
-pub enum EvolutionMethod {
-    LevelUp,
-    Item,
-    Other,
-    NoChange,
-}
-
+// TODO: Consider Removing this and matchup.rs in the future
 #[derive(Debug, Deserialize, Serialize, Clone, Copy)]
 pub enum PokemonTypesEnum {
     Normal,

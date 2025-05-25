@@ -46,7 +46,7 @@ fn test_generate_pokemon_page() {
         evolution_item: None,
         evolution_level: None,
         evolution_other: None,
-        evolved_pokemon: None,
+        evolves_into: None,
         render: "true".to_string(),
     }];
     let moveset: Vec<PokemonMove> = vec![PokemonMove {
