@@ -70,7 +70,7 @@ export async function shiftMoves_(
   for (let index = 0; index < moveToEdit.length; index++) {
     let move = moveToEdit[index];
 
-    updateQueries += `UPDATE pokemon_movesets SET level_learned = ${move.level_learned} WHERE pokemon = ${pokemonId} AND move = ${move.id}; `;
+    updateQueries += `UPDATE pokemon_movesets SET level_learned = ${move.level_learned} WHERE pokemon = ${pokemonId} AND move = ${move.id} AND learn_method = \'${move.learn_method}\'; `;
   }
 
   return await get(db).execute(
@@ -90,6 +90,25 @@ async function deleteMoves(
   return await database.execute(
     `DELETE FROM pokemon_movesets WHERE pokemon = ? AND move IN (${moveIds.join(",")})`,
     [pokemonId],
+  );
+}
+
+export async function deleteMoves_(
+  movesToDelete: PokemonMove[],
+  pokemonId: number,
+): Promise<QueryResult> {
+  let deleteQueries = "";
+  for (let index = 0; index < movesToDelete.length; index++) {
+    let move = movesToDelete[index];
+
+    deleteQueries += `DELETE FROM pokemon_movesets WHERE pokemon = ${pokemonId} AND move = ${move.id} AND learn_method = \'${move.learn_method}\'; `;
+  }
+
+  return await get(db).execute(
+    `BEGIN TRANSACTION;
+        ${deleteQueries}
+      COMMIT;
+      `,
   );
 }
 

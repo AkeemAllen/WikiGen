@@ -15,9 +15,10 @@
   import { readFile } from "@tauri-apps/plugin-fs";
   import { selectedWiki } from "../../store";
   import { BaseDirectory } from "@tauri-apps/plugin-fs";
-  import { addMoves_, shiftMoves_ } from "$lib/utils";
+  import { addMoves_, deleteMoves_, shiftMoves_ } from "$lib/utils";
   import { generatePokemonPages } from "$lib/utils/generators";
   import NumberInput from "./NumberInput.svelte";
+  import IconTrash from "@tabler/icons-svelte/icons/trash";
 
   let toastStore = getToastStore();
 
@@ -67,6 +68,7 @@
       sprite: "",
       movesToAdd: [],
       movesToEdit: [],
+      movesToDelete: [],
     };
 
     // Gather moveset
@@ -126,6 +128,34 @@
 
     $pokemonUnderMoveModification[pokemonName]["movesToEdit"] = [
       ...$pokemonUnderMoveModification[pokemonName]["movesToEdit"],
+      move,
+    ];
+  }
+
+  function onMoveDelete(pokemonName: string, move: PokemonMove) {
+    let movePresentInListIndex = $pokemonUnderMoveModification[pokemonName][
+      "movesToDelete"
+    ].findIndex(
+      (_move) =>
+        _move.id === move.id && _move.learn_method === move.learn_method,
+    );
+
+    if (movePresentInListIndex !== -1) return;
+
+    let movePresentInCurrentMovesIndex = $pokemonUnderMoveModification[
+      pokemonName
+    ]["currentMoves"].findIndex(
+      (_move) =>
+        _move.id === move.id && _move.learn_method === move.learn_method,
+    );
+
+    $pokemonUnderMoveModification[pokemonName]["currentMoves"].splice(
+      movePresentInCurrentMovesIndex,
+      1,
+    );
+
+    $pokemonUnderMoveModification[pokemonName]["movesToDelete"] = [
+      ...$pokemonUnderMoveModification[pokemonName]["movesToDelete"],
       move,
     ];
   }
@@ -193,9 +223,10 @@
   }
 
   async function updateMoves() {
-    for (const [pokemonName, { movesToAdd, movesToEdit }] of Object.entries(
-      $pokemonUnderMoveModification,
-    )) {
+    for (const [
+      pokemonName,
+      { movesToAdd, movesToEdit, movesToDelete },
+    ] of Object.entries($pokemonUnderMoveModification)) {
       let pokemonId = $pokemonList.find(
         (pokemon) => pokemon[2] === pokemonName.toLowerCase(),
       )?.[0];
@@ -256,6 +287,28 @@
             );
           });
       }
+
+      if (movesToDelete.length !== 0) {
+        await deleteMoves_(movesToDelete, pokemonId)
+          .then(() => generatePokemonPages([pokemonId], $selectedWiki.name))
+          .then(() => {
+            $pokemonUnderMoveModification[pokemonName]["movesToDelete"] = [];
+            toastStore.trigger(
+              getToastSettings(
+                ToastType.INFO,
+                `Moves Deleted for ${pokemonName}`,
+              ),
+            );
+          })
+          .catch((err) => {
+            toastStore.trigger(
+              getToastSettings(
+                ToastType.ERROR,
+                `Error deleting moves for ${pokemonName}: ${err}`,
+              ),
+            );
+          });
+      }
     }
   }
 </script>
@@ -309,9 +362,18 @@
                   <div class="grid grid-cols-2 gap-2">
                     {#each moveset.filter((pokemonMove) => pokemonMove.learn_method === "machine") as pokemonMove}
                       <div
-                        class="rounded-md mt-2 shadow-sm p-1 self-center border border-indigo-200"
+                        class="relative rounded-md mt-2 shadow-sm p-1 self-center border border-indigo-200 group"
                       >
                         {capitalizeWords(pokemonMove.name)}
+                        <button
+                          class="invisible absolute -right-1 -top-1.5 z-10 rounded-md bg-red-200 p-1 hover:scale-110 group-hover:visible"
+                          onclick={(e) => {
+                            e.stopPropagation();
+                            onMoveDelete(name, pokemonMove);
+                          }}
+                        >
+                          <IconTrash size={16} color="white" />
+                        </button>
                       </div>
                     {/each}
                   </div>
@@ -326,13 +388,22 @@
                   <div class="grid grid-cols-2 gap-2">
                     {#each moveset.filter((pokemonMove) => pokemonMove.learn_method === "level-up") as pokemonMove}
                       <div
-                        class="rounded-md mt-2 shadow-sm p-1 self-center border border-indigo-200 flex flex-row justify-between align-middle"
+                        class="relative rounded-md mt-2 shadow-sm p-1 self-center border border-indigo-200 flex flex-row justify-between align-middle group"
                       >
                         {capitalizeWords(pokemonMove.name)}
                         <NumberInput
                           bind:value={pokemonMove.level_learned}
                           onchange={() => onLevelEdit(name, pokemonMove)}
                         />
+                        <button
+                          class="invisible absolute -right-1 -top-1.5 z-10 rounded-md bg-red-200 p-1 hover:scale-110 group-hover:visible"
+                          onclick={(e) => {
+                            e.stopPropagation();
+                            onMoveDelete(name, pokemonMove);
+                          }}
+                        >
+                          <IconTrash size={16} color="white" />
+                        </button>
                       </div>
                     {/each}
                   </div>
