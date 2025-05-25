@@ -19,6 +19,7 @@
   import { generatePokemonPages } from "$lib/utils/generators";
   import NumberInput from "./NumberInput.svelte";
   import IconTrash from "@tabler/icons-svelte/icons/trash";
+  import IconX from "@tabler/icons-svelte/icons/x";
 
   let toastStore = getToastStore();
 
@@ -113,6 +114,15 @@
   }
 
   $inspect($pokemonUnderMoveModification);
+
+  function removeFromPokemonUnderModification(pokemonName: string) {
+    let filteredList = $pokemonUnderMoveModification;
+    delete filteredList[pokemonName];
+
+    $pokemonUnderMoveModification = {
+      ...filteredList,
+    };
+  }
 
   function onLevelEdit(pokemonName: string, move: PokemonMove) {
     let movePresentInListIndex = $pokemonUnderMoveModification[pokemonName][
@@ -339,8 +349,17 @@
 
     <div class="grid grid-cols-2 gap-4">
       {#each Object.entries($pokemonUnderMoveModification) as [name, { currentMoves: moveset, sprite }]}
-        <div class="text-center mt-4">
+        <div class="relative text-center mt-4">
           <img src={sprite} alt={name} width="80" class="m-auto" />
+          <button
+            class="absolute right-20 top-1 z-10 rounded-md bg-gray-200 p-1 hover:scale-110 group-hover:visible"
+            onclick={(e) => {
+              e.stopPropagation();
+              removeFromPokemonUnderModification(name);
+            }}
+          >
+            <IconX size={16} color="white" />
+          </button>
           <TabGroup
             border=""
             justify="justify-center"
@@ -419,14 +438,14 @@
     </div>
   </section>
   <section class="col-span-1">
-    <div class="flex flex-row gap-7">
+    <div class="flex flex-row gap-7 sticky top-0">
       <TextInput
         class="w-full"
         placeholder="Search Moves (min 3 letters)"
         bind:value={moveSearch}
       />
     </div>
-    <div class="flex flex-col">
+    <div class="flex flex-col sticky top-11">
       {#each searchMoves as move, i}
         <div
           class="rounded-md mt-2 shadow-sm p-1 pl-4 w-[80%] self-center border border-indigo-200"
