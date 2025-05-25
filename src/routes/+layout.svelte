@@ -59,6 +59,7 @@
   import { type } from "@tauri-apps/plugin-os";
   import LoadingModal from "$lib/components/modals/LoadingModal.svelte";
   import { load } from "@tauri-apps/plugin-store";
+  import IconTestPipe from "@tabler/icons-svelte/icons/test-pipe";
   interface Props {
     children?: import("svelte").Snippet;
   }
@@ -600,13 +601,21 @@
               />
             {/snippet}
           </NavButton>
-          <!-- <NavButton
-                name="Wiki Testing"
-                route="/wiki-testing"
-                active={$page.url.pathname.includes("wiki-testing")}
-              >
-                <IconTestPipe slot="icon" size={16} color="indigo" />
-              </NavButton> -->
+          <p class="mb-2 mt-4 text-sm text-slate-400 font-semibold">
+            Operations
+          </p>
+          <NavButton
+            name="Wiki Testing"
+            route="/wiki-testing"
+            active={$page.url.pathname.includes("wiki-testing")}
+          >
+            {#snippet icon()}
+              <IconTestPipe
+                size={20}
+                class={`${$page.url.pathname.includes("abilities") && "text-indigo-500"}`}
+              />
+            {/snippet}
+          </NavButton>
         </div>
       </div>
     {/if}
