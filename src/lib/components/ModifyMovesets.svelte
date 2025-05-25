@@ -24,7 +24,7 @@
   let toastStore = getToastStore();
 
   let pokemonSearch: [number, string] = $state([0, ""]);
-  let moveSearch: string = $state("flame");
+  let moveSearch: string = $state("");
   let tabSet: number = $state(0);
 
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
