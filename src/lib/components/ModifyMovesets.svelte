@@ -20,6 +20,11 @@
   import NumberInput from "./NumberInput.svelte";
   import IconTrash from "@tabler/icons-svelte/icons/trash";
   import IconX from "@tabler/icons-svelte/icons/x";
+  import { onDestroy } from "svelte";
+
+  onDestroy(() => {
+    $pokemonUnderMoveModification = {};
+  });
 
   let toastStore = getToastStore();
 
