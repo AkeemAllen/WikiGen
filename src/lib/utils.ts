@@ -62,6 +62,25 @@ async function shiftMoves(
   );
 }
 
+export async function shiftMoves_(
+  moveToEdit: PokemonMove[],
+  pokemonId: number,
+): Promise<QueryResult> {
+  let updateQueries = "";
+  for (let index = 0; index < moveToEdit.length; index++) {
+    let move = moveToEdit[index];
+
+    updateQueries += `UPDATE pokemon_movesets SET level_learned = ${move.level_learned} WHERE pokemon = ${pokemonId} AND move = ${move.id}; `;
+  }
+
+  return await get(db).execute(
+    `BEGIN TRANSACTION;
+        ${updateQueries}
+      COMMIT;
+      `,
+  );
+}
+
 async function deleteMoves(
   moveDeletions: MoveSetChange[],
   pokemonId: number,

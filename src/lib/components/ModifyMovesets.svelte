@@ -15,8 +15,9 @@
   import { readFile } from "@tauri-apps/plugin-fs";
   import { selectedWiki } from "../../store";
   import { BaseDirectory } from "@tauri-apps/plugin-fs";
-  import { addMoves_ } from "$lib/utils";
+  import { addMoves_, shiftMoves_ } from "$lib/utils";
   import { generatePokemonPages } from "$lib/utils/generators";
+  import NumberInput from "./NumberInput.svelte";
 
   let toastStore = getToastStore();
 
@@ -65,6 +66,7 @@
       currentMoves: [],
       sprite: "",
       movesToAdd: [],
+      movesToEdit: [],
     };
 
     // Gather moveset
@@ -110,6 +112,55 @@
 
   $inspect($pokemonUnderMoveModification);
 
+  function onLevelEdit(pokemonName: string, move: PokemonMove) {
+    let movePresentInListIndex = $pokemonUnderMoveModification[pokemonName][
+      "movesToEdit"
+    ].findIndex((_move) => _move.id === move.id);
+
+    if (movePresentInListIndex !== -1) {
+      $pokemonUnderMoveModification[pokemonName]["movesToEdit"][
+        movePresentInListIndex
+      ].level_learned = move.level_learned;
+      return;
+    }
+
+    $pokemonUnderMoveModification[pokemonName]["movesToEdit"] = [
+      ...$pokemonUnderMoveModification[pokemonName]["movesToEdit"],
+      move,
+    ];
+  }
+
+  function onDragDropLevels(e: DragEvent, pokemonName: string) {
+    if (e.dataTransfer === null) return;
+    e.preventDefault();
+    let data: string = e.dataTransfer.getData("text");
+    let moveId = $moveList.find(([id, name]) => name === data)?.[0] as number;
+
+    if (
+      $pokemonUnderMoveModification[pokemonName]["currentMoves"].find(
+        (move) => move.id === moveId && move.learn_method === "level-up",
+      )
+    )
+      return;
+
+    let newMove: PokemonMove = {
+      id: moveId,
+      name: data,
+      learn_method: "level-up",
+      level_learned: 0,
+    };
+
+    $pokemonUnderMoveModification[pokemonName]["currentMoves"] = [
+      newMove,
+      ...$pokemonUnderMoveModification[pokemonName]["currentMoves"],
+    ];
+
+    $pokemonUnderMoveModification[pokemonName]["movesToAdd"] = [
+      newMove,
+      ...$pokemonUnderMoveModification[pokemonName]["movesToAdd"],
+    ];
+  }
+
   function onDragDropMachines(e: DragEvent, pokemonName: string) {
     if (e.dataTransfer === null) return;
     e.preventDefault();
@@ -142,7 +193,7 @@
   }
 
   async function updateMoves() {
-    for (const [pokemonName, { movesToAdd }] of Object.entries(
+    for (const [pokemonName, { movesToAdd, movesToEdit }] of Object.entries(
       $pokemonUnderMoveModification,
     )) {
       let pokemonId = $pokemonList.find(
@@ -162,23 +213,49 @@
         continue;
       }
 
-      if (movesToAdd.length === 0) return;
-      await addMoves_(movesToAdd, pokemonId)
-        .then(() => generatePokemonPages([pokemonId], $selectedWiki.name))
-        .then(() => {
-          $pokemonUnderMoveModification[pokemonName]["movesToAdd"] = [];
-          toastStore.trigger(
-            getToastSettings(ToastType.INFO, `Moves Added for ${pokemonName}`),
-          );
-        })
-        .catch((err) => {
-          toastStore.trigger(
-            getToastSettings(
-              ToastType.ERROR,
-              `Error adding moves for ${pokemonName}: ${err}`,
-            ),
-          );
-        });
+      if (movesToAdd.length !== 0) {
+        await addMoves_(movesToAdd, pokemonId)
+          .then(() => generatePokemonPages([pokemonId], $selectedWiki.name))
+          .then(() => {
+            $pokemonUnderMoveModification[pokemonName]["movesToAdd"] = [];
+            toastStore.trigger(
+              getToastSettings(
+                ToastType.INFO,
+                `Moves Added for ${pokemonName}`,
+              ),
+            );
+          })
+          .catch((err) => {
+            toastStore.trigger(
+              getToastSettings(
+                ToastType.ERROR,
+                `Error adding moves for ${pokemonName}: ${err}`,
+              ),
+            );
+          });
+      }
+
+      if (movesToEdit.length !== 0) {
+        await shiftMoves_(movesToEdit, pokemonId)
+          .then(() => generatePokemonPages([pokemonId], $selectedWiki.name))
+          .then(() => {
+            $pokemonUnderMoveModification[pokemonName]["movesToEdit"] = [];
+            toastStore.trigger(
+              getToastSettings(
+                ToastType.INFO,
+                `Moves Shifted for ${pokemonName}`,
+              ),
+            );
+          })
+          .catch((err) => {
+            toastStore.trigger(
+              getToastSettings(
+                ToastType.ERROR,
+                `Error shifting moves for ${pokemonName}: ${err}`,
+              ),
+            );
+          });
+      }
     }
   }
 </script>
@@ -241,7 +318,25 @@
                 </div>
               {/if}
               {#if tabSet === 1}
-                <div></div>
+                <div
+                  ondragover={(e) => e.preventDefault()}
+                  ondrop={(e) => onDragDropLevels(e, name)}
+                  role="none"
+                >
+                  <div class="grid grid-cols-2 gap-2">
+                    {#each moveset.filter((pokemonMove) => pokemonMove.learn_method === "level-up") as pokemonMove}
+                      <div
+                        class="rounded-md mt-2 shadow-sm p-1 self-center border border-indigo-200 flex flex-row justify-between align-middle"
+                      >
+                        {capitalizeWords(pokemonMove.name)}
+                        <NumberInput
+                          bind:value={pokemonMove.level_learned}
+                          onchange={() => onLevelEdit(name, pokemonMove)}
+                        />
+                      </div>
+                    {/each}
+                  </div>
+                </div>
               {/if}
             </div>
           </TabGroup>

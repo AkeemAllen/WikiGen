@@ -92,5 +92,6 @@ export let pokemonUnderMoveModification = writable<{
     currentMoves: PokemonMove[];
     sprite: string;
     movesToAdd: PokemonMove[];
+    movesToEdit: PokemonMove[];
   };
 }>({});
