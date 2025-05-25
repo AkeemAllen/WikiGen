@@ -8,7 +8,7 @@
     value?: number | null;
     disabled?: boolean;
     class?: string;
-    onchange: Function;
+    onchange?: Function;
   }
 
   let {

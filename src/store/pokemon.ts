@@ -41,16 +41,6 @@ export type PokemonMove = {
   level_learned: number;
 };
 
-export type MoveSetChange = {
-  id: number;
-  operation: string;
-  move: string;
-  method: string;
-  level: number;
-  secondaryMoveId: number | null | undefined;
-  secondaryMove: string;
-};
-
 export type LearnMethod = "level-up" | "machine" | "tutor" | "egg";
 
 export enum Operation {

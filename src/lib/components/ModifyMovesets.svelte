@@ -15,7 +15,7 @@
   import { readFile } from "@tauri-apps/plugin-fs";
   import { selectedWiki } from "../../store";
   import { BaseDirectory } from "@tauri-apps/plugin-fs";
-  import { addMoves_, deleteMoves_, shiftMoves_ } from "$lib/utils";
+  import { addMoves, deleteMoves, shiftMoves } from "$lib/utils";
   import { generatePokemonPages } from "$lib/utils/generators";
   import NumberInput from "./NumberInput.svelte";
   import IconTrash from "@tabler/icons-svelte/icons/trash";
@@ -255,7 +255,7 @@
       }
 
       if (movesToAdd.length !== 0) {
-        await addMoves_(movesToAdd, pokemonId)
+        await addMoves(movesToAdd, pokemonId)
           .then(() => generatePokemonPages([pokemonId], $selectedWiki.name))
           .then(() => {
             $pokemonUnderMoveModification[pokemonName]["movesToAdd"] = [];
@@ -277,7 +277,7 @@
       }
 
       if (movesToEdit.length !== 0) {
-        await shiftMoves_(movesToEdit, pokemonId)
+        await shiftMoves(movesToEdit, pokemonId)
           .then(() => generatePokemonPages([pokemonId], $selectedWiki.name))
           .then(() => {
             $pokemonUnderMoveModification[pokemonName]["movesToEdit"] = [];
@@ -299,7 +299,7 @@
       }
 
       if (movesToDelete.length !== 0) {
-        await deleteMoves_(movesToDelete, pokemonId)
+        await deleteMoves(movesToDelete, pokemonId)
           .then(() => generatePokemonPages([pokemonId], $selectedWiki.name))
           .then(() => {
             $pokemonUnderMoveModification[pokemonName]["movesToDelete"] = [];

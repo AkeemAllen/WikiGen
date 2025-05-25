@@ -4,7 +4,6 @@
   import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
   import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
   import {
-    type MoveSetChange,
     type LearnMethod,
     type Pokemon,
     pokemonList,
@@ -165,17 +164,7 @@
           );
         });
 
-        // Add moves to pokemon moveset
-        const moveset: MoveSetChange[] = copiedMoveset.map((move) => ({
-          id: move.id,
-          operation: "add",
-          move: move.name,
-          method: move.learn_method,
-          level: move.level_learned,
-          secondaryMoveId: null,
-          secondaryMove: "",
-        }));
-        addMoves(moveset, res.lastInsertId as number, $db).catch((err) => {
+        addMoves(copiedMoveset, res.lastInsertId as number).catch((err) => {
           toastStore.trigger(getToastSettings(ToastType.SUCCESS, err));
         });
 

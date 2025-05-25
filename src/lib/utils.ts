@@ -1,32 +1,10 @@
 import { get } from "svelte/store";
 import type { Routes, TrainerInfo } from "../store/gameRoutes";
-import type { Pokemon, PokemonMove, MoveSetChange } from "../store/pokemon";
-import { Operation } from "../store/pokemon";
+import type { PokemonMove } from "../store/pokemon";
 import { db } from "../store/db";
-import { moveList } from "../store/moves";
-import type Database from "@tauri-apps/plugin-sql";
 import type { QueryResult } from "@tauri-apps/plugin-sql";
 
-export async function addMoves(
-  moveAdditions: MoveSetChange[],
-  pokemonId: number,
-  database: Database,
-): Promise<QueryResult> {
-  let movesToInsert = "";
-  for (let index = 0; index < moveAdditions.length; index++) {
-    let move = moveAdditions[index];
-
-    if (index === moveAdditions.length - 1) {
-      movesToInsert += `(${pokemonId}, ${move.id}, '${move.method}', ${move.level})`;
-      break;
-    }
-    movesToInsert += `(${pokemonId}, ${move.id}, '${move.method}', ${move.level}), `;
-  }
-  return await database.execute(`INSERT INTO pokemon_movesets (pokemon, move, learn_method, level_learned)
-          VALUES ${movesToInsert}`);
-}
-
-export async function addMoves_(movesToAdd: PokemonMove[], pokemonId: number) {
+export async function addMoves(movesToAdd: PokemonMove[], pokemonId: number) {
   let movesToInsert = "";
   for (let index = 0; index < movesToAdd.length; index++) {
     let move = movesToAdd[index];
@@ -42,27 +20,7 @@ export async function addMoves_(movesToAdd: PokemonMove[], pokemonId: number) {
           VALUES ${movesToInsert}`);
 }
 
-async function shiftMoves(
-  moveShifts: MoveSetChange[],
-  pokemonId: number,
-  database: Database,
-): Promise<QueryResult> {
-  let updateQueries = "";
-  for (let index = 0; index < moveShifts.length; index++) {
-    let move = moveShifts[index];
-
-    updateQueries += `UPDATE pokemon_movesets SET level_learned = ${move.level} WHERE pokemon = ${pokemonId} AND move = ${move.id}; `;
-  }
-
-  return await database.execute(
-    `BEGIN TRANSACTION;
-        ${updateQueries}
-      COMMIT;
-      `,
-  );
-}
-
-export async function shiftMoves_(
+export async function shiftMoves(
   moveToEdit: PokemonMove[],
   pokemonId: number,
 ): Promise<QueryResult> {
@@ -81,19 +39,7 @@ export async function shiftMoves_(
   );
 }
 
-async function deleteMoves(
-  moveDeletions: MoveSetChange[],
-  pokemonId: number,
-  database: Database,
-): Promise<QueryResult> {
-  let moveIds = moveDeletions.map((move) => move.id);
-  return await database.execute(
-    `DELETE FROM pokemon_movesets WHERE pokemon = ? AND move IN (${moveIds.join(",")})`,
-    [pokemonId],
-  );
-}
-
-export async function deleteMoves_(
+export async function deleteMoves(
   movesToDelete: PokemonMove[],
   pokemonId: number,
 ): Promise<QueryResult> {
@@ -110,132 +56,6 @@ export async function deleteMoves_(
       COMMIT;
       `,
   );
-}
-
-async function replaceMoves(
-  moveReplacements: MoveSetChange[],
-  pokemonId: number,
-  database: Database,
-): Promise<QueryResult | void> {
-  let movesToAdd = moveReplacements.map((move) => {
-    return {
-      id: move.secondaryMoveId,
-      method: move.method,
-      level: move.level,
-    };
-  }) as MoveSetChange[];
-
-  let movesToDelete = moveReplacements.map((move) => {
-    return { id: move.id };
-  }) as MoveSetChange[];
-
-  await addMoves(movesToAdd, pokemonId, database).then(async () => {
-    return await deleteMoves(movesToDelete, pokemonId, database);
-  });
-}
-
-function replaceByLevel(
-  moveReplacementsByLevel: MoveSetChange[],
-  pokemonId: number,
-  database: Database,
-) {}
-
-async function swapMoves(
-  movwSwaps: MoveSetChange[],
-  pokemonId: number,
-  database: Database,
-) {
-  let updateQueries = "";
-  for (let index = 0; index < movwSwaps.length; index++) {
-    let move = movwSwaps[index];
-
-    updateQueries += `UPDATE pokemon_movesets SET move = ${move.secondaryMoveId} WHERE pokemon = ${pokemonId} AND move = ${move.id}; `;
-  }
-
-  return await database.execute(
-    `BEGIN TRANSACTION;
-          ${updateQueries}
-        COMMIT;
-        `,
-  );
-}
-
-export async function modifyMoveSet(
-  moveSetChangeList: MoveSetChange[],
-  pokemonMoveset: PokemonMove[],
-  pokemonId: number,
-): Promise<PokemonMove[]> {
-  let database = get(db);
-
-  let moveAdditions: MoveSetChange[] = [];
-  let moveShifts: MoveSetChange[] = [];
-  let moveDeletions: MoveSetChange[] = [];
-  let moveReplacements: MoveSetChange[] = [];
-  let moveReplacementsByLevel: MoveSetChange[] = [];
-  for (let index = 0; index < moveSetChangeList.length; index++) {
-    let moveSetChange = moveSetChangeList[index];
-
-    if (moveSetChange.operation === Operation.SHIFT) {
-      moveShifts.push(moveSetChange);
-      continue;
-    }
-    if (moveSetChange.operation === Operation.ADD) {
-      moveAdditions.push(moveSetChange);
-      continue;
-    }
-
-    if (moveSetChange.operation === Operation.DELETE) {
-      moveDeletions.push(moveSetChange);
-      continue;
-    }
-
-    if (moveSetChange.operation === Operation.REPLACE_MOVE) {
-      moveReplacements.push(moveSetChange);
-      continue;
-    }
-  }
-  if (moveAdditions.length > 0) {
-    await addMoves(moveAdditions, pokemonId, database).then((res) => {
-      moveAdditions.forEach((move) => {
-        pokemonMoveset.push({
-          id: move.id,
-          name: move.move,
-          learn_method: move.method,
-          level_learned: move.level,
-        });
-      });
-    });
-  }
-  if (moveShifts.length > 0) {
-    await shiftMoves(moveShifts, pokemonId, database).then((res) => {
-      moveShifts.forEach((move) => {
-        let index = pokemonMoveset.findIndex((m) => m.id === move.id);
-        console.log(index);
-        pokemonMoveset[index].level_learned = move.level;
-      });
-    });
-  }
-  if (moveDeletions.length > 0) {
-    await deleteMoves(moveDeletions, pokemonId, database).then((res) => {
-      moveDeletions.forEach((move) => {
-        let index = pokemonMoveset.findIndex((m) => m.id === move.id);
-        pokemonMoveset.splice(index, 1);
-      });
-    });
-  }
-  if (moveReplacements.length > 0) {
-    await replaceMoves(moveReplacements, pokemonId, database).then((res) => {
-      moveReplacements.forEach((move) => {
-        let index = pokemonMoveset.findIndex((m) => m.id === move.id);
-        pokemonMoveset[index].id = move.secondaryMoveId as number;
-        pokemonMoveset[index].name = move.secondaryMove;
-        pokemonMoveset[index].learn_method = move.method;
-        pokemonMoveset[index].level_learned = move.level;
-      });
-    });
-  }
-
-  return pokemonMoveset;
 }
 
 export function sortRoutesByPosition(routes: Routes): Routes {
@@ -305,17 +125,6 @@ export const setUniquePokemonId = (
     pokemonList?.find(([id, _, name, __]) => name === pokemonName)?.[1]
   }_${teamLength}_${Math.floor(Math.random() * 9000 + 1000)}`;
 };
-
-export function getShardToWrite(pokemonId: number): number {
-  let roundedId = Math.ceil(pokemonId / 100) * 100;
-
-  if (roundedId > 900) {
-    return 10;
-  }
-
-  // The first number of the rounded ID indicates the shard to write to
-  return parseInt(roundedId.toString().charAt(0));
-}
 
 export function convertToTitle(input: string): string {
   return input
