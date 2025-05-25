@@ -98,7 +98,7 @@
       });
 
     $pokemonUnderMoveModification[pokemonSearch[1]]["sprite"] = await readFile(
-      `${$selectedWiki.name}/dist/docs/img/pokemon/${pokemonSearch[1]}.png`,
+      `${$selectedWiki.name}/dist/docs/img/pokemon/${pokemonSearch[1].toLowerCase().replaceAll(" ", "-")}.png`,
       { baseDir: BaseDirectory.AppData },
     )
       .then((res) => {
@@ -117,8 +117,6 @@
     if (e.dataTransfer === null) return;
     e.dataTransfer.setData("text", (e.target as HTMLElement).id);
   }
-
-  $inspect($pokemonUnderMoveModification);
 
   function removeFromPokemonUnderModification(pokemonName: string) {
     let filteredList = $pokemonUnderMoveModification;
