@@ -17,12 +17,28 @@ export async function addMoves(
     let move = moveAdditions[index];
 
     if (index === moveAdditions.length - 1) {
-      movesToInsert += `(${pokemonId}, ${move.id}, '${move.method.join(",")}', ${move.level})`;
+      movesToInsert += `(${pokemonId}, ${move.id}, '${move.method}', ${move.level})`;
       break;
     }
     movesToInsert += `(${pokemonId}, ${move.id}, '${move.method}', ${move.level}), `;
   }
   return await database.execute(`INSERT INTO pokemon_movesets (pokemon, move, learn_method, level_learned)
+          VALUES ${movesToInsert}`);
+}
+
+export async function addMoves_(movesToAdd: PokemonMove[], pokemonId: number) {
+  let movesToInsert = "";
+  for (let index = 0; index < movesToAdd.length; index++) {
+    let move = movesToAdd[index];
+
+    if (index === movesToAdd.length - 1) {
+      movesToInsert += `(${pokemonId}, ${move.id}, '${move.learn_method}', ${move.level_learned})`;
+      break;
+    }
+    movesToInsert += `(${pokemonId}, ${move.id}, '${move.learn_method}', ${move.level_learned}), `;
+  }
+  return await get(db)
+    .execute(`INSERT INTO pokemon_movesets (pokemon, move, learn_method, level_learned)
           VALUES ${movesToInsert}`);
 }
 

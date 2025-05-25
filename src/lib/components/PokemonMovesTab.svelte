@@ -94,7 +94,7 @@
       });
   }
 
-  async function addMove() {
+  export async function addMove() {
     await $db
       .execute(
         `INSERT INTO pokemon_movesets (pokemon, move, learn_method, level_learned) VALUES ($1, $2, $3, $4)`,
