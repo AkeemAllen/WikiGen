@@ -59,6 +59,7 @@
   import LoadingModal from "$lib/components/modals/LoadingModal.svelte";
   import { load } from "@tauri-apps/plugin-store";
   import IconTestPipe from "@tabler/icons-svelte/icons/test-pipe";
+  import LandingPage from "$lib/components/LandingPage.svelte";
   interface Props {
     children?: import("svelte").Snippet;
   }
@@ -434,7 +435,9 @@
 <Toast position="br" rounded="rounded-none" padding="px-4 py-2" max={10} />
 <Modal components={modalRegistry} />
 
-<div class="grid h-screen bg-indigo-100 grid-rows-[auto_1fr_auto]">
+<div
+  class="grid h-screen bg-gradient-to-br from-slate-50 to-slate-100 grid-rows-[auto_1fr_auto]"
+>
   <header
     class="bg-white h-[60px] px-4 flex border-b border-indigo-100 items-center justify-between"
   >
@@ -494,8 +497,8 @@
       {/if}
     </div>
   </header>
-  <div class="grid grid-cols-1 md:grid-cols-[auto_1fr] overflow-hidden">
-    {#if $selectedWiki.name !== ""}
+  {#if $selectedWiki.name !== ""}
+    <div class="grid grid-cols-1 md:grid-cols-[auto_1fr] overflow-hidden">
       <aside
         class="flex flex-col bg-white gap-4 bg-touch-indigo p-4 pt-2 w-[12rem] border-r border-indigo-100 overflow-auto"
       >
@@ -616,12 +619,10 @@
           </NavButton>
         </div>
       </aside>
-    {/if}
-    <main class="my-3 mr-5 ml-5 p-2 bg-white rounded-md overflow-auto">
-      {@render children?.()}
-    </main>
-  </div>
-  {#if $selectedWiki.name !== ""}
+      <main class="my-3 mr-5 ml-5 p-2 bg-white rounded-md overflow-auto">
+        {@render children?.()}
+      </main>
+    </div>
     <footer
       class="flex flex-row w-full p-2 justify-end pr-5 gap-x-3 bg-white items-center border-t border-indigo-100"
     >
@@ -666,5 +667,7 @@
         class="w-[17rem] mt-0"
       />
     </footer>
+  {:else}
+    <LandingPage />
   {/if}
 </div>
