@@ -14,7 +14,6 @@
   } from "@floating-ui/dom";
   import type { ModalComponent } from "@skeletonlabs/skeleton";
   import {
-    AppShell,
     Modal,
     Toast,
     getToastStore,
@@ -434,72 +433,71 @@
 
 <Toast position="br" rounded="rounded-none" padding="px-4 py-2" max={10} />
 <Modal components={modalRegistry} />
-<AppShell class="h-screen bg-indigo-100">
-  {#snippet header()}
-    <div
-      class="bg-white h-[60px] px-4 flex border-b border-indigo-100 items-center justify-between"
-    >
-      <button onclick={navigateToSelectWikisPage}>
-        <div class="flex flex-row items-center">
-          <img src={logo} alt="WikiGen Logo" width="40rem" />
-          <h1>WikiGen</h1>
-        </div>
-      </button>
-      <div class="flex flex-row items-center gap-1">
-        {#if displayUpdateButton}
-          <button
-            class="flex items-center gap-1 border-0
-                    text-sm text-gray-400 ring-gray-300 hover:bg-indigo-600
-                    hover:text-white ease-in-out duration-200 rounded-md p-2"
-            onclick={() => updateApp()}
-          >
-            <IconDownload size={16} />
-            Update Available!
-          </button>
-        {/if}
-        {#if !$user.isConnected}
-          <button
-            class="p-2 rounded-md text-sm text-gray-400 hover:bg-gray-100"
-            onclick={signInToGithub}>Sign in to github</button
-          >
-        {:else}
-          <div
-            class="flex flex-row items-center gap-2 hover:cursor-pointer hover:bg-gray-200 rounded-2xl py-2 px-4"
-            use:popup={{
-              event: "click",
-              target: "profileMenu",
-            }}
-          >
-            <img
-              src={$user.avatarUrl}
-              alt="Avatar"
-              class="rounded-full ring-1 ring-inset ring-gray-300 border-0 h-7"
-            />
-            <IconChevronDown size={16} color="gray" />
-          </div>
-          <ul
-            class="card z-10 w-36 grid-cols-1 p-2 shadow-xl"
-            data-popup="profileMenu"
-          >
-            <button
-              onclick={deployWiki}
-              class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-              >Deploy Wiki</button
-            >
-            <button
-              onclick={signOut}
-              class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-              >Sign Out</button
-            >
-          </ul>
-        {/if}
+
+<div class="grid h-screen bg-indigo-100 grid-rows-[auto_1fr_auto]">
+  <header
+    class="bg-white h-[60px] px-4 flex border-b border-indigo-100 items-center justify-between"
+  >
+    <button onclick={navigateToSelectWikisPage}>
+      <div class="flex flex-row items-center">
+        <img src={logo} alt="WikiGen Logo" width="40rem" />
+        <h1>WikiGen</h1>
       </div>
+    </button>
+    <div class="flex flex-row items-center gap-1">
+      {#if displayUpdateButton}
+        <button
+          class="flex items-center gap-1 border-0
+                           text-sm text-gray-400 ring-gray-300 hover:bg-indigo-600
+                           hover:text-white ease-in-out duration-200 rounded-md p-2"
+          onclick={() => updateApp()}
+        >
+          <IconDownload size={16} />
+          Update Available!
+        </button>
+      {/if}
+      {#if !$user.isConnected}
+        <button
+          class="p-2 rounded-md text-sm text-gray-400 hover:bg-gray-100"
+          onclick={signInToGithub}>Sign in to github</button
+        >
+      {:else}
+        <div
+          class="flex flex-row items-center gap-2 hover:cursor-pointer hover:bg-gray-200 rounded-2xl py-2 px-4"
+          use:popup={{
+            event: "click",
+            target: "profileMenu",
+          }}
+        >
+          <img
+            src={$user.avatarUrl}
+            alt="Avatar"
+            class="rounded-full ring-1 ring-inset ring-gray-300 border-0 h-7"
+          />
+          <IconChevronDown size={16} color="gray" />
+        </div>
+        <ul
+          class="card z-10 w-36 grid-cols-1 p-2 shadow-xl"
+          data-popup="profileMenu"
+        >
+          <button
+            onclick={deployWiki}
+            class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+            >Deploy Wiki</button
+          >
+          <button
+            onclick={signOut}
+            class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
+            >Sign Out</button
+          >
+        </ul>
+      {/if}
     </div>
-  {/snippet}
-  {#snippet sidebarLeft()}
+  </header>
+  <div class="grid grid-cols-1 md:grid-cols-[auto_1fr] overflow-hidden">
     {#if $selectedWiki.name !== ""}
-      <div
-        class="flex h-full flex-col bg-white gap-4 bg-touch-indigo p-4 pt-2 w-[12rem] border-r border-indigo-100"
+      <aside
+        class="flex flex-col bg-white gap-4 bg-touch-indigo p-4 pt-2 w-[12rem] border-r border-indigo-100 overflow-auto"
       >
         <div class="flex grow flex-col">
           <NavButton
@@ -617,85 +615,56 @@
             {/snippet}
           </NavButton>
         </div>
-      </div>
+      </aside>
     {/if}
-  {/snippet}
-  {#snippet pageHeader()}
-    <div class="flex flex-row justify-end mr-10 gap-x-3 items-center"></div>
-  {/snippet}
-  <div class="my-3 mr-5 ml-5 p-2 bg-white rounded-md">
-    {@render children?.()}
+    <main class="my-3 mr-5 ml-5 p-2 bg-white rounded-md overflow-auto">
+      {@render children?.()}
+    </main>
   </div>
-  {#snippet footer()}
-    {#if $selectedWiki.name !== ""}
-      <div
-        class="flex flex-row w-full p-2 justify-end pr-5 gap-x-3 bg-white items-center border-t border-indigo-100"
+  {#if $selectedWiki.name !== ""}
+    <footer
+      class="flex flex-row w-full p-2 justify-end pr-5 gap-x-3 bg-white items-center border-t border-indigo-100"
+    >
+      <button
+        class="self-center p-2 rounded-md
+                  shadow-sm ring-1 ring-inset ring-gray-300
+                  text-gray-500
+                    border-0 hover:bg-indigo-500 hover:ring-0 hover:text-white ease-in-out duration-200"
+        onclick={() => (createWikiModalOpen = true)}
       >
-        <button
-          class="self-center p-2 rounded-md
-            shadow-sm ring-1 ring-inset ring-gray-300
-            text-gray-500
-              border-0 hover:bg-indigo-500 hover:ring-0 hover:text-white ease-in-out duration-200"
-          onclick={() => (createWikiModalOpen = true)}
-        >
-          <IconPlus size={20} />
-        </button>
-        <!-- <div data-popup="addIconToolTip">
-            <p class="card p-1 text-sm">Create New Wiki</p>
-            <div class="arrow bg-surface-100-800-token"></div>
-          </div> -->
-        <!-- <button
-            class="self-center p-2 rounded-md
-            shadow-sm ring-1 ring-inset ring-gray-300
-            text-gray-500
-              border-0 hover:bg-indigo-600 hover:text-white hover:ring-0 ease-in-out duration-200"
-            use:popup={{
-              event: "hover",
-              target: "previewWikiToolTip",
-              placement: "bottom",
-            }}
-          >
-            <IconTestPipe size={20} />
-          </button>
-          <div data-popup="previewWikiToolTip">
-            <p class="card p-1 text-sm">Preview Wiki</p>
-
-            <div class="arrow bg-surface-100-800-token" />
-          </div> -->
-        <!-- <div class="flex flex-row w-full p-2 justify-end mr-10 gap-x-3"> -->
-        <button
-          class="self-center p-2 rounded-md
-              shadow-sm ring-1 ring-inset ring-gray-300
-              text-gray-500
-                border-0 hover:bg-indigo-100 hover:ring-0 hover:text-white ease-in-out duration-200"
-          onclick={backupWiki}
-        >
-          <IconDeviceFloppy size={20} />
-        </button>
-        <!-- <div data-popup="backupWikiToolTip">
-            <p class="card p-1 text-sm">Backup Wiki</p>
-            <div class="arrow bg-surface-100-800-token"></div>
-          </div> -->
-        <button
-          class="self-center p-2 rounded-md
-              shadow-sm ring-1 ring-inset ring-gray-300
-              text-gray-500
-                border-0 hover:bg-red-400 hover:ring-0 hover:text-white ease-in-out duration-200"
-          onclick={() => (deleteWikiModalOpen = true)}
-        >
-          <IconTrash size={20} />
-        </button>
-        <SelectInput
-          options={Object.entries($wikis).map(([name, props]) => ({
-            label: props.site_name,
-            value: name,
-          }))}
-          value={$selectedWiki.name}
-          onChange={loadSelectedWiki}
-          class="w-[17rem] mt-0"
-        />
-      </div>
-    {/if}
-    <!-- </div> -->
-  {/snippet}
-</AppShell>
+        <IconPlus size={20} />
+      </button>
+      <button
+        class="self-center p-2 rounded-md
+                    shadow-sm ring-1 ring-inset ring-gray-300
+                    text-gray-500
+                      border-0 hover:bg-indigo-100 hover:ring-0 hover:text-white ease-in-out duration-200"
+        onclick={backupWiki}
+      >
+        <IconDeviceFloppy size={20} />
+      </button>
+      <!-- <div data-popup="backupWikiToolTip">
+                  <p class="card p-1 text-sm">Backup Wiki</p>
+                  <div class="arrow bg-surface-100-800-token"></div>
+                </div> -->
+      <button
+        class="self-center p-2 rounded-md
+                    shadow-sm ring-1 ring-inset ring-gray-300
+                    text-gray-500
+                      border-0 hover:bg-red-400 hover:ring-0 hover:text-white ease-in-out duration-200"
+        onclick={() => (deleteWikiModalOpen = true)}
+      >
+        <IconTrash size={20} />
+      </button>
+      <SelectInput
+        options={Object.entries($wikis).map(([name, props]) => ({
+          label: props.site_name,
+          value: name,
+        }))}
+        value={$selectedWiki.name}
+        onChange={loadSelectedWiki}
+        class="w-[17rem] mt-0"
+      />
+    </footer>
+  {/if}
+</div>
