@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { run } from "svelte/legacy";
-
-  import { page } from "$app/stores";
+  import { page } from "$app/state";
   import NavButton from "$lib/components/NavButton.svelte";
   import {
     arrow,
@@ -510,60 +508,60 @@
           <NavButton
             name="Home"
             route="/home"
-            active={$page.url.pathname.includes("home")}
+            active={page.url.pathname.includes("home")}
           >
             {#snippet icon()}
               <IconHome
                 size={20}
-                class={`${$page.url.pathname.includes("home") && "text-indigo-500"}`}
+                class={`${page.url.pathname.includes("home") && "text-indigo-500"}`}
               />
             {/snippet}
           </NavButton>
           <NavButton
             name="Pokemon"
             route="/pokemon"
-            active={$page.url.pathname.includes("pokemon")}
+            active={page.url.pathname.includes("pokemon")}
           >
             {#snippet icon()}
               <IconPokeball
                 size={20}
-                class={`${$page.url.pathname.includes("pokemon") && "text-indigo-500"}`}
+                class={`${page.url.pathname.includes("pokemon") && "text-indigo-500"}`}
               />
             {/snippet}
           </NavButton>
           <NavButton
             name="Routes"
             route="/game-routes"
-            active={$page.url.pathname.includes("game-routes")}
+            active={page.url.pathname.includes("game-routes")}
           >
             {#snippet icon()}
               <IconMapRoute
                 size={20}
-                class={`${$page.url.pathname.includes("game-routes") && "text-indigo-500"}`}
+                class={`${page.url.pathname.includes("game-routes") && "text-indigo-500"}`}
               />
             {/snippet}
           </NavButton>
           <NavButton
             name="Moves"
             route="/moves"
-            active={$page.url.pathname.includes("moves")}
+            active={page.url.pathname.includes("moves")}
           >
             {#snippet icon()}
               <IconDisc
                 size={20}
-                class={`${$page.url.pathname.includes("moves") && "text-indigo-500"}`}
+                class={`${page.url.pathname.includes("moves") && "text-indigo-500"}`}
               />
             {/snippet}
           </NavButton>
           <NavButton
             name="Types"
             route="/types"
-            active={$page.url.pathname.includes("types")}
+            active={page.url.pathname.includes("types")}
           >
             {#snippet icon()}
               <IconFlame
                 size={20}
-                class={`${$page.url.pathname.includes("types") && "text-indigo-500"}`}
+                class={`${page.url.pathname.includes("types") && "text-indigo-500"}`}
               />
             {/snippet}
           </NavButton>
@@ -573,36 +571,36 @@
           <NavButton
             name="Items"
             route="/items"
-            active={$page.url.pathname.includes("items")}
+            active={page.url.pathname.includes("items")}
           >
             {#snippet icon()}
               <IconBottle
                 size={20}
-                class={`${$page.url.pathname.includes("items") && "text-indigo-500"}`}
+                class={`${page.url.pathname.includes("items") && "text-indigo-500"}`}
               />
             {/snippet}
           </NavButton>
           <NavButton
             name="Abiities"
             route="/abilities"
-            active={$page.url.pathname.includes("abilities")}
+            active={page.url.pathname.includes("abilities")}
           >
             {#snippet icon()}
               <IconTreadmill
                 size={20}
-                class={`${$page.url.pathname.includes("abilities") && "text-indigo-500"}`}
+                class={`${page.url.pathname.includes("abilities") && "text-indigo-500"}`}
               />
             {/snippet}
           </NavButton>
           <NavButton
             name="Natures"
             route="/natures"
-            active={$page.url.pathname.includes("natures")}
+            active={page.url.pathname.includes("natures")}
           >
             {#snippet icon()}
               <IconSeedling
                 size={20}
-                class={`${$page.url.pathname.includes("natures") && "text-indigo-500"}`}
+                class={`${page.url.pathname.includes("natures") && "text-indigo-500"}`}
               />
             {/snippet}
           </NavButton>
@@ -612,12 +610,12 @@
           <NavButton
             name="Wiki Testing"
             route="/wiki-testing"
-            active={$page.url.pathname.includes("wiki-testing")}
+            active={page.url.pathname.includes("wiki-testing")}
           >
             {#snippet icon()}
               <IconTestPipe
                 size={20}
-                class={`${$page.url.pathname.includes("abilities") && "text-indigo-500"}`}
+                class={`${page.url.pathname.includes("abilities") && "text-indigo-500"}`}
               />
             {/snippet}
           </NavButton>
