@@ -1,38 +1,25 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
-  import IconPlus from "@tabler/icons-svelte/icons/plus";
-  import { wikis, selectedWiki } from "../../../store";
-  import {
-    getToastStore,
-    popup,
-    type PopupSettings,
-  } from "@skeletonlabs/skeleton";
-  import { loadWikiData } from "$lib/utils/loadWiki";
-  import BaseModal from "$lib/components/BaseModal.svelte";
-  import TextInput from "$lib/components/TextInput.svelte";
-  import Button from "$lib/components/Button.svelte";
+  import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
+  import { wikis } from "../../../store";
   import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
   import { invoke } from "@tauri-apps/api/core";
-  import { getToastSettings, ToastType } from "$lib/utils/toasts";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
+  import { Label } from "$lib/components/ui/label/index.js";
+  import { toast } from "svelte-sonner";
 
-  const toastStore = getToastStore();
-
-  interface Props {
+  type Props = {
     open?: boolean;
-  }
+  };
 
   let { open = $bindable(false) }: Props = $props();
 
   let wikiName = $state("");
-  let wikiCodeName = $state("");
+  let wikiCodeName = $derived(wikiName.toLowerCase().replaceAll(" ", "-"));
   let wikiDescription = $state("");
 
   let loading: boolean = $state(false);
-
-  run(() => {
-    wikiCodeName = wikiName.toLowerCase().replaceAll(" ", "-");
-  });
 
   async function createWiki() {
     loading = true;
@@ -59,9 +46,12 @@
       .then((result) => {
         loading = false;
         open = false;
-        toastStore.trigger(
-          getToastSettings(ToastType.SUCCESS, result as string),
-        );
+        toast.success(result as string, {
+          action: {
+            label: "Close",
+            onClick: () => {},
+          },
+        });
         wikiName = "";
         wikiCodeName = "";
         wikiDescription = "";
@@ -72,43 +62,57 @@
         wikiName = "";
         wikiCodeName = "";
         wikiDescription = "";
-        toastStore.trigger(getToastSettings(ToastType.ERROR, error as string));
+        toast.error(error as string, {
+          action: {
+            label: "Close",
+            onClick: () => {},
+          },
+        });
       });
   }
 </script>
 
-<BaseModal bind:open class="w-[20rem]">
-  <TextInput
-    id="wikiName"
-    label="Wiki Name"
-    placeholder="Enter Wiki Name"
-    bind:value={wikiName}
-  />
-  <TextInput
-    id="code-name"
-    disabled={true}
-    label="Code Name"
-    placeholder="Code Name"
-    bind:value={wikiCodeName}
-  />
-  <div>
-    <label
-      for="wiki-description"
-      class="block text-sm font-medium leading-6 text-gray-900"
-      >Wiki Description</label
-    >
-    <textarea
-      id="wiki-description"
-      class="mt-2 block w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-      placeholder="Wiki Description"
-      bind:value={wikiDescription}
-></textarea>
-  </div>
-  <Button
-    class="w-32"
-    disabled={wikiDescription === "" || wikiName === "" || loading === true}
-    title="Create Wiki"
-    onClick={createWiki}
-    {loading}
-  />
-</BaseModal>
+<Dialog.Root bind:open>
+  <Dialog.Content class="sm:max-w-[425px]">
+    <Dialog.Header>
+      <Dialog.Title>Create New Wiki</Dialog.Title>
+    </Dialog.Header>
+    <div class="grid gap-4 py-4">
+      <div class="grid grid-cols-4 items-center gap-4">
+        <Label for="name" class="text-right">Wiki Name</Label>
+        <Input id="name" bind:value={wikiName} class="col-span-3" />
+      </div>
+      <div class="grid grid-cols-4 items-center gap-4">
+        <Label for="codename" class="text-right">CodeName</Label>
+        <Input
+          id="codename"
+          bind:value={wikiCodeName}
+          class="col-span-3 disabled"
+          disabled={true}
+        />
+      </div>
+      <div class="grid grid-cols-4 items-center gap-4">
+        <Label for="description" class="text-right">Description</Label>
+        <Input
+          id="description"
+          bind:value={wikiDescription}
+          class="col-span-3"
+        />
+      </div>
+    </div>
+    <Dialog.Footer>
+      <Button
+        type="submit"
+        onclick={createWiki}
+        disabled={loading ||
+          (wikiName === "" && wikiName.length < 3) ||
+          wikiDescription === ""}
+      >
+        {#if loading}
+          <LoaderCircleIcon class="animate-spin" />
+        {/if}
+        Create Wiki</Button
+      >
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
