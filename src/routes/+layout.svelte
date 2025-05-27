@@ -85,11 +85,9 @@
   let signingIntoGithub = $state(false);
   let osType = $state("");
 
-  let mkdocsFilePath: string = $state("");
-
-  async function getMkdocsDirectory(wikiName: string): Promise<string> {
+  let mkdocsFilePath: Promise<string> = $derived.by(async () => {
     const appData = await appDataDir();
-    let mkdocsFilePath = `${appData}${wikiName}/dist`;
+    let mkdocsFilePath = `${appData}${$selectedWiki.name}/dist`;
     osType = type();
     if (osType === "windows") {
       mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
@@ -97,7 +95,7 @@
       mkdocsFilePath = mkdocsFilePath.replace(/\s/g, "\\ ");
     }
     return mkdocsFilePath;
-  }
+  });
 
   async function checkForUpdate() {
     const update = await check();
@@ -363,11 +361,6 @@
     $selectedWiki = { name: "" } as Wiki;
     goto("/");
   }
-  run(() => {
-    getMkdocsDirectory($selectedWiki.name).then((response) => {
-      mkdocsFilePath = response;
-    });
-  });
 </script>
 
 <LoadingModal
@@ -401,7 +394,11 @@
       <p>
         2. Navigate to the Wiki
         <br />
-        <span class="code font-semibold"> cd {mkdocsFilePath}</span>
+        <span class="code font-semibold">
+          cd {#await mkdocsFilePath then filepath}
+            {filepath}
+          {/await}</span
+        >
       </p>
       <p>
         3. Update the main branch
