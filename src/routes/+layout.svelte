@@ -35,7 +35,7 @@
   import IconSeedling from "@tabler/icons-svelte/icons/seedling";
   import IconTrash from "@tabler/icons-svelte/icons/trash";
 
-  import "../app.pcss";
+  import "../app.css";
   import { selectedWiki, wikis, user, type User, type Wiki } from "../store";
   import { check } from "@tauri-apps/plugin-updater";
   import { onMount } from "svelte";
