@@ -10,7 +10,8 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
   },
   "devDependencies": {
-    "@lucide/svelte": "^0.511.0",
+    "@internationalized/date": "^3.5.6",
+    "@lucide/svelte": "^0.482.0",
     "@skeletonlabs/skeleton": "^2.11.0",
     "@skeletonlabs/tw-plugin": "^0.3.1",
     "@svelte-put/shortcut": "^3.2.0",
@@ -27,7 +28,7 @@
     "@tauri-apps/plugin-updater": "^2.7.1",
     "@types/node": "^22.14.1",
     "autoprefixer": "^10.4.21",
-    "bits-ui": "^1.8.0",
+    "bits-ui": "^2.1.0",
     "clsx": "^2.1.1",
     "mode-watcher": "^1.0.6",
     "postcss": "^8.5.3",

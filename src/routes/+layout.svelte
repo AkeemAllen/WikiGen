@@ -3,7 +3,6 @@
 
   import { page } from "$app/stores";
   import NavButton from "$lib/components/NavButton.svelte";
-  import BaseModal from "$lib/components/BaseModal.svelte";
   import {
     arrow,
     autoUpdate,
@@ -66,6 +65,7 @@
   import { Toaster } from "$lib/components/ui/sonner/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import Github from "@lucide/svelte/icons/github";
+  import * as Dialog from "$lib/components/ui/dialog";
 
   let { children }: Props = $props();
 
@@ -81,7 +81,7 @@
   let createWikiModalOpen = $state(false);
   let deleteWikiModalOpen = $state(false);
   let deployingWiki = $state(false);
-  let deployWikiFinalStepsModal = $state(true);
+  let deployWikiFinalStepsModal = $state(false);
   let signingIntoGithub = $state(false);
   let osType = $state("");
 
@@ -383,54 +383,52 @@
   message="Signing Into Github. Webview may take a moment to load."
   bind:loading={signingIntoGithub}
 />
-<BaseModal
-  bind:open={deployWikiFinalStepsModal}
-  close={() => (deployWikiFinalStepsModal = false)}
-  class="min-w-[30rem]"
->
-  <h2 class="text-lg font-bold leading-6 text-gray-900">Final Deploy Steps</h2>
-  <div class="grid gap-3">
-    <p>
-      1.
-      {#if osType === "Windows_NT"}
-        Press Windows Start Key, type Terminal, and open it
-      {:else if osType === "Darwin"}
-        Open spotlight search, type Terminal, and open it
-      {/if}
-    </p>
-    <h2 class="text-md font-semibold leading-3 text-gray-900">
-      Copy and paste the below commands
-    </h2>
-    <p>
-      2. Navigate to the Wiki
-      <br />
-      <span class="code font-semibold"> cd {mkdocsFilePath}</span>
-    </p>
-    <p>
-      3. Update the main branch
-      <br />
-      <span class="code font-semibold"> git push -u origin main</span>
-    </p>
-    <p>
-      4. Deploy the Wiki
-      <br />
-      <span class="code font-semibold"> mkdocs gh-deploy</span>
-    </p>
-    <p>
-      4. Once done, your docs should be available at the below URL. Note that it
-      may take a few minutes to load.
-      <br />
-      <a
-        href={`https://${$user.userName.toLowerCase()}.github.io/${$selectedWiki.name}/`}
-        target="_blank"
-      >
-        <span class="code font-semibold"
-          >https://{$user.userName.toLowerCase()}.github.io/{$selectedWiki.name}/</span
+<Dialog.Root bind:open={deployWikiFinalStepsModal}>
+  <Dialog.Content class="min-w-[40rem]">
+    <Dialog.Header>Final Deploy Stesp</Dialog.Header>
+    <div class="grid gap-3">
+      <p>
+        1.
+        {#if osType === "windows"}
+          Press Windows Start Key, type Terminal, and open it
+        {:else if osType === "macos"}
+          Open spotlight search, type Terminal, and open it
+        {/if}
+      </p>
+      <h2 class="text-md font-semibold leading-3 text-gray-900">
+        Copy and paste the below commands
+      </h2>
+      <p>
+        2. Navigate to the Wiki
+        <br />
+        <span class="code font-semibold"> cd {mkdocsFilePath}</span>
+      </p>
+      <p>
+        3. Update the main branch
+        <br />
+        <span class="code font-semibold"> git push -u origin main</span>
+      </p>
+      <p>
+        4. Deploy the Wiki
+        <br />
+        <span class="code font-semibold"> mkdocs gh-deploy</span>
+      </p>
+      <p>
+        4. Once done, your docs should be available at the below URL. Note that
+        it may take a few minutes to load.
+        <br />
+        <a
+          href={`https://${$user.userName.toLowerCase()}.github.io/${$selectedWiki.name}/`}
+          target="_blank"
         >
-      </a>
-    </p>
-  </div>
-</BaseModal>
+          <span class="code font-semibold"
+            >https://{$user.userName.toLowerCase()}.github.io/{$selectedWiki.name}/</span
+          >
+        </a>
+      </p>
+    </div>
+  </Dialog.Content>
+</Dialog.Root>
 
 <CreateWikiModal bind:open={createWikiModalOpen} />
 <DeleteWikiModal bind:open={deleteWikiModalOpen} />
@@ -653,10 +651,6 @@
       >
         <IconDeviceFloppy size={20} />
       </button>
-      <!-- <div data-popup="backupWikiToolTip">
-                  <p class="card p-1 text-sm">Backup Wiki</p>
-                  <div class="arrow bg-surface-100-800-token"></div>
-                </div> -->
       <button
         class="self-center p-2 rounded-md
                     shadow-sm ring-1 ring-inset ring-gray-300
