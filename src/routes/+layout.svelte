@@ -63,6 +63,7 @@
   interface Props {
     children?: import("svelte").Snippet;
   }
+  import { Toaster } from "$lib/components/ui/sonner/index.js";
 
   let { children }: Props = $props();
 
@@ -433,6 +434,7 @@
 <DeleteWikiModal bind:open={deleteWikiModalOpen} />
 
 <Toast position="br" rounded="rounded-none" padding="px-4 py-2" max={10} />
+<Toaster />
 <Modal components={modalRegistry} />
 
 <div
