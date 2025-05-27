@@ -105,8 +105,10 @@
         type="submit"
         onclick={createWiki}
         disabled={loading ||
-          (wikiName === "" && wikiName.length < 3) ||
-          wikiDescription === ""}
+          wikiName === "" ||
+          wikiName.length < 3 ||
+          wikiDescription === "" ||
+          wikiDescription.length < 3}
       >
         {#if loading}
           <LoaderCircleIcon class="animate-spin" />
