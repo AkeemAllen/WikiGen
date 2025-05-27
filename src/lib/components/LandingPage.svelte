@@ -35,7 +35,8 @@
         </button>
       {/each}
     </section>
-    <section class="flex justify-center">
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <div></div>
       <button
         class="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 border-2 border-dashed border-slate-300 hover:border-indigo-400 bg-slate-50/50 hover:bg-indigo-50/50"
         onclick={() => (createWikiModalOpen = true)}
@@ -60,6 +61,7 @@
           </p>
         </div>
       </button>
+      <div></div>
     </section>
   </div>
 </main>

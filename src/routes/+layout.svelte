@@ -81,7 +81,7 @@
   let createWikiModalOpen = $state(false);
   let deleteWikiModalOpen = $state(false);
   let deployingWiki = $state(false);
-  let deployWikiFinalStepsModal = $state(false);
+  let deployWikiFinalStepsModal = $state(true);
   let signingIntoGithub = $state(false);
   let osType = $state("");
 
@@ -371,7 +371,7 @@
 </script>
 
 <LoadingModal
-  message="Current Upating Database...This might take a while"
+  message="Upating Database...This might take a while"
   bind:loading={runningMigrations}
 />
 <LoadingModal
