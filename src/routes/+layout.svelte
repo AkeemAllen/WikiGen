@@ -64,6 +64,8 @@
     children?: import("svelte").Snippet;
   }
   import { Toaster } from "$lib/components/ui/sonner/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import Github from "@lucide/svelte/icons/github";
 
   let { children }: Props = $props();
 
@@ -462,10 +464,15 @@
         </button>
       {/if}
       {#if !$user.isConnected}
-        <button
-          class="p-2 rounded-md text-sm text-gray-400 hover:bg-gray-100"
-          onclick={signInToGithub}>Sign in to github</button
+        <Button
+          variant="outline"
+          size="sm"
+          class="gap-2 cursor-pointer"
+          onclick={signInToGithub}
         >
+          <Github class="w-4 h-4" />
+          Sign in to GitHub
+        </Button>
       {:else}
         <div
           class="flex flex-row items-center gap-2 hover:cursor-pointer hover:bg-gray-200 rounded-2xl py-2 px-4"
