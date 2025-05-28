@@ -64,6 +64,9 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import Github from "@lucide/svelte/icons/github";
   import * as Dialog from "$lib/components/ui/dialog";
+  import * as Popover from "$lib/components/ui/popover/index.js";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+  import { toast } from "svelte-sonner";
 
   let { children }: Props = $props();
 
@@ -82,6 +85,8 @@
   let deployWikiFinalStepsModal = $state(false);
   let signingIntoGithub = $state(false);
   let osType = $state("");
+
+  const toastStore = getToastStore();
 
   let mkdocsFilePath: Promise<string> = $derived.by(async () => {
     const appData = await appDataDir();
@@ -137,8 +142,6 @@
         });
     }
   });
-
-  const toastStore = getToastStore();
 
   async function updateApp() {
     updaterModalOpen = true;
@@ -286,12 +289,7 @@
 
   async function deployWiki() {
     if ($selectedWiki.name === "") {
-      toastStore.trigger(
-        getToastSettings(
-          ToastType.ERROR,
-          "Wiki needs to be selected before deploying",
-        ),
-      );
+      toast.error("Wiki needs to be selected before deploying");
       return;
     }
     deployingWiki = true;
@@ -311,12 +309,7 @@
       .then((res) => res.json())
       .then((res) => {
         if (res.status === 401) {
-          toastStore.trigger(
-            getToastSettings(
-              ToastType.ERROR,
-              "Token has expired. Relogin to deploy wiki",
-            ),
-          );
+          toast.error("Token has expired. Relogin to deploy wiki");
           signOut();
         }
         console.log(res);
@@ -337,20 +330,13 @@
           wikiName: $selectedWiki.name,
           sshUrl: $selectedWiki.settings.deployment_url,
         }).then(() => {
-          toastStore.trigger(
-            getToastSettings(ToastType.SUCCESS, `Wiki Preparation Complete!`),
-          );
+          toast.success("Wiki Preparation Complete!");
           deployingWiki = false;
           deployWikiFinalStepsModal = true;
         });
       })
       .catch((err) => {
-        toastStore.trigger(
-          getToastSettings(
-            ToastType.ERROR,
-            `Error while preparing wiki for deployment!: ${err}`,
-          ),
-        );
+        toast.error(`Error while preparing wiki for deployment!: ${err}`, {});
         deployingWiki = false;
       });
   }
@@ -429,7 +415,7 @@
 <DeleteWikiModal bind:open={deleteWikiModalOpen} />
 
 <Toast position="br" rounded="rounded-none" padding="px-4 py-2" max={10} />
-<Toaster />
+<Toaster richColors />
 <Modal components={modalRegistry} />
 
 <div
@@ -467,35 +453,26 @@
           Sign in to GitHub
         </Button>
       {:else}
-        <div
-          class="flex flex-row items-center gap-2 hover:cursor-pointer hover:bg-gray-200 rounded-2xl py-2 px-4"
-          use:popup={{
-            event: "click",
-            target: "profileMenu",
-          }}
-        >
-          <img
-            src={$user.avatarUrl}
-            alt="Avatar"
-            class="rounded-full ring-1 ring-inset ring-gray-300 border-0 h-7"
-          />
-          <IconChevronDown size={16} color="gray" />
-        </div>
-        <ul
-          class="card z-10 w-36 grid-cols-1 p-2 shadow-xl"
-          data-popup="profileMenu"
-        >
-          <button
-            onclick={deployWiki}
-            class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-            >Deploy Wiki</button
-          >
-          <button
-            onclick={signOut}
-            class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-            >Sign Out</button
-          >
-        </ul>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger>
+            <div
+              class="flex flex-row items-center gap-2 hover:cursor-pointer hover:bg-slate-200 rounded-2xl py-2 px-4"
+            >
+              <img
+                src={$user.avatarUrl}
+                alt="Avatar"
+                class="rounded-full ring-1 ring-inset ring-gray-300 border-0 h-7"
+              />
+              <IconChevronDown size={16} color="gray" />
+            </div>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content class="flex flex-col gap-2">
+            <DropdownMenu.Item onclick={deployWiki}
+              >Deploy Wiki</DropdownMenu.Item
+            >
+            <DropdownMenu.Item onclick={signOut}>Sign Out</DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
       {/if}
     </div>
   </header>

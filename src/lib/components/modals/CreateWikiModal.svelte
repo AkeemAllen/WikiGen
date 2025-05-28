@@ -46,12 +46,7 @@
       .then((result) => {
         loading = false;
         open = false;
-        toast.success(result as string, {
-          action: {
-            label: "Close",
-            onClick: () => {},
-          },
-        });
+        toast.success(result as string);
         wikiName = "";
         wikiCodeName = "";
         wikiDescription = "";
@@ -62,12 +57,7 @@
         wikiName = "";
         wikiCodeName = "";
         wikiDescription = "";
-        toast.error(error as string, {
-          action: {
-            label: "Close",
-            onClick: () => {},
-          },
-        });
+        toast.error(error as string);
       });
   }
 </script>
