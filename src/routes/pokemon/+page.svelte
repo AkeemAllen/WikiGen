@@ -1,16 +1,19 @@
 <script lang="ts">
-  import Button from "$lib/components/Button.svelte";
+  import OldButton from "$lib/components/Button.svelte";
   import PokemonPanel from "$lib/components/PokemonPanel.svelte";
   import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
   import { selectedWiki } from "../../store";
   import { pokemonList } from "../../store/pokemon";
   import NewPokemonPanel from "$lib/components/NewPokemonPanel.svelte";
   import ModifyMovesetsPanel from "$lib/components/ModifyMovesets.svelte";
-  import BaseModal from "$lib/components/BaseModal.svelte";
   import AutoComplete from "$lib/components/AutoComplete.svelte";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import { ToastType, getToastSettings } from "$lib/utils/toasts";
   import { generatePokemonPages } from "$lib/utils/generators";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import * as Tabs from "$lib/components/ui/tabs/index.js";
+  import { Separator } from "$lib/components/ui/separator";
 
   let startingPokemon: [number, number, string] = $state([0, 0, ""]);
   let endingPokemon: [number, number, string] = $state([0, 0, ""]);
@@ -53,28 +56,49 @@
   }
 </script>
 
-<BaseModal bind:open={pageGenerationWarningModalOpen}>
-  <p class="italic">
-    NOTE: {Object.keys($pokemonList).length} pokemon pages will be rendered. Do you
-    wish to continue?
-  </p>
-  <div class="flex flex-row gap-2">
-    <Button
-      title="Cancel"
-      onClick={() => (pageGenerationWarningModalOpen = false)}
-      class="bg-gray-300"
-    />
-    <Button
-      title={`Generate ALL ${Object.entries($pokemonList).length} Pokemon Pages`}
-      onClick={() => {
-        generatePokemonPagesInRange(1, 1025);
-        pageGenerationWarningModalOpen = false;
-      }}
-    />
-  </div>
-</BaseModal>
+<Dialog.Root bind:open={pageGenerationWarningModalOpen}>
+  <Dialog.Content>
+    <Dialog.Header>
+      <Dialog.Title>Pokemon Generation Warning</Dialog.Title>
+    </Dialog.Header>
+    This action will generate pages for all {Object.keys($pokemonList).length}
+    pokemon. Do you wish to continue?
+    <Dialog.Footer>
+      <Button
+        onclick={() => (pageGenerationWarningModalOpen = false)}
+        class="cursor-pointer">Cancel</Button
+      >
+      <Button
+        onclick={() => {
+          generatePokemonPagesInRange(1, 1025);
+          pageGenerationWarningModalOpen = false;
+        }}
+        class="cursor-pointer"
+        >{`Generate ALL ${Object.entries($pokemonList).length} Pokemon Pages`}</Button
+      >
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
 
-<TabGroup>
+<Tabs.Root value="pokemon" class="w-full">
+  <div class="w-full bg-white border-b">
+    <Tabs.List class="w-[30rem] rounded-sm ml-5 mt-3 mb-7">
+      {#each ["pokemon", "generation", "new-pokemon", "movesets"] as tab}
+        <Tabs.Trigger value={tab} class="rounded-sm  cursor-pointer"
+          >{capitalizeWords(tab)}</Tabs.Trigger
+        >
+      {/each}
+    </Tabs.List>
+  </div>
+  <Tabs.Content value="pokemon" class="mx-5">
+    <PokemonPanel />
+  </Tabs.Content>
+  <Tabs.Content value="generation">Change your password here.</Tabs.Content>
+  <Tabs.Content value="new-pokemon">Change your password here.</Tabs.Content>
+  <Tabs.Content value="movesets">Change your password here.</Tabs.Content>
+</Tabs.Root>
+
+<!-- <TabGroup>
   <Tab bind:group={tabSet} name="pokemon" value={0} class="text-sm">Pokemon</Tab
   >
   <Tab bind:group={tabSet} name="prepare-pokemon-data" value={1} class="text-sm"
@@ -91,7 +115,7 @@
       <PokemonPanel />
     {/if}
     {#if tabSet === 1}
-      <Button
+      <OldButton
         title="Generate All Pokemon Pages"
         onClick={() => (pageGenerationWarningModalOpen = true)}
         disabled={loading === true}
@@ -113,7 +137,6 @@
         Total Pages: {rangeTotal <= 0 ? 0 : `>=${rangeTotal + 1}`}
       </p>
       <div class="flex gap-16">
-        <!-- Only 1025 pokemon exist in the game right now. But setting ranges to 2000 for future proofing -->
         <AutoComplete
           label="Starting Pokemon"
           bind:value={startingPokemon[2]}
@@ -143,7 +166,7 @@
           }}
         />
       </div>
-      <Button
+      <OldButton
         class=" mt-4 w-40"
         title="Generate Pages"
         onClick={() =>
@@ -159,6 +182,4 @@
       <ModifyMovesetsPanel />
     {/if}
   </div>
-  <!-- {#snippet panel()}
-  {/snippet} -->
-</TabGroup>
+</TabGroup> -->

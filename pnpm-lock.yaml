@@ -11,6 +11,9 @@ importers:
       '@floating-ui/dom':
         specifier: ^1.6.13
         version: 1.6.13
+      '@humanspeak/svelte-virtual-list':
+        specifier: ^0.2.4
+        version: 0.2.4(svelte@5.28.1)
       '@tabler/icons-svelte':
         specifier: ^3.31.0
         version: 3.31.0(svelte@5.28.1)
@@ -338,6 +341,11 @@ packages:
 
   '@hapi/topo@5.1.0':
     resolution: {integrity: sha512-foQZKJig7Ob0BMAYBfcJk8d77QtOe7Wo4ox7ff1lQYoNNAb6jwcY1ncdoy2e9wQZzvNy7ODZCYJkK8kzmcAnAg==}
+
+  '@humanspeak/svelte-virtual-list@0.2.4':
+    resolution: {integrity: sha512-IxFFJCC7R3QhDLCQ0NMXDeCicAs9AEZ29MmOKDZseSo3ihJJ/bW5NYuSrlWtxQCCNLZe2HeM6b9HpQuglIZ40Q==}
+    peerDependencies:
+      svelte: ^5.0.0
 
   '@internationalized/date@3.8.1':
     resolution: {integrity: sha512-PgVE6B6eIZtzf9Gu5HvJxRK3ufUFz9DhspELuhW/N0GuMGMTLvPQNRkHP2hTuP9lblOk+f+1xi96sPiPXANXAA==}
@@ -1614,6 +1622,11 @@ snapshots:
     dependencies:
       '@hapi/hoek': 9.3.0
     optional: true
+
+  '@humanspeak/svelte-virtual-list@0.2.4(svelte@5.28.1)':
+    dependencies:
+      esm-env: 1.2.2
+      svelte: 5.28.1
 
   '@internationalized/date@3.8.1':
     dependencies:

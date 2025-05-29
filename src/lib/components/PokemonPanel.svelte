@@ -15,8 +15,6 @@
   import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
   import PokemonMovesTab from "./PokemonMovesTab.svelte";
   import { shortcut } from "@svelte-put/shortcut";
-  import Button from "./Button.svelte";
-  import AutoComplete from "./AutoComplete.svelte";
   import NumberInput from "./NumberInput.svelte";
   import { db } from "../../store/db";
   import { cloneDeep } from "$lib/utils/cloneDeep";
@@ -31,8 +29,22 @@
     removePokemonPage,
     updateRoutes,
   } from "$lib/utils/generators";
+  import * as Card from "$lib/components/ui/card/index.js";
+  import CheckIcon from "@lucide/svelte/icons/check";
+  import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
+  import { tick } from "svelte";
+  import * as Command from "$lib/components/ui/command/index.js";
+  import * as Popover from "$lib/components/ui/popover/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import { cn } from "$lib/utils.js";
+  import { Label } from "./ui/label";
+  import SaveIcon from "@lucide/svelte/icons/save";
+  import FileTextIcon from "@lucide/svelte/icons/file-text";
 
   let pokemonSearch: [number, string] = $state([0, ""]);
+  let pokemonSearchOption: boolean = $state(false);
+  let triggerRef = $state<HTMLButtonElement>(null!);
+
   let pokemon = $state({} as Pokemon);
   let originalPokemonDetails: Pokemon = $state({} as Pokemon);
   let pokemonMoveset: PokemonMove[] = $state([]);
@@ -42,11 +54,32 @@
     document.createElement("input"),
   );
 
+  // We want to refocus the trigger button when the user selects
+  // an item from the list so users can continue navigating the
+  // rest of the form with the keyboard.
+  function closeAndFocusTrigger() {
+    pokemonSearchOption = false;
+    tick().then(() => {
+      triggerRef.focus();
+    });
+  }
+
   let tabSet: number = $state(0);
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
     value: id,
   }));
+
+  let options = $derived(
+    pokemonListOptions
+      .filter((pokemon) =>
+        pokemon.label.toLowerCase().includes(pokemonSearch[1].toLowerCase()),
+      )
+      .slice(0, 10),
+  );
+
+  $inspect(pokemonSearch[1]);
+  $inspect(options);
 
   const toastStore = getToastStore();
 
@@ -250,9 +283,25 @@
         toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
       });
   }
+
+  function debounce<T extends (...args: any[]) => any>(
+    func: T,
+    delay: number,
+  ): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    return function (...args: Parameters<T>): Promise<ReturnType<T>> {
+      return new Promise((resolve) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          resolve(func(...args));
+        }, delay);
+      });
+    };
+  }
 </script>
 
-<div class="flex flex-row gap-7">
+<!-- <div class="flex flex-row gap-7">
   <AutoComplete
     bind:value={pokemonSearch[1]}
     placeholder="Search Pokemon"
@@ -282,7 +331,64 @@
     disabled={objectIsEmpty(pokemon)}
     class="mt-2 w-32"
   />
-</div>
+</div> -->
+
+<Card.Root>
+  <Card.Content class="flex flex-row gap-3">
+    <Popover.Root bind:open={pokemonSearchOption}>
+      <Popover.Trigger bind:ref={triggerRef}>
+        {#snippet child({ props })}
+          <Button
+            id="pokemon-search"
+            variant="outline"
+            {...props}
+            class="w-[20rem]"
+            role="combobox"
+            aria-expanded={pokemonSearchOption}
+          >
+            {pokemonSearch[1] || "Select Pokemon"}
+            <ChevronsUpDownIcon class="opacity-50" />
+          </Button>
+        {/snippet}
+      </Popover.Trigger>
+      <Popover.Content class="w-full p-0">
+        <Command.Root shouldFilter={false}>
+          <Command.Input
+            placeholder="Search Pokemon"
+            bind:value={pokemonSearch[1]}
+          />
+          <Command.List>
+            <Command.Empty>No Pokemon found.</Command.Empty>
+            {#each options as pokemon}
+              <Command.Item
+                value={pokemon.label}
+                onSelect={() => {
+                  pokemonSearch = [pokemon.value, pokemon.label];
+                  closeAndFocusTrigger();
+                }}
+              >
+                <!-- <CheckIcon
+                      class={cn(pokemon.value !== framework.value && "text-transparent")}
+                    /> -->
+                {pokemon.label}
+              </Command.Item>
+            {/each}
+          </Command.List>
+        </Command.Root>
+      </Popover.Content>
+    </Popover.Root>
+    <div class="grid grid-cols-2 gap-3">
+      <Button>
+        <SaveIcon />
+        Save Changes</Button
+      >
+      <Button variant="outline">
+        <FileTextIcon />
+        Generate Page</Button
+      >
+    </div>
+  </Card.Content>
+</Card.Root>
 
 {#if !objectIsEmpty(pokemon)}
   {#if pokemonSprite === "404"}

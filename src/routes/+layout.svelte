@@ -598,7 +598,7 @@
           </NavButton>
         </div>
       </aside>
-      <main class="my-3 mr-5 ml-5 p-2 bg-white rounded-md overflow-auto">
+      <main class="overflow-auto">
         {@render children?.()}
       </main>
     </div>

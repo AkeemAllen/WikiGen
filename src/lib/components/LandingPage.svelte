@@ -21,7 +21,7 @@
     <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       {#each Object.entries($wikis) as [codeName, properties], i}
         <button
-          class="hover:ring hover:ring-indigo-500 ease-in-out duration-200 group rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 border-0 bg-white"
+          class="hover:ring hover:ring-indigo-500 ease-in-out group rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 border-0 bg-white"
           onclick={() => {
             $selectedWiki = $wikis[codeName];
             loadWikiData($selectedWiki, toastStore);
