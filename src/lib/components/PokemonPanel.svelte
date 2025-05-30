@@ -35,17 +35,29 @@
   import { tick } from "svelte";
   import * as Command from "$lib/components/ui/command/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
+  import * as Select from "$lib/components/ui/select/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
-  import { cn } from "$lib/utils.js";
+  import { cn, typeColors } from "$lib/utils.js";
   import { Label } from "./ui/label";
   import SaveIcon from "@lucide/svelte/icons/save";
   import FileTextIcon from "@lucide/svelte/icons/file-text";
+  import { types as pokemonTypes } from "../../store/types";
+  import { abilitiesList as pokemonAbilities } from "../../store/abilities";
 
   let pokemonSearch: [number, string] = $state([0, ""]);
+  let searchingPokemon: string = $state("");
   let pokemonSearchOption: boolean = $state(false);
   let triggerRef = $state<HTMLButtonElement>(null!);
 
   let pokemon = $state({} as Pokemon);
+  let types: string[] = $derived.by(() => {
+    let result = pokemon.types.split(",");
+    if (result.length === 1) {
+      result.push("none");
+    }
+    return result;
+  });
+
   let originalPokemonDetails: Pokemon = $state({} as Pokemon);
   let pokemonMoveset: PokemonMove[] = $state([]);
   let pokemonLocations: WildEncounter[] = $state([]);
@@ -73,13 +85,10 @@
   let options = $derived(
     pokemonListOptions
       .filter((pokemon) =>
-        pokemon.label.toLowerCase().includes(pokemonSearch[1].toLowerCase()),
+        pokemon.label.toLowerCase().includes(searchingPokemon.toLowerCase()),
       )
-      .slice(0, 10),
+      .slice(0, 8),
   );
-
-  $inspect(pokemonSearch[1]);
-  $inspect(options);
 
   const toastStore = getToastStore();
 
@@ -284,54 +293,37 @@
       });
   }
 
-  function debounce<T extends (...args: any[]) => any>(
-    func: T,
-    delay: number,
-  ): (...args: Parameters<T>) => Promise<ReturnType<T>> {
-    let timeoutId: ReturnType<typeof setTimeout>;
+  function onTypeChange(type: string, type_number: number) {
+    if (type_number === 1) {
+      types[0] = type;
+    } else {
+      types[1] = type;
+    }
 
-    return function (...args: Parameters<T>): Promise<ReturnType<T>> {
-      return new Promise((resolve) => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-          resolve(func(...args));
-        }, delay);
-      });
-    };
+    // This scenario should be unlikely. So default it to normal
+    if (types[0] === "none" && types[1] === "none") {
+      pokemon.types = "normal";
+      return;
+    }
+
+    if (types[0] !== "none" && types[1] === "none") {
+      pokemon.types = types[0];
+      return;
+    }
+
+    if (types[0] === "none" && types[1] !== "none") {
+      pokemon.types = types[1];
+      return;
+    }
+
+    if (types[0] === types[1]) {
+      pokemon.types = types[0];
+      return;
+    }
+
+    pokemon.types = `${types[0]},${types[1]}`;
   }
 </script>
-
-<!-- <div class="flex flex-row gap-7">
-  <AutoComplete
-    bind:value={pokemonSearch[1]}
-    placeholder="Search Pokemon"
-    options={pokemonListOptions}
-    popupId="pokemon-search"
-    onSelection={(e) => {
-      pokemonSearch = [e.detail.value, e.detail.label];
-    }}
-    bind:inputNode={pokemonNameInput}
-    showChevron={false}
-  />
-  <Button
-    title="Search"
-    onClick={getPokemon}
-    disabled={pokemonSearch[0] === 0}
-    class="mt-2 w-32"
-  />
-  <Button
-    title="Save Changes"
-    onClick={savePokemonChanges}
-    disabled={isEqual(pokemon, originalPokemonDetails)}
-    class="mt-2 w-32"
-  />
-  <Button
-    title="Generate Page"
-    onClick={() => generatePage()}
-    disabled={objectIsEmpty(pokemon)}
-    class="mt-2 w-32"
-  />
-</div> -->
 
 <Card.Root>
   <Card.Content class="flex flex-row gap-3">
@@ -355,7 +347,7 @@
         <Command.Root shouldFilter={false}>
           <Command.Input
             placeholder="Search Pokemon"
-            bind:value={pokemonSearch[1]}
+            bind:value={searchingPokemon}
           />
           <Command.List>
             <Command.Empty>No Pokemon found.</Command.Empty>
@@ -364,6 +356,7 @@
                 value={pokemon.label}
                 onSelect={() => {
                   pokemonSearch = [pokemon.value, pokemon.label];
+                  getPokemon();
                   closeAndFocusTrigger();
                 }}
               >
@@ -378,11 +371,11 @@
       </Popover.Content>
     </Popover.Root>
     <div class="grid grid-cols-2 gap-3">
-      <Button>
+      <Button class="cursor-pointer">
         <SaveIcon />
         Save Changes</Button
       >
-      <Button variant="outline">
+      <Button variant="outline" class="cursor-pointer">
         <FileTextIcon />
         Generate Page</Button
       >
@@ -391,10 +384,147 @@
 </Card.Root>
 
 {#if !objectIsEmpty(pokemon)}
+  <div class="grid grid-cols-2">
+    <Card.Root class="mt-5">
+      <Card.Content class="flex flex-col gap-10">
+        <section class="flex flex-row gap-5">
+          {#if pokemonSprite === "404"}
+            <p>No sprite found for {pokemon.name}</p>
+          {:else}
+            <div
+              class={`size-24 rounded-full ${typeColors[pokemon.types.split(",")[0]].background} grid align-center place-content-center shadow-xl`}
+            >
+              <img
+                src={pokemonSprite}
+                alt={pokemon.name}
+                class="size-20 object-contain"
+              />
+            </div>
+          {/if}
+          <div class="flex flex-col justify-between">
+            <div class="text-[25px] font-bold">
+              {capitalizeWords(pokemon.name)}
+            </div>
+            <div class="text-slate-400">#{pokemon.dex_number}</div>
+            <div class="flex flex-row gap-2">
+              {#each pokemon.types.split(",") as type}
+                <div
+                  class={`text-sm px-2 rounded-lg font-medium ${typeColors[type].background} ${typeColors[type].text}`}
+                >
+                  {capitalizeWords(type)}
+                </div>
+              {/each}
+            </div>
+          </div>
+        </section>
+        <section class="flex flex-row justify-between">
+          <div>
+            <Label
+              for="pokemon-type"
+              class="text-sm font-medium text-slate-700 mb-2 block"
+              >Type 1</Label
+            >
+            <Select.Root type="single" bind:value={types[0]}>
+              <Select.Trigger id="pokemon-type" class="w-[13rem]">
+                {capitalizeWords(types[0])}
+              </Select.Trigger>
+              <Select.Content>
+                {#each $pokemonTypes as type}
+                  <Select.Item
+                    value={type}
+                    onclick={() => onTypeChange(type, 1)}
+                    label={type}
+                  >
+                    {capitalizeWords(type)}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+          </div>
+          <div>
+            {#if types[1]}
+              <Label
+                for="pokemon-type-2"
+                class="text-sm font-medium text-slate-700 mb-2 block"
+                >Type 2</Label
+              >
+              <Select.Root type="single" bind:value={types[1]}>
+                <Select.Trigger id="pokemon-type-2" class="w-[13rem]">
+                  {capitalizeWords(types[1])}
+                </Select.Trigger>
+                <Select.Content>
+                  {#each $pokemonTypes as type}
+                    <Select.Item
+                      value={type}
+                      onclick={() => onTypeChange(type, 2)}
+                      label={type}
+                    >
+                      {capitalizeWords(type)}
+                    </Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
+            {/if}
+          </div>
+        </section>
+        <section class="flex flex-row justify-between">
+          <div>
+            <Label
+              for="pokemon-ability"
+              class="text-sm font-medium text-slate-700 mb-2 block"
+              >Ability 1</Label
+            >
+            <Select.Root type="single" bind:value={pokemon.ability_1 as string}>
+              <Select.Trigger id="pokemon-ability" class="w-[13rem]">
+                {capitalizeWords(types[0])}
+              </Select.Trigger>
+              <Select.Content>
+                {#each $pokemonAbilities as ability}
+                  <Select.Item
+                    value={pokemon.ability_1 as string}
+                    label={ability[1]}
+                  >
+                    {capitalizeWords(pokemon.ability_1 as string)}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+          </div>
+          <div>
+            {#if types[1]}
+              <Label
+                for="pokemon-type-2"
+                class="text-sm font-medium text-slate-700 mb-2 block"
+                >Type 2</Label
+              >
+              <Select.Root type="single" bind:value={types[1]}>
+                <Select.Trigger id="pokemon-type-2" class="w-[13rem]">
+                  {capitalizeWords(types[1])}
+                </Select.Trigger>
+                <Select.Content>
+                  {#each $pokemonTypes as type}
+                    <Select.Item
+                      value={type}
+                      onclick={() => onTypeChange(type, 2)}
+                      label={type}
+                    >
+                      {capitalizeWords(type)}
+                    </Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
+            {/if}
+          </div>
+        </section>
+      </Card.Content>
+    </Card.Root>
+  </div>
+{/if}
+
+{#if false}
   {#if pokemonSprite === "404"}
     <p>No sprite found for {pokemon.name}</p>
   {:else}
-    <img src={pokemonSprite} alt={pokemon.name} width="100" />
     <NumberInput
       label="Dex Number"
       bind:value={pokemon.dex_number}

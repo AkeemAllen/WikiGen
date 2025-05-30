@@ -163,3 +163,83 @@ export function base64ToArray(base64String: string, contentType = "") {
   }
   return byteArrays;
 }
+
+type TypeColorScheme = {
+  background: string;
+  text: string;
+};
+
+export const typeColors: Record<string, TypeColorScheme> = {
+  normal: {
+    background: "bg-gray-200",
+    text: "text-gray-400",
+  },
+  fire: {
+    background: "bg-red-300",
+    text: "text-red-500",
+  },
+  water: {
+    background: "bg-blue-300",
+    text: "text-blue-500",
+  },
+  grass: {
+    background: "bg-green-300",
+    text: "text-green-700",
+  },
+  electric: {
+    background: "bg-yellow-200",
+    text: "text-yellow-400",
+  },
+  ice: {
+    background: "bg-cyan-100",
+    text: "text-cyan-200",
+  },
+  fighting: {
+    background: "bg-sanguine",
+    text: "text-sanguine-dark",
+  },
+  poison: {
+    background: "bg-purple-400",
+    text: "text-purple-600",
+  },
+  ground: {
+    background: "bg-yellow-500",
+    text: "text-yellow-700",
+  },
+  flying: {
+    background: "bg-sky-200",
+    text: "text-sky-400",
+  },
+  psychic: {
+    background: "bg-pink-300",
+    text: "text-pink-500",
+  },
+  bug: {
+    background: "bg-lime-300",
+    text: "text-lime-500",
+  },
+  rock: {
+    background: "bg-stone-300",
+    text: "text-stone-500",
+  },
+  ghost: {
+    background: "bg-violet-600",
+    text: "text-violet-800",
+  },
+  dragon: {
+    background: "bg-indigo-500",
+    text: "text-indigo-700",
+  },
+  dark: {
+    background: "bg-gray-600",
+    text: "text-gray-800",
+  },
+  steel: {
+    background: "bg-zinc-300",
+    text: "text-zinc-500",
+  },
+  fairy: {
+    background: "bg-pink-200",
+    text: "text-pink-300",
+  },
+};
