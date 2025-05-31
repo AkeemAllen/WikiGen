@@ -61,7 +61,7 @@
   let types: string[] = $derived.by(() => {
     let result = pokemon.types.split(",");
     if (result.length === 1) {
-      result.push("none");
+      result.push("");
     }
     return result;
   });
@@ -314,15 +314,26 @@
       types[1] = type;
     }
 
-    if (types[0] === types[1]) {
+    if (types[0] === types[1] || types[1] === "none") {
       pokemon.types = types[0];
+      types[1] = "";
       return;
     }
 
     pokemon.types = types.join(",");
+
+    // This is meant to drop the trailing comma if it exists
+    if (pokemon.types[pokemon.types.length - 1] === ",") {
+      pokemon.types = pokemon.types.slice(0, -1);
+    }
   }
+  $inspect(pokemon.abilities);
 
   function onAbilityChange(ability: string, ability_number: number) {
+    if (ability === "None") {
+      ability = "";
+    }
+
     if (ability_number === 1) {
       if (ability === "") {
         toast.error(
@@ -466,7 +477,11 @@
             >
             <Select.Root type="single" bind:value={types[1]}>
               <Select.Trigger id="pokemon-type-2" class="w-[14rem]">
-                {capitalizeWords(types[1])}
+                {#if types[1] === ""}
+                  None
+                {:else}
+                  {capitalizeWords(types[1])}
+                {/if}
               </Select.Trigger>
               <Select.Content>
                 {#each $pokemonTypes as type}
@@ -482,44 +497,75 @@
             </Select.Root>
           </div>
         </section>
-        <section class="flex flex-row justify-between">
+        <section class="flex flex-col gap-10">
+          <section class="flex flex-row justify-between">
+            <div>
+              <Label
+                for="pokemon-ability-1"
+                class="text-sm font-medium text-slate-700 mb-2 block"
+                >Ability 1</Label
+              >
+              <Select.Root type="single" bind:value={abilities[0]}>
+                <Select.Trigger id="pokemon-ability-1" class="w-[14rem]">
+                  {capitalizeWords(abilities[0])}
+                </Select.Trigger>
+                <Select.Content>
+                  {#each $pokemonAbilities as [id, ability]}
+                    <Select.Item
+                      value={ability}
+                      label={ability}
+                      onclick={() => {
+                        onAbilityChange(ability, 1);
+                      }}
+                    >
+                      {capitalizeWords(ability)}
+                    </Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
+            </div>
+            <div>
+              <Label
+                for="pokemon-ability-2"
+                class="text-sm font-medium text-slate-700 mb-2 block"
+                >Ability 2</Label
+              >
+              <Select.Root type="single" bind:value={abilities[1]}>
+                <Select.Trigger id="pokemon-ability-2" class="w-[14rem]">
+                  {#if abilities[1] === ""}
+                    None
+                  {:else}
+                    {capitalizeWords(abilities[1])}
+                  {/if}
+                </Select.Trigger>
+                <Select.Content>
+                  {#each $pokemonAbilities as [id, ability]}
+                    <Select.Item
+                      value={ability}
+                      label={ability}
+                      onclick={() => {
+                        onAbilityChange(ability, 2);
+                      }}
+                    >
+                      {capitalizeWords(ability)}
+                    </Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
+            </div>
+          </section>
           <div>
             <Label
-              for="pokemon-ability-1"
+              for="pokemon-ability-hidden"
               class="text-sm font-medium text-slate-700 mb-2 block"
-              >Ability 1</Label
+              >Hidden Ability</Label
             >
-            <Select.Root type="single" bind:value={abilities[0]}>
-              <Select.Trigger id="pokemon-ability-1" class="w-[14rem]">
-                {capitalizeWords(abilities[0])}
-              </Select.Trigger>
-              <Select.Content>
-                {#each $pokemonAbilities as [id, ability]}
-                  <Select.Item
-                    value={ability}
-                    label={ability}
-                    onclick={() => {
-                      onAbilityChange(ability, 1);
-                    }}
-                  >
-                    {capitalizeWords(ability)}
-                  </Select.Item>
-                {/each}
-              </Select.Content>
-            </Select.Root>
-          </div>
-          <div>
-            <Label
-              for="pokemon-ability-2"
-              class="text-sm font-medium text-slate-700 mb-2 block"
-              >Ability 2</Label
-            >
-            <Select.Root type="single" bind:value={abilities[1]}>
-              <Select.Trigger id="pokemon-ability-2" class="w-[14rem]">
-                {#if abilities[1] === ""}
+            <Select.Root type="single" bind:value={abilities[2]}>
+              <Select.Trigger id="pokemon-ability-hidden" class="w-full">
+                {#if abilities[2] === ""}
                   None
                 {:else}
-                  {capitalizeWords(abilities[1])}
+                  {capitalizeWords(abilities[2])}
                 {/if}
               </Select.Trigger>
               <Select.Content>
@@ -528,7 +574,7 @@
                     value={ability}
                     label={ability}
                     onclick={() => {
-                      onAbilityChange(ability, 2);
+                      onAbilityChange(ability, 3);
                     }}
                   >
                     {capitalizeWords(ability)}
@@ -585,29 +631,3 @@
     </div>
   </TabGroup>
 {/if}
-
-<svelte:window
-  use:shortcut={{
-    trigger: {
-      key: "k",
-      modifier: ["ctrl", "meta"],
-      callback: () => pokemonNameInput.focus(),
-    },
-  }}
-  use:shortcut={{
-    trigger: {
-      key: "m",
-      modifier: "ctrl",
-      callback: () => {
-        tabSet = 1;
-      },
-    },
-  }}
-  use:shortcut={{
-    trigger: {
-      key: "Enter",
-      modifier: ["ctrl", "meta"],
-      callback: () => savePokemonChanges(),
-    },
-  }}
-/>
