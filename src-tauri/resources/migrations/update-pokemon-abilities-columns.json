@@ -1,0 +1,6 @@
+{
+  "name": "update-pokemon-abilities-columns",
+  "app_version": "1.9.3",
+  "execution_order": 1,
+  "sql": "UPDATE pokemon SET ability_1 = ability_1 || CASE WHEN ability_2 IS NOT NULL THEN ',' || ability_2 ELSE ',' END ||CASE WHEN hidden_ability IS NOT NULL THEN ',' || hidden_ability ELSE '' END;"
+}

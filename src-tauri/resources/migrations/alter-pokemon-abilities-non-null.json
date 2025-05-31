@@ -1,0 +1,6 @@
+{
+  "name": "alter-pokemon-abilities-non-null",
+  "app_version": "1.9.3",
+  "execution_order": 2,
+  "sql": "ALTER TABLE pokemon RENAME COLUMN ability_1 TO abilities; ALTER TABLE pokemon DROP COLUMN ability_2; ALTER TABLE pokemon DROP COLUMN hidden_ability; ALTER TABLE pokemon ADD COLUMN abilities_temp TEXT NOT NULL DEFAULT ''; UPDATE pokemon SET abilities_temp = abilities; ALTER TABLE pokemon DROP COLUMN abilities; ALTER TABLE pokemon RENAME COLUMN abilities_temp TO abilities;"
+}
