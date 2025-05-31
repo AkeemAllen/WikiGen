@@ -5,6 +5,7 @@
   import { Label } from "$lib/components/ui/label/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
 
   type Props = {
     open: boolean;
@@ -23,6 +24,7 @@
     searcher = $bindable(),
     value = $bindable(),
     class: className,
+    placeholder,
     label,
     onSelect,
     triggerRef,
@@ -58,7 +60,7 @@
           role="combobox"
           aria-expanded={open}
         >
-          {value || "Select Pokemon"}
+          {value || placeholder}
           <ChevronsUpDownIcon class="opacity-50" />
         </Button>
       </div>
@@ -66,7 +68,7 @@
   </Popover.Trigger>
   <Popover.Content class="w-full p-0">
     <Command.Root shouldFilter={false}>
-      <Command.Input placeholder="Search Pokemon" bind:value={searcher} />
+      <Command.Input {placeholder} bind:value={searcher} />
       <Command.List>
         <Command.Empty>Such Empty</Command.Empty>
         {#each options as option}

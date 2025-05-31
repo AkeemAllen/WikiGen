@@ -14,7 +14,6 @@
   } from "../../store/pokemon";
   import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
   import PokemonMovesTab from "./PokemonMovesTab.svelte";
-  import { shortcut } from "@svelte-put/shortcut";
   import NumberInput from "./NumberInput.svelte";
   import { db } from "../../store/db";
   import { cloneDeep } from "$lib/utils/cloneDeep";
@@ -30,11 +29,6 @@
     updateRoutes,
   } from "$lib/utils/generators";
   import * as Card from "$lib/components/ui/card/index.js";
-  import CheckIcon from "@lucide/svelte/icons/check";
-  import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
-  import { tick } from "svelte";
-  import * as Command from "$lib/components/ui/command/index.js";
-  import * as Popover from "$lib/components/ui/popover/index.js";
   import * as Select from "$lib/components/ui/select/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import { cn, typeColors } from "$lib/utils.js";
@@ -49,7 +43,7 @@
   import { itemsList } from "../../store/items";
   import Autocomplete from "./ui/Autocomplete.svelte";
 
-  let pokemonSearch: [number, string] = $state([1, "bulbasaur"]);
+  let pokemonSearch: [number, string] = $state([0, ""]);
   let searchingPokemon: string = $state("");
   let pokemonSearchOption: boolean = $state(false);
   let evolutionSearchOption: boolean = $state(false);
@@ -59,12 +53,6 @@
   let triggerRef = $state<HTMLButtonElement>(null!);
   let triggerRefEvolution = $state<HTMLButtonElement>(null!);
   let triggerRefItems = $state<HTMLButtonElement>(null!);
-
-  $effect(() => {
-    if (pokemonSearch[0] === 1 && pokemonSearch[1] === "bulbasaur") {
-      getPokemon();
-    }
-  });
 
   let pokemon = $state({} as Pokemon);
   let abilities = $derived.by(() => {
@@ -640,10 +628,13 @@
                 triggerRef={triggerRefItems}
                 value={pokemon.evolution_item}
                 bind:searcher={searchingItems}
-                options={$itemsList.map((item) => ({
-                  value: item[0],
-                  label: item[1],
-                }))}
+                options={$itemsList
+                  .map((item) => ({
+                    value: item[0],
+                    label: item[1],
+                  }))
+                  .filter((item) => item.label.includes(searchingItems))
+                  .slice(0, 8)}
                 placeholder="Search Items"
                 onSelect={(option) => {
                   pokemon.evolution_item = option.label;
@@ -667,65 +658,21 @@
               />
             {/if}
           </div>
-          <Autocomplete
-            open={evolutionSearchOption}
-            triggerRef={triggerRefEvolution}
-            value={pokemon.evolves_into}
-            label="Evolution Search"
-            bind:searcher={searchingEvolutions}
-            options={evolutionOptions}
-            placeholder="Search Pokemon"
-            onSelect={(option) => {
-              pokemon.evolves_into = option.label;
-            }}
-            class="w-fit"
-          />
-          <!-- <Popover.Root bind:open={evolutionSearchOption}>
-            <Popover.Trigger bind:ref={triggerRefEvolution}>
-              {#snippet child({ props })}
-                <div>
-                  <Label
-                    for="evolution-search"
-                    class="text-sm font-medium text-slate-700 mb-2 block"
-                    >Evolution Search</Label
-                  >
-                  <Button
-                    id="evolution-search"
-                    variant="outline"
-                    {...props}
-                    class="w-fit"
-                    role="combobox"
-                    aria-expanded={evolutionSearchOption}
-                  >
-                    {pokemon.evolves_into || "Select Pokemon"}
-                    <ChevronsUpDownIcon class="opacity-50" />
-                  </Button>
-                </div>
-              {/snippet}
-            </Popover.Trigger>
-            <Popover.Content class="w-full p-0">
-              <Command.Root shouldFilter={false}>
-                <Command.Input
-                  placeholder="Search Pokemon"
-                  bind:value={searchingEvolutions}
-                />
-                <Command.List>
-                  <Command.Empty>No Pokemon found.</Command.Empty>
-                  {#each options as evolution}
-                    <Command.Item
-                      value={evolution.label}
-                      onSelect={() => {
-                        pokemon.evolves_into = evolution.label;
-                        closeAndFocusTriggerEvolution();
-                      }}
-                    >
-                      {evolution.label}
-                    </Command.Item>
-                  {/each}
-                </Command.List>
-              </Command.Root>
-            </Popover.Content>
-          </Popover.Root> -->
+          {#if pokemon.evolution_method !== "no_change"}
+            <Autocomplete
+              open={evolutionSearchOption}
+              triggerRef={triggerRefEvolution}
+              value={pokemon.evolves_into}
+              label="Evolution Search"
+              bind:searcher={searchingEvolutions}
+              options={evolutionOptions}
+              placeholder="Search Pokemon"
+              onSelect={(option) => {
+                pokemon.evolves_into = option.label;
+              }}
+              class="w-fit"
+            />
+          {/if}
         </Card.Content>
       </Card.Root>
     </div>
