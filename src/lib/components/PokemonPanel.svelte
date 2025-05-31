@@ -43,6 +43,7 @@
   import FileTextIcon from "@lucide/svelte/icons/file-text";
   import { types as pokemonTypes } from "../../store/types";
   import { abilitiesList as pokemonAbilities } from "../../store/abilities";
+  import { toast } from "svelte-sonner";
 
   let pokemonSearch: [number, string] = $state([0, ""]);
   let searchingPokemon: string = $state("");
@@ -50,6 +51,13 @@
   let triggerRef = $state<HTMLButtonElement>(null!);
 
   let pokemon = $state({} as Pokemon);
+  let abilities = $derived.by(() => {
+    let result = pokemon.abilities.split(",");
+    if (result.length === 1) {
+      result.push("");
+    }
+    return result;
+  });
   let types: string[] = $derived.by(() => {
     let result = pokemon.types.split(",");
     if (result.length === 1) {
@@ -295,25 +303,15 @@
 
   function onTypeChange(type: string, type_number: number) {
     if (type_number === 1) {
+      if (type === "none") {
+        toast.error(
+          "First Type cannot be empty. Pokemon need at least one type",
+        );
+        return;
+      }
       types[0] = type;
     } else {
       types[1] = type;
-    }
-
-    // This scenario should be unlikely. So default it to normal
-    if (types[0] === "none" && types[1] === "none") {
-      pokemon.types = "normal";
-      return;
-    }
-
-    if (types[0] !== "none" && types[1] === "none") {
-      pokemon.types = types[0];
-      return;
-    }
-
-    if (types[0] === "none" && types[1] !== "none") {
-      pokemon.types = types[1];
-      return;
     }
 
     if (types[0] === types[1]) {
@@ -321,7 +319,29 @@
       return;
     }
 
-    pokemon.types = `${types[0]},${types[1]}`;
+    pokemon.types = types.join(",");
+  }
+
+  function onAbilityChange(ability: string, ability_number: number) {
+    if (ability_number === 1) {
+      if (ability === "") {
+        toast.error(
+          "First Ability cannot be empty. Pokemon need at least one ability",
+        );
+        return;
+      }
+      abilities[0] = ability;
+    } else if (ability_number === 2) {
+      abilities[1] = ability;
+    } else if (ability_number === 3) {
+      abilities[2] = ability;
+    }
+
+    if (abilities[0] === abilities[1]) {
+      pokemon.abilities = abilities[0];
+      return;
+    }
+    pokemon.abilities = abilities.join(",");
   }
 </script>
 
@@ -360,9 +380,6 @@
                   closeAndFocusTrigger();
                 }}
               >
-                <!-- <CheckIcon
-                      class={cn(pokemon.value !== framework.value && "text-transparent")}
-                    /> -->
                 {pokemon.label}
               </Command.Item>
             {/each}
@@ -425,7 +442,7 @@
               >Type 1</Label
             >
             <Select.Root type="single" bind:value={types[0]}>
-              <Select.Trigger id="pokemon-type" class="w-[13rem]">
+              <Select.Trigger id="pokemon-type" class="w-[14rem]">
                 {capitalizeWords(types[0])}
               </Select.Trigger>
               <Select.Content>
@@ -442,78 +459,83 @@
             </Select.Root>
           </div>
           <div>
-            {#if types[1]}
-              <Label
-                for="pokemon-type-2"
-                class="text-sm font-medium text-slate-700 mb-2 block"
-                >Type 2</Label
-              >
-              <Select.Root type="single" bind:value={types[1]}>
-                <Select.Trigger id="pokemon-type-2" class="w-[13rem]">
-                  {capitalizeWords(types[1])}
-                </Select.Trigger>
-                <Select.Content>
-                  {#each $pokemonTypes as type}
-                    <Select.Item
-                      value={type}
-                      onclick={() => onTypeChange(type, 2)}
-                      label={type}
-                    >
-                      {capitalizeWords(type)}
-                    </Select.Item>
-                  {/each}
-                </Select.Content>
-              </Select.Root>
-            {/if}
+            <Label
+              for="pokemon-type-2"
+              class="text-sm font-medium text-slate-700 mb-2 block"
+              >Type 2</Label
+            >
+            <Select.Root type="single" bind:value={types[1]}>
+              <Select.Trigger id="pokemon-type-2" class="w-[14rem]">
+                {capitalizeWords(types[1])}
+              </Select.Trigger>
+              <Select.Content>
+                {#each $pokemonTypes as type}
+                  <Select.Item
+                    value={type}
+                    onclick={() => onTypeChange(type, 2)}
+                    label={type}
+                  >
+                    {capitalizeWords(type)}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
           </div>
         </section>
         <section class="flex flex-row justify-between">
           <div>
             <Label
-              for="pokemon-ability"
+              for="pokemon-ability-1"
               class="text-sm font-medium text-slate-700 mb-2 block"
               >Ability 1</Label
             >
-            <Select.Root type="single" bind:value={pokemon.ability_1 as string}>
-              <Select.Trigger id="pokemon-ability" class="w-[13rem]">
-                {capitalizeWords(types[0])}
+            <Select.Root type="single" bind:value={abilities[0]}>
+              <Select.Trigger id="pokemon-ability-1" class="w-[14rem]">
+                {capitalizeWords(abilities[0])}
               </Select.Trigger>
               <Select.Content>
-                {#each $pokemonAbilities as ability}
+                {#each $pokemonAbilities as [id, ability]}
                   <Select.Item
-                    value={pokemon.ability_1 as string}
-                    label={ability[1]}
+                    value={ability}
+                    label={ability}
+                    onclick={() => {
+                      onAbilityChange(ability, 1);
+                    }}
                   >
-                    {capitalizeWords(pokemon.ability_1 as string)}
+                    {capitalizeWords(ability)}
                   </Select.Item>
                 {/each}
               </Select.Content>
             </Select.Root>
           </div>
           <div>
-            {#if types[1]}
-              <Label
-                for="pokemon-type-2"
-                class="text-sm font-medium text-slate-700 mb-2 block"
-                >Type 2</Label
-              >
-              <Select.Root type="single" bind:value={types[1]}>
-                <Select.Trigger id="pokemon-type-2" class="w-[13rem]">
-                  {capitalizeWords(types[1])}
-                </Select.Trigger>
-                <Select.Content>
-                  {#each $pokemonTypes as type}
-                    <Select.Item
-                      value={type}
-                      onclick={() => onTypeChange(type, 2)}
-                      label={type}
-                    >
-                      {capitalizeWords(type)}
-                    </Select.Item>
-                  {/each}
-                </Select.Content>
-              </Select.Root>
-            {/if}
+            <Label
+              for="pokemon-ability-2"
+              class="text-sm font-medium text-slate-700 mb-2 block"
+              >Ability 2</Label
+            >
+            <Select.Root type="single" bind:value={abilities[1]}>
+              <Select.Trigger id="pokemon-ability-2" class="w-[14rem]">
+                {#if abilities[1] === ""}
+                  None
+                {:else}
+                  {capitalizeWords(abilities[1])}
+                {/if}
+              </Select.Trigger>
+              <Select.Content>
+                {#each $pokemonAbilities as [id, ability]}
+                  <Select.Item
+                    value={ability}
+                    label={ability}
+                    onclick={() => {
+                      onAbilityChange(ability, 2);
+                    }}
+                  >
+                    {capitalizeWords(ability)}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
           </div>
         </section>
       </Card.Content>
