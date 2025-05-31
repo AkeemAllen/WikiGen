@@ -43,22 +43,25 @@
 <Popover.Root bind:open>
   <Popover.Trigger bind:ref={triggerRef}>
     {#snippet child({ props })}
-      {#if label}
-        <Label for={label} class="text-sm font-medium text-slate-700 mb-2 block"
-          >{label}</Label
+      <div>
+        {#if label}
+          <Label
+            for={label}
+            class="text-sm font-medium text-slate-700 mb-2 block">{label}</Label
+          >
+        {/if}
+        <Button
+          id={label || ""}
+          variant="outline"
+          {...props}
+          class={className}
+          role="combobox"
+          aria-expanded={open}
         >
-      {/if}
-      <Button
-        id={label || ""}
-        variant="outline"
-        {...props}
-        class={className}
-        role="combobox"
-        aria-expanded={open}
-      >
-        {value || "Select Pokemon"}
-        <ChevronsUpDownIcon class="opacity-50" />
-      </Button>
+          {value || "Select Pokemon"}
+          <ChevronsUpDownIcon class="opacity-50" />
+        </Button>
+      </div>
     {/snippet}
   </Popover.Trigger>
   <Popover.Content class="w-full p-0">

@@ -44,11 +44,27 @@
   import { types as pokemonTypes } from "../../store/types";
   import { abilitiesList as pokemonAbilities } from "../../store/abilities";
   import { toast } from "svelte-sonner";
+  import { Slider } from "$lib/components/ui/slider/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
+  import { itemsList } from "../../store/items";
+  import Autocomplete from "./ui/Autocomplete.svelte";
 
-  let pokemonSearch: [number, string] = $state([0, ""]);
+  let pokemonSearch: [number, string] = $state([1, "bulbasaur"]);
   let searchingPokemon: string = $state("");
   let pokemonSearchOption: boolean = $state(false);
+  let evolutionSearchOption: boolean = $state(false);
+  let itemSearchOption: boolean = $state(false);
+  let searchingEvolutions: string = $state("");
+  let searchingItems: string = $state("");
   let triggerRef = $state<HTMLButtonElement>(null!);
+  let triggerRefEvolution = $state<HTMLButtonElement>(null!);
+  let triggerRefItems = $state<HTMLButtonElement>(null!);
+
+  $effect(() => {
+    if (pokemonSearch[0] === 1 && pokemonSearch[1] === "bulbasaur") {
+      getPokemon();
+    }
+  });
 
   let pokemon = $state({} as Pokemon);
   let abilities = $derived.by(() => {
@@ -70,19 +86,6 @@
   let pokemonMoveset: PokemonMove[] = $state([]);
   let pokemonLocations: WildEncounter[] = $state([]);
   let pokemonSprite: string = $state("");
-  let pokemonNameInput: HTMLInputElement = $state(
-    document.createElement("input"),
-  );
-
-  // We want to refocus the trigger button when the user selects
-  // an item from the list so users can continue navigating the
-  // rest of the form with the keyboard.
-  function closeAndFocusTrigger() {
-    pokemonSearchOption = false;
-    tick().then(() => {
-      triggerRef.focus();
-    });
-  }
 
   let tabSet: number = $state(0);
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
@@ -94,6 +97,14 @@
     pokemonListOptions
       .filter((pokemon) =>
         pokemon.label.toLowerCase().includes(searchingPokemon.toLowerCase()),
+      )
+      .slice(0, 8),
+  );
+
+  let evolutionOptions = $derived(
+    pokemonListOptions
+      .filter((pokemon) =>
+        pokemon.label.toLowerCase().includes(searchingEvolutions.toLowerCase()),
       )
       .slice(0, 8),
   );
@@ -358,46 +369,19 @@
 
 <Card.Root>
   <Card.Content class="flex flex-row gap-3">
-    <Popover.Root bind:open={pokemonSearchOption}>
-      <Popover.Trigger bind:ref={triggerRef}>
-        {#snippet child({ props })}
-          <Button
-            id="pokemon-search"
-            variant="outline"
-            {...props}
-            class="w-[20rem]"
-            role="combobox"
-            aria-expanded={pokemonSearchOption}
-          >
-            {pokemonSearch[1] || "Select Pokemon"}
-            <ChevronsUpDownIcon class="opacity-50" />
-          </Button>
-        {/snippet}
-      </Popover.Trigger>
-      <Popover.Content class="w-full p-0">
-        <Command.Root shouldFilter={false}>
-          <Command.Input
-            placeholder="Search Pokemon"
-            bind:value={searchingPokemon}
-          />
-          <Command.List>
-            <Command.Empty>No Pokemon found.</Command.Empty>
-            {#each options as pokemon}
-              <Command.Item
-                value={pokemon.label}
-                onSelect={() => {
-                  pokemonSearch = [pokemon.value, pokemon.label];
-                  getPokemon();
-                  closeAndFocusTrigger();
-                }}
-              >
-                {pokemon.label}
-              </Command.Item>
-            {/each}
-          </Command.List>
-        </Command.Root>
-      </Popover.Content>
-    </Popover.Root>
+    <Autocomplete
+      open={pokemonSearchOption}
+      {triggerRef}
+      value={pokemonSearch[1]}
+      bind:searcher={searchingPokemon}
+      {options}
+      placeholder="Search Pokemon"
+      onSelect={(option) => {
+        pokemonSearch = [option.value, option.label];
+        getPokemon();
+      }}
+      class="w-[20rem]"
+    />
     <div class="grid grid-cols-2 gap-3">
       <Button class="cursor-pointer">
         <SaveIcon />
@@ -412,7 +396,7 @@
 </Card.Root>
 
 {#if !objectIsEmpty(pokemon)}
-  <div class="grid grid-cols-2">
+  <div class="flex flex-row gap-5 mb-5">
     <Card.Root class="mt-5">
       <Card.Content class="flex flex-col gap-10">
         <section class="flex flex-row gap-5">
@@ -445,7 +429,7 @@
             </div>
           </div>
         </section>
-        <section class="flex flex-row justify-between">
+        <section class="flex flex-row gap-5 justify-between">
           <div>
             <Label
               for="pokemon-type"
@@ -453,7 +437,7 @@
               >Type 1</Label
             >
             <Select.Root type="single" bind:value={types[0]}>
-              <Select.Trigger id="pokemon-type" class="w-[14rem]">
+              <Select.Trigger id="pokemon-type" class="w-[11rem]">
                 {capitalizeWords(types[0])}
               </Select.Trigger>
               <Select.Content>
@@ -476,7 +460,7 @@
               >Type 2</Label
             >
             <Select.Root type="single" bind:value={types[1]}>
-              <Select.Trigger id="pokemon-type-2" class="w-[14rem]">
+              <Select.Trigger id="pokemon-type-2" class="w-[11rem]">
                 {#if types[1] === ""}
                   None
                 {:else}
@@ -506,7 +490,7 @@
                 >Ability 1</Label
               >
               <Select.Root type="single" bind:value={abilities[0]}>
-                <Select.Trigger id="pokemon-ability-1" class="w-[14rem]">
+                <Select.Trigger id="pokemon-ability-1" class="w-[11rem]">
                   {capitalizeWords(abilities[0])}
                 </Select.Trigger>
                 <Select.Content>
@@ -531,7 +515,7 @@
                 >Ability 2</Label
               >
               <Select.Root type="single" bind:value={abilities[1]}>
-                <Select.Trigger id="pokemon-ability-2" class="w-[14rem]">
+                <Select.Trigger id="pokemon-ability-2" class="w-[11rem]">
                   {#if abilities[1] === ""}
                     None
                   {:else}
@@ -586,6 +570,165 @@
         </section>
       </Card.Content>
     </Card.Root>
+    <div class="flex flex-col w-full">
+      <Card.Root class="mt-5 h-fit w-full">
+        <Card.Header>
+          <Card.Title>Base Stats</Card.Title>
+        </Card.Header>
+        <Card.Content class="grid grid-cols-2 gap-4">
+          {#each [{ label: "HP", value: pokemon.hp }, { label: "Attack", value: pokemon.attack }, { label: "Defense", value: pokemon.defense }, { label: "Special Attack", value: pokemon.sp_attack }, { label: "Special Defense", value: pokemon.sp_defense }, { label: "Speed", value: pokemon.speed }] as stat}
+            <div class="flex flex-col">
+              <Label
+                for={stat.label}
+                class="text-sm font-medium text-slate-700 mb-2 block"
+                >{stat.label}</Label
+              >
+              <div class="flex flex-row gap-2" id={`${stat.label}`}>
+                <Slider
+                  type="single"
+                  step={1}
+                  max={255}
+                  bind:value={stat.value}
+                />
+                <Input
+                  type="number"
+                  min={1}
+                  max={255}
+                  bind:value={stat.value}
+                  class="w-24"
+                />
+              </div>
+            </div>
+          {/each}
+        </Card.Content>
+      </Card.Root>
+      <Card.Root class="mt-5 h-fit w-full">
+        <Card.Header>
+          <Card.Title>Evolution</Card.Title>
+        </Card.Header>
+        <Card.Content class="flex flex-row gap-4">
+          <div>
+            <Label
+              for="evolution-method"
+              class="text-sm font-medium text-slate-700 mb-2 block"
+              >Method</Label
+            >
+            <Select.Root type="single" bind:value={pokemon.evolution_method}>
+              <Select.Trigger id="evolution-method" class="w-[11rem]">
+                {capitalizeWords(pokemon.evolution_method)}
+              </Select.Trigger>
+              <Select.Content>
+                {#each ["level_up", "item", "other", "no_change"] as method}
+                  <Select.Item value={method} label={method}>
+                    {capitalizeWords(method)}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+          </div>
+          <div>
+            {#if pokemon.evolution_method !== "no_change"}
+              <Label
+                for={pokemon.evolution_method}
+                class="text-sm font-medium text-slate-700 mb-2 block"
+                >{capitalizeWords(pokemon.evolution_method)}</Label
+              >
+            {/if}
+            {#if pokemon.evolution_method === "item"}
+              <Autocomplete
+                open={itemSearchOption}
+                triggerRef={triggerRefItems}
+                value={pokemon.evolution_item}
+                bind:searcher={searchingItems}
+                options={$itemsList.map((item) => ({
+                  value: item[0],
+                  label: item[1],
+                }))}
+                placeholder="Search Items"
+                onSelect={(option) => {
+                  pokemon.evolution_item = option.label;
+                }}
+                class="w-fit"
+              />
+            {/if}
+            {#if pokemon.evolution_method === "level_up"}
+              <Input
+                id={pokemon.evolution_method}
+                type="number"
+                bind:value={pokemon.evolution_level}
+                min={1}
+                max={100}
+              />
+            {/if}
+            {#if pokemon.evolution_method === "other"}
+              <Input
+                id={pokemon.evolution_method}
+                bind:value={pokemon.evolution_other}
+              />
+            {/if}
+          </div>
+          <Autocomplete
+            open={evolutionSearchOption}
+            triggerRef={triggerRefEvolution}
+            value={pokemon.evolves_into}
+            label="Evolution Search"
+            bind:searcher={searchingEvolutions}
+            options={evolutionOptions}
+            placeholder="Search Pokemon"
+            onSelect={(option) => {
+              pokemon.evolves_into = option.label;
+            }}
+            class="w-fit"
+          />
+          <!-- <Popover.Root bind:open={evolutionSearchOption}>
+            <Popover.Trigger bind:ref={triggerRefEvolution}>
+              {#snippet child({ props })}
+                <div>
+                  <Label
+                    for="evolution-search"
+                    class="text-sm font-medium text-slate-700 mb-2 block"
+                    >Evolution Search</Label
+                  >
+                  <Button
+                    id="evolution-search"
+                    variant="outline"
+                    {...props}
+                    class="w-fit"
+                    role="combobox"
+                    aria-expanded={evolutionSearchOption}
+                  >
+                    {pokemon.evolves_into || "Select Pokemon"}
+                    <ChevronsUpDownIcon class="opacity-50" />
+                  </Button>
+                </div>
+              {/snippet}
+            </Popover.Trigger>
+            <Popover.Content class="w-full p-0">
+              <Command.Root shouldFilter={false}>
+                <Command.Input
+                  placeholder="Search Pokemon"
+                  bind:value={searchingEvolutions}
+                />
+                <Command.List>
+                  <Command.Empty>No Pokemon found.</Command.Empty>
+                  {#each options as evolution}
+                    <Command.Item
+                      value={evolution.label}
+                      onSelect={() => {
+                        pokemon.evolves_into = evolution.label;
+                        closeAndFocusTriggerEvolution();
+                      }}
+                    >
+                      {evolution.label}
+                    </Command.Item>
+                  {/each}
+                </Command.List>
+              </Command.Root>
+            </Popover.Content>
+          </Popover.Root> -->
+        </Card.Content>
+      </Card.Root>
+    </div>
   </div>
 {/if}
 
