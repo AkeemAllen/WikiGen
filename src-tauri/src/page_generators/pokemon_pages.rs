@@ -15,7 +15,7 @@ use crate::{
     page_generators::pokemon_page_generator_functions::{
         create_evolution_table, create_learnable_moves_table, create_level_up_moves_table,
     },
-    structs::pokemon_structs::{DBPokemon, PokemonMove},
+    structs::pokemon_structs::{DBAbility, DBPokemon, PokemonMove},
 };
 
 use super::{game_routes::WildEncounter, pokemon_page_generator_functions::create_locations_table};
@@ -191,27 +191,31 @@ pub async fn generate_pokemon_pages_from_list(
             return Err(err);
         }
     };
-    let (pokemon_list, movesets) = match get_pokemon_list_and_movesets(&conn, &pokemon_ids).await {
-        Ok((pokemon_list, movesets)) => (pokemon_list, movesets),
-        Err(err) => {
-            logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
-            return Err(err);
-        }
-    };
+    let (pokemon_list, abilities_list, movesets) =
+        match get_pokemon_list_abilities_and_movesets(&conn, &pokemon_ids).await {
+            Ok((pokemon_list, abilities_list, movesets)) => {
+                (pokemon_list, abilities_list, movesets)
+            }
+            Err(err) => {
+                logger::write_log(&base_path.join(wiki_name), logger::LogLevel::Error, &err);
+                return Err(err);
+            }
+        };
 
     return generate_pokemon_pages(
         wiki_name,
         &pokemon_list,
+        &abilities_list,
         &movesets,
         &base_path,
         &resources_path,
     );
 }
 
-async fn get_pokemon_list_and_movesets(
+async fn get_pokemon_list_abilities_and_movesets(
     conn: &sqlx::Pool<Sqlite>,
     pokemon_ids: &[usize],
-) -> Result<(Vec<DBPokemon>, Vec<PokemonMove>), String> {
+) -> Result<(Vec<DBPokemon>, Vec<DBAbility>, Vec<PokemonMove>), String> {
     let id_list = &pokemon_ids
         .iter()
         .map(|n| n.to_string())
@@ -219,16 +223,7 @@ async fn get_pokemon_list_and_movesets(
         .join(",");
 
     let pokemon_query = format!(
-        "SELECT
-            pokemon.*,
-            a1.effect as a1_effect,
-            a2.effect as a2_effect,
-            h3.effect as h3_effect
-        FROM pokemon
-        LEFT JOIN abilities a1 on a1.name = pokemon.ability_1
-        LEFT JOIN abilities a2 on a2.name = pokemon.ability_2
-        LEFT JOIN abilities h3 on h3.name = pokemon.hidden_ability
-        WHERE pokemon.id IN ({}) ORDER BY dex_number ASC",
+        "SELECT pokemon.* FROM pokemon WHERE pokemon.id IN ({}) ORDER BY dex_number ASC",
         id_list
     );
     let pokemon_list = match sqlx::query_as::<_, DBPokemon>(&pokemon_query)
@@ -238,6 +233,16 @@ async fn get_pokemon_list_and_movesets(
         Ok(pokemon_list) => pokemon_list,
         Err(err) => {
             return Err(format!("Failed to fetch pokemon from database: {}", err));
+        }
+    };
+
+    let abilities_list = match sqlx::query_as::<_, DBAbility>("SELECT * FROM abilities")
+        .fetch_all(conn)
+        .await
+    {
+        Ok(abilities_list) => abilities_list,
+        Err(err) => {
+            return Err(format!("Failed to fetch abilities from database: {}", err));
         }
     };
 
@@ -266,12 +271,13 @@ async fn get_pokemon_list_and_movesets(
             ));
         }
     };
-    return Ok((pokemon_list, movesets));
+    return Ok((pokemon_list, abilities_list, movesets));
 }
 
 pub fn generate_pokemon_pages(
     wiki_name: &str,
     pokemon_list: &[DBPokemon],
+    abilities_list: &[DBAbility],
     movesets: &[PokemonMove],
     base_path: &PathBuf,
     resources_path: &PathBuf,
@@ -402,6 +408,7 @@ pub fn generate_pokemon_pages(
         let pokemon_markdown_string = generate_page_from_template(
             &template,
             &pokemon,
+            &abilities_list,
             &current_pokemon_movset,
             &current_pokemon_locations,
         );
@@ -462,6 +469,7 @@ fn extract_pokemon_id(key: Option<&str>) -> i32 {
 pub fn generate_page_from_template(
     template: &str,
     pokemon: &DBPokemon,
+    abilities_list: &[DBAbility],
     movesets: &[PokemonMove],
     locations: &[WildEncounter],
 ) -> String {
@@ -478,51 +486,49 @@ pub fn generate_page_from_template(
         .filter(|_type| !_type.contains("none"))
         .collect();
 
+    let abilities = pokemon
+        .abilities
+        .clone()
+        .split(",")
+        .map(str::to_string)
+        .collect::<Vec<String>>();
     let mut ability_1 = String::new();
     let mut ability_2 = String::new();
     let mut hidden_ability = String::new();
 
-    if pokemon.ability_1.is_some() {
-        let effect = pokemon
-            .a1_effect
-            .as_ref()
-            .expect("Ability 1 effect missing");
+    if let Some(found_ability_1) = abilities_list
+        .iter()
+        .find(|&ability| ability.name == *abilities.get(0).unwrap_or(&"".to_string()))
+    {
         ability_1 = format!(
             "<a href='' title=\"{}\">{}</a>",
-            effect,
-            capitalize(&pokemon.ability_1.as_ref().expect("Ability 1 missing"))
+            found_ability_1.effect,
+            capitalize(&found_ability_1.name)
         );
     }
 
-    if pokemon.ability_2.is_some() {
-        let effect = pokemon
-            .a2_effect
-            .as_ref()
-            .expect("Ability 2 effect missing");
+    if let Some(found_ability_2) = abilities_list
+        .iter()
+        .find(|&ability| ability.name == *abilities.get(1).unwrap_or(&"".to_string()))
+    {
         ability_2 = format!(
             "/<a href='' title=\"{}\">{}</a>",
-            effect,
-            capitalize(&pokemon.ability_2.as_ref().expect("Ability 2 missing"))
-        )
+            found_ability_2.effect,
+            capitalize(&found_ability_2.name)
+        );
     }
 
     let mut display_hidden_ability_section = "none";
-    if pokemon.hidden_ability.is_some() {
+    if let Some(found_hidden_ability) = abilities_list
+        .iter()
+        .find(|&ability| ability.name == *abilities.get(2).unwrap_or(&"".to_string()))
+    {
         display_hidden_ability_section = "grid";
-        let effect = pokemon
-            .h3_effect
-            .as_ref()
-            .expect("Hidden Ability effect missing");
         hidden_ability = format!(
             "<a href='' title=\"{}\">{}</a>",
-            effect,
-            capitalize(
-                &pokemon
-                    .hidden_ability
-                    .as_ref()
-                    .expect("Hidden Ability missing")
-            )
-        )
+            found_hidden_ability.effect,
+            capitalize(&found_hidden_ability.name)
+        );
     }
 
     let level_up_moveset = movesets

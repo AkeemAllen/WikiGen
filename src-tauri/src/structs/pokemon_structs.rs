@@ -8,24 +8,28 @@ pub struct DBPokemon {
     pub dex_number: u32,
     pub name: String,
     pub types: String,
-    pub ability_1: Option<String>,
-    pub ability_2: Option<String>,
-    pub hidden_ability: Option<String>,
+    pub abilities: String,
     pub hp: u32,
     pub attack: u32,
     pub defense: u32,
     pub sp_attack: u32,
     pub sp_defense: u32,
     pub speed: u32,
-    pub a1_effect: Option<String>,
-    pub a2_effect: Option<String>,
-    pub h3_effect: Option<String>,
     pub evolution_method: String,
     pub evolution_level: Option<u32>,
     pub evolution_item: Option<String>,
     pub evolution_other: Option<String>,
     pub evolves_into: Option<String>,
     pub render: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, FromRow)]
+pub struct DBAbility {
+    pub id: u32,
+    pub name: String,
+    pub effect: String,
+    pub is_modified: u32,
+    pub is_new: u32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, FromRow)]

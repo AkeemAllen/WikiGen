@@ -7,7 +7,7 @@ use crate::{
     page_generators::pokemon_pages::{
         generate_pokemon_pages, update_pokemon_pages_with_stripped_name,
     },
-    structs::pokemon_structs::{DBPokemon, PokemonMove},
+    structs::pokemon_structs::{DBAbility, DBPokemon, PokemonMove},
 };
 
 #[test]
@@ -29,13 +29,8 @@ fn test_generate_pokemon_page() {
         id: 1,
         name: "bulbasaur".to_string(),
         dex_number: 1,
-        types: "grass, poison".to_string(),
-        ability_1: Some("overgrow".to_string()),
-        ability_2: Some("chlorophyll".to_string()),
-        hidden_ability: None,
-        a1_effect: Some("An Effect".to_string()),
-        a2_effect: Some("An Effect".to_string()),
-        h3_effect: None,
+        types: "fairy,ice".to_string(),
+        abilities: "overgrow,blaze,chlorophyll".to_string(),
         hp: 45,
         attack: 49,
         defense: 49,
@@ -62,9 +57,33 @@ fn test_generate_pokemon_page() {
         damage_class: "physical".to_string(),
         machine_name: None,
     }];
+    let abilities_list: Vec<DBAbility> = vec![
+        DBAbility {
+            id: 1,
+            name: "overgrow".to_string(),
+            effect: "grass".to_string(),
+            is_new: 0,
+            is_modified: 0,
+        },
+        DBAbility {
+            id: 1,
+            name: "chlorophyll".to_string(),
+            effect: "fast".to_string(),
+            is_new: 0,
+            is_modified: 0,
+        },
+        DBAbility {
+            id: 1,
+            name: "blaze".to_string(),
+            effect: "javascript".to_string(),
+            is_new: 0,
+            is_modified: 0,
+        },
+    ];
     let result = generate_pokemon_pages(
         "testing",
         &pokemon_list,
+        &abilities_list,
         &moveset,
         &base_path,
         &resource_path,
