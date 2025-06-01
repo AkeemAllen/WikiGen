@@ -21,7 +21,6 @@
   import isEqual from "$lib/utils/isEqual";
   import objectIsEmpty from "$lib/utils/objectIsEmpty";
   import PokemonLocationTab from "./PokemonLocationTab.svelte";
-  import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import {
     generatePokemonPages,
     generateRoutePages,
@@ -31,7 +30,7 @@
   import * as Card from "$lib/components/ui/card/index.js";
   import * as Select from "$lib/components/ui/select/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
-  import { cn, typeColors } from "$lib/utils.js";
+  import { typeColors } from "$lib/utils.js";
   import { Label } from "./ui/label";
   import SaveIcon from "@lucide/svelte/icons/save";
   import FileTextIcon from "@lucide/svelte/icons/file-text";
@@ -42,6 +41,7 @@
   import { Input } from "$lib/components/ui/input/index.js";
   import { itemsList } from "../../store/items";
   import Autocomplete from "./ui/Autocomplete.svelte";
+  import PokemonStat from "./ui/PokemonStat.svelte";
 
   let pokemonSearch: [number, string] = $state([0, ""]);
   let searchingPokemon: string = $state("");
@@ -70,6 +70,15 @@
     return result;
   });
 
+  let baseTotal = $derived(
+    pokemon.hp +
+      pokemon.attack +
+      pokemon.defense +
+      pokemon.sp_attack +
+      pokemon.sp_defense +
+      pokemon.speed,
+  );
+
   let originalPokemonDetails: Pokemon = $state({} as Pokemon);
   let pokemonMoveset: PokemonMove[] = $state([]);
   let pokemonLocations: WildEncounter[] = $state([]);
@@ -97,15 +106,13 @@
       .slice(0, 8),
   );
 
-  const toastStore = getToastStore();
-
   async function generatePage() {
     generatePokemonPages([pokemon.id], $selectedWiki.name)
       .then((res) => {
-        toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
+        toast.success(res as string);
       })
       .catch((err) => {
-        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
+        toast.error(err as string);
       });
   }
 
@@ -116,9 +123,7 @@
     );
 
     if (!retrievedPokemon) {
-      toastStore.trigger(
-        getToastSettings(ToastType.ERROR, "Pokemon not found!"),
-      );
+      toast.error("Pokemon not found!");
       return;
     }
 
@@ -141,12 +146,7 @@
             pokemonMoveset = res;
           })
           .catch((err) => {
-            toastStore.trigger(
-              getToastSettings(
-                ToastType.ERROR,
-                `Error loading Pokemon moveset!: \n ${err}`,
-              ),
-            );
+            toast.error(`Error loading Pokemon moveset!: \n ${err}`);
           });
 
         // Reading in image separately
@@ -182,12 +182,7 @@
         }
       })
       .catch((err) => {
-        toastStore.trigger(
-          getToastSettings(
-            ToastType.ERROR,
-            `Error loading Pokemon!: \n ${err}`,
-          ),
-        );
+        toast.error(`Error loading Pokemon!: \n ${err}`);
       });
   }
 
@@ -216,6 +211,7 @@
         `UPDATE pokemon SET
           dex_number = ${pokemon.dex_number},
           name = "${pokemon.name}",
+          abilities = "${pokemon.abilities}",
           types = "${pokemon.types}",
           hp = ${pokemon.hp},
           attack = ${pokemon.attack},
@@ -228,10 +224,7 @@
           evolution_level = $3,
           evolution_other = $4,
           evolves_into = $5,
-          render = "${pokemon.render}",
-          ability_1 = $6,
-          ability_2 = $7,
-          hidden_ability = $8,
+          render = "${pokemon.render}"
         WHERE id = ${pokemon.id};`,
         [
           pokemon.evolution_method,
@@ -239,9 +232,6 @@
           pokemon.evolution_level,
           pokemon.evolution_other,
           pokemon.evolves_into,
-          pokemon.ability_1?.toLowerCase().split(" ").join("-"),
-          pokemon.ability_2?.toLowerCase().split(" ").join("-"),
-          pokemon.hidden_ability?.toLowerCase().split(" ").join("-"),
         ],
       )
       .then(() => {
@@ -276,27 +266,21 @@
                   );
                 })
                 .then((res) => {
-                  toastStore.trigger(
-                    getToastSettings(ToastType.SUCCESS, res as string),
-                  );
+                  toast.success(res as string);
                 })
-                .catch((e) => {
-                  toastStore.trigger(
-                    getToastSettings(ToastType.ERROR, e as string),
-                  );
+                .catch((err) => {
+                  toast.error(err as string);
                 });
             })
             .catch((err) => {
-              toastStore.trigger(
-                getToastSettings(ToastType.ERROR, err as string),
-              );
+              toast.error(err as string);
             });
         }
         originalPokemonDetails = cloneDeep(pokemon);
       })
       .then(() => generatePage())
       .catch((err) => {
-        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
+        toast.error(err as string);
       });
   }
 
@@ -326,7 +310,6 @@
       pokemon.types = pokemon.types.slice(0, -1);
     }
   }
-  $inspect(pokemon.abilities);
 
   function onAbilityChange(ability: string, ability_number: number) {
     if (ability === "None") {
@@ -371,11 +354,20 @@
       class="w-[20rem]"
     />
     <div class="grid grid-cols-2 gap-3">
-      <Button class="cursor-pointer">
+      <Button
+        class="cursor-pointer"
+        onclick={savePokemonChanges}
+        disabled={isEqual(pokemon, originalPokemonDetails)}
+      >
         <SaveIcon />
         Save Changes</Button
       >
-      <Button variant="outline" class="cursor-pointer">
+      <Button
+        variant="outline"
+        class="cursor-pointer"
+        disabled={objectIsEmpty(pokemon)}
+        onclick={generatePage}
+      >
         <FileTextIcon />
         Generate Page</Button
       >
@@ -562,32 +554,18 @@
       <Card.Root class="mt-5 h-fit w-full">
         <Card.Header>
           <Card.Title>Base Stats</Card.Title>
+          <Card.Description>Base Total: {baseTotal}</Card.Description>
         </Card.Header>
         <Card.Content class="grid grid-cols-2 gap-4">
-          {#each [{ label: "HP", value: pokemon.hp }, { label: "Attack", value: pokemon.attack }, { label: "Defense", value: pokemon.defense }, { label: "Special Attack", value: pokemon.sp_attack }, { label: "Special Defense", value: pokemon.sp_defense }, { label: "Speed", value: pokemon.speed }] as stat}
-            <div class="flex flex-col">
-              <Label
-                for={stat.label}
-                class="text-sm font-medium text-slate-700 mb-2 block"
-                >{stat.label}</Label
-              >
-              <div class="flex flex-row gap-2" id={`${stat.label}`}>
-                <Slider
-                  type="single"
-                  step={1}
-                  max={255}
-                  bind:value={stat.value}
-                />
-                <Input
-                  type="number"
-                  min={1}
-                  max={255}
-                  bind:value={stat.value}
-                  class="w-24"
-                />
-              </div>
-            </div>
-          {/each}
+          <PokemonStat label="HP" bind:value={pokemon.hp} />
+          <PokemonStat label="Attack" bind:value={pokemon.attack} />
+          <PokemonStat label="Defense" bind:value={pokemon.defense} />
+          <PokemonStat label="Special Attack" bind:value={pokemon.sp_attack} />
+          <PokemonStat
+            label="Special Defense"
+            bind:value={pokemon.sp_defense}
+          />
+          <PokemonStat label="Speed" bind:value={pokemon.speed} />
         </Card.Content>
       </Card.Root>
       <Card.Root class="mt-5 h-fit w-full">
@@ -677,6 +655,19 @@
       </Card.Root>
     </div>
   </div>
+  <Card.Root>
+    <Card.Header>
+      <Card.Title>Location</Card.Title>
+    </Card.Header>
+    <Card.Content
+      ><PokemonLocationTab
+        {pokemonLocations}
+        pokemonId={pokemon.id}
+        pokemonDexNumber={pokemon.dex_number}
+        pokemonName={pokemon.name}
+      /></Card.Content
+    >
+  </Card.Root>
 {/if}
 
 {#if false}
@@ -710,14 +701,7 @@
           generatePokemonPage={() => generatePage()}
         />
       {/if}
-      {#if tabSet === 2}
-        <PokemonLocationTab
-          {pokemonLocations}
-          pokemonId={pokemon.id}
-          pokemonDexNumber={pokemon.dex_number}
-          pokemonName={pokemon.name}
-        />
-      {/if}
+      {#if tabSet === 2}{/if}
     </div>
   </TabGroup>
 {/if}

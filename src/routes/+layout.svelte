@@ -13,9 +13,7 @@
   import {
     Modal,
     Toast,
-    getToastStore,
     initializeStores,
-    popup,
     storePopup,
   } from "@skeletonlabs/skeleton";
   import IconTreadmill from "@tabler/icons-svelte/icons/treadmill";
@@ -38,7 +36,6 @@
   import { onMount } from "svelte";
   import { relaunch } from "@tauri-apps/plugin-process";
   import { invoke } from "@tauri-apps/api/core";
-  import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import { loadWikiData } from "$lib/utils/loadWiki";
   import CreateWikiModal from "$lib/components/modals/CreateWikiModal.svelte";
   import DeleteWikiModal from "$lib/components/modals/DeleteWikiModal.svelte";
@@ -86,8 +83,6 @@
   let signingIntoGithub = $state(false);
   let osType = $state("");
 
-  const toastStore = getToastStore();
-
   let mkdocsFilePath: Promise<string> = $derived.by(async () => {
     const appData = await appDataDir();
     let mkdocsFilePath = `${appData}${$selectedWiki.name}/dist`;
@@ -123,12 +118,7 @@
     if (new_migrations_present.trim() === "true") {
       await checkAndRunMigrations()
         .then(() => {
-          toastStore.trigger(
-            getToastSettings(
-              ToastType.SUCCESS,
-              "Migrations completed successfully",
-            ),
-          );
+          toast.success("Migrations completed successfully");
           writeTextFile(
             `resources/migrations/new_migrations_present.txt`,
             "false",
@@ -138,7 +128,7 @@
           );
         })
         .catch((error) => {
-          console.error("Error running migrations:", error);
+          toast.error(`Error running migrations: ${error}`);
         });
     }
   });
@@ -165,45 +155,35 @@
         }
       })
       .catch((err) => {
-        toastStore.trigger(
-          getToastSettings(ToastType.ERROR, `Error installing update: ${err}`),
-        );
+        toast.error(`Error installing update: ${err}`);
       });
     await relaunch().catch((err) => {
-      toastStore.trigger(
-        getToastSettings(ToastType.ERROR, `Error relaunching app: ${err}`),
-      );
+      toast.error(`Error relaunching app: ${err}`);
     });
   }
 
   async function checkAndRunMigrations() {
     await invoke("check_and_run_migrations").catch((err) => {
-      toastStore.trigger(
-        getToastSettings(ToastType.ERROR, `Error running migrations: ${err}`),
-      );
+      toast.error(`Error running migrations: ${err}`);
     });
   }
 
   function loadSelectedWiki(e: any) {
     $selectedWiki = $wikis[e.target.value];
-    loadWikiData($selectedWiki, toastStore);
+    loadWikiData($selectedWiki, toast);
     goto("/");
   }
 
   async function backupWiki() {
-    toastStore.trigger(getToastSettings(ToastType.INFO, "Backing Up Wiki..."));
+    toast.info("Backing Up Wiki...");
     await invoke("backup_wiki", {
       wikiName: $selectedWiki.name,
     })
       .then(() => {
-        toastStore.trigger(
-          getToastSettings(ToastType.INFO, "Wiki Backed Up Successfully"),
-        );
+        toast.info("Wiki Backed Up Successfully");
       })
       .catch((err) => {
-        toastStore.trigger(
-          getToastSettings(ToastType.ERROR, `Error Backing Up Wiki: ${err}`),
-        );
+        toast.error(`Error Backing Up Wiki: ${err}`);
       });
   }
 
@@ -230,12 +210,7 @@
 
         if (token === undefined || token === "") {
           webview.close();
-          toastStore.trigger(
-            getToastSettings(
-              ToastType.ERROR,
-              `Failed to load token: token is ${token}`,
-            ),
-          );
+          toast.error(`Failed to load token: token is ${token}`);
         }
 
         let data = parseJwt(token as string);
