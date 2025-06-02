@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { Tab, TabGroup, getToastStore } from "@skeletonlabs/skeleton";
   import { BaseDirectory, readFile } from "@tauri-apps/plugin-fs";
   import { selectedWiki } from "../../store";
   import {
@@ -12,9 +11,6 @@
     type Pokemon,
     type PokemonMove,
   } from "../../store/pokemon";
-  import PokemonDetailsTab from "./PokemonDetailsTab.svelte";
-  import PokemonMovesTab from "./PokemonMovesTab.svelte";
-  import NumberInput from "./NumberInput.svelte";
   import { db } from "../../store/db";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
@@ -37,13 +33,12 @@
   import { types as pokemonTypes } from "../../store/types";
   import { abilitiesList as pokemonAbilities } from "../../store/abilities";
   import { toast } from "svelte-sonner";
-  import { Slider } from "$lib/components/ui/slider/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { itemsList } from "../../store/items";
   import Autocomplete from "./ui/Autocomplete.svelte";
   import PokemonStat from "./ui/PokemonStat.svelte";
 
-  let pokemonSearch: [number, string] = $state([0, ""]);
+  let pokemonSearch: [number, string] = $state([1, "bulbasaur"]);
   let searchingPokemon: string = $state("");
   let pokemonSearchOption: boolean = $state(false);
   let evolutionSearchOption: boolean = $state(false);
@@ -53,6 +48,10 @@
   let triggerRef = $state<HTMLButtonElement>(null!);
   let triggerRefEvolution = $state<HTMLButtonElement>(null!);
   let triggerRefItems = $state<HTMLButtonElement>(null!);
+
+  $effect(() => {
+    if (pokemonSearch[0] !== 0) getPokemon();
+  });
 
   let pokemon = $state({} as Pokemon);
   let abilities = $derived.by(() => {
@@ -80,7 +79,6 @@
   );
 
   let originalPokemonDetails: Pokemon = $state({} as Pokemon);
-  let pokemonMoveset: PokemonMove[] = $state([]);
   let pokemonLocations: WildEncounter[] = $state([]);
   let pokemonSprite: string = $state("");
 
@@ -133,21 +131,6 @@
       ])
       .then(async (res) => {
         pokemon = res[0];
-
-        // Gather moveset
-        await $db
-          .select<PokemonMove[]>(
-            `SELECT moves.id as id, moves.name as name, learn_method, level_learned FROM pokemon_movesets
-            INNER JOIN moves on moves.id = pokemon_movesets.move
-            WHERE pokemon = $1;`,
-            [res[0].id],
-          )
-          .then((res) => {
-            pokemonMoveset = res;
-          })
-          .catch((err) => {
-            toast.error(`Error loading Pokemon moveset!: \n ${err}`);
-          });
 
         // Reading in image separately
         pokemonSprite = await readFile(
@@ -655,53 +638,12 @@
       </Card.Root>
     </div>
   </div>
-  <Card.Root>
-    <Card.Header>
-      <Card.Title>Location</Card.Title>
-    </Card.Header>
-    <Card.Content
-      ><PokemonLocationTab
-        {pokemonLocations}
-        pokemonId={pokemon.id}
-        pokemonDexNumber={pokemon.dex_number}
-        pokemonName={pokemon.name}
-      /></Card.Content
-    >
-  </Card.Root>
-{/if}
-
-{#if false}
-  {#if pokemonSprite === "404"}
-    <p>No sprite found for {pokemon.name}</p>
-  {:else}
-    <NumberInput
-      label="Dex Number"
-      bind:value={pokemon.dex_number}
-      class="w-40 mb-5"
+  <div class="mb-5">
+    <PokemonLocationTab
+      {pokemonLocations}
+      pokemonId={pokemon.id}
+      pokemonDexNumber={pokemon.dex_number}
+      pokemonName={pokemon.name}
     />
-  {/if}
-  <TabGroup>
-    <Tab bind:group={tabSet} name="pokemon-details" value={0} class="text-sm"
-      >Details</Tab
-    >
-    <Tab bind:group={tabSet} name="pokemon-moves" value={1} class="text-sm"
-      >Moves</Tab
-    >
-    <Tab bind:group={tabSet} name="location" value={2} class="text-sm"
-      >Location</Tab
-    >
-    <div slot="panel">
-      {#if tabSet === 0}
-        <PokemonDetailsTab bind:pokemon />
-      {/if}
-      {#if tabSet === 1}
-        <PokemonMovesTab
-          bind:moveset={pokemonMoveset}
-          bind:pokemonId={pokemon.id}
-          generatePokemonPage={() => generatePage()}
-        />
-      {/if}
-      {#if tabSet === 2}{/if}
-    </div>
-  </TabGroup>
+  </div>
 {/if}

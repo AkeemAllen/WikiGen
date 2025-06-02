@@ -1,24 +1,20 @@
 <script lang="ts">
-  import { DataHandler, Pagination } from "@vincjo/datatables";
-  import ThSort from "$lib/components/ThSort.svelte";
-  import SelectInput from "$lib/components/SelectInput.svelte";
-  import TextInput from "$lib/components/TextInput.svelte";
-  import Button from "$lib/components/Button.svelte";
-  import BaseModal from "$lib/components/BaseModal.svelte";
-  import AutoComplete from "$lib/components/AutoComplete.svelte";
-  import IconEdit from "@tabler/icons-svelte/icons/edit";
-  import IconTrash from "@tabler/icons-svelte/icons/trash";
+  import { Button } from "$lib/components/ui/button/index.js";
   import { type WildEncounter, routes } from "../../store/gameRoutes";
-  import NumberInput from "./NumberInput.svelte";
-  import { getToastStore } from "@skeletonlabs/skeleton";
   import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
   import { invoke } from "@tauri-apps/api/core";
   import { selectedWiki } from "../../store";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import { generatePokemonPages } from "$lib/utils/generators";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
-
-  const toastStore = getToastStore();
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
+  import { Label } from "$lib/components/ui/label/index.js";
+  import * as Select from "$lib/components/ui/select/index.js";
+  import * as Card from "$lib/components/ui/card/index.js";
+  import TrashIcon from "@lucide/svelte/icons/trash";
+  import { toast } from "svelte-sonner";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
 
   let searchValue: string = $state("");
   let addLocationModalOpen: boolean = $state(false);
@@ -34,7 +30,7 @@
     pokemonId,
     pokemonDexNumber,
     pokemonName,
-    pokemonLocations = $bindable([])
+    pokemonLocations = $bindable([]),
   }: Props = $props();
 
   let newLocation: WildEncounter = $state({
@@ -65,20 +61,6 @@
     value: encounter_area,
   }));
 
-  const rowsPerPageOptions = [
-    { label: "5", value: 5 },
-    { label: "10", value: 10 },
-    { label: "20", value: 20 },
-    { label: "50", value: 50 },
-    { label: "100", value: 100 },
-  ];
-
-  let handler = $derived(new DataHandler(pokemonLocations, {
-    rowsPerPage: 5,
-  }));
-  let rows = $derived(handler.getRows());
-  let rowsPerPage = $derived(handler.getRowsPerPage());
-
   async function generateRoutePage(routeName: string) {
     invoke("generate_route_pages_with_handle", {
       wikiName: $selectedWiki.name,
@@ -95,9 +77,7 @@
     let location = cloneDeep(newLocation);
 
     if (!Object.keys($routes.routes).includes(location.route)) {
-      toastStore.trigger(
-        getToastSettings(ToastType.ERROR, "Route is required"),
-      );
+      toast.error("Route is required");
       return;
     }
 
@@ -106,12 +86,7 @@
         location.encounter_area
       ]?.find((encounter) => encounter.name === location.name)
     ) {
-      toastStore.trigger(
-        getToastSettings(
-          ToastType.ERROR,
-          "This Pokemon is already in this location",
-        ),
-      );
+      toast.error("This Pokemon is already in this location");
       return;
     }
 
@@ -150,12 +125,10 @@
       .then(() => {
         generatePokemonPages([pokemonId], $selectedWiki.name)
           .then(() => {
-            toastStore.trigger(
-              getToastSettings(ToastType.SUCCESS, "Pokemon page regenerated"),
-            );
+            toast.success("Pokemon page regenerated");
           })
           .catch((e) => {
-            toastStore.trigger(getToastSettings(ToastType.ERROR, e));
+            toast.error(e);
           });
       });
   }
@@ -204,12 +177,10 @@
       .then(() => {
         generatePokemonPages([pokemonId], $selectedWiki.name)
           .then(() => {
-            toastStore.trigger(
-              getToastSettings(ToastType.SUCCESS, "Pokemon page regenerated"),
-            );
+            toast.success("Pokemon page regenerated");
           })
           .catch((e) => {
-            toastStore.trigger(getToastSettings(ToastType.ERROR, e));
+            toast.error(e);
           });
       });
   }
@@ -217,7 +188,6 @@
   async function deletePokemonFromLocation(
     routeName: string,
     encounterType: string,
-    id: number,
   ) {
     let updatedEncounters = {
       ...$routes.routes[routeName].wild_encounters,
@@ -262,140 +232,235 @@
   }
 </script>
 
-<BaseModal bind:open={addLocationModalOpen} class="w-[20rem]">
-  <h2 class="text-lg font-medium leading-6 text-gray-900">New Location</h2>
-  <AutoComplete
-    bind:value={newLocation.route}
-    label="Routes"
-    popupId="newLocationPopup"
-    class="z-10 w-full text-sm"
-    options={routeListOptions}
-    onSelection={(e) => {
-      newLocation.route = e.detail.value;
-    }}
-  />
-  <SelectInput
-    bind:value={newLocation.encounter_area}
-    label="Encounter Area"
-    options={encounterTypeOptions}
-  />
-  <NumberInput
-    bind:value={newLocation.encounter_rate}
-    label="Encounter Rate"
-    placeholder="Encounter Rate"
-    max={100}
-  />
-  <TextInput
-    bind:value={newLocation.special_note}
-    label="Special Note"
-    placeholder="Special Note"
-  />
-  <Button
-    title="Add Location"
-    disabled={newLocation.route === "" ||
-      newLocation.encounter_rate <= 0 ||
-      newLocation.encounter_area === ""}
-    onClick={addPokemonToLocation}
-  />
-</BaseModal>
+<Dialog.Root bind:open={addLocationModalOpen}>
+  <Dialog.Content class="sm:max-w-[425px]">
+    <Dialog.Header>
+      <Dialog.Title>New Location</Dialog.Title>
+    </Dialog.Header>
+    <div class="grid gap-4 py-4">
+      <div>
+        <Label
+          for="route-name"
+          class="text-sm font-medium text-slate-700 mb-2 block">Route</Label
+        >
+        <Select.Root type="single" bind:value={newLocation.route}>
+          <Select.Trigger id="route-name" class="w-full">
+            {capitalizeWords(newLocation.route)}
+          </Select.Trigger>
+          <Select.Content>
+            {#each routeListOptions as route}
+              <Select.Item value={route.value} label={route.label}>
+                {capitalizeWords(route.value)}
+              </Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+      </div>
+      <div>
+        <Label
+          for="encounter-area"
+          class="text-sm font-medium text-slate-700 mb-2 block"
+          >Encounter Area</Label
+        >
+        <Select.Root type="single" bind:value={newLocation.encounter_area}>
+          <Select.Trigger id="encounter-area" class="w-full">
+            {capitalizeWords(newLocation.encounter_area)}
+          </Select.Trigger>
+          <Select.Content>
+            {#each encounterTypeOptions as encounterTypes}
+              <Select.Item
+                value={encounterTypes.value}
+                label={encounterTypes.label}
+              >
+                {capitalizeWords(encounterTypes.value)}
+              </Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+      </div>
+      <div>
+        <Label
+          for="encounter-rate"
+          class="text-sm font-medium text-slate-700 mb-2 block"
+          >Encounter Rate</Label
+        >
+        <Input
+          id="encounter-rate"
+          type="number"
+          bind:value={newLocation.encounter_rate}
+          max={100}
+          min={0}
+        />
+      </div>
+      <div>
+        <Label
+          for="special-note"
+          class="text-sm font-medium text-slate-700 mb-2 block"
+          >Special Note</Label
+        >
+        <Input
+          type="text"
+          id="special-note"
+          bind:value={newLocation.special_note}
+        />
+      </div>
+    </div>
+    <Dialog.Footer>
+      <Button
+        disabled={newLocation.route === "" ||
+          newLocation.encounter_rate <= 0 ||
+          newLocation.encounter_area === ""}
+        onclick={addPokemonToLocation}
+        class="cursor-pointer">Add Location</Button
+      >
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
 
-<BaseModal bind:open={editLocationModalOpen} class="w-[20rem]">
-  <h2 class="text-lg font-medium leading-6 text-gray-900">Edit Location</h2>
-  <AutoComplete
-    bind:value={locationToEdit.route}
-    label="Routes"
-    popupId="newLocationPopup"
-    class="z-10 w-full text-sm"
-    disabled={true}
-    options={routeListOptions}
-    onSelection={(e) => {
-      locationToEdit.route = e.detail.value;
-    }}
-  />
-  <SelectInput
-    bind:value={locationToEdit.encounter_area}
-    label="Encounter Area"
-    disabled={true}
-    options={encounterTypeOptions}
-  />
-  <NumberInput
-    bind:value={locationToEdit.encounter_rate}
-    label="Encounter Rate"
-    placeholder="Encounter Rate"
-    max={100}
-  />
-  <TextInput
-    bind:value={locationToEdit.special_note}
-    label="Special Note"
-    placeholder="Special Note"
-  />
-  <Button
-    title="Save Changes"
-    disabled={locationToEdit.route === "" ||
-      locationToEdit.encounter_rate <= 0 ||
-      locationToEdit.encounter_area === ""}
-    onClick={editPokemonLocation}
-  />
-</BaseModal>
+<Dialog.Root bind:open={editLocationModalOpen}>
+  <Dialog.Content class="sm:max-w-[425px]">
+    <Dialog.Header>
+      <Dialog.Title>Edit Location</Dialog.Title>
+    </Dialog.Header>
+    <div class="grid gap-4 py-4">
+      <div>
+        <Label
+          for="route-name"
+          class="text-sm font-medium text-slate-700 mb-2 block">Route</Label
+        >
+        <Select.Root
+          type="single"
+          disabled={true}
+          bind:value={locationToEdit.route}
+        >
+          <Select.Trigger id="route-name" class="w-full">
+            {capitalizeWords(locationToEdit.route)}
+          </Select.Trigger>
+          <Select.Content>
+            {#each routeListOptions as route}
+              <Select.Item value={route.value} label={route.label}>
+                {capitalizeWords(route.value)}
+              </Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+      </div>
+      <div>
+        <Label
+          for="encounter-area"
+          class="text-sm font-medium text-slate-700 mb-2 block"
+          >Encounter Area</Label
+        >
+        <Select.Root
+          type="single"
+          disabled={true}
+          bind:value={locationToEdit.encounter_area}
+        >
+          <Select.Trigger id="encounter-area" class="w-full">
+            {capitalizeWords(locationToEdit.encounter_area)}
+          </Select.Trigger>
+          <Select.Content>
+            {#each encounterTypeOptions as encounterTypes}
+              <Select.Item
+                value={encounterTypes.value}
+                label={encounterTypes.label}
+              >
+                {capitalizeWords(encounterTypes.value)}
+              </Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+      </div>
+      <div>
+        <Label
+          for="encounter-rate"
+          class="text-sm font-medium text-slate-700 mb-2 block"
+          >Encounter Rate</Label
+        >
+        <Input
+          id="encounter-rate"
+          type="number"
+          bind:value={locationToEdit.encounter_rate}
+          max={100}
+          min={0}
+        />
+      </div>
+      <div>
+        <Label
+          for="special-note"
+          class="text-sm font-medium text-slate-700 mb-2 block"
+          >Special Note</Label
+        >
+        <Input
+          type="text"
+          id="special-note"
+          bind:value={locationToEdit.special_note}
+        />
+      </div>
+    </div>
+    <Dialog.Footer>
+      <Button onclick={editPokemonLocation} class="cursor-pointer"
+        >Edit Location</Button
+      >
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
 
-<div class="mt-4 space-y-4 overflow-x-auto px-4">
-  <header class="flex items-center justify-between gap-4">
-    <div class="flex gap-x-3">
-      <TextInput
-        id="route-name"
+<Card.Root>
+  <Card.Header>
+    <Card.Title>Locations</Card.Title>
+  </Card.Header>
+  <Card.Content>
+    <div class="flex flex-row gap-2">
+      <Input
+        type="text"
+        placeholder="Filter Routes"
+        class="w-[20rem]"
         bind:value={searchValue}
-        inputHandler={() => handler.search(searchValue)}
-        placeholder="Search route name..."
       />
       <Button
-        title="Add Route"
-        class="mt-2"
-        onClick={() => (addLocationModalOpen = true)}
-      />
+        onclick={() => {
+          addLocationModalOpen = true;
+        }}
+        class="cursor-pointer">Add Route</Button
+      >
     </div>
-    <aside class="flex items-center gap-x-3">
-      <p class="mt-2">Show</p>
-      <SelectInput bind:value={$rowsPerPage} options={rowsPerPageOptions} />
-    </aside>
-  </header>
-  <table class="table table-hover table-compact w-full table-auto bg-white">
-    <thead>
-      <tr class="bg-white">
-        <ThSort {handler} orderBy="route">Route</ThSort>
-        <ThSort {handler} orderBy="encounter_area">Encounter Area</ThSort>
-        <ThSort {handler} orderBy="encounter_rate">Encounter Rate</ThSort>
-        <ThSort {handler} orderBy="special_note">Special Note</ThSort>
-      </tr>
-    </thead>
-    <tbody>
-      {#each $rows as row}
-        <tr>
-          <td>{row.route}</td>
-          <td>{row.encounter_area}</td>
-          <td>{row.encounter_rate}</td>
-          <td>{row.special_note}</td>
-          <td
-            class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-            onclick={() => {
-              locationToEdit = { ...row };
-              editLocationModalOpen = true;
+    <div class="grid grid-cols-4 gap-2 mt-5">
+      {#each pokemonLocations.filter((location) => location.route
+          .toLowerCase()
+          .includes(searchValue.toLowerCase())) as location}
+        <button
+          class="hover:border-indigo-500 ease-in-out group rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 bg-white border group relative"
+          onclick={() => {
+            locationToEdit = location;
+            editLocationModalOpen = true;
+          }}
+        >
+          <div class="grid grid-cols-2 gap-2">
+            <div class="text-left">
+              {location.route}
+              <p class="text-sm text-gray-500">
+                {location.special_note}
+              </p>
+            </div>
+            <div class="flex justify-end text-sm text-gray-500">
+              {capitalizeWords(location.encounter_area)}: {location.encounter_rate}%
+            </div>
+          </div>
+          <Button
+            class="invisible absolute -right-2 -top-5 z-10 rounded-md bg-red-200 hover:scale-110 group-hover:visible cursor-pointer hover:bg-red-400 p-0"
+            onclick={(e) => {
+              e.stopPropagation();
+              deletePokemonFromLocation(
+                location.route,
+                location.encounter_area,
+              );
             }}
           >
-            <IconEdit size={18} class="text-gray-500" />
-          </td>
-          <td
-            class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-            onclick={() => {
-              deletePokemonFromLocation(row.route, row.encounter_area, row.id);
-            }}
-          >
-            <IconTrash size={18} class="text-gray-500" />
-          </td>
-        </tr>
+            <TrashIcon />
+          </Button>
+        </button>
       {/each}
-    </tbody>
-  </table>
-  <footer class="flex">
-    <Pagination {handler} />
-  </footer>
-</div>
+    </div>
+  </Card.Content>
+</Card.Root>
