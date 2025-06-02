@@ -6,17 +6,13 @@
     type Routes,
     type WildEncounter,
   } from "../../store/gameRoutes";
-  import {
-    pokemonList,
-    type Pokemon,
-    type PokemonMove,
-  } from "../../store/pokemon";
+  import { pokemonList, type Pokemon } from "../../store/pokemon";
   import { db } from "../../store/db";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
   import objectIsEmpty from "$lib/utils/objectIsEmpty";
-  import PokemonLocationTab from "./PokemonLocationTab.svelte";
+  import PokemonLocation from "./PokemonLocations.svelte";
   import {
     generatePokemonPages,
     generateRoutePages,
@@ -38,7 +34,7 @@
   import Autocomplete from "./ui/Autocomplete.svelte";
   import PokemonStat from "./ui/PokemonStat.svelte";
 
-  let pokemonSearch: [number, string] = $state([1, "bulbasaur"]);
+  let pokemonSearch: [number, string] = $state([0, ""]);
   let searchingPokemon: string = $state("");
   let pokemonSearchOption: boolean = $state(false);
   let evolutionSearchOption: boolean = $state(false);
@@ -48,10 +44,6 @@
   let triggerRef = $state<HTMLButtonElement>(null!);
   let triggerRefEvolution = $state<HTMLButtonElement>(null!);
   let triggerRefItems = $state<HTMLButtonElement>(null!);
-
-  $effect(() => {
-    if (pokemonSearch[0] !== 0) getPokemon();
-  });
 
   let pokemon = $state({} as Pokemon);
   let abilities = $derived.by(() => {
@@ -82,7 +74,6 @@
   let pokemonLocations: WildEncounter[] = $state([]);
   let pokemonSprite: string = $state("");
 
-  let tabSet: number = $state(0);
   let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
     label: capitalizeWords(name),
     value: id,
@@ -639,7 +630,7 @@
     </div>
   </div>
   <div class="mb-5">
-    <PokemonLocationTab
+    <PokemonLocation
       {pokemonLocations}
       pokemonId={pokemon.id}
       pokemonDexNumber={pokemon.dex_number}
