@@ -4,7 +4,7 @@
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import * as Tabs from "$lib/components/ui/tabs/index.js";
   import NewPokemonPanel from "$lib/components/NewPokemonPanel.svelte";
-  // import ModifyMovesets from "$lib/components/ModifyMovesets.svelte";
+  import ModifyMovesets from "$lib/components/ModifyMovesets.svelte";
 </script>
 
 <Tabs.Root value="pokemon" class="w-full">
@@ -27,6 +27,6 @@
     <NewPokemonPanel />
   </Tabs.Content>
   <Tabs.Content value="movesets" class="mx-5">
-    <!-- <ModifyMovesets /> -->
+    <ModifyMovesets />
   </Tabs.Content>
 </Tabs.Root>
