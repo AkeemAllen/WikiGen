@@ -74,10 +74,12 @@
   let pokemonLocations: WildEncounter[] = $state([]);
   let pokemonSprite: string = $state("");
 
-  let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
-    label: capitalizeWords(name),
-    value: id,
-  }));
+  let pokemonListOptions = $derived(
+    $pokemonList.map(([id, _, name]) => ({
+      label: capitalizeWords(name),
+      value: id,
+    })),
+  );
 
   let options = $derived(
     pokemonListOptions
