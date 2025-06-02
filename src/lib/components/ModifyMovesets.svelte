@@ -5,7 +5,6 @@
     type PokemonMove,
   } from "../../store/pokemon";
   import { Button } from "$lib/components/ui/button/index.js";
-  import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import { db } from "../../store/db";
   import { moveList } from "../../store/moves";
@@ -15,11 +14,10 @@
   import { addMoves, deleteMoves, shiftMoves } from "$lib/utils";
   import { generatePokemonPages } from "$lib/utils/generators";
   import NumberInput from "./NumberInput.svelte";
-  import IconTrash from "@tabler/icons-svelte/icons/trash";
-  import IconX from "@tabler/icons-svelte/icons/x";
+  import IconTrash from "@lucide/svelte/icons/trash";
+  import IconX from "@lucide/svelte/icons/x";
   import { onDestroy } from "svelte";
   import * as Card from "$lib/components/ui/card/index.js";
-  import * as Select from "$lib/components/ui/select/index.js";
   import Autocomplete from "./ui/Autocomplete.svelte";
   import SaveIcon from "@lucide/svelte/icons/save";
   import { Input } from "$lib/components/ui/input/index.js";
@@ -343,7 +341,7 @@
 
 <div class="grid grid-cols-3 gap-4">
   <section class="col-span-2">
-    <div class="grid grid-cols-2 gap-4 mb-5">
+    <div class="grid gap-4 mb-5">
       {#each Object.entries($pokemonUnderMoveModification) as [name, { currentMoves: moveset, sprite }]}
         <div
           class="relative text-center mt-4 p-3 bg-white rounded-xl shadow-sm text-card-foreground"
@@ -372,7 +370,7 @@
                 ondrop={(e) => onDragDropMachines(e, name)}
                 role="none"
               >
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-5 gap-2">
                   {#each moveset.filter((pokemonMove) => pokemonMove.learn_method === "machine") as pokemonMove}
                     <div
                       class="relative rounded-md mt-2 shadow-sm p-1 self-center border border-indigo-200 group"
@@ -398,7 +396,7 @@
                 ondrop={(e) => onDragDropLevels(e, name)}
                 role="none"
               >
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-5 gap-2">
                   {#each moveset.filter((pokemonMove) => pokemonMove.learn_method === "level-up") as pokemonMove}
                     <div
                       class="relative rounded-md mt-2 shadow-sm p-1 self-center border border-indigo-200 flex flex-row justify-between align-middle group"
