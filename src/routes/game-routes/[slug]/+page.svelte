@@ -20,6 +20,8 @@
   import { base64ToArray } from "$lib/utils";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
+  import * as Tabs from "$lib/components/ui/tabs/index.js";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
 
   const toastStore = getToastStore();
   let { data } = $props();
@@ -133,79 +135,73 @@
   }
 </script>
 
-<strong class="text-l flex flex-row items-center gap-5">
+<strong class="bg-white text-l flex flex-row items-center gap-5 px-5 pt-5">
   <a href="/game-routes" class="hover:cursor-pointer">
     <IconArrowLeft size={20} />
   </a>
   {data.title}</strong
 >
-<TabGroup class="mt-4">
-  <Tab bind:group={tabSet} name="wild-encounters" value={0} class="text-sm"
-    >Wild Encounters</Tab
-  >
-  <Tab bind:group={tabSet} name="trainer-encounters" value={1} class="text-sm"
-    >Trainer Encounters</Tab
-  >
-  <Tab bind:group={tabSet} name="properties" value={2} class="text-sm"
-    >Properties</Tab
-  >
-  <div slot="panel">
-    {#if tabSet === 0}
-      <WildEncounters routeName={data.title} />
-    {/if}
-    {#if tabSet === 1}
-      <TrainerEncounters routeName={data.title} />
-    {/if}
-    {#if tabSet === 2}
-      <Button title="Save Changes" onClick={saveChanges} class="w-32" />
-      <div class="mb-4 mt-4">
-        <label
-          for="sprite-image"
-          class="block text-sm font-medium leading-6 text-gray-900"
-          >Route Image</label
+<Tabs.Root value="wild-encounters" class="w-full">
+  <div class="w-full bg-white border-b">
+    <Tabs.List class="w-[30rem] rounded-sm ml-5 my-3">
+      {#each ["wild-encounters", "trainer-encounters", "properties"] as tab}
+        <Tabs.Trigger value={tab} class="rounded-sm  cursor-pointer"
+          >{capitalizeWords(tab)}</Tabs.Trigger
         >
-        {#if newRouteImage !== ""}
-          <img src={newRouteImage} alt="Route" />
-        {/if}
-        {#if newRouteImage !== ""}
-          <button
-            class="flex flex-row items-center gap-2 text-white bg-[#111827] rounded-2xl text-[14px] pt-[4px] pb-[5px] pl-3 pr-3"
-            onclick={() => {
-              newRouteImage = "";
-            }}
-          >
-            <IconTrash size={14} />
-            Clear Image</button
-          >
-        {/if}
-        <input
-          id="sprite-image"
-          type="file"
-          accept="image/png"
-          class="mt-2"
-          onchange={onImageUpload}
-        />
-      </div>
-      <div class="w-36">
-        <SelectInput
-          label="Render Route Page"
-          bind:value={$routes.routes[data.title].render}
-          options={[
-            {
-              value: true,
-              label: "True",
-            },
-            {
-              value: false,
-              label: "False",
-            },
-          ]}
-        />
-      </div>
-    {/if}
+      {/each}
+    </Tabs.List>
   </div>
-  <!-- {#snippet panel()}
-
-
-  {/snippet} -->
-</TabGroup>
+  <Tabs.Content value="wild-encounters" class="mx-5">
+    <WildEncounters routeName={data.title} />
+  </Tabs.Content>
+  <Tabs.Content value="trainer-encounters" class="mx-5">
+    <TrainerEncounters routeName={data.title} />
+  </Tabs.Content>
+  <Tabs.Content value="properties" class="mx-5">
+    <Button title="Save Changes" onClick={saveChanges} class="w-32" />
+    <div class="mb-4 mt-4">
+      <label
+        for="sprite-image"
+        class="block text-sm font-medium leading-6 text-gray-900"
+        >Route Image</label
+      >
+      {#if newRouteImage !== ""}
+        <img src={newRouteImage} alt="Route" />
+      {/if}
+      {#if newRouteImage !== ""}
+        <button
+          class="flex flex-row items-center gap-2 text-white bg-[#111827] rounded-2xl text-[14px] pt-[4px] pb-[5px] pl-3 pr-3"
+          onclick={() => {
+            newRouteImage = "";
+          }}
+        >
+          <IconTrash size={14} />
+          Clear Image</button
+        >
+      {/if}
+      <input
+        id="sprite-image"
+        type="file"
+        accept="image/png"
+        class="mt-2"
+        onchange={onImageUpload}
+      />
+    </div>
+    <div class="w-36">
+      <SelectInput
+        label="Render Route Page"
+        bind:value={$routes.routes[data.title].render}
+        options={[
+          {
+            value: true,
+            label: "True",
+          },
+          {
+            value: false,
+            label: "False",
+          },
+        ]}
+      />
+    </div>
+  </Tabs.Content>
+</Tabs.Root>

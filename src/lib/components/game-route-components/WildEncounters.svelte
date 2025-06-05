@@ -1,33 +1,34 @@
 <script lang="ts">
-  import {
-    getToastStore,
-    type AutocompleteOption,
-  } from "@skeletonlabs/skeleton";
   import { BaseDirectory, readFile } from "@tauri-apps/plugin-fs";
   import { selectedWiki } from "../../../store";
   import { routes, type WildEncounter } from "../../../store/gameRoutes";
   import { pokemonList } from "../../../store/pokemon";
-  import Button from "../Button.svelte";
-  import NumberInput from "../NumberInput.svelte";
-  import SelectInput from "../SelectInput.svelte";
-  import IconTrash from "@tabler/icons-svelte/icons/trash";
-  import AutoComplete from "../AutoComplete.svelte";
-  import TextInput from "../TextInput.svelte";
-  import BaseModal from "../BaseModal.svelte";
-  import { shortcut } from "@svelte-put/shortcut";
+  import { Button } from "$lib/components/ui/button/index.js";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
-  import WildEncounterAreaMenu from "../modals/WildEncounterAreaMenu.svelte";
   import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
-  import { getToastSettings, ToastType } from "$lib/utils/toasts";
+  import * as Card from "$lib/components/ui/card/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
+  import { toast } from "svelte-sonner";
+  import Autocomplete from "$lib/components/ui/Autocomplete.svelte";
+  import SaveIcon from "@lucide/svelte/icons/save";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import * as Select from "$lib/components/ui/select/index.js";
+  import { Label } from "$lib/components/ui/label";
+  import EditIcon from "@lucide/svelte/icons/edit";
+  import XIcon from "@lucide/svelte/icons/x";
+  import WildEncounterAreaMenu from "../modals/WildEncounterAreaMenu.svelte";
 
-  interface Props {
+  type Props = {
     routeName?: string;
-  }
+  };
 
   let { routeName = $bindable("") }: Props = $props();
   let pokemonName: string = $state("");
+  let pokemonSearchOpen: boolean = $state(false);
+  let triggerRef = $state<HTMLButtonElement>(null!);
+  let searchingPokemon = $state("");
   let encounterArea: string = $state("grass");
   let currentWildEncounterIndex: number = $state(0);
   let currentEncounterType: string = $state("");
@@ -45,23 +46,23 @@
   let originalRouteWildEncounters = $state(
     cloneDeep($routes.routes[routeName].wild_encounters),
   );
-  let pokemonListOptions: AutocompleteOption<string | number>[] =
-    $pokemonList.map(([id, _, name]) => ({
-      label: capitalizeWords(name),
-      value: id,
-    }));
+  let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
+    label: capitalizeWords(name),
+    value: id,
+  }));
+
+  let options = $derived(
+    pokemonListOptions
+      .filter((pokemon) =>
+        pokemon.label.toLowerCase().includes(searchingPokemon.toLowerCase()),
+      )
+      .slice(0, 8),
+  );
 
   const encounterAreas = $routes.encounter_areas.map((type) => ({
     label: type,
     value: type,
   }));
-
-  const toastStore = getToastStore();
-  function onPokemonNameSelected(
-    event: CustomEvent<AutocompleteOption<string | number>>,
-  ): void {
-    pokemonName = event.detail.label;
-  }
 
   async function addEncounter() {
     let searchedPokemon = $pokemonList.find(
@@ -70,9 +71,7 @@
     );
 
     if (searchedPokemon === undefined) {
-      toastStore.trigger(
-        getToastSettings(ToastType.ERROR, "Pokemon not found"),
-      );
+      toast.error("Pokemon not found");
       return;
     }
 
@@ -138,16 +137,14 @@
       .then(() => {
         generateRoutePages([routeName], $selectedWiki.name)
           .then((res) => {
-            toastStore.trigger(
-              getToastSettings(ToastType.SUCCESS, res as string),
-            );
+            toast.success(res as string);
           })
           .catch((e) => {
-            toastStore.trigger(getToastSettings(ToastType.ERROR, e as string));
+            toast.error(e as string);
           });
       })
       .catch((e) => {
-        toastStore.trigger(getToastSettings(ToastType.ERROR, e as string));
+        toast.error(e as string);
       });
   }
 
@@ -172,149 +169,189 @@
   }
 </script>
 
-<BaseModal bind:open={editEncounterModalOpen}>
-  <NumberInput
-    label="Encounter Rate"
-    bind:value={
-      routeWildEncounters[currentEncounterType][currentWildEncounterIndex]
-        .encounter_rate
-    }
-    class="w-32"
-    max={100}
-  />
-  <Button
-    title="Save Changes"
-    onClick={() => {
-      routeWildEncounters[currentEncounterType]
-        .sort(
-          (encounter1, encounter2) =>
-            encounter1.encounter_rate - encounter2.encounter_rate,
-        )
-        .reverse();
-      saveChanges();
-      editEncounterModalOpen = false;
-    }}
-    disabled={isEqual(routeWildEncounters, originalRouteWildEncounters) &&
-      isEqual(areaLevels, originalAreaLevels)}
-  />
-</BaseModal>
-
-<div
-  class="sticky top-0 z-50 flex flex-row gap-x-5 rounded-md bg-white pb-1 shadow-sm"
->
-  <div class="w-40">
-    <SelectInput
-      id="encounter-area"
-      label="Encounter Area"
-      bind:value={encounterArea}
-      options={encounterAreas}
+<Dialog.Root bind:open={editEncounterModalOpen}>
+  <Dialog.Content class="w-[15rem]">
+    <Label
+      for="encounter-rate"
+      class="text-sm font-medium text-slate-700 block"
+    >
+      Encounter Rate
+    </Label>
+    <Input
+      type="number"
+      id="encounter-rate"
+      bind:value={
+        routeWildEncounters[currentEncounterType][currentWildEncounterIndex]
+          .encounter_rate
+      }
+      class="w-full"
+      max={100}
     />
-  </div>
+    <Dialog.Footer>
+      <Button
+        type="submit"
+        onclick={() => {
+          routeWildEncounters[currentEncounterType]
+            .sort(
+              (encounter1, encounter2) =>
+                encounter1.encounter_rate - encounter2.encounter_rate,
+            )
+            .reverse();
+          saveChanges();
+          editEncounterModalOpen = false;
+        }}
+        disabled={isEqual(routeWildEncounters, originalRouteWildEncounters) &&
+          isEqual(areaLevels, originalAreaLevels)}>Save Changes</Button
+      >
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
 
-  <AutoComplete
-    label="Pokemon for current encounter area"
-    placeholder="Pokemon Name"
-    bind:value={pokemonName}
-    options={pokemonListOptions}
-    popupId="popupAutoComplete"
-    onSelection={onPokemonNameSelected}
-    showChevron={false}
-  />
-  <NumberInput
-    label="Encounter Rate"
-    bind:value={encounterRate}
-    class="w-32"
-    max={100}
-  />
-  <Button
-    class="mt-8 w-32"
-    title="Add Encounter"
-    disabled={pokemonName === ""}
-    onClick={addEncounter}
-  />
-  <Button
-    class="mt-8 w-32"
-    title="Save Changes"
-    disabled={isEqual(routeWildEncounters, originalRouteWildEncounters) &&
-      isEqual(areaLevels, originalAreaLevels)}
-    onClick={saveChanges}
-  />
-</div>
-
-<div class="mt-5 flex flex-col gap-y-5">
-  {#each Object.entries(routeWildEncounters) as [_encounterType, encounters], index}
-    <div>
-      <strong class="flex flex-row items-center gap-x-4">
-        {capitalizeWords(_encounterType)} Encounters
-        <WildEncounterAreaMenu
-          {index}
-          encounterArea={_encounterType}
-          {routeName}
-        />
-      </strong>
-      <TextInput
-        bind:value={areaLevels[_encounterType]}
-        placeholder="Lv."
-        class="w-20"
-      />
-      <div class="mt-2 grid grid-cols-6 gap-5">
-        {#each encounters as encounter, index}
-          <button
-            class="group card relative grid !bg-transparent p-2 shadow-md transition ease-in-out hover:scale-110 hover:cursor-pointer"
-            onclick={() => {
-              editEncounterModalOpen = true;
-              currentEncounterType = _encounterType;
-              currentWildEncounterIndex = index;
-            }}
-          >
-            {#await getSpriteImage(encounter.name) then spriteUrl}
-              <img
-                src={spriteUrl}
-                alt={encounter.name}
-                class="m-0 justify-self-center"
-              />
-            {/await}
-            <div class="w-full rounded-md border-2">
-              <p class="text-center">
-                {capitalizeWords(encounter.name)}
-              </p>
-              <p class="text-center">
-                {encounter.encounter_rate}%
-              </p>
-            </div>
-            <!-- svelte-ignore a11y_click_events_have_key_events -->
-            <a
-              class="invisible absolute right-2 top-2 z-20 rounded-md bg-red-200 p-1 hover:scale-110 group-hover:visible"
-              type="button"
-              onclick={(e) => {
-                e.stopPropagation();
-                deleteEncounter(encounter.name, _encounterType);
-              }}
-            >
-              <IconTrash size={16} color="grey" />
-            </a>
-          </button>
-        {/each}
+<Card.Root>
+  <Card.Content class="flex flex-row gap-3">
+    <section class="flex flex-row gap-5 justify-between">
+      <div>
+        <Label
+          for="encounter-area"
+          class="text-sm font-medium text-slate-700 mb-2 block"
+          >Encounter Area</Label
+        >
+        <Select.Root type="single" bind:value={encounterArea}>
+          <Select.Trigger id="encounter-area" class="w-[11rem]">
+            {capitalizeWords(encounterArea)}
+          </Select.Trigger>
+          <Select.Content>
+            {#each encounterAreas as area}
+              <Select.Item value={area.value} label={area.label}>
+                {capitalizeWords(area.label)}
+              </Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
       </div>
-      <div></div>
-    </div>
-  {/each}
-</div>
+      <Autocomplete
+        open={pokemonSearchOpen}
+        {triggerRef}
+        value={pokemonName}
+        label="Wild Pokemon"
+        bind:searcher={searchingPokemon}
+        {options}
+        placeholder="Search Pokemon"
+        onSelect={(option) => {
+          pokemonName = option.label;
+        }}
+        class="w-[10rem]"
+      />
+      <div class="flex flex-col">
+        <Label
+          for="encounter-rate"
+          class="text-sm font-medium text-slate-700 mb-2 block"
+          >Encounter Rate</Label
+        >
 
-<svelte:window
-  use:shortcut={{
-    trigger: {
-      key: "Enter",
-      modifier: ["ctrl", "meta"],
-      callback: () => {
-        if (
-          isEqual(routeWildEncounters, originalRouteWildEncounters) &&
-          isEqual(areaLevels, originalAreaLevels)
-        ) {
-          return;
-        }
-        saveChanges();
-      },
-    },
-  }}
-/>
+        <Input
+          type="number"
+          id="encounter-rate"
+          bind:value={encounterRate}
+          max={100}
+          class="w-40"
+        />
+      </div>
+      <div class="grid grid-cols-2 gap-3 mt-7">
+        <Button class="cursor-pointer" onclick={addEncounter}>
+          Add Encounter</Button
+        >
+        <Button
+          variant="outline"
+          class="cursor-pointer"
+          disabled={isEqual(routeWildEncounters, originalRouteWildEncounters) &&
+            isEqual(areaLevels, originalAreaLevels)}
+          onclick={saveChanges}
+        >
+          <SaveIcon />
+          Save Changes</Button
+        >
+      </div>
+    </section></Card.Content
+  >
+</Card.Root>
+
+<main class=" mt-5 grid grid-cols-3 gap-5">
+  {#each Object.entries(routeWildEncounters) as [_encounterType, encounters], index}
+    <Card.Root>
+      <Card.Header>
+        <div class="flex flex-row justify-between">
+          <Card.Title class="text-slate-900 text-lg"
+            >{capitalizeWords(_encounterType)} Encounters</Card.Title
+          >
+          <WildEncounterAreaMenu encounterArea={_encounterType} {routeName} />
+        </div>
+        <Card.Description>
+          <Input
+            type="text"
+            bind:value={areaLevels[_encounterType]}
+            placeholder="Lv."
+            class="w-20"
+          />
+        </Card.Description>
+      </Card.Header>
+      <Card.Content>
+        <div class="space-y-2 max-h-80 overflow-y-auto">
+          {#each encounters as encounter, index}
+            <div
+              class="flex items-center gap-3 p-2 bg-slate-100 dark:bg-slate-800/60 rounded-lg group hover:bg-slate-200 dark:hover:bg-slate-700/80 transition-colors"
+            >
+              {#await getSpriteImage(encounter.name) then spriteUrl}
+                <img
+                  src={spriteUrl}
+                  alt={encounter.name}
+                  class="size-13 object-contain"
+                />
+              {/await}
+              <div class="flex-1 min-w-0">
+                <div
+                  class="font-medium text-slate-900 dark:text-slate-100 truncate"
+                >
+                  {capitalizeWords(encounter.name)}
+                </div>
+                <div
+                  class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400"
+                >
+                  <span class="flex items-center gap-1">
+                    {encounter.encounter_rate}%
+                  </span>
+                </div>
+              </div>
+              <div
+                class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  class="h-6 w-6 p-0 cursor-pointer"
+                  onclick={() => {
+                    editEncounterModalOpen = true;
+                    currentEncounterType = _encounterType;
+                    currentWildEncounterIndex = index;
+                  }}
+                >
+                  <EditIcon class="w-3 h-3" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  class="h-6 w-6 p-0 text-red-600 hover:text-red-700 cursor-pointer"
+                  onclick={() => {
+                    deleteEncounter(encounter.name, _encounterType);
+                  }}
+                >
+                  <XIcon class="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+          {/each}
+        </div>
+      </Card.Content>
+    </Card.Root>
+  {/each}
+</main>

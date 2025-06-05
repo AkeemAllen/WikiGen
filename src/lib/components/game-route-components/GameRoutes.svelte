@@ -173,10 +173,7 @@
           <button
             class="rounded-md p-1 mr-2 hover:cursor-pointer hover:bg-slate-300"
           >
-            <EllipsisIcon
-              class="text-slate-400 size-4"
-              onclick={() => console.log("test")}
-            />
+            <EllipsisIcon class="text-slate-400 size-4" />
           </button>
         </Popover.Trigger>
         <Popover.Content class="w-[10rem] flex flex-col gap-2">
@@ -217,22 +214,5 @@
         </Popover.Content>
       </Popover.Root>
     </div>
-    <!-- <div class="card w-44 grid-cols-1 p-4" data-popup="routeMenu-{index}">
-      <button
-        class="w-full rounded-md bg-gray-100 px-3 py-1 text-start text-sm hover:cursor-pointer hover:bg-gray-300"
-        onclick={() => {
-          routeBeingEdited = routeName;
-          newRouteName = routeName;
-        }}>Rename</button
-      >
-      <button
-        class="w-full rounded-md bg-gray-100 px-3 py-1 text-start text-sm hover:cursor-pointer hover:bg-gray-300"
-        onclick={() => {
-          positionModalOpen = true;
-          routeToUpdate = routeName;
-          oldRoutePosition = $routes.routes[routeName].position;
-        }}>Change Position</button
-      >
-    </div> -->
   {/each}
 </div>

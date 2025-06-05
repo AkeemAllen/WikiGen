@@ -1,30 +1,22 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
-  import { getToastStore, popup } from "@skeletonlabs/skeleton";
-  import IconDots from "@tabler/icons-svelte/icons/dots";
-  import BaseModal from "$lib/components/BaseModal.svelte";
-  import AutoComplete from "$lib/components/AutoComplete.svelte";
-  import Button from "$lib/components/Button.svelte";
+  import { Button } from "$lib/components/ui/button/index";
   import { routes, type Routes } from "../../../store/gameRoutes";
   import { selectedWiki } from "../../../store";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
-  import { getToastSettings, ToastType } from "$lib/utils/toasts";
+  import * as Dialog from "$lib/components/ui/dialog/index";
+  import * as Select from "$lib/components/ui/select/index";
+  import { Label } from "../ui/label";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
+  import CopyIcon from "@lucide/svelte/icons/copy";
+  import { toast } from "svelte-sonner";
 
-  const toastStore = getToastStore();
-
-  interface Props {
-    index: number;
+  type Props = {
     routeName: string;
     encounterArea: string;
-  }
+  };
 
-  let { index, routeName, encounterArea }: Props = $props();
-
-  run(() => {
-    console.log({ routeName, encounterArea });
-  });
+  let { routeName, encounterArea }: Props = $props();
 
   let copyToRouteModalOpen = $state(false);
   let routeToCopyTo: string = $state("");
@@ -44,11 +36,7 @@
         encounterArea,
       )
     ) {
-      toastStore.trigger({
-        message: "This encounter area already exists in the selected route",
-        timeout: 3000,
-        background: "variant-filled-error",
-      });
+      toast.error("This encounter area already exists in the selected route");
       return;
     }
 
@@ -61,61 +49,66 @@
       .then(() => {
         generateRoutePages([routeToCopyTo], $selectedWiki.name)
           .then((res) => {
-            toastStore.trigger(
-              getToastSettings(ToastType.SUCCESS, res as string),
-            );
+            toast.success(res as string);
           })
           .catch((e) => {
-            toastStore.trigger(getToastSettings(ToastType.ERROR, e as string));
+            toast.error(e as string);
           });
       })
       .catch((err) => {
-        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
+        toast.error(err as string);
       });
     copyToRouteModalOpen = false;
     routeToCopyTo = "";
   }
 </script>
 
-<!-- Copy To Route Modal -->
-<BaseModal bind:open={copyToRouteModalOpen} class="w-[25rem]">
-  <AutoComplete
-    bind:value={routeToCopyTo}
-    label="Routes"
-    popupId="newLocationPopup"
-    class="z-10 w-full text-sm"
-    options={routeListOptions}
-    onSelection={(e) => {
-      routeToCopyTo = e.detail.value;
-    }}
-  />
-  <Button
-    class="w-32"
-    title="Copy To Route"
-    disabled={routeToCopyTo === ""}
-    onClick={copyToRoute}
-  />
-</BaseModal>
+<Dialog.Root bind:open={copyToRouteModalOpen}>
+  <Dialog.Content class="w-[20rem]">
+    <Dialog.Header>
+      <Dialog.Title>Copy Encounters</Dialog.Title>
+      <Dialog.Description>Copy to another route</Dialog.Description>
+    </Dialog.Header>
+    <Label for="routes" class="text-sm font-medium text-slate-700 block"
+      >Routes</Label
+    >
+    <Select.Root type="single" bind:value={routeToCopyTo}>
+      <Select.Trigger id="routes" class="w-full">
+        {#if routeToCopyTo === ""}
+          Select Route
+        {:else}
+          {capitalizeWords(routeToCopyTo)}
+        {/if}
+      </Select.Trigger>
+      <Select.Content>
+        {#each routeListOptions as option}
+          <Select.Item
+            value={option.value}
+            label={option.label}
+            onselect={() => {
+              routeToCopyTo = option.label;
+            }}
+          >
+            {capitalizeWords(option.label)}
+          </Select.Item>
+        {/each}
+      </Select.Content>
+    </Select.Root>
+    <Dialog.Footer>
+      <Button
+        type="submit"
+        disabled={routeToCopyTo === ""}
+        onclick={copyToRoute}>Copy</Button
+      >
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
 
 <button
-  class="hover:cursor-pointer"
-  use:popup={{
-    event: "click",
-    target: "wildEncounterAreaMenu" + index,
-    placement: "right",
+  class="rounded-md p-1 mr-2 hover:cursor-pointer hover:bg-slate-200"
+  onclick={() => {
+    copyToRouteModalOpen = true;
   }}
 >
-  <IconDots size={20} color="gray" />
+  <CopyIcon class="text-slate-400 size-5 self-center" />
 </button>
-<div
-  class="card z-10 w-44 bg-white p-2"
-  data-popup="wildEncounterAreaMenu{index}"
->
-  <button
-    class="w-full rounded-md p-2 text-left text-sm hover:bg-slate-300"
-    onclick={() => {
-      copyToRouteModalOpen = true;
-      console.log(routeName, copyToRouteModalOpen);
-    }}>Copy To Route</button
-  >
-</div>
