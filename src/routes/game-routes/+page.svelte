@@ -1,19 +1,16 @@
 <script lang="ts">
-  import { run } from "svelte/legacy";
-
-  import BaseModal from "$lib/components/BaseModal.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
-  import TextInput from "$lib/components/TextInput.svelte";
-  import IconTrash from "@tabler/icons-svelte/icons/trash";
+  import TrashIcon from "@lucide/svelte/icons/trash";
   import { selectedWiki } from "../../store";
   import { routes } from "../../store/gameRoutes";
   import { sortRoutesByPosition } from "$lib/utils";
-  import NumberInput from "$lib/components/NumberInput.svelte";
   import GameRoutes from "$lib/components/game-route-components/GameRoutes.svelte";
   import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
-  import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import * as Card from "$lib/components/ui/card/index.js";
   import { toast } from "svelte-sonner";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import Input from "$lib/components/ui/input/input.svelte";
+  import { Label } from "$lib/components/ui/label";
 
   let routeName: string = $state("");
   let routeToUpdate: string = $state("");
@@ -22,7 +19,6 @@
   let positionModalOpen: boolean = $state(false);
   let newEncounterType: string = $state("");
   let oldRoutePosition: number = $state(0);
-  let loading = $state(false);
 
   async function createNewRoute() {
     if (routeName.trim() === "") {
@@ -125,65 +121,92 @@
   }
 </script>
 
-<!-- New Route Modal -->
-<BaseModal bind:open={newRouteModalOpen}>
-  <TextInput
-    bind:value={routeName}
-    label="Route Name"
-    inputHandler={capitalizeWords}
-  />
-  <Button
-    onclick={() => {
-      createNewRoute();
-    }}
-    disabled={routeName === ""}
-  >
-    Save New Route
-  </Button>
-</BaseModal>
-
-<!-- Position Modal -->
-<BaseModal bind:open={positionModalOpen}>
-  <NumberInput
-    bind:value={$routes.routes[routeToUpdate].position}
-    label="Route Position"
-  />
-  <Button
-    onclick={() => {
-      updatePosition();
-      positionModalOpen = false;
-    }}
-  >
-    Update Route Position
-  </Button>
-</BaseModal>
-
-<!-- Encounter Area Modal -->
-<BaseModal bind:open={encounterTypeModalOpen}>
-  <div class="flex flex-row gap-3">
-    <Button
-      class="mt-2 w-44"
-      onclick={addNewEncounterType}
-      disabled={newEncounterType === ""}
+<Dialog.Root bind:open={newRouteModalOpen}>
+  <Dialog.Content class="w-[20rem]">
+    <form
+      class="w-full flex flex-col gap-4"
+      onsubmit={(event) => {
+        event.preventDefault();
+        createNewRoute();
+      }}
     >
-      Add New Encounter
-    </Button>
-    <TextInput bind:value={newEncounterType} placeholder="New Encounter Area" />
-  </div>
-  <div class="grid grid-cols-2 gap-3">
-    {#each $routes.encounter_areas as encounterType}
-      <div class="card flex flex-row items-center justify-between px-2 py-1">
-        {encounterType}
-        <button
-          class="btn rounded-sm p-2 hover:cursor-pointer hover:bg-gray-300"
-          onclick={() => deleteEncounterType(encounterType)}
+      <div>
+        <Label
+          for="routes"
+          class="text-sm font-medium mb-2 text-slate-700 block">Routes</Label
         >
-          <IconTrash size={16} />
-        </button>
+        <Input
+          id="routes"
+          type="text"
+          placeholder="Enter route name"
+          bind:value={routeName}
+          oninput={capitalizeWords}
+        />
       </div>
-    {/each}
-  </div>
-</BaseModal>
+      <Button type="submit" disabled={routeName === ""}>Save New Route</Button>
+    </form>
+  </Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root bind:open={positionModalOpen}>
+  <Dialog.Content class="w-[20rem]">
+    <form
+      class="w-full flex flex-col gap-4"
+      onsubmit={(event) => {
+        event.preventDefault();
+        updatePosition();
+        positionModalOpen = false;
+      }}
+    >
+      <div>
+        <Label
+          for="route-position"
+          class="text-sm font-medium mb-2 text-slate-700 block"
+          >Route Position</Label
+        >
+        <Input
+          id="route-position"
+          type="text"
+          bind:value={$routes.routes[routeToUpdate].position}
+        />
+      </div>
+      <Button type="submit" disabled={routeName === ""}>Update Position</Button>
+    </form>
+  </Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root bind:open={encounterTypeModalOpen}>
+  <Dialog.Content class="w-auto">
+    <div class="flex flex-row gap-3 mt-2">
+      <Button
+        class="w-auto"
+        onclick={addNewEncounterType}
+        disabled={newEncounterType === ""}
+      >
+        Add New Area
+      </Button>
+      <Input
+        bind:value={newEncounterType}
+        placeholder="New Encounter Area"
+        class="self-center"
+      />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      {#each $routes.encounter_areas as encounterType}
+        <div class="flex flex-row items-center justify-between px-2 py-1">
+          {encounterType}
+          <button
+            class="btn rounded-sm p-2 hover:cursor-pointer hover:bg-gray-300"
+            onclick={() => deleteEncounterType(encounterType)}
+          >
+            <TrashIcon class="size-4 text-slate-400" />
+          </button>
+        </div>
+      {/each}
+    </div>
+  </Dialog.Content>
+</Dialog.Root>
 
 <Card.Root class="mx-5 my-5">
   <Card.Content class="flex flex-row gap-3">
