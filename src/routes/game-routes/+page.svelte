@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
+  import { run } from "svelte/legacy";
 
   import BaseModal from "$lib/components/BaseModal.svelte";
-  import Button from "$lib/components/Button.svelte";
+  import { Button } from "$lib/components/ui/button/index.js";
   import TextInput from "$lib/components/TextInput.svelte";
-  import { getToastStore } from "@skeletonlabs/skeleton";
   import IconTrash from "@tabler/icons-svelte/icons/trash";
   import { selectedWiki } from "../../store";
   import { routes } from "../../store/gameRoutes";
@@ -13,8 +12,8 @@
   import GameRoutes from "$lib/components/game-route-components/GameRoutes.svelte";
   import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
-
-  const toastStore = getToastStore();
+  import * as Card from "$lib/components/ui/card/index.js";
+  import { toast } from "svelte-sonner";
 
   let routeName: string = $state("");
   let routeToUpdate: string = $state("");
@@ -25,19 +24,13 @@
   let oldRoutePosition: number = $state(0);
   let loading = $state(false);
 
-  run(() => {
-    console.log("Routes", $routes.routes);
-  });
-
   async function createNewRoute() {
     if (routeName.trim() === "") {
       return;
     }
 
     if ($routes.routes[routeName.trim()]) {
-      toastStore.trigger(
-        getToastSettings(ToastType.ERROR, "Route already exists"),
-      );
+      toast.error("Route already exists");
       return;
     }
 
@@ -55,7 +48,7 @@
         newRouteModalOpen = false;
       })
       .catch((err) => {
-        toastStore.trigger(getToastSettings(ToastType.ERROR, err));
+        toast.error(err);
       });
   }
 
@@ -63,7 +56,7 @@
     $routes.encounter_areas = [...$routes.encounter_areas, newEncounterType];
     let sortedRoutes = sortRoutesByPosition($routes);
     await updateRoutes(sortedRoutes, $selectedWiki.name).catch((err) => {
-      toastStore.trigger(getToastSettings(ToastType.ERROR, err));
+      toast.error(err);
     });
   }
 
@@ -72,7 +65,7 @@
       (type) => type !== encounterType,
     );
     await updateRoutes($routes, $selectedWiki.name).catch((err) => {
-      toastStore.trigger(getToastSettings(ToastType.ERROR, err));
+      toast.error(err);
     });
   }
 
@@ -108,7 +101,7 @@
 
     $routes = sortRoutesByPosition($routes);
     await updateRoutes($routes, $selectedWiki.name).catch((err) => {
-      toastStore.trigger(getToastSettings(ToastType.ERROR, err));
+      toast.error(err);
     });
   }
 
@@ -117,11 +110,11 @@
     await generateRoutePages(Object.keys($routes.routes), $selectedWiki.name)
       .then((res) => {
         loading = false;
-        toastStore.trigger(getToastSettings(ToastType.SUCCESS, res as string));
+        toast.success(res as string);
       })
       .catch((err) => {
         loading = false;
-        toastStore.trigger(getToastSettings(ToastType.ERROR, err));
+        toast.error(err);
       });
   }
 
@@ -140,12 +133,13 @@
     inputHandler={capitalizeWords}
   />
   <Button
-    title="Save New Route"
-    onClick={() => {
+    onclick={() => {
       createNewRoute();
     }}
     disabled={routeName === ""}
-  />
+  >
+    Save New Route
+  </Button>
 </BaseModal>
 
 <!-- Position Modal -->
@@ -155,12 +149,13 @@
     label="Route Position"
   />
   <Button
-    title="Update Route Position"
-    onClick={() => {
+    onclick={() => {
       updatePosition();
       positionModalOpen = false;
     }}
-  />
+  >
+    Update Route Position
+  </Button>
 </BaseModal>
 
 <!-- Encounter Area Modal -->
@@ -168,10 +163,11 @@
   <div class="flex flex-row gap-3">
     <Button
       class="mt-2 w-44"
-      title="Add New Encounter"
-      onClick={addNewEncounterType}
+      onclick={addNewEncounterType}
       disabled={newEncounterType === ""}
-    />
+    >
+      Add New Encounter
+    </Button>
     <TextInput bind:value={newEncounterType} placeholder="New Encounter Area" />
   </div>
   <div class="grid grid-cols-2 gap-3">
@@ -189,26 +185,32 @@
   </div>
 </BaseModal>
 
-<div class="mt-2 flex flex-row gap-3">
-  <Button
-    class="w-40"
-    title="Create New Route"
-    onClick={() => (newRouteModalOpen = true)}
-  />
-  <Button
-    class="w-48"
-    title="Modify Encounter Areas"
-    onClick={() => (encounterTypeModalOpen = true)}
-  />
-  <Button
-    class="w-42"
-    title="Generate Route Pages"
-    onClick={generatePages}
-    {loading}
-  />
-</div>
-<p class="text-sm italic text-gray-600 mt-2">
+<Card.Root class="mx-5 my-5">
+  <Card.Content class="flex flex-row gap-3">
+    <Button class="cursor-pointer" onclick={() => (newRouteModalOpen = true)}>
+      Create New Route</Button
+    >
+    <Button
+      variant="outline"
+      class="cursor-pointer"
+      onclick={() => (encounterTypeModalOpen = true)}
+    >
+      Modify Encounter Types</Button
+    >
+    <Button
+      variant="outline"
+      class="cursor-pointer"
+      onclick={() => generatePages()}
+    >
+      Generate Route Pages</Button
+    >
+  </Card.Content>
+</Card.Root>
+
+<p class="text-sm italic text-gray-600 mx-5">
   <strong>Note: </strong>A route needs to have at least <strong>ONE</strong> wild
   or trainer encounter to be rendered.
 </p>
-<GameRoutes bind:positionModalOpen bind:routeToUpdate bind:oldRoutePosition />
+<div class="mx-5">
+  <GameRoutes bind:positionModalOpen bind:routeToUpdate bind:oldRoutePosition />
+</div>

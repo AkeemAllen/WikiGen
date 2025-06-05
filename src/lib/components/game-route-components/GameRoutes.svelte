@@ -1,5 +1,4 @@
 <script lang="ts">
-  import TextInput from "$lib/components/TextInput.svelte";
   import {
     BaseDirectory,
     copyFile,
@@ -9,15 +8,15 @@
   import { routes } from "../../../store/gameRoutes";
   import { selectedWiki } from "../../../store";
   import { sortRoutesByPosition } from "$lib/utils";
-
-  import { getToastStore, popup } from "@skeletonlabs/skeleton";
-  import IconDotsVertical from "@tabler/icons-svelte/icons/dots-vertical";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import { invoke } from "@tauri-apps/api/core";
   import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
-  import { getToastSettings, ToastType } from "$lib/utils/toasts";
-
-  const toastStore = getToastStore();
+  import GripIcon from "@lucide/svelte/icons/grip";
+  import EllipsisIcon from "@lucide/svelte/icons/ellipsis-vertical";
+  import * as Popover from "$lib/components/ui/popover/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
+  import { toast } from "svelte-sonner";
 
   interface Props {
     positionModalOpen?: boolean;
@@ -39,9 +38,7 @@
 
     for (let [routeName, _] of Object.entries($routes.routes)) {
       if (routeName === newName) {
-        toastStore.trigger(
-          getToastSettings(ToastType.ERROR, "Route name already exists"),
-        );
+        toast.error("Route name already exists");
         return;
       }
     }
@@ -86,19 +83,15 @@
         }).then(() => {
           generateRoutePages(Object.keys($routes.routes), $selectedWiki.name)
             .then((res) => {
-              toastStore.trigger(
-                getToastSettings(ToastType.SUCCESS, res as string),
-              );
+              toast.success(res as string);
             })
             .catch((err) => {
-              toastStore.trigger(
-                getToastSettings(ToastType.ERROR, err as string),
-              );
+              toast.error(err as string);
             });
         });
       })
       .catch((err) => {
-        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
+        toast.error(err as string);
       });
   }
 
@@ -114,18 +107,14 @@
           wikiName: $selectedWiki.name,
         })
           .then((res) => {
-            toastStore.trigger(
-              getToastSettings(ToastType.SUCCESS, res as string),
-            );
+            toast.success(res as string);
           })
           .catch((err) => {
-            toastStore.trigger(
-              getToastSettings(ToastType.ERROR, err as string),
-            );
+            toast.error(err as string);
           });
       })
       .catch((err) => {
-        toastStore.trigger(getToastSettings(ToastType.ERROR, err as string));
+        toast.error(err as string);
       });
   }
 
@@ -160,36 +149,75 @@
 <div class="mt-6 grid grid-cols-5 gap-x-4 gap-y-3">
   {#each Object.keys($routes.routes) as routeName, index}
     <div
-      class="card flex flex-row items-center justify-between !bg-transparent p-3 shadow-sm"
+      class="flex flex-row justify-between align-middle hover:ring-2 hover:ring-slate-400 ease-in-out group rounded-lg cursor-pointer transition-all duration-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 border-0 bg-white relative"
     >
-      {#if routeName === routeBeingEdited}
-        <TextInput
+      {#if routeBeingEdited === routeName}
+        <Input
           bind:value={newRouteName}
-          onKeyDownHandler={(e) => {
+          onkeydown={(e) => {
             if (e.key === "Enter") {
               renameRoute(routeBeingEdited, newRouteName);
               routeBeingEdited = "";
             }
           }}
-          inputHandler={capitalizeWords}
+          oninput={capitalizeWords}
+          class="p-4 w-full"
         />
       {:else}
-        <a href="/game-routes/{routeName}" class="w-full hover:cursor-pointer">
+        <a href="/game-routes/{routeName}" class="w-full p-4">
           {routeName}
         </a>
       {/if}
-      <button
-        class="rounded-md p-1 hover:cursor-pointer hover:bg-gray-300"
-        use:popup={{
-          event: "click",
-          target: "routeMenu-" + index,
-          placement: "bottom",
-        }}
-      >
-        <IconDotsVertical size={16} />
-      </button>
+      <Popover.Root>
+        <Popover.Trigger>
+          <button
+            class="rounded-md p-1 mr-2 hover:cursor-pointer hover:bg-slate-300"
+          >
+            <EllipsisIcon
+              class="text-slate-400 size-4"
+              onclick={() => console.log("test")}
+            />
+          </button>
+        </Popover.Trigger>
+        <Popover.Content class="w-[10rem] flex flex-col gap-2">
+          <Button
+            variant="outline"
+            class="w-full"
+            onclick={() => {
+              routeBeingEdited = routeName;
+              newRouteName = routeName;
+            }}
+          >
+            Rename
+          </Button>
+          <Button
+            variant="outline"
+            class="w-full"
+            onclick={() => duplicateRoute(routeName)}
+          >
+            Duplicate
+          </Button>
+          <Button
+            variant="outline"
+            class="w-full"
+            onclick={() => {
+              positionModalOpen = true;
+              routeToUpdate = routeName;
+              oldRoutePosition = $routes.routes[routeName].position;
+            }}
+          >
+            Reorder
+          </Button>
+          <Button
+            class="w-full bg-red-400 hover:bg-red-500"
+            onclick={() => deleteRoute(routeName)}
+          >
+            Delete
+          </Button>
+        </Popover.Content>
+      </Popover.Root>
     </div>
-    <div class="card w-44 grid-cols-1 p-4" data-popup="routeMenu-{index}">
+    <!-- <div class="card w-44 grid-cols-1 p-4" data-popup="routeMenu-{index}">
       <button
         class="w-full rounded-md bg-gray-100 px-3 py-1 text-start text-sm hover:cursor-pointer hover:bg-gray-300"
         onclick={() => {
@@ -199,20 +227,12 @@
       >
       <button
         class="w-full rounded-md bg-gray-100 px-3 py-1 text-start text-sm hover:cursor-pointer hover:bg-gray-300"
-        onclick={() => duplicateRoute(routeName)}>Duplicate</button
-      >
-      <button
-        class="w-full rounded-md bg-gray-100 px-3 py-1 text-start text-sm hover:cursor-pointer hover:bg-gray-300"
-        onclick={() => deleteRoute(routeName)}>Delete</button
-      >
-      <button
-        class="w-full rounded-md bg-gray-100 px-3 py-1 text-start text-sm hover:cursor-pointer hover:bg-gray-300"
         onclick={() => {
           positionModalOpen = true;
           routeToUpdate = routeName;
           oldRoutePosition = $routes.routes[routeName].position;
         }}>Change Position</button
       >
-    </div>
+    </div> -->
   {/each}
 </div>

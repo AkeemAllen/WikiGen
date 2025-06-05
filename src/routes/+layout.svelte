@@ -61,7 +61,6 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import Github from "@lucide/svelte/icons/github";
   import * as Dialog from "$lib/components/ui/dialog";
-  import * as Popover from "$lib/components/ui/popover/index.js";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import { toast } from "svelte-sonner";
 
