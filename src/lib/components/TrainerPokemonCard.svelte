@@ -5,14 +5,17 @@
   import { selectedWiki } from "../../store";
   import capitalizeWords from "$lib/utils/capitalizeWords";
 
-
   interface Props {
     pokemon?: TrainerPokemon;
     trainerName: string;
     deletePokemon?: any;
   }
 
-  let { pokemon = {} as TrainerPokemon, trainerName, deletePokemon = (id: string, name: string) => {} }: Props = $props();
+  let {
+    pokemon = {} as TrainerPokemon,
+    trainerName,
+    deletePokemon = (id: string, name: string) => {},
+  }: Props = $props();
 
   async function getSpriteImage(pokemonName: string): Promise<string> {
     return await readFile(

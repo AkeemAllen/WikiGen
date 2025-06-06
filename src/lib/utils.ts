@@ -5,6 +5,8 @@ import type { Routes, TrainerInfo } from "../store/gameRoutes";
 import type { PokemonMove } from "../store/pokemon";
 import { db } from "../store/db";
 import type { QueryResult } from "@tauri-apps/plugin-sql";
+import { BaseDirectory, readFile } from "@tauri-apps/plugin-fs";
+import { selectedWiki } from "../store";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -243,3 +245,21 @@ export const typeColors: Record<string, TypeColorScheme> = {
     text: "text-pink-300",
   },
 };
+
+export async function getSpriteImage(pokemonName: string): Promise<string> {
+  return await readFile(
+    `${get(selectedWiki).name}/dist/docs/img/pokemon/${pokemonName}.png`,
+    { baseDir: BaseDirectory.AppData },
+  )
+    .then((res) => {
+      const blob = new Blob([res], { type: "image/png" });
+      return URL.createObjectURL(blob);
+    })
+    .catch((err) => {
+      console.log(err);
+      if (err.includes("No such file or directory")) {
+        return "Image Not Found";
+      }
+      return "Error loading image";
+    });
+}

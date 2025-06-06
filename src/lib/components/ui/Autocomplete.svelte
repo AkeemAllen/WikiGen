@@ -5,7 +5,6 @@
   import { Label } from "$lib/components/ui/label/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
-  import capitalizeWords from "$lib/utils/capitalizeWords";
 
   type Props = {
     open: boolean;
@@ -17,6 +16,7 @@
     options: { label: string; value: any }[];
     label?: string;
     class?: string;
+    creationEnabled?: boolean;
   };
 
   let {
@@ -29,7 +29,17 @@
     onSelect,
     triggerRef,
     options,
+    creationEnabled = false,
   }: Props = $props();
+
+  let optionsPresent = $derived.by(() => {
+    let option = options.find((option) =>
+      option.label.toLowerCase().includes(searcher.toLowerCase()),
+    );
+    return option !== undefined;
+  });
+
+  $inspect({ searcher, value, options });
 
   // We want to refocus the trigger button when the user selects
   // an item from the list so users can continue navigating the
@@ -70,7 +80,19 @@
     <Command.Root shouldFilter={false}>
       <Command.Input {placeholder} bind:value={searcher} />
       <Command.List>
-        <Command.Empty>Such Empty</Command.Empty>
+        {#if creationEnabled && !optionsPresent}
+          <Command.Item
+            value={searcher}
+            onSelect={() => {
+              onSelect({ label: searcher, value: searcher });
+              closeAndFocusTrigger();
+            }}
+          >
+            No Results Found. Create one?
+          </Command.Item>
+        {:else}
+          <Command.Empty>Such Empty</Command.Empty>
+        {/if}
         {#each options as option}
           <Command.Item
             value={option.label}

@@ -6,7 +6,6 @@
     type AutocompleteOption,
   } from "@skeletonlabs/skeleton";
   import NumberInput from "../NumberInput.svelte";
-  import Button from "../Button.svelte";
   import { pokemonList } from "../../../store/pokemon";
   import { selectedWiki } from "../../../store";
   import {
@@ -15,20 +14,36 @@
     type TrainerPokemon,
   } from "../../../store/gameRoutes";
   import TextInput from "../TextInput.svelte";
-  import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
-  import { setUniquePokemonId, sortTrainersByPosition } from "$lib/utils";
-  import AutoComplete from "../AutoComplete.svelte";
+  import {
+    getSpriteImage,
+    setUniquePokemonId,
+    sortTrainersByPosition,
+  } from "$lib/utils";
   import TrainerPokemonCard from "../TrainerPokemonCard.svelte";
   import MultiSelect from "svelte-multiselect";
-  import { invoke } from "@tauri-apps/api/core";
   import TrainerMenu from "../modals/TrainerMenu.svelte";
   import EditTrainerPokemonModal from "../modals/EditTrainerPokemonModal.svelte";
-  import { shortcut } from "@svelte-put/shortcut";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
   import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
   import { getToastSettings, ToastType } from "$lib/utils/toasts";
+  import * as Card from "$lib/components/ui/card/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
+  import { toast } from "svelte-sonner";
+  import Autocomplete from "$lib/components/ui/Autocomplete.svelte";
+  import SaveIcon from "@lucide/svelte/icons/save";
+  import * as Command from "$lib/components/ui/command/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import * as Select from "$lib/components/ui/select/index.js";
+  import { Label } from "$lib/components/ui/label";
+  import EditIcon from "@lucide/svelte/icons/edit";
+  import XIcon from "@lucide/svelte/icons/x";
+  import { List } from "../ui/tabs";
+  import ImageIcon from "@lucide/svelte/icons/image";
+  import SplitIcon from "@lucide/svelte/icons/split";
+  import ArrowLeftRightIcon from "@lucide/svelte/icons/arrow-left-right";
+  import * as Dialog from "$lib/components/ui/dialog/index";
 
   const toastStore = getToastStore();
 
@@ -38,6 +53,13 @@
 
   let { routeName }: Props = $props();
   let trainerName: string = $state("");
+  let trainerSearchOpen: boolean = $state(false);
+  let searchingTrainers: string = $state("");
+  let trainerSearchName: string = $state("");
+  let pokemonSearchOpen: boolean = $state(false);
+  let triggerRef = $state<HTMLButtonElement>(null!);
+  let triggerRefTrainer = $state<HTMLButtonElement>(null!);
+  let searchingPokemon = $state("");
   let pokemonSearchName: string = $state("");
   let level: number = $state(0);
 
@@ -56,10 +78,14 @@
   );
   let originalTrainers = $state(cloneDeep($routes.routes[routeName].trainers));
   let trainerOptions = $derived(
-    Object.keys(routeTrainers).map((trainer) => ({
-      label: trainer,
-      value: trainer,
-    })),
+    Object.keys(routeTrainers)
+      .map((trainer) => ({
+        label: trainer,
+        value: trainer,
+      }))
+      .filter((option) =>
+        option.label.toLowerCase().includes(searchingTrainers.toLowerCase()),
+      ),
   );
 
   let pokemonListOptions: AutocompleteOption<string | number>[] =
@@ -67,6 +93,14 @@
       label: capitalizeWords(name),
       value: id,
     }));
+
+  let options = $derived(
+    pokemonListOptions
+      .filter((pokemon) =>
+        pokemon.label.toLowerCase().includes(searchingPokemon.toLowerCase()),
+      )
+      .slice(0, 8),
+  );
 
   function onPokemonNameSelected(
     event: CustomEvent<AutocompleteOption<string | number>>,
@@ -221,76 +255,98 @@
 </script>
 
 <!-- Sprite Modal -->
-<BaseModal bind:open={spriteModalOpen} class="w-[25rem]">
-  {#if spriteName !== ""}
-    <img
-      src={`https://play.pokemonshowdown.com/sprites/trainers/${spriteName.toLowerCase()}.png`}
-      alt="Trainer Sprite"
-      class="h-32 w-32"
-    />
-  {/if}
-  <TextInput
-    id="sprite-name"
-    label="Sprite Name"
-    placeholder="Type name to see sprite. Eg. red"
-    bind:value={spriteName}
-  />
-  <Button
-    title="Set Sprite"
-    class="w-32"
-    disabled={spriteName === ""}
-    onClick={() => {
-      routeTrainers[trainerToUpdate].sprite = spriteName.toLowerCase();
-      trainerToUpdate = "";
-      spriteName = "";
-      spriteModalOpen = false;
-    }}
-  />
-</BaseModal>
+<Dialog.Root bind:open={spriteModalOpen}>
+  <Dialog.Content class="w-[25rem]">
+    {#if spriteName !== ""}
+      <img
+        src={`https://play.pokemonshowdown.com/sprites/trainers/${spriteName.toLowerCase()}.png`}
+        alt="Trainer Sprite"
+        class="h-32 w-32"
+      />
+    {/if}
+    <div>
+      <Label
+        for="sprite-name"
+        class="block text-sm font-medium leading-6 text-gray-900 mb-2"
+        >Sprite Name</Label
+      >
+      <Input
+        type="text"
+        id="sprite-name"
+        placeholder="Type name to see sprite. Eg. red"
+        bind:value={spriteName}
+      />
+    </div>
+    <Button
+      class="w-32"
+      disabled={spriteName === ""}
+      onclick={() => {
+        routeTrainers[trainerToUpdate].sprite = spriteName.toLowerCase();
+        trainerToUpdate = "";
+        spriteName = "";
+        spriteModalOpen = false;
+      }}
+    >
+      Set Sprite
+    </Button>
+  </Dialog.Content>
+</Dialog.Root>
 
 <!-- Trainer Versions Modal -->
-<BaseModal bind:open={trainerVersionsModalOpen} class="w-[25rem] gap-y-1">
-  <div>
-    <label
-      for="versions"
-      class="block text-sm font-medium leading-6 text-gray-900"
-      >Trainer Versions</label
+<Dialog.Root bind:open={trainerVersionsModalOpen}>
+  <Dialog.Content class="w-[25rem] gap-y-1">
+    <div>
+      <label
+        for="versions"
+        class="block text-sm font-medium leading-6 text-gray-900"
+        >Trainer Versions</label
+      >
+      <MultiSelect
+        id="versions"
+        bind:selected={routeTrainers[trainerToUpdate].versions}
+        allowUserOptions={true}
+        options={routeTrainers[trainerToUpdate].versions ?? []}
+        style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
+      />
+    </div>
+    <Button
+      class="w-32"
+      disabled={isEqual(routeTrainers, originalTrainers)}
+      onclick={() => {
+        saveChanges();
+        trainerVersionsModalOpen = false;
+      }}
     >
-    <MultiSelect
-      id="versions"
-      bind:selected={routeTrainers[trainerToUpdate].versions}
-      allowUserOptions={true}
-      options={routeTrainers[trainerToUpdate].versions ?? []}
-      style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
-    />
-  </div>
-  <Button
-    class="w-32"
-    title="Save Versions"
-    disabled={isEqual(routeTrainers, originalTrainers)}
-    onClick={() => {
-      saveChanges();
-      trainerVersionsModalOpen = false;
-    }}
-  />
-</BaseModal>
+      Save Versions
+    </Button>
+  </Dialog.Content>
+</Dialog.Root>
 
 <!-- Position Modal -->
-<BaseModal bind:open={positionModalOpen} class="w-[25rem]">
-  <NumberInput
-    label="Position"
-    bind:value={routeTrainers[trainerToUpdate].position}
-  />
-  <Button
-    class="w-32"
-    title="Set Position"
-    disabled={isEqual(routeTrainers, originalTrainers)}
-    onClick={() => {
-      routeTrainers = sortTrainersByPosition(routeTrainers);
-      positionModalOpen = false;
-    }}
-  />
-</BaseModal>
+<Dialog.Root bind:open={positionModalOpen}>
+  <Dialog.Content class="w-[25rem]">
+    <div>
+      <Label class="text-sm font-medium text-gray-700 mb-2" for="position"
+        >Position</Label
+      >
+      <Input
+        id="position"
+        type="number"
+        bind:value={routeTrainers[trainerToUpdate].position}
+      />
+    </div>
+    <Button
+      class="w-32"
+      disabled={isEqual(routeTrainers, originalTrainers)}
+      onclick={() => {
+        routeTrainers = sortTrainersByPosition(routeTrainers);
+        positionModalOpen = false;
+      }}
+    >
+      Change Position
+    </Button>
+  </Dialog.Content>
+</Dialog.Root>
 
 <EditTrainerPokemonModal
   bind:open={editPokemonModalOpen}
@@ -302,58 +358,175 @@
   {savePokemonChanges}
 />
 
-<div
-  class="sticky top-0 z-10 flex flex-row gap-x-5 rounded-md bg-white pb-1 shadow-sm"
->
-  <AutoComplete
-    label="Trainer Name"
-    bind:value={trainerName}
-    options={trainerOptions}
-    popupId="popupTrainerNames"
-    onSelection={(e) => {
-      trainerName = e.detail.label;
-    }}
-    showChevron={false}
-    class="w-40"
-  />
-  <AutoComplete
-    label="Pokemon for current encounter area"
-    placeholder="Pokemon Name"
-    bind:value={pokemonSearchName}
-    options={pokemonListOptions}
-    popupId="popupPokemonNames"
-    onSelection={onPokemonNameSelected}
-    showChevron={false}
-  />
+<Card.Root>
+  <Card.Content class="flex flex-row gap-3">
+    <section class="flex flex-row gap-5 justify-between">
+      <Autocomplete
+        open={trainerSearchOpen}
+        triggerRef={triggerRefTrainer}
+        value={trainerName}
+        label="Trainer"
+        creationEnabled={true}
+        bind:searcher={searchingTrainers}
+        options={trainerOptions}
+        placeholder="Search Trainer"
+        onSelect={(option) => {
+          trainerName = option.label;
+        }}
+        class="w-[10rem]"
+      />
+      <Autocomplete
+        open={pokemonSearchOpen}
+        {triggerRef}
+        value={pokemonSearchName}
+        label="Pokemon"
+        bind:searcher={searchingPokemon}
+        {options}
+        placeholder="Search Pokemon"
+        onSelect={(option) => {
+          pokemonSearchName = option.label;
+        }}
+        class="w-[10rem]"
+      />
+      <div>
+        <Label for="level" class="block text-sm font-medium mb-2 text-gray-700"
+          >Level</Label
+        >
+        <Input type="number" id="level" bind:value={level} class="w-[10rem]" />
+      </div>
+      <Button
+        class="mt-7 w-32"
+        disabled={pokemonSearchName === "" || level === 0 || trainerName === ""}
+        onclick={addPokemonToTrainer}
+      >
+        Add Encounter
+      </Button>
+      <Button
+        class="mt-7 w-32"
+        disabled={isEqual(routeTrainers, originalTrainers)}
+        onclick={saveChanges}
+      >
+        Save Changes
+      </Button>
+    </section></Card.Content
+  >
+</Card.Root>
 
-  <NumberInput label="Level" bind:value={level} class="w-32" max={100} />
-  <Button
-    title="Add Encounter"
-    class="mt-8 w-32"
-    disabled={pokemonSearchName === "" || level === 0 || trainerName === ""}
-    onClick={addPokemonToTrainer}
-  />
-  <Button
-    class="mt-8 w-32"
-    title="Save Changes"
-    disabled={isEqual(routeTrainers, originalTrainers)}
-    onClick={saveChanges}
-  />
-</div>
+<main class="mt-5 grid grid-cols-3 gap-5">
+  {#each Object.entries(routeTrainers) as [name, trainerInfo], index}
+    <Card.Root>
+      <Card.Header>
+        <div class="flex flex-row justify-between">
+          <Card.Title class="text-slate-900 text-lg"
+            >{capitalizeWords(name)}</Card.Title
+          >
+          <div class="flex flex-row gap-3">
+            <button
+              class="rounded-md p-1 mr-2 hover:cursor-pointer hover:bg-slate-200"
+              onclick={() => {
+                spriteModalOpen = true;
+                trainerToUpdate = name;
+              }}
+            >
+              <ImageIcon class="text-slate-400 size-4 self-center" />
+            </button>
+            <button
+              class="rounded-md p-1 mr-2 hover:cursor-pointer hover:bg-slate-200"
+              onclick={() => {
+                trainerVersionsModalOpen = true;
+                trainerToUpdate = name;
+              }}
+            >
+              <SplitIcon class="text-slate-400 size-4 self-center" />
+            </button>
+            <button
+              class="rounded-md p-1 mr-2 hover:cursor-pointer hover:bg-slate-200"
+              onclick={() => {
+                positionModalOpen = true;
+                trainerToUpdate = name;
+              }}
+            >
+              <ArrowLeftRightIcon class="text-slate-400 size-4 self-center" />
+            </button>
+          </div>
+        </div>
+        <Card.Description>
+          {#if trainerInfo.sprite}
+            <img
+              src={`https://play.pokemonshowdown.com/sprites/trainers/${trainerInfo.sprite}.png`}
+              alt={name}
+              class="m-0 justify-self-center"
+            />
+          {/if}
+        </Card.Description>
+      </Card.Header>
+      <Card.Content>
+        <div class="space-y-2 max-h-80 overflow-y-auto">
+          {#each trainerInfo.pokemon_team as pokemon}
+            <div
+              class="flex items-center gap-3 p-2 bg-slate-100 dark:bg-slate-800/60 rounded-lg group hover:bg-slate-200 dark:hover:bg-slate-700/80 transition-colors"
+            >
+              {#await getSpriteImage(pokemon.name) then spriteUrl}
+                <img
+                  src={spriteUrl}
+                  alt={pokemon.name}
+                  class="size-13 object-contain"
+                />
+              {/await}
+              <div class="flex-1 min-w-0">
+                <div
+                  class="font-medium text-slate-900 dark:text-slate-100 truncate"
+                >
+                  {capitalizeWords(pokemon.name)}
+                </div>
+                <div
+                  class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400"
+                >
+                  <span class="flex items-center gap-1">
+                    Lv. {pokemon.level}
+                  </span>
+                </div>
+              </div>
+              <div
+                class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  class="h-6 w-6 p-0 cursor-pointer"
+                  onclick={() => {
+                    editPokemonModalOpen = true;
+                    currentTrainerPokemon = cloneDeep(pokemon);
+                    trainerToUpdate = name;
+                    currentTrainerVersions = trainerInfo.versions ?? [];
+                  }}
+                >
+                  <EditIcon class="w-3 h-3" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  class="h-6 w-6 p-0 text-red-600 hover:text-red-700 cursor-pointer"
+                  onclick={() => {
+                    deletePokemonFromTrainer(pokemon.unique_id, name);
+                  }}
+                >
+                  <XIcon class="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+          {/each}
+        </div>
+      </Card.Content>
+    </Card.Root>
+  {/each}
+</main>
 
-<div class="mt-5 flex flex-col gap-y-5">
+<!-- <div class="mt-5 flex flex-col gap-y-5">
   {#each Object.entries(routeTrainers) as [name, trainerInfo], index}
     <div>
       <strong class="flex flex-row items-center gap-x-4">
         {capitalizeWords(name)}
-        <TrainerMenu
-          {index}
-          trainerName={name}
-          bind:trainerToUpdate
-          bind:positionModalOpen
-          bind:spriteModalOpen
-          bind:trainerVersionsModalOpen
-        />
       </strong>
       <div class="mt-2 grid grid-cols-6 items-center gap-5">
         {#if trainerInfo.sprite}
@@ -384,19 +557,4 @@
       <div></div>
     </div>
   {/each}
-</div>
-
-<svelte:window
-  use:shortcut={{
-    trigger: {
-      key: "Enter",
-      modifier: ["ctrl", "meta"],
-      callback: () => {
-        if (isEqual(routeTrainers, originalTrainers)) {
-          return;
-        }
-        saveChanges();
-      },
-    },
-  }}
-/>
+</div> -->
