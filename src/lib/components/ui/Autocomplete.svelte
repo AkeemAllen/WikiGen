@@ -5,6 +5,7 @@
   import { Label } from "$lib/components/ui/label/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
 
   type Props = {
     open: boolean;
@@ -70,7 +71,7 @@
           role="combobox"
           aria-expanded={open}
         >
-          {value || placeholder}
+          {capitalizeWords(value) || placeholder}
           <ChevronsUpDownIcon class="opacity-50" />
         </Button>
       </div>
