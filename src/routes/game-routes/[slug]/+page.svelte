@@ -1,9 +1,7 @@
 <script lang="ts">
   import TrainerEncounters from "$lib/components/game-route-components/TrainerEncounters.svelte";
   import WildEncounters from "$lib/components/game-route-components/WildEncounters.svelte";
-  import SelectInput from "$lib/components/SelectInput.svelte";
-  import Button from "$lib/components/Button.svelte";
-  import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
+  import { Button } from "$lib/components/ui/button/index";
   import IconTrash from "@tabler/icons-svelte/icons/trash";
   import IconArrowLeft from "@tabler/icons-svelte/icons/arrow-left";
   import { routes } from "../../../store/gameRoutes";
@@ -18,15 +16,19 @@
   } from "@tauri-apps/plugin-fs";
   import { onMount } from "svelte";
   import { base64ToArray } from "$lib/utils";
-  import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
   import * as Tabs from "$lib/components/ui/tabs/index.js";
+  import * as Select from "$lib/components/ui/select/index.js";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
+  import { toast } from "svelte-sonner";
 
-  const toastStore = getToastStore();
   let { data } = $props();
-  let tabSet: number = $state(0);
   let newRouteImage: string = $state("");
+  let renderRoute: string = $derived.by(() => {
+    return $routes.routes[data.title].render.toString();
+  });
 
   onMount(async () => {
     newRouteImage = await readFile(
@@ -48,10 +50,7 @@
     reader.onloadend = (e) => {
       let base64 = e.target?.result as string;
       if (!base64.includes("data:image/png;base64,")) {
-        toastStore.trigger({
-          message: "Invalid image format!",
-          background: "variant-filled-error",
-        });
+        toast.error("Invalid image format!");
         return;
       }
       newRouteImage = e.target?.result as string;
@@ -104,32 +103,25 @@
       { baseDir: BaseDirectory.AppData },
     )
       .then(() => {
-        toastStore.trigger(
-          getToastSettings(ToastType.SUCCESS, "Route Image Saved"),
-        );
+        toast.success("Route Image Saved");
       })
       .catch((e) => {
-        toastStore.trigger(
-          getToastSettings(ToastType.ERROR, `Error saving route image: ${e}`),
-        );
+        toast.error(`Error saving route image: ${e}`);
       });
   }
 
   async function saveChanges() {
     await saveRouteImage().catch((e) => {
-      toastStore.trigger(
-        getToastSettings(ToastType.ERROR, `Error saving route image: ${e}`),
-      );
+      toast.error(`Error saving route image: ${e}`);
     });
+    $routes.routes[data.title].render = renderRoute === "true";
     await updateRoutes($routes, $selectedWiki.name).then(() => {
       generateRoutePages([data.title], $selectedWiki.name)
         .then((res) => {
-          toastStore.trigger(
-            getToastSettings(ToastType.SUCCESS, res as string),
-          );
+          toast.success(res as string);
         })
         .catch((e) => {
-          toastStore.trigger(getToastSettings(ToastType.ERROR, e));
+          toast.error(e);
         });
     });
   }
@@ -158,12 +150,14 @@
     <TrainerEncounters routeName={data.title} />
   </Tabs.Content>
   <Tabs.Content value="properties" class="mx-5">
-    <Button title="Save Changes" onClick={saveChanges} class="w-32" />
+    <Button title="Save Changes" onclick={saveChanges} class="w-[15rem]"
+      >Save Changes</Button
+    >
     <div class="mb-4 mt-4">
-      <label
-        for="sprite-image"
+      <Label
+        for="route-image"
         class="block text-sm font-medium leading-6 text-gray-900"
-        >Route Image</label
+        >Route Image</Label
       >
       {#if newRouteImage !== ""}
         <img src={newRouteImage} alt="Route" />
@@ -179,29 +173,32 @@
           Clear Image</button
         >
       {/if}
-      <input
-        id="sprite-image"
+      <Input
+        id="route-image"
         type="file"
         accept="image/png"
-        class="mt-2"
+        class="mt-2 w-[15rem]"
         onchange={onImageUpload}
       />
     </div>
-    <div class="w-36">
-      <SelectInput
-        label="Render Route Page"
-        bind:value={$routes.routes[data.title].render}
-        options={[
-          {
-            value: true,
-            label: "True",
-          },
-          {
-            value: false,
-            label: "False",
-          },
-        ]}
-      />
+    <div>
+      <Label
+        for="render-route"
+        class="block text-sm font-medium leading-6 text-gray-900"
+        >Route Route Page</Label
+      >
+      <Select.Root type="single" bind:value={renderRoute}>
+        <Select.Trigger id="render-route" class="w-[10rem]">
+          {capitalizeWords(renderRoute) || "Select an option"}
+        </Select.Trigger>
+        <Select.Content>
+          <Select.Group>
+            <Select.Label>Options</Select.Label>
+            <Select.Item value="true">True</Select.Item>
+            <Select.Item value="false">False</Select.Item>
+          </Select.Group>
+        </Select.Content>
+      </Select.Root>
     </div>
   </Tabs.Content>
 </Tabs.Root>

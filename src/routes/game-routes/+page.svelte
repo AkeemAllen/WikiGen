@@ -102,14 +102,11 @@
   }
 
   async function generatePages() {
-    loading = true;
     await generateRoutePages(Object.keys($routes.routes), $selectedWiki.name)
       .then((res) => {
-        loading = false;
         toast.success(res as string);
       })
       .catch((err) => {
-        loading = false;
         toast.error(err);
       });
   }
@@ -166,11 +163,11 @@
         >
         <Input
           id="route-position"
-          type="text"
+          type="number"
           bind:value={$routes.routes[routeToUpdate].position}
         />
       </div>
-      <Button type="submit" disabled={routeName === ""}>Update Position</Button>
+      <Button type="submit">Update Position</Button>
     </form>
   </Dialog.Content>
 </Dialog.Root>
