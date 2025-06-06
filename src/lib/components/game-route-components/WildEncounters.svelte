@@ -231,7 +231,6 @@
       </div>
       <Autocomplete
         open={pokemonSearchOpen}
-        {triggerRef}
         value={pokemonName}
         label="Wild Pokemon"
         bind:searcher={searchingPokemon}

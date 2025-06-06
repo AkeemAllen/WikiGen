@@ -10,7 +10,6 @@
     open: boolean;
     searcher: string;
     placeholder: string;
-    triggerRef: HTMLButtonElement;
     value: any;
     onSelect: (option: { label: string; value: any }) => void;
     options: { label: string; value: any }[];
@@ -27,10 +26,11 @@
     placeholder,
     label,
     onSelect,
-    triggerRef,
     options,
     creationEnabled = false,
   }: Props = $props();
+
+  let triggerRef = $state<HTMLButtonElement>(null!);
 
   let optionsPresent = $derived.by(() => {
     let option = options.find((option) =>

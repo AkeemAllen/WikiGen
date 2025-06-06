@@ -41,9 +41,6 @@
   let itemSearchOption: boolean = $state(false);
   let searchingEvolutions: string = $state("");
   let searchingItems: string = $state("");
-  let triggerRef = $state<HTMLButtonElement>(null!);
-  let triggerRefEvolution = $state<HTMLButtonElement>(null!);
-  let triggerRefItems = $state<HTMLButtonElement>(null!);
 
   let pokemon = $state({} as Pokemon);
   let abilities = $derived.by(() => {
@@ -318,7 +315,6 @@
   <Card.Content class="flex flex-row gap-3">
     <Autocomplete
       open={pokemonSearchOption}
-      {triggerRef}
       value={pokemonSearch[1]}
       bind:searcher={searchingPokemon}
       {options}
@@ -579,7 +575,6 @@
             {#if pokemon.evolution_method === "item"}
               <Autocomplete
                 open={itemSearchOption}
-                triggerRef={triggerRefItems}
                 value={pokemon.evolution_item}
                 bind:searcher={searchingItems}
                 options={$itemsList
@@ -615,7 +610,6 @@
           {#if pokemon.evolution_method !== "no_change"}
             <Autocomplete
               open={evolutionSearchOption}
-              triggerRef={triggerRefEvolution}
               value={pokemon.evolves_into}
               label="Evolution Search"
               bind:searcher={searchingEvolutions}

@@ -1,11 +1,4 @@
 <script lang="ts">
-  import BaseModal from "$lib/components/BaseModal.svelte";
-
-  import {
-    getToastStore,
-    type AutocompleteOption,
-  } from "@skeletonlabs/skeleton";
-  import NumberInput from "../NumberInput.svelte";
   import { pokemonList } from "../../../store/pokemon";
   import { selectedWiki } from "../../../store";
   import {
@@ -13,52 +6,39 @@
     type TrainerInfo,
     type TrainerPokemon,
   } from "../../../store/gameRoutes";
-  import TextInput from "../TextInput.svelte";
   import {
     getSpriteImage,
     setUniquePokemonId,
     sortTrainersByPosition,
   } from "$lib/utils";
-  import TrainerPokemonCard from "../TrainerPokemonCard.svelte";
   import MultiSelect from "svelte-multiselect";
-  import TrainerMenu from "../modals/TrainerMenu.svelte";
   import EditTrainerPokemonModal from "../modals/EditTrainerPokemonModal.svelte";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
   import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
-  import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import * as Card from "$lib/components/ui/card/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { toast } from "svelte-sonner";
   import Autocomplete from "$lib/components/ui/Autocomplete.svelte";
-  import SaveIcon from "@lucide/svelte/icons/save";
-  import * as Command from "$lib/components/ui/command/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
-  import * as Select from "$lib/components/ui/select/index.js";
   import { Label } from "$lib/components/ui/label";
   import EditIcon from "@lucide/svelte/icons/edit";
   import XIcon from "@lucide/svelte/icons/x";
-  import { List } from "../ui/tabs";
   import ImageIcon from "@lucide/svelte/icons/image";
   import SplitIcon from "@lucide/svelte/icons/split";
   import ArrowLeftRightIcon from "@lucide/svelte/icons/arrow-left-right";
   import * as Dialog from "$lib/components/ui/dialog/index";
 
-  const toastStore = getToastStore();
-
-  interface Props {
+  type Props = {
     routeName: string;
-  }
+  };
 
   let { routeName }: Props = $props();
   let trainerName: string = $state("");
   let trainerSearchOpen: boolean = $state(false);
   let searchingTrainers: string = $state("");
-  let trainerSearchName: string = $state("");
   let pokemonSearchOpen: boolean = $state(false);
-  let triggerRef = $state<HTMLButtonElement>(null!);
-  let triggerRefTrainer = $state<HTMLButtonElement>(null!);
   let searchingPokemon = $state("");
   let pokemonSearchName: string = $state("");
   let level: number = $state(0);
@@ -88,11 +68,10 @@
       ),
   );
 
-  let pokemonListOptions: AutocompleteOption<string | number>[] =
-    $pokemonList.map(([id, _, name]) => ({
-      label: capitalizeWords(name),
-      value: id,
-    }));
+  let pokemonListOptions = $pokemonList.map(([id, _, name]) => ({
+    label: capitalizeWords(name),
+    value: id,
+  }));
 
   let options = $derived(
     pokemonListOptions
@@ -102,12 +81,6 @@
       .slice(0, 8),
   );
 
-  function onPokemonNameSelected(
-    event: CustomEvent<AutocompleteOption<string | number>>,
-  ): void {
-    pokemonSearchName = event.detail.label;
-  }
-
   function addPokemonToTrainer() {
     let searchedPokemon = $pokemonList.find(
       ([_, __, name, ___]) =>
@@ -115,11 +88,7 @@
     );
 
     if (searchedPokemon === undefined) {
-      toastStore.trigger({
-        message: "Pokemon not found",
-        timeout: 3000,
-        background: "variant-filled-error",
-      });
+      toast.error("Pokemon not found");
       return;
     }
 
@@ -186,11 +155,7 @@
     let index =
       routeTrainers[trainerToUpdate].pokemon_team.indexOf(existingPokemon);
     if (index === routeTrainers[trainerToUpdate].pokemon_team.length - 1) {
-      toastStore.trigger({
-        message: "No more trainer pokemon",
-        timeout: 3000,
-        background: "variant-filled-error",
-      });
+      toast.error("No more trainer pokemon");
       return;
     }
     currentTrainerPokemon = cloneDeep(
@@ -206,11 +171,7 @@
     let index =
       routeTrainers[trainerToUpdate].pokemon_team.indexOf(existingPokemon);
     if (index === 0) {
-      toastStore.trigger({
-        message: "No more trainer pokemon",
-        timeout: 3000,
-        background: "variant-filled-error",
-      });
+      toast.error("No more trainer pokemon");
       return;
     }
     currentTrainerPokemon = cloneDeep(
@@ -240,16 +201,14 @@
       .then(() => {
         generateRoutePages([routeName], $selectedWiki.name)
           .then((res) => {
-            toastStore.trigger(
-              getToastSettings(ToastType.SUCCESS, res as string),
-            );
+            toast.success(res as string);
           })
           .catch((e) => {
-            toastStore.trigger(getToastSettings(ToastType.ERROR, e as string));
+            toast.error(e as string);
           });
       })
       .catch((e) => {
-        toastStore.trigger(getToastSettings(ToastType.ERROR, e as string));
+        toast.error(e as string);
       });
   }
 </script>
@@ -363,7 +322,6 @@
     <section class="flex flex-row gap-5 justify-between">
       <Autocomplete
         open={trainerSearchOpen}
-        triggerRef={triggerRefTrainer}
         value={trainerName}
         label="Trainer"
         creationEnabled={true}
@@ -377,7 +335,6 @@
       />
       <Autocomplete
         open={pokemonSearchOpen}
-        {triggerRef}
         value={pokemonSearchName}
         label="Pokemon"
         bind:searcher={searchingPokemon}
@@ -521,40 +478,3 @@
     </Card.Root>
   {/each}
 </main>
-
-<!-- <div class="mt-5 flex flex-col gap-y-5">
-  {#each Object.entries(routeTrainers) as [name, trainerInfo], index}
-    <div>
-      <strong class="flex flex-row items-center gap-x-4">
-        {capitalizeWords(name)}
-      </strong>
-      <div class="mt-2 grid grid-cols-6 items-center gap-5">
-        {#if trainerInfo.sprite}
-          <img
-            src={`https://play.pokemonshowdown.com/sprites/trainers/${trainerInfo.sprite}.png`}
-            alt={name}
-            class="m-0 justify-self-center"
-          />
-        {/if}
-        {#each trainerInfo.pokemon_team as pokemon}
-          <button
-            class="group card relative grid !bg-transparent p-2 shadow-md transition ease-in-out hover:scale-110 hover:cursor-pointer"
-            onclick={() => {
-              editPokemonModalOpen = true;
-              currentTrainerPokemon = cloneDeep(pokemon);
-              trainerToUpdate = name;
-              currentTrainerVersions = trainerInfo.versions ?? [];
-            }}
-          >
-            <TrainerPokemonCard
-              {pokemon}
-              trainerName={name}
-              deletePokemon={deletePokemonFromTrainer}
-            />
-          </button>
-        {/each}
-      </div>
-      <div></div>
-    </div>
-  {/each}
-</div> -->

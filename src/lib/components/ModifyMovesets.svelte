@@ -299,7 +299,6 @@
   <Card.Content class="flex flex-row gap-3">
     <Autocomplete
       open={pokemonSearchOpen}
-      {triggerRef}
       value={pokemonSearch[1]}
       bind:searcher={searchingPokemon}
       {options}

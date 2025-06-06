@@ -120,7 +120,6 @@
 <div class="flex gap-16">
   <Autocomplete
     open={startingPokemonSearchOpen}
-    triggerRef={startingTriggerRef}
     value={startingPokemon[2]}
     bind:searcher={searchingStartingPokemon}
     options={startingOptions}
@@ -136,7 +135,6 @@
   />
   <Autocomplete
     open={endingPokemonSearchOpen}
-    triggerRef={endingTriggerRef}
     value={endingPokemon[2]}
     bind:searcher={searchingEndingPokemon}
     options={endingOptions}
