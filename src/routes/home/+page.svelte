@@ -1,6 +1,5 @@
 <script lang="ts">
   import { base64ToArray } from "$lib/utils";
-  import { getToastStore } from "@skeletonlabs/skeleton";
   import {
     BaseDirectory,
     exists,
@@ -17,11 +16,10 @@
   import { Input } from "$lib/components/ui/input";
   import { Textarea } from "$lib/components/ui/textarea";
   import * as Card from "$lib/components/ui/card";
+  import { toast } from "svelte-sonner";
 
   let homePageImage: string = $state("");
   let generalInfo = $state("");
-
-  const toastStore = getToastStore();
 
   onMount(async () => {
     homePageImage = await readFile(
@@ -92,10 +90,7 @@
       uploadedInfo,
       { baseDir: BaseDirectory.AppData },
     ).then(() => {
-      toastStore.trigger({
-        message: "Changes saved!",
-        background: "variant-filled-success",
-      });
+      toast.success("Changes saved!");
     });
   }
 
@@ -105,10 +100,7 @@
     reader.onloadend = (e) => {
       let base64 = e.target?.result as string;
       if (!base64.includes("data:image/png;base64,")) {
-        toastStore.trigger({
-          message: "Invalid image format!",
-          background: "variant-filled-error",
-        });
+        toast.error("Invalid image format!");
         return;
       }
       homePageImage = e.target?.result as string;

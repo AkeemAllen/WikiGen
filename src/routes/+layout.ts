@@ -8,8 +8,6 @@ import {
   writeTextFile,
 } from "@tauri-apps/plugin-fs";
 import { wikis } from "../store";
-import { getToastStore } from "@skeletonlabs/skeleton";
-import { ToastType, getToastSettings } from "$lib/utils/toasts";
 
 export const prerender = true;
 export const ssr = false;

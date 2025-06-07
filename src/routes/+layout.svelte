@@ -1,23 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
   import NavButton from "$lib/components/NavButton.svelte";
-  import {
-    arrow,
-    autoUpdate,
-    computePosition,
-    flip,
-    offset,
-    shift,
-  } from "@floating-ui/dom";
-  import type { ModalComponent } from "@skeletonlabs/skeleton";
-  import {
-    Modal,
-    Toast,
-    initializeStores,
-    storePopup,
-  } from "@skeletonlabs/skeleton";
-  import IconTreadmill from "@tabler/icons-svelte/icons/treadmill";
-  import IconBottle from "@tabler/icons-svelte/icons/bottle";
   import IconChevronDown from "@tabler/icons-svelte/icons/chevron-down";
   import IconDeviceFloppy from "@tabler/icons-svelte/icons/device-floppy";
   import IconDisc from "@tabler/icons-svelte/icons/disc";
@@ -27,7 +10,6 @@
   import IconMapRoute from "@tabler/icons-svelte/icons/map-route";
   import IconPlus from "@tabler/icons-svelte/icons/plus";
   import IconPokeball from "@tabler/icons-svelte/icons/pokeball";
-  import IconSeedling from "@tabler/icons-svelte/icons/seedling";
   import IconTrash from "@tabler/icons-svelte/icons/trash";
   import IconStackMiddle from "@tabler/icons-svelte/icons/stack-middle";
 
@@ -40,7 +22,6 @@
   import { loadWikiData } from "$lib/utils/loadWiki";
   import CreateWikiModal from "$lib/components/modals/CreateWikiModal.svelte";
   import DeleteWikiModal from "$lib/components/modals/DeleteWikiModal.svelte";
-  import SelectInput from "$lib/components/SelectInput.svelte";
   import { goto } from "$app/navigation";
   import logo from "$lib/assets/icon.png";
   import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
@@ -55,23 +36,21 @@
   import { load } from "@tauri-apps/plugin-store";
   import IconTestPipe from "@tabler/icons-svelte/icons/test-pipe";
   import LandingPage from "$lib/components/LandingPage.svelte";
-  interface Props {
-    children?: import("svelte").Snippet;
-  }
   import { Toaster } from "$lib/components/ui/sonner/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import Github from "@lucide/svelte/icons/github";
   import * as Dialog from "$lib/components/ui/dialog";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import { toast } from "svelte-sonner";
+  import { Label } from "$lib/components/ui/label";
+  import * as Select from "$lib/components/ui/select";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
 
+  type Props = {
+    children?: import("svelte").Snippet;
+  };
   let { children }: Props = $props();
 
-  initializeStores();
-
-  storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
-
-  const modalRegistry: Record<string, ModalComponent> = {};
   let updaterModalOpen = $state(false);
   let displayUpdateButton = $state(false);
   let updateStatus = $state("Updating");
@@ -93,6 +72,13 @@
       mkdocsFilePath = mkdocsFilePath.replace(/\s/g, "\\ ");
     }
     return mkdocsFilePath;
+  });
+
+  $effect(() => {
+    if ($selectedWiki.name) {
+      loadWikiData($selectedWiki, toast);
+      goto("/");
+    }
   });
 
   async function checkForUpdate() {
@@ -166,12 +152,6 @@
     await invoke("check_and_run_migrations").catch((err) => {
       toast.error(`Error running migrations: ${err}`);
     });
-  }
-
-  function loadSelectedWiki(e: any) {
-    $selectedWiki = $wikis[e.target.value];
-    loadWikiData($selectedWiki, toast);
-    goto("/");
   }
 
   async function backupWiki() {
@@ -389,9 +369,7 @@
 <CreateWikiModal bind:open={createWikiModalOpen} />
 <DeleteWikiModal bind:open={deleteWikiModalOpen} />
 
-<Toast position="br" rounded="rounded-none" padding="px-4 py-2" max={10} />
 <Toaster richColors />
-<Modal components={modalRegistry} />
 
 <div
   class="grid h-screen bg-gradient-to-br from-slate-50 to-slate-100 grid-rows-[auto_1fr_auto]"
@@ -580,15 +558,18 @@
       >
         <IconTrash size={20} />
       </button>
-      <SelectInput
-        options={Object.entries($wikis).map(([name, props]) => ({
-          label: props.site_name,
-          value: name,
-        }))}
-        value={$selectedWiki.name}
-        onChange={loadSelectedWiki}
-        class="w-[17rem] mt-0"
-      />
+      <Select.Root type="single" bind:value={$selectedWiki.name}>
+        <Select.Trigger id="pokemon-type" class="w-[17rem]">
+          {capitalizeWords($selectedWiki.name)}
+        </Select.Trigger>
+        <Select.Content>
+          {#each Object.entries($wikis).map( ([name, props]) => ({ label: props.site_name, value: name }), ) as wiki}
+            <Select.Item value={wiki.value} label={wiki.label}>
+              {capitalizeWords(wiki.label)}
+            </Select.Item>
+          {/each}
+        </Select.Content>
+      </Select.Root>
     </footer>
   {:else}
     <LandingPage />

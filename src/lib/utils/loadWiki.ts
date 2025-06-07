@@ -11,7 +11,6 @@ import { BaseDirectory, readTextFile } from "@tauri-apps/plugin-fs";
 import { routes } from "../../store/gameRoutes";
 import { sortRoutesByPosition } from "$lib/utils";
 import { types } from "../../store/types";
-import { ToastType, getToastSettings } from "./toasts";
 
 async function loadRoutes(wikiName: string) {
   const routesFromFile = await readTextFile(`${wikiName}/data/routes.json`, {
@@ -28,7 +27,7 @@ async function loadTypes(wikiName: string) {
   types.set(JSON.parse(typesFromFile)["types"]);
 }
 
-export async function loadWikiData(wiki: Wiki, toastStore: any) {
+export async function loadWikiData(wiki: Wiki, toast: any) {
   await Database.load(`sqlite:${wiki.name}/${wiki.name}.db`)
     .then((database) => {
       db.set(database);
@@ -90,24 +89,15 @@ export async function loadWikiData(wiki: Wiki, toastStore: any) {
 
       // Load Types
       loadTypes(wiki.name).catch((err) => {
-        toastStore.trigger(
-          getToastSettings(ToastType.ERROR, `Error loading types: ${err}`),
-        );
+        toast.error(`Error loading types: ${err}`);
       });
 
       // Load Routes
       loadRoutes(wiki.name).catch((err) => {
-        toastStore.trigger(
-          getToastSettings(ToastType.ERROR, `Error loading routes: ${err}`),
-        );
+        toast.error(`Error loading routes: ${err}`);
       });
     })
     .catch((err) => {
-      toastStore.trigger(
-        getToastSettings(
-          ToastType.ERROR,
-          `Error loading values from database: ${err}`,
-        ),
-      );
+      toast.error(`Error loading values from database: ${err}`);
     });
 }

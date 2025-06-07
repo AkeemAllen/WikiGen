@@ -1,6 +1,5 @@
 <script lang="ts">
   import { run } from "svelte/legacy";
-  // import { getToastStore } from "@skeletonlabs/skeleton";
   import { appDataDir } from "@tauri-apps/api/path";
   import { type } from "@tauri-apps/plugin-os";
   // import { invoke } from "@tauri-apps/api/tauri";

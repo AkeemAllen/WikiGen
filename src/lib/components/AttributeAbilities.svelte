@@ -1,8 +1,5 @@
 <script lang="ts">
-  import AutoComplete from "$lib/components/AutoComplete.svelte";
   import { Button } from "$lib/components/ui/button";
-  import BaseModal from "$lib/components/BaseModal.svelte";
-  import TextInput from "$lib/components/TextInput.svelte";
   import {
     abilitiesList,
     type Ability,

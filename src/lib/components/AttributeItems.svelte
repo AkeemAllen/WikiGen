@@ -1,6 +1,5 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
-  import BaseModal from "$lib/components/BaseModal.svelte";
   import {
     type Item,
     type ItemLocation,
@@ -10,7 +9,6 @@
   import { selectedWiki } from "../../store";
   import { invoke } from "@tauri-apps/api/core";
   import { writeFile, BaseDirectory, readFile } from "@tauri-apps/plugin-fs";
-  import TextInput from "$lib/components/TextInput.svelte";
   import { db } from "../../store/db";
   import { base64ToArray, isNullEmptyOrUndefined } from "$lib/utils";
   import { FALSE, TRUE } from "$lib/utils/CONSTANTS";

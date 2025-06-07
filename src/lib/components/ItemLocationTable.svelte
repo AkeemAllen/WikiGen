@@ -1,6 +1,5 @@
 <script lang="ts">
   import { type ItemLocation } from "../../store/items";
-  import TextInput from "$lib/components/TextInput.svelte";
   import { Button } from "$lib/components/ui/button";
   import { routes } from "../../store/gameRoutes";
   import { db } from "../../store/db";
@@ -240,11 +239,19 @@
           />
         </div>
       </div>
-      <TextInput
-        bind:value={itemLocationToEdit.method}
-        label="Method"
-        placeholder="Method"
-      />
+      <div>
+        <Label
+          for="method"
+          class="block mb-2 text-sm font-medium leading-6 text-gray-900"
+          >Method</Label
+        >
+        <Input
+          id="method"
+          bind:value={itemLocationToEdit.method}
+          placeholder="Specific Location"
+        />
+      </div>
+
       <div>
         <Label
           for="requirements"

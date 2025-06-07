@@ -1,11 +1,10 @@
 <script lang="ts">
   import { loadWikiData } from "$lib/utils/loadWiki";
-  import { getToastStore } from "@skeletonlabs/skeleton";
   import { selectedWiki, wikis } from "../../store";
   import IconPlus from "@tabler/icons-svelte/icons/plus";
   import CreateWikiModal from "$lib/components/modals/CreateWikiModal.svelte";
+  import { toast } from "svelte-sonner";
 
-  const toastStore = getToastStore();
   let createWikiModalOpen = $state(false);
 </script>
 
@@ -24,7 +23,7 @@
           class="hover:ring hover:ring-indigo-500 ease-in-out group rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 border-0 bg-white"
           onclick={() => {
             $selectedWiki = $wikis[codeName];
-            loadWikiData($selectedWiki, toastStore);
+            loadWikiData($selectedWiki, toast);
           }}
         >
           <h3

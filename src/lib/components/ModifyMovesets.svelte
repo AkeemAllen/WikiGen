@@ -13,7 +13,6 @@
   import { BaseDirectory } from "@tauri-apps/plugin-fs";
   import { addMoves, deleteMoves, shiftMoves } from "$lib/utils";
   import { generatePokemonPages } from "$lib/utils/generators";
-  import NumberInput from "./NumberInput.svelte";
   import IconTrash from "@lucide/svelte/icons/trash";
   import IconX from "@lucide/svelte/icons/x";
   import { onDestroy } from "svelte";
@@ -401,7 +400,8 @@
                       class="relative rounded-md mt-2 shadow-sm p-1 self-center border border-indigo-200 flex flex-row justify-between align-middle group"
                     >
                       {capitalizeWords(pokemonMove.name)}
-                      <NumberInput
+                      <Input
+                        type="number"
                         bind:value={pokemonMove.level_learned}
                         onchange={() => onLevelEdit(name, pokemonMove)}
                       />

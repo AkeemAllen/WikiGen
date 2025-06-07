@@ -1,6 +1,4 @@
 <script lang="ts">
-  import IconDots from "@tabler/icons-svelte/icons/dots";
-  import { popup } from "@skeletonlabs/skeleton";
   import ImageIcon from "@lucide/svelte/icons/image";
   import SplitIcon from "@lucide/svelte/icons/split";
   import ArrowLeftRightIcon from "@lucide/svelte/icons/arrow-left-right";
