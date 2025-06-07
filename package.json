@@ -45,12 +45,9 @@
   },
   "type": "module",
   "dependencies": {
-    "@floating-ui/dom": "^1.7.1",
-    "@humanspeak/svelte-virtual-list": "^0.2.5",
     "@tabler/icons-svelte": "^3.34.0",
     "@tauri-apps/api": "^2.5.0",
     "@tauri-apps/plugin-store": "~2.2.0",
-    "@vincjo/datatables": "^1.14.10",
     "formsnap": "^2.0.1",
     "paneforge": "1.0.0-next.5",
     "svelte-multiselect": "11.0.0-rc.1",

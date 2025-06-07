@@ -8,12 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@floating-ui/dom':
-        specifier: ^1.7.1
-        version: 1.7.1
-      '@humanspeak/svelte-virtual-list':
-        specifier: ^0.2.5
-        version: 0.2.5(svelte@5.33.15)
       '@tabler/icons-svelte':
         specifier: ^3.34.0
         version: 3.34.0(svelte@5.33.15)
@@ -23,9 +17,6 @@ importers:
       '@tauri-apps/plugin-store':
         specifier: ~2.2.0
         version: 2.2.0
-      '@vincjo/datatables':
-        specifier: ^1.14.10
-        version: 1.14.10(svelte@5.33.15)
       formsnap:
         specifier: ^2.0.1
         version: 2.0.1(svelte@5.33.15)(sveltekit-superforms@2.25.0(@sveltejs/kit@2.21.2(@sveltejs/vite-plugin-svelte@5.1.0(svelte@5.33.15)(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(yaml@2.8.0)))(svelte@5.33.15)(vite@6.3.5(@types/node@22.15.30)(jiti@2.4.2)(lightningcss@1.30.1)(yaml@2.8.0)))(@types/json-schema@7.0.15)(svelte@5.33.15)(typescript@5.8.3))
@@ -326,11 +317,6 @@ packages:
 
   '@hapi/topo@5.1.0':
     resolution: {integrity: sha512-foQZKJig7Ob0BMAYBfcJk8d77QtOe7Wo4ox7ff1lQYoNNAb6jwcY1ncdoy2e9wQZzvNy7ODZCYJkK8kzmcAnAg==}
-
-  '@humanspeak/svelte-virtual-list@0.2.5':
-    resolution: {integrity: sha512-6OJHX5QydbDIM7iS3kQX4E+hKWZySIwktrxKd3YINJJhOjmoYnVNgall0/1QcCSj2622j/iyAxm76UoWU//wqg==}
-    peerDependencies:
-      svelte: ^5.0.0
 
   '@internationalized/date@3.8.2':
     resolution: {integrity: sha512-/wENk7CbvLbkUvX1tu0mwq49CVkkWpkXubGel6birjRPyo6uQ4nQpnq5xZu823zRCwwn82zgHrvgF1vZyvmVgA==}
@@ -749,11 +735,6 @@ packages:
     peerDependenciesMeta:
       '@types/json-schema':
         optional: true
-
-  '@vincjo/datatables@1.14.10':
-    resolution: {integrity: sha512-gtojSC/LKDHbh2ZGZeaAQ+lLltcmcSDDLkecgb9WpG7lHmd4b/1HUTtFWAJt43TnaK8SrciGugh9VRRZN53bpw==}
-    peerDependencies:
-      svelte: ^3.56.0 || ^4.0.0 || ^5.0.0-next.120
 
   '@vinejs/compiler@3.0.0':
     resolution: {integrity: sha512-v9Lsv59nR56+bmy2p0+czjZxsLHwaibJ+SV5iK9JJfehlJMa501jUJQqqz4X/OqKXrxtE3uTQmSqjUqzF3B2mw==}
@@ -1581,11 +1562,6 @@ snapshots:
       '@hapi/hoek': 9.3.0
     optional: true
 
-  '@humanspeak/svelte-virtual-list@0.2.5(svelte@5.33.15)':
-    dependencies:
-      esm-env: 1.2.2
-      svelte: 5.33.15
-
   '@internationalized/date@3.8.2':
     dependencies:
       '@swc/helpers': 0.5.17
@@ -1933,10 +1909,6 @@ snapshots:
     optionalDependencies:
       '@types/json-schema': 7.0.15
     optional: true
-
-  '@vincjo/datatables@1.14.10(svelte@5.33.15)':
-    dependencies:
-      svelte: 5.33.15
 
   '@vinejs/compiler@3.0.0':
     optional: true
