@@ -5,6 +5,7 @@
   import { type } from "@tauri-apps/plugin-os";
   // import { invoke } from "@tauri-apps/api/tauri";
   import { selectedWiki } from "../../store";
+  import * as Card from "$lib/components/ui/card/index.js";
 
   // type Response = {
   //   process_id: number;
@@ -100,46 +101,50 @@
     </div>
   {/if}
 </div> -->
-<p class=" text-xl font-bold">Under Developement</p>
-<p class="text-sm">
-  Currently developing the ability to launch and manage the wiki server from the
-  app. However, due to complications, this feature is currently paused.
-  <br />
-  Below are instructions for launching the server manually
-</p>
-<br />
+<Card.Root class="mx-5 mt-5">
+  <Card.Content>
+    <p class=" text-xl font-bold">Under Developement</p>
+    <p class="text-sm">
+      Currently developing the ability to launch and manage the wiki server from
+      the app. However, due to complications, this feature is currently paused.
+      <br />
+      Below are instructions for launching the server manually
+    </p>
+    <br />
 
-<div class="flex flex-col gap-y-1">
-  <p class="text-sm">
-    1. Ensure <a
-      href="https://www.python.org/downloads/"
-      target="_blank"
-      class="underline">Python</a
-    > is installed on your system.
-  </p>
-  <p class="text-sm">
-    2. Run <code class="rounded-md bg-gray-200 px-1"
-      >pip install mkdocs mkdocs-material</code
-    > in a terminal to install mkdocs and its material theme
-  </p>
-  <p class="text-sm">
-    3. In your terminal, navigate to the wiki's distribution directory with the
-    following command: <code class="rounded-md bg-gray-200 px-1"
-      >cd {mkdocsFilePath}</code
-    >
-    and then run
-    <code class="rounded-md bg-gray-200 px-1">mkdocs serve</code>
-  </p>
-  <p>
-    Note: If you run into Issue running <code
-      class="rounded-md bg-gray-200 px-1">mkdocs serve</code
-    >, try
-    <code class="rounded-md bg-gray-200 px-1">python -m mkdocs serve</code>
-  </p>
-  <p class="text-sm">
-    4. You should now see the server running on
-    <a href="http://localhost:8000" target="_blank" class="underline"
-      >http://localhost:8000/{$selectedWiki.name}</a
-    >. From there you can monitor the changes you make to the wiki
-  </p>
-</div>
+    <div class="flex flex-col gap-y-1">
+      <p class="text-sm">
+        1. Ensure <a
+          href="https://www.python.org/downloads/"
+          target="_blank"
+          class="underline">Python</a
+        > is installed on your system.
+      </p>
+      <p class="text-sm">
+        2. Run <code class="rounded-md bg-gray-200 px-1"
+          >pip install mkdocs mkdocs-material</code
+        > in a terminal to install mkdocs and its material theme
+      </p>
+      <p class="text-sm">
+        3. In your terminal, navigate to the wiki's distribution directory with
+        the following command: <code class="rounded-md bg-gray-200 px-1"
+          >cd {mkdocsFilePath}</code
+        >
+        and then run
+        <code class="rounded-md bg-gray-200 px-1">mkdocs serve</code>
+      </p>
+      <p>
+        Note: If you run into Issue running <code
+          class="rounded-md bg-gray-200 px-1">mkdocs serve</code
+        >, try
+        <code class="rounded-md bg-gray-200 px-1">python -m mkdocs serve</code>
+      </p>
+      <p class="text-sm">
+        4. You should now see the server running on
+        <a href="http://localhost:8000" target="_blank" class="underline"
+          >http://localhost:8000/{$selectedWiki.name}</a
+        >. From there you can monitor the changes you make to the wiki
+      </p>
+    </div>
+  </Card.Content>
+</Card.Root>

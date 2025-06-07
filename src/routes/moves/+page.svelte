@@ -23,6 +23,7 @@
 
   let moveSearch: [number, string] = $state([0, ""]);
   let moveSearchOpen = $state(false);
+  let moveModified = $state(false);
   let searchingMoves = $state("");
 
   let newMoveModalOpen: boolean = $state(false);
@@ -86,6 +87,7 @@
       .select<Move[]>("SELECT * FROM moves WHERE id = $1;", [moveSearch[0]])
       .then(async (res) => {
         move = res[0];
+        moveModified = move.is_modified === 1;
         originalMoveDetails = cloneDeep(move);
       })
       .then(async () => {
@@ -97,6 +99,7 @@
   }
 
   async function saveMoveChanges() {
+    move.is_modified = moveModified ? 1 : 0;
     await $db
       .execute(
         "UPDATE moves SET power=$1,accuracy=$2,pp=$3,type=$4,damage_class=$5,machine_name=$6,is_modified=$7 WHERE id = $8;",
@@ -175,8 +178,8 @@
   }
 </script>
 
-<Dialog.Root class="w-[30rem]" bind:open={newMoveModalOpen}>
-  <Dialog.Content>
+<Dialog.Root bind:open={newMoveModalOpen}>
+  <Dialog.Content class="w-[30rem]">
     <Dialog.Header>
       <Dialog.Title>Create New Move</Dialog.Title>
     </Dialog.Header>
@@ -388,7 +391,7 @@
         <div class="flex flex-row space-x-2 items-center mt-5">
           <Checkbox
             id="is-modified"
-            bind:checked={move.is_modified}
+            bind:checked={moveModified}
             onchange={setModified}
             class="text-sm font-medium leading-6 text-gray-900"
           />

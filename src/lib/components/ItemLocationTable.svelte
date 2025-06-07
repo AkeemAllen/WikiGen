@@ -1,32 +1,33 @@
 <script lang="ts">
-  import { DataHandler, Pagination } from "@vincjo/datatables";
   import { type ItemLocation } from "../../store/items";
   import TextInput from "$lib/components/TextInput.svelte";
-  import Button from "$lib/components/Button.svelte";
-  import SelectInput from "$lib/components/SelectInput.svelte";
-  import ThSort from "$lib/components/ThSort.svelte";
-  import BaseModal from "$lib/components/BaseModal.svelte";
-  import AutoComplete from "$lib/components/AutoComplete.svelte";
-  import IconEdit from "@tabler/icons-svelte/icons/edit";
-  import IconTrash from "@tabler/icons-svelte/icons/trash";
+  import { Button } from "$lib/components/ui/button";
   import { routes } from "../../store/gameRoutes";
   import { db } from "../../store/db";
-
-  import { getToastStore } from "@skeletonlabs/skeleton";
-  import { getToastSettings, ToastType } from "$lib/utils/toasts";
-
-  const toastStore = getToastStore();
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
+  import { Label } from "$lib/components/ui/label/index.js";
+  import * as Select from "$lib/components/ui/select/index.js";
+  import * as Card from "$lib/components/ui/card/index.js";
+  import TrashIcon from "@lucide/svelte/icons/trash";
+  import { toast } from "svelte-sonner";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
+  import { Textarea } from "./ui/textarea";
 
   let searchValue: string = $state("");
   let addItemLocationModalOpen: boolean = $state(false);
   let editItemLocationModalOpen: boolean = $state(false);
-  interface Props {
+  type Props = {
     itemName?: string;
     generatePage: Function;
     itemLocations?: ItemLocation[];
-  }
+  };
 
-  let { itemName = "", generatePage, itemLocations = $bindable([]) }: Props = $props();
+  let {
+    itemName = "",
+    generatePage,
+    itemLocations = $bindable([]),
+  }: Props = $props();
 
   let newItemLocation: ItemLocation = $state({
     id: 0,
@@ -51,20 +52,6 @@
     value: route,
   }));
 
-  const rowsPerPageOptions = [
-    { label: "5", value: 5 },
-    { label: "10", value: 10 },
-    { label: "20", value: 20 },
-    { label: "50", value: 50 },
-    { label: "100", value: 100 },
-  ];
-
-  let handler = $derived(new DataHandler(itemLocations, {
-    rowsPerPage: 5,
-  }));
-  let rows = $derived(handler.getRows());
-  let rowsPerPage = $derived(handler.getRowsPerPage());
-
   async function addItemLocation() {
     await $db
       .execute(
@@ -78,9 +65,7 @@
         ],
       )
       .then((res) => {
-        toastStore.trigger(
-          getToastSettings(ToastType.SUCCESS, "Item Location Added!"),
-        );
+        toast.success("Item Location Added!");
         addItemLocationModalOpen = false;
         newItemLocation.id = res.lastInsertId as number;
         newItemLocation.item_name = itemName;
@@ -89,12 +74,7 @@
         generatePage();
       })
       .catch((err) => {
-        toastStore.trigger(
-          getToastSettings(
-            ToastType.ERROR,
-            `Error Adding Item Location: ${err}`,
-          ),
-        );
+        toast.error(`Error Adding Item Location: ${err}`);
       });
   }
 
@@ -111,9 +91,7 @@
         ],
       )
       .then(() => {
-        toastStore.trigger(
-          getToastSettings(ToastType.SUCCESS, "Item Location Updated!"),
-        );
+        toast.success(`Item Location Updated!`);
         editItemLocationModalOpen = false;
         itemLocations = itemLocations.map((itemLocation) => {
           if (itemLocation.id === itemLocationToEdit.id) {
@@ -125,12 +103,7 @@
         generatePage();
       })
       .catch((err) => {
-        toastStore.trigger(
-          getToastSettings(
-            ToastType.ERROR,
-            `Error Editing Item Location: ${err}`,
-          ),
-        );
+        toast.error(`Error Editing Item Location: ${err}`);
       });
   }
 
@@ -138,9 +111,7 @@
     await $db
       .execute("DELETE FROM item_location WHERE id = $1;", [id])
       .then(() => {
-        toastStore.trigger(
-          getToastSettings(ToastType.SUCCESS, "Item Location Deleted!"),
-        );
+        toast.success(`Item Location Deleted!`);
         editItemLocationModalOpen = false;
         itemLocations = itemLocations.filter(
           (itemLocation) => itemLocation.id !== id,
@@ -149,185 +120,207 @@
         generatePage();
       })
       .catch((err) => {
-        toastStore.trigger(
-          getToastSettings(
-            ToastType.ERROR,
-            `Error Deleting Item Location: ${err}`,
-          ),
-        );
+        toast.error(`Error Deleting Item Location: ${err}`);
       });
   }
 </script>
 
-<BaseModal bind:open={addItemLocationModalOpen} class="w-[20rem]">
-  <h2 class="text-lg font-medium leading-6 text-gray-900">New Item Location</h2>
-  <AutoComplete
-    bind:value={newItemLocation.route}
-    label="Routes"
-    popupId="newLocationPopup"
-    class="z-10 w-full text-sm"
-    options={routeListOptions}
-    placeholder="Routes"
-    onSelection={(e) => {
-      newItemLocation.route = e.detail.value;
-    }}
-  />
-  <div>
-    <label
-      for="specific-location"
-      class="block text-sm font-medium leading-6 text-gray-900"
-      >Specific Location</label
-    >
-    <div class="mt-2">
-      <textarea
-        id="specific-location"
-        bind:value={newItemLocation.specific_location}
-        placeholder="Specific Location"
-        class="block h-15 w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-></textarea>
-    </div>
-  </div>
-  <TextInput
-    bind:value={newItemLocation.method}
-    label="Method"
-    placeholder="Method"
-  />
-  <div>
-    <label
-      for="requirements"
-      class="block text-sm font-medium leading-6 text-gray-900"
-      >Requirements</label
-    >
-    <div class="mt-2">
-      <textarea
-        id="requirements"
-        bind:value={newItemLocation.requirements}
-        placeholder="Requirements"
-        class="block h-15 w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-></textarea>
-    </div>
-  </div>
-  <Button
-    title="Add Location"
-    disabled={newItemLocation.route === ""}
-    onClick={addItemLocation}
-  />
-</BaseModal>
+<Dialog.Root bind:open={addItemLocationModalOpen}>
+  <Dialog.Content class="w-[25rem]">
+    <Dialog.Header>
+      <Dialog.Title>New Item Location</Dialog.Title>
+      <Dialog.Description>Add a new item location</Dialog.Description>
+    </Dialog.Header>
+    <form onsubmit={addItemLocation} class="flex flex-col gap-4">
+      <div>
+        <Label
+          for="route-name"
+          class="text-sm font-medium text-slate-700 mb-2 block">Route</Label
+        >
+        <Select.Root type="single" bind:value={newItemLocation.route}>
+          <Select.Trigger id="route-name" class="w-full">
+            {capitalizeWords(newItemLocation.route) || "Select a Route"}
+          </Select.Trigger>
+          <Select.Content>
+            {#each routeListOptions as route}
+              <Select.Item value={route.value} label={route.label}>
+                {capitalizeWords(route.value)}
+              </Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+      </div>
+      <div>
+        <Label
+          for="specific-location"
+          class="block text-sm font-medium leading-6 text-gray-900"
+          >Specific Location</Label
+        >
+        <div class="mt-2">
+          <Textarea
+            id="specific-location"
+            bind:value={newItemLocation.specific_location}
+            placeholder="Specific Location"
+          />
+        </div>
+      </div>
+      <div>
+        <Label
+          for="method"
+          class="block text-sm font-medium leading-6 text-gray-900"
+          >Method</Label
+        >
+        <Input
+          id="method"
+          bind:value={newItemLocation.method}
+          placeholder="Method"
+        />
+      </div>
+      <div>
+        <Label
+          for="requirements"
+          class="block text-sm font-medium leading-6 text-gray-900"
+          >Requirements</Label
+        >
+        <div class="mt-2">
+          <Textarea
+            id="requirements"
+            bind:value={newItemLocation.requirements}
+            placeholder="Requirements"
+          />
+        </div>
+      </div>
+      <Dialog.Footer>
+        <Button type="submit" disabled={newItemLocation.route === ""}>
+          Add Location
+        </Button>
+      </Dialog.Footer>
+    </form>
+  </Dialog.Content>
+</Dialog.Root>
 
-<BaseModal bind:open={editItemLocationModalOpen} class="w-[20rem]">
-  <h2 class="text-lg font-medium leading-6 text-gray-900">
-    Edit Item Location
-  </h2>
-  <AutoComplete
-    bind:value={itemLocationToEdit.route}
-    label="Routes"
-    popupId="newLocationPopup"
-    class="z-10 w-full text-sm"
-    options={routeListOptions}
-    placeholder="Routes"
-    disabled
-    onSelection={(e) => {
-      itemLocationToEdit.route = e.detail.value;
-    }}
-  />
-  <div>
-    <label
-      for="specific-location"
-      class="block text-sm font-medium leading-6 text-gray-900"
-      >Specific Location</label
-    >
-    <div class="mt-2">
-      <textarea
-        id="specific-location"
-        bind:value={itemLocationToEdit.specific_location}
-        placeholder="Specific Location"
-        class="block h-15 w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-></textarea>
-    </div>
-  </div>
-  <TextInput
-    bind:value={itemLocationToEdit.method}
-    label="Method"
-    placeholder="Method"
-  />
-  <div>
-    <label
-      for="requirements"
-      class="block text-sm font-medium leading-6 text-gray-900"
-      >Requirements</label
-    >
-    <div class="mt-2">
-      <textarea
-        id="requirements"
-        bind:value={itemLocationToEdit.requirements}
-        placeholder="Requirements"
-        class="block h-15 w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-></textarea>
-    </div>
-  </div>
-  <Button title="Edit Location" onClick={editItemLocation} />
-</BaseModal>
-
-<div class="space-y-4 overflow-x-auto pr-4">
-  <header class="flex items-center justify-between gap-4">
-    <div class="flex gap-x-3">
+<Dialog.Root bind:open={editItemLocationModalOpen}>
+  <Dialog.Content class="w-[20rem]">
+    <Dialog.Header>
+      <Dialog.Title>Edit Item Location</Dialog.Title>
+      <Dialog.Description
+        >Edit the details of the item location.</Dialog.Description
+      >
+    </Dialog.Header>
+    <form onsubmit={editItemLocation} class="flex flex-col gap-4">
+      <div>
+        <Label
+          for="route-name"
+          class="text-sm font-medium text-slate-700 mb-2 block">Route</Label
+        >
+        <Select.Root type="single" bind:value={itemLocationToEdit.route}>
+          <Select.Trigger id="route-name" class="w-full">
+            {capitalizeWords(itemLocationToEdit.route) || "Select a Route"}
+          </Select.Trigger>
+          <Select.Content>
+            {#each routeListOptions as route}
+              <Select.Item value={route.value} label={route.label}>
+                {capitalizeWords(route.value)}
+              </Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+      </div>
+      <div>
+        <Label
+          for="specific-location"
+          class="block text-sm font-medium leading-6 text-gray-900"
+          >Specific Location</Label
+        >
+        <div class="mt-2">
+          <Textarea
+            id="specific-location"
+            bind:value={itemLocationToEdit.specific_location}
+            placeholder="Specific Location"
+          />
+        </div>
+      </div>
       <TextInput
-        id="route-name"
+        bind:value={itemLocationToEdit.method}
+        label="Method"
+        placeholder="Method"
+      />
+      <div>
+        <Label
+          for="requirements"
+          class="block text-sm font-medium leading-6 text-gray-900"
+          >Requirements</Label
+        >
+        <div class="mt-2">
+          <Textarea
+            id="requirements"
+            bind:value={itemLocationToEdit.requirements}
+            placeholder="Requirements"
+          />
+        </div>
+      </div>
+      <Dialog.Footer>
+        <Button type="submit">Edit Location</Button>
+      </Dialog.Footer>
+    </form>
+  </Dialog.Content>
+</Dialog.Root>
+
+<Card.Root>
+  <Card.Header>
+    <Card.Title>Locations</Card.Title>
+  </Card.Header>
+  <Card.Content>
+    <div class="flex flex-row gap-2">
+      <Input
+        type="text"
+        placeholder="Filter Routes"
+        class="w-[20rem]"
         bind:value={searchValue}
-        inputHandler={() => handler.search(searchValue)}
-        placeholder="Search route name..."
       />
       <Button
-        title="Add Item Location"
-        class="mt-2"
-        onClick={() => {
+        onclick={() => {
           addItemLocationModalOpen = true;
         }}
-      />
+        class="cursor-pointer">Add Location</Button
+      >
     </div>
-    <aside class="flex items-center gap-x-3">
-      <p class="mt-2">Show</p>
-      <SelectInput bind:value={$rowsPerPage} options={rowsPerPageOptions} />
-    </aside>
-  </header>
-  <table class="table table-hover table-compact w-full table-auto bg-white">
-    <thead>
-      <tr class="bg-white">
-        <ThSort {handler} orderBy="route">Route</ThSort>
-        <ThSort {handler} orderBy="specific_location">Specific Location</ThSort>
-        <ThSort {handler} orderBy="method">Method</ThSort>
-        <ThSort {handler} orderBy="requirements">Requirements</ThSort>
-      </tr>
-    </thead>
-    <tbody>
-      {#each $rows as row}
-        <tr>
-          <td>{row.route}</td>
-          <td>{row.specific_location ? row.specific_location : ""}</td>
-          <td>{row.method ? row.method : ""}</td>
-          <td>{row.requirements ? row.requirements : ""}</td>
-          <td
-            class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-            onclick={() => {
-              itemLocationToEdit = { ...row };
-              editItemLocationModalOpen = true;
+    <div class="grid grid-cols-3 gap-2 mt-5">
+      {#each itemLocations.filter((location) => location.route
+          .toLowerCase()
+          .includes(searchValue.toLowerCase())) as location}
+        <button
+          class="hover:border-indigo-500 ease-in-out group rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 bg-white border group relative"
+          onclick={() => {
+            itemLocationToEdit = location;
+            editItemLocationModalOpen = true;
+          }}
+        >
+          <div class="grid gap-2">
+            <div class="text-left">
+              {location.route}
+              <p class="text-sm text-gray-500">
+                {location.specific_location}
+              </p>
+              <p class="text-sm text-gray-500">
+                {capitalizeWords(location.method || "")}
+              </p>
+              <p class="text-sm text-gray-500">
+                {location.requirements}
+              </p>
+            </div>
+          </div>
+          <Button
+            class="invisible absolute -right-2 -top-5 z-10 rounded-md bg-red-200 hover:scale-110 group-hover:visible cursor-pointer hover:bg-red-400 p-0"
+            onclick={(e) => {
+              e.stopPropagation();
+              deleteItemLocation(location.id);
             }}
           >
-            <IconEdit size={18} class="text-gray-500" />
-          </td>
-          <td
-            class="w-5 rounded-sm hover:cursor-pointer hover:bg-gray-300"
-            onclick={() => {
-              deleteItemLocation(row.id);
-            }}
-          >
-            <IconTrash size={18} class="text-gray-500" />
-          </td>
-        </tr>
+            <TrashIcon />
+          </Button>
+        </button>
       {/each}
-    </tbody>
-  </table>
-  <footer class="flex">
-    <Pagination {handler} />
-  </footer>
-</div>
+    </div>
+  </Card.Content>
+</Card.Root>

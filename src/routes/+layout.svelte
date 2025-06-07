@@ -29,6 +29,7 @@
   import IconPokeball from "@tabler/icons-svelte/icons/pokeball";
   import IconSeedling from "@tabler/icons-svelte/icons/seedling";
   import IconTrash from "@tabler/icons-svelte/icons/trash";
+  import IconStackMiddle from "@tabler/icons-svelte/icons/stack-middle";
 
   import "../app.css";
   import { selectedWiki, wikis, user, type User, type Wiki } from "../store";
@@ -513,6 +514,18 @@
               <IconFlame
                 size={20}
                 class={`${page.url.pathname.includes("types") && "text-indigo-500"}`}
+              />
+            {/snippet}
+          </NavButton>
+          <NavButton
+            name="Attributes"
+            route="/attributes"
+            active={page.url.pathname.includes("attributes")}
+          >
+            {#snippet icon()}
+              <IconStackMiddle
+                size={20}
+                class={`${page.url.pathname.includes("attributes") && "text-indigo-500"}`}
               />
             {/snippet}
           </NavButton>
