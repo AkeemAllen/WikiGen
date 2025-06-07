@@ -2,6 +2,8 @@
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import * as Tabs from "$lib/components/ui/tabs/index.js";
   import AttributeItems from "$lib/components/AttributeItems.svelte";
+  import AttributeAbilities from "$lib/components/AttributeAbilities.svelte";
+  import AttributeNatures from "$lib/components/AttributeNatures.svelte";
 </script>
 
 <Tabs.Root value="items" class="w-full">
@@ -17,6 +19,10 @@
   <Tabs.Content value="items" class="mx-5">
     <AttributeItems />
   </Tabs.Content>
-  <Tabs.Content value="abilities" class="mx-5"></Tabs.Content>
-  <Tabs.Content value="natures" class="mx-5"></Tabs.Content>
+  <Tabs.Content value="abilities" class="mx-5">
+    <AttributeAbilities />
+  </Tabs.Content>
+  <Tabs.Content value="natures" class="mx-5">
+    <AttributeNatures />
+  </Tabs.Content>
 </Tabs.Root>

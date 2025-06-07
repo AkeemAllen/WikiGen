@@ -26,6 +26,8 @@
   import { Checkbox } from "./ui/checkbox";
   import { toast } from "svelte-sonner";
   import TrashIcon from "@lucide/svelte/icons/trash";
+  import * as Dialog from "$lib/components/ui/dialog";
+  import { Input } from "./ui/input";
 
   let itemSearch: [number, string] = $state([0, ""]);
   let itemSearchOpen = $state(false);
@@ -219,47 +221,62 @@
   }
 </script>
 
-<BaseModal class="w-[30rem]" bind:open={newItemModalOpen}>
-  <h2 class="text-lg font-medium leading-6 text-gray-900">Create New Item</h2>
-  <TextInput label="New Item Name" bind:value={newItem.name} />
-  <div>
-    <label
-      for="sprite-image"
-      class="block text-sm font-medium leading-6 text-gray-900">Sprite</label
-    >
-    {#if newSpriteImage !== ""}
-      <img src={newSpriteImage} alt="Sprite" width="30" height="30" />
-    {/if}
-    <input
-      id="sprite-image"
-      type="file"
-      accept="image/png"
-      class="mt-2"
-      onchange={onImageUpload}
-    />
-  </div>
-  <div>
-    <label
-      for="effect"
-      class="block text-sm font-medium leading-6 text-gray-900">Effect</label
-    >
-    <div class="mt-2">
-      <textarea
-        id="effect"
-        bind:value={newItem.effect}
-        class="block h-32 w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-      ></textarea>
-    </div>
-  </div>
-  <Button
-    title="Create Item"
-    class="w-32"
-    disabled={isNullEmptyOrUndefined(newItem.name) ||
-      isNullEmptyOrUndefined(newItem.effect) ||
-      newSpriteImage === ""}
-    onclick={createItem}
-  />
-</BaseModal>
+<Dialog.Root bind:open={newItemModalOpen}>
+  <Dialog.Content class="w-[30rem]">
+    <Dialog.Header>
+      <Dialog.Title>Create New Item</Dialog.Title>
+      <Dialog.Description
+        >Create a new item with a name, sprite, and effect.</Dialog.Description
+      >
+    </Dialog.Header>
+    <form onsubmit={createItem} class="flex flex-col gap-4">
+      <div>
+        <Label
+          for="name"
+          class="block text-sm font-medium leading-6 text-gray-900"
+          >New Item Name</Label
+        >
+        <Input type="text" bind:value={newItem.name} />
+      </div>
+      <div>
+        <Label
+          for="sprite-image"
+          class="block text-sm font-medium leading-6 text-gray-900"
+          >Sprite</Label
+        >
+        {#if newSpriteImage !== ""}
+          <img src={newSpriteImage} alt="Sprite" width="30" height="30" />
+        {/if}
+        <Input
+          id="sprite-image"
+          type="file"
+          accept="image/png"
+          class="mt-2"
+          onchange={onImageUpload}
+        />
+      </div>
+      <div>
+        <Label
+          for="effect"
+          class="block text-sm mb-2 font-medium leading-6 text-gray-900"
+          >Effect</Label
+        >
+        <Textarea id="effect" bind:value={newItem.effect} />
+      </div>
+      <Dialog.Footer>
+        <Button
+          class="w-32"
+          disabled={isNullEmptyOrUndefined(newItem.name) ||
+            isNullEmptyOrUndefined(newItem.effect) ||
+            newSpriteImage === ""}
+          onclick={createItem}
+        >
+          Create Item
+        </Button>
+      </Dialog.Footer>
+    </form>
+  </Dialog.Content>
+</Dialog.Root>
 
 <Card.Root>
   <Card.Content class="flex flex-row gap-3">
@@ -316,11 +333,7 @@
           >Effect/Description</Label
         >
         <div class="mt-2">
-          <Textarea
-            id="effect"
-            bind:value={item.effect}
-            class="block h-20 w-[50rem] rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-          />
+          <Textarea id="effect" bind:value={item.effect} />
         </div>
       </div>
       {#if !item.is_new}

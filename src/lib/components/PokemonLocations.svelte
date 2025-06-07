@@ -19,12 +19,12 @@
   let searchValue: string = $state("");
   let addLocationModalOpen: boolean = $state(false);
   let editLocationModalOpen: boolean = $state(false);
-  interface Props {
+  type Props = {
     pokemonId: number;
     pokemonDexNumber: number;
     pokemonName: string;
     pokemonLocations?: WildEncounter[];
-  }
+  };
 
   let {
     pokemonId,
@@ -245,7 +245,7 @@
         >
         <Select.Root type="single" bind:value={newLocation.route}>
           <Select.Trigger id="route-name" class="w-full">
-            {capitalizeWords(newLocation.route)}
+            {capitalizeWords(newLocation.route) || "Select a Route"}
           </Select.Trigger>
           <Select.Content>
             {#each routeListOptions as route}

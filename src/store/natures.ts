@@ -3,8 +3,8 @@ import { writable } from "svelte/store";
 export type Nature = {
   id: number;
   name: string;
-  increased_stat: Stat | null;
-  decreased_stat: Stat | null;
+  increased_stat: string | undefined;
+  decreased_stat: string | undefined;
   is_modified: number;
   is_new: number;
 };
