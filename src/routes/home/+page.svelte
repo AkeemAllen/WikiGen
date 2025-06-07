@@ -11,8 +11,12 @@
     writeTextFile,
   } from "@tauri-apps/plugin-fs";
   import { selectedWiki } from "../../store";
-  import Button from "$lib/components/Button.svelte";
+  import { Button } from "$lib/components/ui/button";
   import { onMount } from "svelte";
+  import { Label } from "$lib/components/ui/label";
+  import { Input } from "$lib/components/ui/input";
+  import { Textarea } from "$lib/components/ui/textarea";
+  import * as Card from "$lib/components/ui/card";
 
   let homePageImage: string = $state("");
   let generalInfo = $state("");
@@ -123,35 +127,40 @@
   }
 </script>
 
-<Button onClick={saveChanges} title="Save Changes" />
-<div class="mt-4">
-  <label
-    for="home-page-image"
-    class="block text-sm font-medium leading-6 text-gray-900"
-    >Home Page Logo</label
-  >
-  {#if homePageImage !== ""}
-    <img src={homePageImage} alt="Home Page" />
-  {/if}
-  <input
-    id="home-page-image"
-    type="file"
-    accept="image/png"
-    class="mt-2"
-    onchange={onImageUpload}
-  />
-</div>
-<div class="mt-4">
-  <label for="effect" class="block text-sm font-medium leading-6 text-gray-900"
-    >General Information</label
-  >
-  <div class="mt-2">
-    <textarea
-      id="effect"
-      bind:value={generalInfo}
-      spellcheck="false"
-      onkeydown={captureTab}
-      class="block h-48 w-[50rem] rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-gray-100 disabled:text-gray-400 sm:text-sm sm:leading-6"
-></textarea>
-  </div>
-</div>
+<Card.Root class="mx-5 mt-5">
+  <Card.Content>
+    <Button onclick={saveChanges}>Save Changes</Button>
+    <div class="mt-4">
+      <Label
+        for="home-page-image"
+        class="block text-sm font-medium leading-6 text-gray-900"
+        >Home Page Logo</Label
+      >
+      {#if homePageImage !== ""}
+        <img src={homePageImage} alt="Home Page" />
+      {/if}
+      <Input
+        id="home-page-image"
+        type="file"
+        accept="image/png"
+        class="mt-2"
+        onchange={onImageUpload}
+      />
+    </div>
+    <div class="mt-4">
+      <Label
+        for="effect"
+        class="block text-sm font-medium leading-6 text-gray-900"
+        >General Information</Label
+      >
+      <div class="mt-2">
+        <Textarea
+          id="effect"
+          bind:value={generalInfo}
+          spellcheck="false"
+          onkeydown={captureTab}
+        />
+      </div>
+    </div>
+  </Card.Content>
+</Card.Root>
