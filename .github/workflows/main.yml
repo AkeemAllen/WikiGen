@@ -74,7 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Revamped Move Editing to make it less annoying
+            \n- Full UI Overhaul
             "
           releaseDraft: false
           prerelease: false
