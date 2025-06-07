@@ -1,8 +1,6 @@
 <script lang="ts">
-  import IconTrash from "@tabler/icons-svelte/icons/trash";
   import { types } from "../../store/types";
-  import Button from "$lib/components/Button.svelte";
-  import TextInput from "$lib/components/TextInput.svelte";
+  import { Button } from "$lib/components/ui/button";
   import {
     BaseDirectory,
     readFile,
@@ -10,20 +8,21 @@
     writeTextFile,
   } from "@tauri-apps/plugin-fs";
   import { selectedWiki } from "../../store";
-  import { getToastStore } from "@skeletonlabs/skeleton";
+  import { toast } from "svelte-sonner";
   import { base64ToArray } from "$lib/utils";
+  import * as Card from "$lib/components/ui/card/index.js";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
+  import capitalizeWords from "$lib/utils/capitalizeWords";
+  import IconTrash from "@lucide/svelte/icons/trash";
 
-  const toastStore = getToastStore();
   let newType = $state("");
   let newTypeImage = $state("");
 
   async function addType() {
     if (newType === "") return;
     if ($types.includes(newType.toLowerCase().replaceAll(" ", "-"))) {
-      toastStore.trigger({
-        message: "Type already exists",
-        background: "variant-filled-error",
-      });
+      toast.error("Type already exists");
       return;
     }
     types.update((t) => [...t, newType.toLowerCase().replaceAll(" ", "-")]);
@@ -43,10 +42,7 @@
       ).then(() => {
         newType = "";
         newTypeImage = "";
-        toastStore.trigger({
-          message: "Type added successfully",
-          background: "variant-filled-success",
-        });
+        toast.success("Type added successfully");
       });
     });
   }
@@ -59,10 +55,7 @@
       JSON.stringify({ types: $types }),
       { baseDir: BaseDirectory.AppData },
     ).then(() => {
-      toastStore.trigger({
-        message: "Type deleted successfully",
-        background: "variant-filled-success",
-      });
+      toast.success("Type deleted successfully");
     });
   }
   async function getTypeImage(type: string): Promise<string> {
@@ -89,10 +82,7 @@
     reader.onloadend = (e) => {
       let base64 = e.target?.result as string;
       if (!base64.includes("data:image/png;base64,")) {
-        toastStore.trigger({
-          message: "Invalid image format!",
-          background: "variant-filled-error",
-        });
+        toast.error("Invalid image format!");
         return;
       }
       newTypeImage = e.target?.result as string;
@@ -101,69 +91,75 @@
   }
 </script>
 
-<div class="flex flex-col gap-3">
-  <TextInput
-    bind:value={newType}
-    placeholder="New Type"
-    inputHandler={(e) => {
-      newType = e.target.value.toLowerCase().replaceAll(" ", "-");
-    }}
-    class="w-44"
-  />
-  <div>
-    <label
-      for="sprite-image"
-      class="block text-sm font-medium leading-6 text-gray-900"
-      >Type Image</label
-    >
-    {#if newTypeImage !== ""}
-      <img src={newTypeImage} alt="Type" width="96" height="32" />
-    {/if}
-    <p class="text-sm italic text-gray-600 mt-2">
-      <strong>Note: </strong>Recommended to use 96 × 32 png image for
-      consistency.
-    </p>
-    <input
-      id="sprite-image"
-      type="file"
-      accept="image/png"
-      class="mt-2"
-      onchange={onImageUpload}
-      placeholder=""
+<Card.Root class="mx-5 mt-5">
+  <Card.Content class="flex flex-col gap-3">
+    <Input
+      type="text"
+      bind:value={newType}
+      placeholder="Enter New Type Name"
+      oninput={(e: any) => {
+        newType = e.target.value.toLowerCase().replaceAll(" ", "-");
+      }}
+      class="w-[15rem]"
     />
-  </div>
-  <Button
-    class="mt-2 mb-4 w-44"
-    title="Add New Type"
-    onClick={addType}
-    disabled={newType === "" || newTypeImage === ""}
-  />
-</div>
-<div class="grid grid-cols-3 gap-3">
-  {#each $types as type}
-    <div class="card flex flex-row items-center justify-between px-2 py-1">
-      {type}
-      <div class="grid grid-cols-2 gap-4 items-center">
-        {#if type !== "none"}
-          {#await getTypeImage(type) then spriteUrl}
-            <img
-              src={spriteUrl}
-              alt={type}
-              class="m-0 justify-self-center"
-              width="80"
-            />
-          {/await}
-          <button
-            class="btn rounded-sm p-2 hover:cursor-pointer hover:bg-gray-300"
-            onclick={() => deleteType(type)}
-          >
-            <IconTrash size={16} />
-          </button>
-        {/if}
-      </div>
+    <div>
+      <Label
+        for="sprite-image"
+        class="block text-sm font-medium leading-6 text-gray-900"
+        >Type Image</Label
+      >
+      {#if newTypeImage !== ""}
+        <img src={newTypeImage} alt="Type" width="96" height="32" />
+      {/if}
+      <p class="text-sm italic text-gray-600 mt-2">
+        <strong>Note: </strong>Recommended to use 96 × 32 png image for
+        consistency.
+      </p>
+      <Input
+        id="sprite-image"
+        type="file"
+        accept="image/png"
+        class="w-[15rem] mt-2"
+        onchange={onImageUpload}
+      />
     </div>
-  {/each}
-</div>
-<p class="text-sm italic text-gray-600 mt-2">
-  <strong>Note: </strong>Tab will need to be reloaded to see the changes.
-</p>
+    <Button
+      class="mt-2 mb-4 w-44"
+      title="Add New Type"
+      onclick={addType}
+      disabled={newType === "" || newTypeImage === ""}
+    >
+      Add Type
+    </Button>
+    <div class="grid grid-cols-3 gap-3">
+      {#each $types as type}
+        <div
+          class="flex flex-row bg-slate-200 rounded-sm items-center justify-between px-2 py-1"
+        >
+          {capitalizeWords(type)}
+          <div class="flex flex-row gap-4 items-center">
+            {#if type !== "none"}
+              {#await getTypeImage(type) then spriteUrl}
+                <img
+                  src={spriteUrl}
+                  alt={type}
+                  class="m-0 justify-self-center"
+                  width="80"
+                />
+              {/await}
+              <button
+                class="btn rounded-sm p-2 hover:cursor-pointer hover:bg-gray-300"
+                onclick={() => deleteType(type)}
+              >
+                <IconTrash class="size-4 text-slate-500" />
+              </button>
+            {/if}
+          </div>
+        </div>
+      {/each}
+    </div>
+    <p class="text-sm italic text-gray-600 mt-2">
+      <strong>Note: </strong>Tab will need to be reloaded to see the changes.
+    </p>
+  </Card.Content>
+</Card.Root>

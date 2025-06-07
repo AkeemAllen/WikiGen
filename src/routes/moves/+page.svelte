@@ -1,23 +1,16 @@
 <script lang="ts">
-  import NumberInput from "$lib/components/NumberInput.svelte";
-  import SelectInput from "$lib/components/SelectInput.svelte";
   import { Button } from "$lib/components/ui/button/index";
-  import TextInput from "$lib/components/TextInput.svelte";
-  import { getToastStore, Tab, TabGroup } from "@skeletonlabs/skeleton";
   import { selectedWiki } from "../../store";
   import { moveList, type Move } from "../../store/moves";
-  import { pokemonList } from "../../store/pokemon";
   import { types as pokemonTypes } from "../../store/types";
   import { db } from "../../store/db";
   import { FALSE, TRUE } from "$lib/utils/CONSTANTS";
-  import { DataHandler } from "@vincjo/datatables";
 
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import isEqual from "$lib/utils/isEqual";
   import objectIsEmpty from "$lib/utils/objectIsEmpty";
   import { generatePokemonPages } from "$lib/utils/generators";
-  import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import * as Card from "$lib/components/ui/card/index.js";
   import Autocomplete from "$lib/components/ui/Autocomplete.svelte";
   import SaveIcon from "@lucide/svelte/icons/save";
@@ -26,8 +19,7 @@
   import * as Select from "$lib/components/ui/select/index.js";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
-
-  const toastStore = getToastStore();
+  import { toast } from "svelte-sonner";
 
   let moveSearch: [number, string] = $state([0, ""]);
   let moveSearchOpen = $state(false);
@@ -78,12 +70,7 @@
         pokemonWhoCanLearnMove = res;
       })
       .catch((err) => {
-        toastStore.trigger(
-          getToastSettings(
-            ToastType.ERROR,
-            `Error getting Pokemon who can learn move: ${err}`,
-          ),
-        );
+        toast.error(`Error getting Pokemon who can learn move: ${err}`);
       });
   }
 
@@ -91,7 +78,7 @@
     let retrievedMove = $moveList.find(([_, name]) => name === moveSearch[1]);
 
     if (!retrievedMove) {
-      toastStore.trigger(getToastSettings(ToastType.ERROR, "Move not found!"));
+      toast.error("Move not found!");
       return;
     }
 
@@ -105,9 +92,7 @@
         await gatherPokemonWhoCanLearnMove();
       })
       .catch((err) => {
-        toastStore.trigger(
-          getToastSettings(ToastType.ERROR, `Error getting moves: ${err}`),
-        );
+        toast.error(`Error getting moves: ${err}`);
       });
   }
 
@@ -133,26 +118,14 @@
           $selectedWiki.name,
         )
           .then(() => {
-            toastStore.trigger(
-              getToastSettings(
-                ToastType.SUCCESS,
-                `Generated Pages for Pokemon with ${move.name}!`,
-              ),
-            );
+            toast.success(`Generated Pages for Pokemon with ${move.name}!`);
           })
           .catch((err) => {
-            toastStore.trigger(
-              getToastSettings(
-                ToastType.ERROR,
-                `Error generating Pokemon pages: ${err}`,
-              ),
-            );
+            toast.error(`Error generating Pokemon pages: ${err}`);
           });
       })
       .catch(() => {
-        toastStore.trigger(
-          getToastSettings(ToastType.ERROR, "Error saving move changes!"),
-        );
+        toast.error("Error saving move changes!");
       });
   }
 
@@ -178,9 +151,7 @@
         ],
       )
       .then((res) => {
-        toastStore.trigger(
-          getToastSettings(ToastType.SUCCESS, "Move created!"),
-        );
+        toast.success("Move created!");
         newMoveModalOpen = false;
         $moveList.push([res.lastInsertId as number, newMove.name]);
 
@@ -195,9 +166,7 @@
         }));
       })
       .catch((err) => {
-        toastStore.trigger(
-          getToastSettings(ToastType.ERROR, `Error creating new move: ${err}`),
-        );
+        toast.error(`Error creating new move: ${err}`);
       });
   }
 
