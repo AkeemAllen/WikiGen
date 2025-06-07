@@ -53,7 +53,6 @@
   //   await invoke("kill_mkdocs_process", {
   //     processId: $processId,
   //   }).then((response) => {
-  //     console.log(response);
   //     $processId = 0;
   //     isProcessRunning = false;
   //   });

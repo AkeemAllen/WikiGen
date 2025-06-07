@@ -256,7 +256,6 @@ export async function getSpriteImage(pokemonName: string): Promise<string> {
       return URL.createObjectURL(blob);
     })
     .catch((err) => {
-      console.log(err);
       if (err.includes("No such file or directory")) {
         return "Image Not Found";
       }

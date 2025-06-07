@@ -60,7 +60,6 @@
       });
       return;
     }
-    console.log(homePageImage);
     const imageBytes = base64ToArray(
       homePageImage.replace("data:image/png;base64,", ""),
       "image/png",
@@ -84,7 +83,6 @@
         "",
       );
     }
-    console.log(uploadedInfo);
     await writeTextFile(
       `${$selectedWiki.name}/dist/docs/index.md`,
       uploadedInfo,

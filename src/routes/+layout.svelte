@@ -267,7 +267,6 @@
           toast.error("Token has expired. Relogin to deploy wiki");
           signOut();
         }
-        console.log(res);
         return res;
       })
       .then(async (res) => {

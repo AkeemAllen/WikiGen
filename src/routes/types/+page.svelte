@@ -68,7 +68,6 @@
         sprite = URL.createObjectURL(blob);
       })
       .catch((err) => {
-        console.log(err);
         if (err.includes("No such file or directory")) {
           sprite = "Image Not Found";
         }

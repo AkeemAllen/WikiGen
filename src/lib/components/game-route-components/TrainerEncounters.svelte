@@ -127,8 +127,6 @@
       },
     ];
 
-    console.log(routeTrainers[trainerName].pokemon_team);
-
     let sortedTrainers = sortTrainersByPosition(routeTrainers);
     routeTrainers = sortedTrainers;
   }

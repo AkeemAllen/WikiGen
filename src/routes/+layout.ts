@@ -33,14 +33,10 @@ export async function load({ params }: { params: { slug: string } }) {
   if (!wikiJsonExists) {
     await writeTextFile("wikis.json", JSON.stringify(wikis), {
       baseDir: BaseDirectory.AppData,
-    }).catch((err) => {
-      console.log(err);
     });
   }
   const contents = await readTextFile("wikis.json", {
     baseDir: BaseDirectory.AppData,
-  }).catch((err) => {
-    console.log(err);
   });
   wikis.set(JSON.parse(contents as string));
 }

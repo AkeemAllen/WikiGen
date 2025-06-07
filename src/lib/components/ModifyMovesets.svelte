@@ -246,10 +246,6 @@
       let pokemonId = $pokemonList.find(
         (pokemon) => pokemon[2] === pokemonName.toLowerCase(),
       )?.[0];
-      console.log(
-        pokemonName,
-        $pokemonList.find((pokemon) => pokemon[2] === pokemonName),
-      );
       if (pokemonId === undefined) {
         toast.error(`Could not find ${pokemonName} for adding moves`);
         continue;

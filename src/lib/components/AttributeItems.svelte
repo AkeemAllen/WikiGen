@@ -118,7 +118,6 @@
             return URL.createObjectURL(blob);
           })
           .catch((err: any) => {
-            console.log(err);
             if (err.includes("No such file or directory")) {
               return "404";
             }

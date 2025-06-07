@@ -6,7 +6,6 @@
   import { selectedWiki } from "../../store";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import { generatePokemonPages } from "$lib/utils/generators";
-  import { getToastSettings, ToastType } from "$lib/utils/toasts";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
@@ -66,7 +65,7 @@
       wikiName: $selectedWiki.name,
       routeNames: [routeName],
     }).catch((e) => {
-      getToastSettings(ToastType.ERROR, e);
+      toast.error(e);
     });
   }
 
@@ -160,7 +159,6 @@
             loc.route === location.route &&
             loc.encounter_area === location.encounter_area,
         );
-        console.log(locationIndex);
         updatedLocations[locationIndex] = cloneDeep(location);
 
         pokemonLocations = [...updatedLocations];
