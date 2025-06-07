@@ -530,45 +530,6 @@
             {/snippet}
           </NavButton>
           <p class="mb-2 mt-4 text-sm text-slate-400 font-semibold">
-            Attributes
-          </p>
-          <NavButton
-            name="Items"
-            route="/items"
-            active={page.url.pathname.includes("items")}
-          >
-            {#snippet icon()}
-              <IconBottle
-                size={20}
-                class={`${page.url.pathname.includes("items") && "text-indigo-500"}`}
-              />
-            {/snippet}
-          </NavButton>
-          <NavButton
-            name="Abiities"
-            route="/abilities"
-            active={page.url.pathname.includes("abilities")}
-          >
-            {#snippet icon()}
-              <IconTreadmill
-                size={20}
-                class={`${page.url.pathname.includes("abilities") && "text-indigo-500"}`}
-              />
-            {/snippet}
-          </NavButton>
-          <NavButton
-            name="Natures"
-            route="/natures"
-            active={page.url.pathname.includes("natures")}
-          >
-            {#snippet icon()}
-              <IconSeedling
-                size={20}
-                class={`${page.url.pathname.includes("natures") && "text-indigo-500"}`}
-              />
-            {/snippet}
-          </NavButton>
-          <p class="mb-2 mt-4 text-sm text-slate-400 font-semibold">
             Operations
           </p>
           <NavButton

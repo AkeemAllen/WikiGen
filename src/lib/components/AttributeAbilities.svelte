@@ -244,7 +244,7 @@
 
 {#if !objectIsEmpty(ability)}
   <Card.Root class="mt-5">
-    <Card.Content class="lex flex-col gap-4">
+    <Card.Content class="flex flex-col gap-4">
       <div>
         <Label
           for="effect"
