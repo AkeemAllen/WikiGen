@@ -120,7 +120,7 @@
       </p>
       <p class="text-sm">
         2. Run <code class="rounded-md bg-gray-200 px-1"
-          >pip install mkdocs mkdocs-material</code
+          >python -m pip install mkdocs mkdocs-material</code
         > in a terminal to install mkdocs and its material theme
       </p>
       <p class="text-sm">
