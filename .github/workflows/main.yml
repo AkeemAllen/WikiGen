@@ -74,7 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Full UI Overhaul
+            \n- Added ability to start and stop the Mkdocs server within the application
             "
           releaseDraft: false
           prerelease: false
