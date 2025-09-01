@@ -11,6 +11,7 @@
     "core:window:allow-close",
     "process:default",
     "fs:default",
+    "os:default",
     "fs:allow-resource-read-recursive",
     "fs:allow-resource-write-recursive",
     "sql:default",
