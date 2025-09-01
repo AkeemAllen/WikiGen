@@ -14,7 +14,14 @@
   import IconStackMiddle from "@tabler/icons-svelte/icons/stack-middle";
 
   import "../app.css";
-  import { selectedWiki, wikis, user, type User, type Wiki } from "../store";
+  import {
+    selectedWiki,
+    wikis,
+    user,
+    type User,
+    type Wiki,
+    spawnedProcessID,
+  } from "../store";
   import { check } from "@tauri-apps/plugin-updater";
   import { onMount } from "svelte";
   import { relaunch } from "@tauri-apps/plugin-process";
@@ -42,9 +49,9 @@
   import * as Dialog from "$lib/components/ui/dialog";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import { toast } from "svelte-sonner";
-  import { Label } from "$lib/components/ui/label";
   import * as Select from "$lib/components/ui/select";
   import capitalizeWords from "$lib/utils/capitalizeWords";
+  import ProcessSpawn from "$lib/components/ProcessSpawn.svelte";
 
   type Props = {
     children?: import("svelte").Snippet;
@@ -298,6 +305,11 @@
   function navigateToSelectWikisPage() {
     $selectedWiki = { name: "" } as Wiki;
     goto("/");
+    // Kill the spawned process if it is running
+    if ($spawnedProcessID !== null) {
+      $spawnedProcessID.kill();
+      $spawnedProcessID = null;
+    }
   }
 </script>
 
@@ -506,21 +518,6 @@
               />
             {/snippet}
           </NavButton>
-          <p class="mb-2 mt-4 text-sm text-slate-400 font-semibold">
-            Operations
-          </p>
-          <NavButton
-            name="Wiki Testing"
-            route="/wiki-testing"
-            active={page.url.pathname.includes("wiki-testing")}
-          >
-            {#snippet icon()}
-              <IconTestPipe
-                size={20}
-                class={`${page.url.pathname.includes("abilities") && "text-indigo-500"}`}
-              />
-            {/snippet}
-          </NavButton>
         </div>
       </aside>
       <main class="overflow-auto">
@@ -528,47 +525,60 @@
       </main>
     </div>
     <footer
-      class="flex flex-row w-full p-2 justify-end pr-5 gap-x-3 bg-white items-center border-t border-indigo-100"
+      class="flex flex-row w-full justify-between p-2 pr-5 gap-x-3 bg-white items-center border-t border-indigo-100"
     >
-      <button
-        class="self-center p-2 rounded-md
+      <ProcessSpawn />
+      <div class="flex flex-row w-auto gap-x-3 bg-white items-center">
+        <button
+          class="self-center p-2 rounded-md
                   shadow-sm ring-1 ring-inset ring-gray-300
                   text-gray-500
                     border-0 hover:bg-indigo-500 hover:ring-0 hover:text-white ease-in-out duration-200"
-        onclick={() => (createWikiModalOpen = true)}
-      >
-        <IconPlus size={20} />
-      </button>
-      <button
-        class="self-center p-2 rounded-md
+          onclick={() => (createWikiModalOpen = true)}
+        >
+          <IconPlus size={20} />
+        </button>
+        <button
+          class="self-center p-2 rounded-md
                     shadow-sm ring-1 ring-inset ring-gray-300
                     text-gray-500
                       border-0 hover:bg-indigo-100 hover:ring-0 hover:text-white ease-in-out duration-200"
-        onclick={backupWiki}
-      >
-        <IconDeviceFloppy size={20} />
-      </button>
-      <button
-        class="self-center p-2 rounded-md
+          onclick={backupWiki}
+        >
+          <IconDeviceFloppy size={20} />
+        </button>
+        <button
+          class="self-center p-2 rounded-md
                     shadow-sm ring-1 ring-inset ring-gray-300
                     text-gray-500
                       border-0 hover:bg-red-400 hover:ring-0 hover:text-white ease-in-out duration-200"
-        onclick={() => (deleteWikiModalOpen = true)}
-      >
-        <IconTrash size={20} />
-      </button>
-      <Select.Root type="single" bind:value={$selectedWiki.name}>
-        <Select.Trigger id="pokemon-type" class="w-[17rem]">
-          {capitalizeWords($selectedWiki.name)}
-        </Select.Trigger>
-        <Select.Content>
-          {#each Object.entries($wikis).map( ([name, props]) => ({ label: props.site_name, value: name }), ) as wiki}
-            <Select.Item value={wiki.value} label={wiki.label}>
-              {capitalizeWords(wiki.label)}
-            </Select.Item>
-          {/each}
-        </Select.Content>
-      </Select.Root>
+          onclick={() => (deleteWikiModalOpen = true)}
+        >
+          <IconTrash size={20} />
+        </button>
+        <Select.Root
+          type="single"
+          bind:value={$selectedWiki.name}
+          onValueChange={() => {
+            // Kill the spawned process if it is running
+            if ($spawnedProcessID !== null) {
+              $spawnedProcessID.kill();
+              $spawnedProcessID = null;
+            }
+          }}
+        >
+          <Select.Trigger id="pokemon-type" class="w-[17rem]">
+            {capitalizeWords($selectedWiki.name)}
+          </Select.Trigger>
+          <Select.Content>
+            {#each Object.entries($wikis).map( ([name, props]) => ({ label: props.site_name, value: name }), ) as wiki}
+              <Select.Item value={wiki.value} label={wiki.label}>
+                {capitalizeWords(wiki.label)}
+              </Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+      </div>
     </footer>
   {:else}
     <LandingPage />

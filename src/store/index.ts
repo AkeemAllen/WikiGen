@@ -32,3 +32,4 @@ export let user = writable<User>({
   avatarUrl: "",
   isConnected: false,
 });
+export let spawnedProcessID = writable<any>(null);
