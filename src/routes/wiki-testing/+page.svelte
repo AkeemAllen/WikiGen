@@ -5,6 +5,8 @@
   // import { invoke } from "@tauri-apps/api/tauri";
   import { selectedWiki } from "../../store";
   import * as Card from "$lib/components/ui/card/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import { Command } from "@tauri-apps/plugin-shell";
 
   // type Response = {
   //   process_id: number;
@@ -71,6 +73,16 @@
       mkdocsFilePath = response;
     });
   });
+
+  async function deployServer() {
+    const command = Command.sidecar("binaries/mkdocs", [
+      "serve",
+      "-f",
+      "/Users/akeemallen/Library/Application\ Support/com.wikigen.dev/testing/dist/mkdocs.yml",
+    ]);
+    const output = await command.spawn();
+    console.log(output);
+  }
 </script>
 
 <!-- <div class="mt-6 ml-2">
@@ -146,3 +158,4 @@
     </div>
   </Card.Content>
 </Card.Root>
+<Button onclick={deployServer}>Deploy server</Button>

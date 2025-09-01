@@ -13,6 +13,9 @@
     "fs:default",
     "fs:allow-resource-read-recursive",
     "fs:allow-resource-write-recursive",
+    "sql:default",
+    "updater:default",
+    "store:default",
     {
       "identifier": "fs:allow-exists",
       "allow": [
@@ -45,7 +48,6 @@
         }
       ]
     },
-    "sql:default",
     {
       "identifier": "sql:allow-load",
       "allow": [
@@ -62,7 +64,6 @@
         }
       ]
     },
-    "updater:default",
     {
       "identifier": "updater:allow-check",
       "allow": [
@@ -71,6 +72,25 @@
         }
       ]
     },
-    "store:default"
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "args": true,
+          "name": "binaries/mkdocs",
+          "sidecar": true
+        }
+      ]
+    },
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "args": true,
+          "name": "binaries/mkdocs",
+          "sidecar": true
+        }
+      ]
+    }
   ]
 }
