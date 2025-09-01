@@ -91,6 +91,26 @@
           "sidecar": true
         }
       ]
+    },
+    {
+      "identifier": "shell:allow-open",
+      "allow": [
+        {
+          "args": true,
+          "name": "binaries/mkdocs",
+          "sidecar": true
+        }
+      ]
+    },
+    {
+      "identifier": "shell:allow-kill",
+      "allow": [
+        {
+          "args": true,
+          "name": "binaries/mkdocs",
+          "sidecar": true
+        }
+      ]
     }
   ]
 }
