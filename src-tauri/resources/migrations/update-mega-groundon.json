@@ -1,0 +1,6 @@
+{
+  "name": "update-mega-groundon",
+  "app_version": "1.11.1",
+  "execution_order": 1,
+  "sql": "UPDATE pokemon SET name = 'primal-groudon' WHERE name = 'mega-groudon';"
+}

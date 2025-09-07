@@ -88,7 +88,8 @@ pub async fn check_and_run_migrations(app_handle: AppHandle) -> Result<String, S
     let resources_path = app_handle.path().resource_dir().unwrap();
 
     let migrations = gather_migrations(&base_path, &resources_path)?;
-    run_migrations(migrations, &base_path).await?;
+    //Passing down resources for one-time sprite fix. Remove later
+    run_migrations(migrations, &base_path, &resources_path).await?;
 
     Ok("Migration Completed".to_string())
 }
@@ -139,6 +140,7 @@ pub fn gather_migrations(
 pub async fn run_migrations(
     migrations: Vec<Migration>,
     base_path: &PathBuf,
+    resources_path: &PathBuf, //Passing down resources for one-time sprite fix
 ) -> Result<String, String> {
     let wiki_json_file_path = base_path.join("wikis.json");
     let wikis_file = match File::open(&wiki_json_file_path) {
@@ -228,6 +230,49 @@ pub async fn run_migrations(
                 continue;
             }
         }
+
+        // Bespoke migration for sprite updates.
+        if let Err(err) = std::fs::copy(
+            resources_path
+                .join("resources")
+                .join("generator_assets")
+                .join("pokemon_sprites")
+                .join("mega-diancie.png"),
+            wiki_path
+                .join("dist")
+                .join("docs")
+                .join("img")
+                .join("pokemon")
+                .join("mega-diancie.png"),
+        ) {
+            logger::write_log(
+                &wiki_path,
+                logger::LogLevel::MigrationError,
+                &format!("Failed to update sprites: {}", err),
+            );
+            continue;
+        };
+
+        if let Err(err) = std::fs::copy(
+            resources_path
+                .join("resources")
+                .join("generator_assets")
+                .join("pokemon_sprites")
+                .join("primal-groudon.png"),
+            wiki_path
+                .join("dist")
+                .join("docs")
+                .join("img")
+                .join("pokemon")
+                .join("primal-groudon.png"),
+        ) {
+            logger::write_log(
+                &wiki_path,
+                logger::LogLevel::MigrationError,
+                &format!("Failed to update sprites: {}", err),
+            );
+            continue;
+        };
 
         logger::write_log(
             &wiki_path,
