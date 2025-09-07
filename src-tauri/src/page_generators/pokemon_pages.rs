@@ -348,8 +348,23 @@ pub fn generate_pokemon_pages(
                 break;
             }
         }
-        if pokemon.render == "false" && page_entry_exists {
-            mkdocs_pokemon.remove(page_position);
+        if pokemon.render == "false" {
+            if page_entry_exists {
+                mkdocs_pokemon.remove(page_position);
+                match fs::remove_file(docs_path.join("pokemon").join(format!(
+                    "{}-{}.md",
+                    pokedex_markdown_file_name, &pokemon.name
+                ))) {
+                    Ok(_) => (),
+                    Err(e) => {
+                        logger::write_log(
+                            &base_path.join(wiki_name),
+                            logger::LogLevel::Error,
+                            &format!("Error removing markdown file for {}: {:?}", pokemon.name, e),
+                        );
+                    }
+                };
+            }
             continue;
         }
 
