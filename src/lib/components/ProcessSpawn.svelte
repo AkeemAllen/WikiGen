@@ -28,8 +28,13 @@
 
 <div class="flex items-center gap-4">
   {#if $spawnedProcessID === null}
-    <Button title="Start Wiki Server" onclick={spawnProcess}
-      >Start Wiki Server</Button
+    <Button
+      title="Start Wiki Server"
+      onclick={spawnProcess}
+      disabled={type() === "windows"}
+      >{type() === "windows"
+        ? "Start Wiki Server (Under Development)"
+        : "Start Wiki Server"}</Button
     >
   {:else}
     <Button title="Stop Wiki Server" onclick={killProcess}
