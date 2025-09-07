@@ -33,6 +33,7 @@
   import { itemsList } from "../../store/items";
   import Autocomplete from "./ui/Autocomplete.svelte";
   import PokemonStat from "./ui/PokemonStat.svelte";
+  import { Checkbox } from "$lib/components/ui/checkbox/index.js";
 
   let pokemonSearch: [number, string] = $state([0, ""]);
   let searchingPokemon: string = $state("");
@@ -43,6 +44,7 @@
   let searchingItems: string = $state("");
 
   let pokemon = $state({} as Pokemon);
+  let renderPokemon = $derived(pokemon.render === "true");
   let abilities = $derived.by(() => {
     let result = pokemon.abilities.split(",");
     if (result.length === 1) {
@@ -518,6 +520,17 @@
                 {/each}
               </Select.Content>
             </Select.Root>
+          </div>
+          <div class="flex items-center gap-3">
+            <Checkbox
+              id="render"
+              checked={renderPokemon}
+              onCheckedChange={(checked) =>
+                checked
+                  ? (pokemon.render = "true")
+                  : (pokemon.render = "false")}
+            />
+            <Label for="render">Render Pokemon</Label>
           </div>
         </section>
       </Card.Content>
