@@ -40,8 +40,9 @@
       return;
     }
 
-    updatedRoutes.routes[routeToCopyTo].wild_encounters[encounterArea] =
-      cloneDeep(updatedRoutes.routes[routeName].wild_encounters[encounterArea]);
+    updatedRoutes.routes[routeToCopyTo].wild_encounters = cloneDeep(
+      updatedRoutes.routes[routeName].wild_encounters,
+    );
 
     $routes = cloneDeep(updatedRoutes);
 

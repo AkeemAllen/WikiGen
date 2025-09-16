@@ -46,14 +46,9 @@
     let updatedRoutes = { ...$routes };
     for (let [routeName, properties] of Object.entries(updatedRoutes.routes)) {
       if (routeName !== originalRouteName) continue;
-      for (let [encounterArea, wildEncounters] of Object.entries(
-        properties.wild_encounters,
-      )) {
-        for (let [index, encounter] of wildEncounters.entries()) {
-          updatedRoutes.routes[routeName].wild_encounters[encounterArea][
-            index
-          ].route = newRouteName;
-        }
+      for (let [index, encounter] of properties.wild_encounters.entries()) {
+        if (encounter.route !== originalRouteName) continue;
+        updatedRoutes.routes[routeName].wild_encounters[index].route = newName;
       }
     }
     updatedRoutes.routes[newName] = updatedRoutes.routes[originalRouteName];
