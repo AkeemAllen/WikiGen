@@ -38,6 +38,7 @@
     encounter_area: "",
     encounter_rate: 0,
     route: "",
+    route_variant: "default",
     special_note: "",
   });
 
@@ -47,6 +48,7 @@
     encounter_area: "",
     encounter_rate: 0,
     route: "",
+    route_variant: "default",
     special_note: "",
   });
 
@@ -81,25 +83,23 @@
     }
 
     if (
-      $routes.routes[location.route].wild_encounters[
-        location.encounter_area
-      ]?.find((encounter) => encounter.name === location.name)
+      $routes.routes[location.route].wild_encounters.find(
+        (encounter) =>
+          encounter.name === location.name &&
+          encounter.encounter_area === location.encounter_area &&
+          encounter.route_variant === location.route_variant,
+      )
     ) {
       toast.error("This Pokemon is already in this location");
       return;
     }
 
-    $routes.routes[location.route].wild_encounters = {
+    $routes.routes[location.route].wild_encounters = [
       ...$routes.routes[location.route].wild_encounters,
-      [location.encounter_area]: [
-        ...($routes.routes[location.route].wild_encounters[
-          location.encounter_area
-        ] ?? []),
-        location,
-      ],
-    };
+      newLocation,
+    ];
 
-    $routes.routes[location.route].wild_encounters[location.encounter_area]
+    $routes.routes[location.route].wild_encounters
       .sort((a, b) => a.encounter_rate - b.encounter_rate)
       .reverse();
 
@@ -119,6 +119,7 @@
           encounter_rate: 0,
           route: "",
           special_note: "",
+          route_variant: "default",
         };
       })
       .then(() => {
@@ -135,14 +136,20 @@
   async function editPokemonLocation() {
     let location = cloneDeep(locationToEdit);
 
-    let index = $routes.routes[location.route].wild_encounters[
-      location.encounter_area
-    ].findIndex((encounter) => encounter.id === location.id);
-    $routes.routes[location.route].wild_encounters[
-      location.encounter_area
-    ].splice(index, 1, cloneDeep(location));
+    let index = $routes.routes[location.route].wild_encounters.findIndex(
+      (encounter) =>
+        encounter.name === location.name &&
+        encounter.route_variant === location.route_variant &&
+        encounter.encounter_area === location.encounter_area,
+    );
 
-    $routes.routes[location.route].wild_encounters[location.encounter_area]
+    $routes.routes[location.route].wild_encounters.splice(
+      index,
+      1,
+      cloneDeep(location),
+    );
+
+    $routes.routes[location.route].wild_encounters
       .sort((a, b) => a.encounter_rate - b.encounter_rate)
       .reverse();
 
@@ -170,6 +177,7 @@
           encounter_rate: 0,
           route: "",
           special_note: "",
+          route_variant: "default",
         };
       })
       .then(() => {
@@ -185,20 +193,21 @@
 
   async function deletePokemonFromLocation(
     routeName: string,
-    encounterType: string,
+    area: string,
+    variant: string,
   ) {
-    let updatedEncounters = {
-      ...$routes.routes[routeName].wild_encounters,
-    };
-    updatedEncounters[encounterType] = updatedEncounters[encounterType].filter(
-      (encounter) => encounter.name !== pokemonName,
+    let updatedEncounters = [...$routes.routes[routeName].wild_encounters];
+    updatedEncounters = updatedEncounters.filter(
+      (encounter) =>
+        !(
+          encounter.name === pokemonName &&
+          encounter.encounter_area === area &&
+          encounter.route_variant === variant
+        ),
     );
-    if (updatedEncounters[encounterType].length === 0) {
-      delete updatedEncounters[encounterType];
-    }
 
-    if (updatedEncounters[encounterType] !== undefined) {
-      updatedEncounters[encounterType]
+    if (updatedEncounters !== undefined) {
+      updatedEncounters
         .sort(
           (encounter1, encounter2) =>
             encounter1.encounter_rate - encounter2.encounter_rate,
@@ -206,7 +215,7 @@
         .reverse();
     }
 
-    $routes.routes[routeName].wild_encounters = { ...updatedEncounters };
+    $routes.routes[routeName].wild_encounters = [...updatedEncounters];
 
     await writeTextFile(
       `${$selectedWiki.name}/data/routes.json`,
@@ -220,7 +229,7 @@
           updatedLocations.push(location);
           continue;
         }
-        if (location.encounter_area !== encounterType) {
+        if (location.encounter_area !== area) {
           updatedLocations.push(location);
           continue;
         }
@@ -442,7 +451,14 @@
               </p>
             </div>
             <div class="flex justify-end text-sm text-gray-500">
-              {capitalizeWords(location.encounter_area)}: {location.encounter_rate}%
+              <div class="flex flex-col">
+                <p>
+                  {capitalizeWords(location.encounter_area)}: {location.encounter_rate}%
+                </p>
+                <p>
+                  {capitalizeWords(location.route_variant)}
+                </p>
+              </div>
             </div>
           </div>
           <Button
@@ -452,6 +468,7 @@
               deletePokemonFromLocation(
                 location.route,
                 location.encounter_area,
+                location.route_variant,
               );
             }}
           >

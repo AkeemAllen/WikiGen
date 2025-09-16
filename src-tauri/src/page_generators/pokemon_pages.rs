@@ -301,11 +301,9 @@ pub fn generate_pokemon_pages(
     // Gather all wild encounters for the selected pokemon
     let mut wild_encounters: Vec<WildEncounter> = Vec::new();
     for (_, properties) in &routes.routes {
-        for (_, _wild_encounters) in &properties.wild_encounters {
-            for wild_encounter in _wild_encounters {
-                if dex_numbers.contains(&wild_encounter.id) {
-                    wild_encounters.push(wild_encounter.clone());
-                }
+        for wild_encounter in &properties.wild_encounters {
+            if dex_numbers.contains(&wild_encounter.id) {
+                wild_encounters.push(wild_encounter.clone());
             }
         }
     }

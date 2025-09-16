@@ -129,7 +129,7 @@
           `${$selectedWiki.name}/dist/docs/img/pokemon/${res[0].name}.png`,
           { baseDir: BaseDirectory.AppData },
         )
-          .then((res) => {
+          .then((res: any) => {
             const blob = new Blob([res], { type: "image/png" });
             return URL.createObjectURL(blob);
           })
@@ -146,13 +146,9 @@
         // Gather location
         pokemonLocations = [];
         for (const [_, properties] of Object.entries($routes.routes)) {
-          for (const [_, encounters] of Object.entries(
-            properties.wild_encounters,
-          )) {
-            for (const encounter of encounters) {
-              if (encounter.name !== res.name) continue;
-              pokemonLocations = [...pokemonLocations, cloneDeep(encounter)];
-            }
+          for (const encounter of properties.wild_encounters) {
+            if (encounter.name !== res.name) continue;
+            pokemonLocations = [...pokemonLocations, cloneDeep(encounter)];
           }
         }
       })
@@ -184,7 +180,6 @@
     await $db
       .execute(
         `UPDATE pokemon SET
-          dex_number = ${pokemon.dex_number},
           name = "${pokemon.name}",
           abilities = "${pokemon.abilities}",
           types = "${pokemon.types}",
@@ -209,50 +204,6 @@
           pokemon.evolves_into,
         ],
       )
-      .then(() => {
-        if (originalPokemonDetails.dex_number !== pokemon.dex_number) {
-          removePokemonPage(
-            $selectedWiki.name,
-            pokemon.name,
-            originalPokemonDetails.dex_number,
-          )
-            .then(() => {
-              let updatedRoutes: Routes = cloneDeep($routes);
-              for (const [routeName, properties] of Object.entries(
-                $routes.routes,
-              )) {
-                for (const [encounterArea, wildEncounters] of Object.entries(
-                  properties.wild_encounters,
-                )) {
-                  for (const [index, encounter] of wildEncounters.entries()) {
-                    if (encounter.name !== pokemon.name) continue;
-                    updatedRoutes.routes[routeName].wild_encounters[
-                      encounterArea
-                    ][index].id = pokemon.dex_number;
-                  }
-                }
-              }
-              $routes = cloneDeep(updatedRoutes);
-              updateRoutes($routes, $selectedWiki.name)
-                .then(() => {
-                  return generateRoutePages(
-                    Object.keys($routes.routes),
-                    $selectedWiki.name,
-                  );
-                })
-                .then((res) => {
-                  toast.success(res as string);
-                })
-                .catch((err) => {
-                  toast.error(err as string);
-                });
-            })
-            .catch((err) => {
-              toast.error(err as string);
-            });
-        }
-        originalPokemonDetails = cloneDeep(pokemon);
-      })
       .then(() => generatePage())
       .catch((err) => {
         toast.error(err as string);
