@@ -45,17 +45,17 @@ fn test_generate_item_changes_page_created() {
         Err(err) => panic!("Failed to read generated file: {}", err),
     };
 
-    // let snapshot = match read_to_string(
-    //     base_path
-    //         .join("testing")
-    //         .join("snapshots")
-    //         .join("generated_item_changes.md"),
-    // ) {
-    //     Ok(snapshot) => snapshot,
-    //     Err(err) => panic!("Failed to read snapshot file: {}", err),
-    // };
+    let snapshot = match read_to_string(
+        base_path
+            .join("testing")
+            .join("snapshots")
+            .join("generated_item_changes.md"),
+    ) {
+        Ok(snapshot) => snapshot,
+        Err(err) => panic!("Failed to read snapshot file: {}", err),
+    };
 
-    // assert_eq!(generated_file, snapshot);
+    assert_eq!(generated_file, snapshot);
 
     let mkdocs_yaml_file_path = base_path.join("testing").join("dist").join("mkdocs.yml");
     let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
@@ -81,20 +81,20 @@ fn test_generate_item_changes_page_created() {
     assert!(page_entry_exists);
 
     // Clean up
-    // mkdocs_config
-    //     .nav
-    //     .as_sequence_mut()
-    //     .unwrap()
-    //     .remove(page_index);
-    // std::fs::remove_file(generated_path).unwrap();
+    mkdocs_config
+        .nav
+        .as_sequence_mut()
+        .unwrap()
+        .remove(page_index);
+    std::fs::remove_file(generated_path).unwrap();
 
-    // match std::fs::write(
-    //     &mkdocs_yaml_file_path,
-    //     serde_yaml::to_string(&mut mkdocs_config).unwrap(),
-    // ) {
-    //     Ok(_) => {}
-    //     Err(err) => panic!("Failed to update mkdocs yaml: {}", err),
-    // };
+    match std::fs::write(
+        &mkdocs_yaml_file_path,
+        serde_yaml::to_string(&mut mkdocs_config).unwrap(),
+    ) {
+        Ok(_) => {}
+        Err(err) => panic!("Failed to update mkdocs yaml: {}", err),
+    };
 }
 
 #[test]
@@ -135,17 +135,17 @@ fn test_generate_item_locations_page_created() {
         Err(err) => panic!("Failed to read generated file: {}", err),
     };
 
-    // let snapshot = match read_to_string(
-    //     base_path
-    //         .join("testing")
-    //         .join("snapshots")
-    //         .join("generated_item_changes.md"),
-    // ) {
-    //     Ok(snapshot) => snapshot,
-    //     Err(err) => panic!("Failed to read snapshot file: {}", err),
-    // };
+    let snapshot = match read_to_string(
+        base_path
+            .join("testing")
+            .join("snapshots")
+            .join("generated_item_changes.md"),
+    ) {
+        Ok(snapshot) => snapshot,
+        Err(err) => panic!("Failed to read snapshot file: {}", err),
+    };
 
-    // assert_eq!(generated_file, snapshot);
+    assert_eq!(generated_file, snapshot);
 
     let mkdocs_yaml_file_path = base_path.join("testing").join("dist").join("mkdocs.yml");
     let mut mkdocs_config = match get_mkdocs_config(&mkdocs_yaml_file_path) {
@@ -171,18 +171,18 @@ fn test_generate_item_locations_page_created() {
     assert!(page_entry_exists);
 
     // Clean up
-    // mkdocs_config
-    //     .nav
-    //     .as_sequence_mut()
-    //     .unwrap()
-    //     .remove(page_index);
-    // std::fs::remove_file(generated_path).unwrap();
+    mkdocs_config
+        .nav
+        .as_sequence_mut()
+        .unwrap()
+        .remove(page_index);
+    std::fs::remove_file(generated_path).unwrap();
 
-    // match std::fs::write(
-    //     &mkdocs_yaml_file_path,
-    //     serde_yaml::to_string(&mut mkdocs_config).unwrap(),
-    // ) {
-    //     Ok(_) => {}
-    //     Err(err) => panic!("Failed to update mkdocs yaml: {}", err),
-    // };
+    match std::fs::write(
+        &mkdocs_yaml_file_path,
+        serde_yaml::to_string(&mut mkdocs_config).unwrap(),
+    ) {
+        Ok(_) => {}
+        Err(err) => panic!("Failed to update mkdocs yaml: {}", err),
+    };
 }

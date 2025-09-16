@@ -24,7 +24,7 @@ async fn test_run_migrations() {
         Err(err) => panic!("Error checking for migrations: {}", err),
     };
 
-    match run_migrations(migrations, &base_path).await {
+    match run_migrations(migrations, &base_path, &resources_path).await {
         Ok(migrations) => migrations,
         Err(err) => panic!("Error checking for migrations: {}", err),
     };
