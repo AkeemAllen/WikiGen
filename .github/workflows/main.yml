@@ -74,9 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Fixed bugs with Primal Groudon name and Mega Diancie sprite
-            \n- Readded render option for pokemon
-            \n- Fixed bug with Evolved Pokemon option no longer working when customizing evolution method
+            \n- Introducing Route Variants to improve overall route organization.
             "
           releaseDraft: false
           prerelease: false
