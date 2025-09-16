@@ -34,7 +34,8 @@
       render: true,
       position: Object.keys($routes.routes).length + 1,
       trainers: {},
-      wild_encounters: {},
+      wild_encounters: [],
+      variants: ["default"],
       wild_encounter_area_levels: {},
     };
 

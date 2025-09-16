@@ -1,5 +1,3 @@
-use std::fs::read_to_string;
-
 use serde_yaml::Value;
 
 use crate::{database::get_mkdocs_config, page_generators::game_routes::generate_route_pages};

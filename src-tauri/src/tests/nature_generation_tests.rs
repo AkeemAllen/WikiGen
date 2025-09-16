@@ -1,5 +1,3 @@
-use std::fs::read_to_string;
-
 use serde_yaml::Value;
 
 use crate::{
@@ -81,18 +79,18 @@ fn test_generate_nature_page_created() {
     assert!(page_entry_exists);
 
     // Clean up
-    // mkdocs_config
-    //     .nav
-    //     .as_sequence_mut()
-    //     .unwrap()
-    //     .remove(page_index);
-    // std::fs::remove_file(generated_path).unwrap();
+    mkdocs_config
+        .nav
+        .as_sequence_mut()
+        .unwrap()
+        .remove(page_index);
+    std::fs::remove_file(generated_path).unwrap();
 
-    // match std::fs::write(
-    //     &mkdocs_yaml_file_path,
-    //     serde_yaml::to_string(&mut mkdocs_config).unwrap(),
-    // ) {
-    //     Ok(_) => {}
-    //     Err(err) => panic!("Failed to update mkdocs yaml: {}", err),
-    // };
+    match std::fs::write(
+        &mkdocs_yaml_file_path,
+        serde_yaml::to_string(&mut mkdocs_config).unwrap(),
+    ) {
+        Ok(_) => {}
+        Err(err) => panic!("Failed to update mkdocs yaml: {}", err),
+    };
 }
