@@ -403,7 +403,6 @@ fn generate_wild_encounter_markdown(
         for encounter in encounters.iter().filter(|encounter| {
             encounter.route_variant == variant && encounter.encounter_area == **area
         }) {
-            println!("Encounter: {:?}", encounter);
             let entry = format!(
                 "<div style=\"display: grid; justify-items: center\">
                     {}

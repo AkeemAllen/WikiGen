@@ -35,7 +35,7 @@
       `${$selectedWiki.name}/dist/docs/img/routes/${data.title}.png`,
       { baseDir: BaseDirectory.AppData },
     )
-      .then((res) => {
+      .then((res: any) => {
         const blob = new Blob([res], { type: "image/png" });
         return URL.createObjectURL(blob);
       })
@@ -125,6 +125,28 @@
         });
     });
   }
+
+  async function deleteVariant(name: string) {
+    let updatedVariants = $routes.routes[data.title].variants.filter(
+      (variant) => variant !== name,
+    );
+
+    let updatedPokemon = $routes.routes[data.title].wild_encounters.filter(
+      (encounter) => encounter.route_variant !== name,
+    );
+
+    if (updatedVariants.length !== $routes.routes[data.title].variants.length) {
+      $routes.routes[data.title].variants = updatedVariants;
+      $routes.routes[data.title].wild_encounters = updatedPokemon;
+      await updateRoutes($routes, $selectedWiki.name)
+        .then(() => {
+          toast.success("Variant deleted successfully");
+        })
+        .catch((e) => {
+          toast.error(`Error deleting variant: ${e}`);
+        });
+    }
+  }
 </script>
 
 <strong class="bg-white text-l flex flex-row items-center gap-5 px-5 pt-5">
@@ -199,6 +221,33 @@
           </Select.Group>
         </Select.Content>
       </Select.Root>
+    </div>
+    {#if $routes.routes[data.title].variants.filter((variant) => variant !== "default").length !== 0}
+      <Label
+        for="delete-route-variants"
+        class="block text-sm font-medium leading-6 text-gray-900 my-4"
+        >Delete Route Variants
+        <p class="text-red-500">
+          WARNING: Delete route variants will delete all pokemon under the
+          variant. Perform this action with caution.
+        </p></Label
+      >
+    {/if}
+    <div class="flex flex-row my-5 gap-5" id="delete-route-variants">
+      {#each $routes.routes[data.title].variants.filter((variant) => variant !== "default") as variant}
+        <div class="rounded-md shadow-sm p-1 text-center w-32">
+          {capitalizeWords(variant)}
+          <button
+            class=" cursor-pointer rounded-md bg-red-300 p-1 hover:scale-110"
+            onclick={(e) => {
+              e.stopPropagation();
+              deleteVariant(variant);
+            }}
+          >
+            <IconTrash size={16} color="white" />
+          </button>
+        </div>
+      {/each}
     </div>
   </Tabs.Content>
 </Tabs.Root>
