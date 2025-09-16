@@ -6,11 +6,16 @@ use std::{
     path::PathBuf,
 };
 
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, Pool, Sqlite};
 use tauri::{AppHandle, Manager};
 
-use crate::{database::get_sqlite_connection, logger};
+use crate::{
+    database::get_sqlite_connection,
+    logger::{self, write_log, LogLevel},
+    page_generators::game_routes::{RouteProperties, Routes, TrainerInfo, WildEncounter},
+};
 
 pub type Wikis = HashMap<String, Wiki>;
 
@@ -42,6 +47,31 @@ pub struct Migration {
     pub app_version: String,
     pub execution_order: i32,
     pub sql: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct OldRoutes {
+    pub routes: IndexMap<String, OldRouteProperties>,
+    pub encounter_areas: Vec<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct OldRouteProperties {
+    pub render: bool,
+    pub position: i32,
+    pub trainers: IndexMap<String, TrainerInfo>,
+    pub wild_encounters: IndexMap<String, Vec<OldWildEncounter>>,
+    pub wild_encounter_area_levels: IndexMap<String, String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct OldWildEncounter {
+    pub id: usize,
+    pub name: String,
+    pub encounter_rate: f32,
+    pub encounter_area: String,
+    pub route: String,
+    pub special_note: String,
 }
 
 impl Migration {
@@ -274,6 +304,17 @@ pub async fn run_migrations(
             continue;
         };
 
+        match update_route_properties(&base_path, &wiki_name).await {
+            Ok(_) => (),
+            Err(err) => {
+                logger::write_log(
+                    &wiki_path,
+                    logger::LogLevel::MigrationError,
+                    &format!("Failed to update route properties: {}", err),
+                );
+            }
+        }
+
         logger::write_log(
             &wiki_path,
             logger::LogLevel::MigrationSuccess,
@@ -282,6 +323,68 @@ pub async fn run_migrations(
     }
 
     Ok("Migrations Successful".to_string())
+}
+
+async fn update_route_properties(base_path: &PathBuf, wiki_name: &str) -> Result<(), String> {
+    let routes_json_file_path = base_path.join(wiki_name).join("data").join("routes.json");
+    let routes_file = match std::fs::File::open(&routes_json_file_path) {
+        Ok(file) => file,
+        Err(err) => {
+            return Err(format!("Failed to open routes file: {}", err));
+        }
+    };
+    let routes: OldRoutes = match serde_yaml::from_reader(routes_file) {
+        Ok(routes) => routes,
+        Err(err) => {
+            return Err(format!("Failed to parse routes file: {}", err));
+        }
+    };
+
+    let mut new_routes_properties: IndexMap<String, RouteProperties> = IndexMap::new();
+
+    for (route_name, route) in routes.routes {
+        let mut wild_encounters: Vec<WildEncounter> = Vec::new();
+        for (area, encounters) in route.wild_encounters.iter() {
+            for encounter in encounters.iter() {
+                wild_encounters.push(WildEncounter {
+                    id: encounter.id,
+                    name: encounter.name.clone(),
+                    encounter_area: area.clone(),
+                    encounter_rate: encounter.encounter_rate,
+                    route: route_name.clone(),
+                    special_note: encounter.special_note.clone(),
+                    route_variant: "default".to_string(),
+                });
+            }
+        }
+
+        let route_properties = RouteProperties {
+            render: route.render,
+            position: route.position,
+            trainers: route.trainers,
+            variants: vec!["default".to_string()],
+            wild_encounters,
+            wild_encounter_area_levels: route.wild_encounter_area_levels,
+        };
+
+        new_routes_properties.insert(route_name, route_properties);
+    }
+
+    let new_routes = Routes {
+        routes: new_routes_properties,
+        encounter_areas: routes.encounter_areas,
+    };
+
+    if let Err(err) = fs::write(
+        &routes_json_file_path,
+        serde_json::to_string_pretty(&new_routes).unwrap(),
+    ) {
+        let message = format!("{wiki_name}: Failed to update routes file: {err}");
+        write_log(&base_path, LogLevel::Error, &message);
+        return Err(message);
+    }
+
+    Ok(())
 }
 
 async fn create_migrations_table(conn: &Pool<Sqlite>) -> Result<(), String> {
