@@ -11,9 +11,8 @@ export type RouteProperties = {
   trainers: {
     [key: string]: TrainerInfo;
   };
-  wild_encounters: {
-    [key: string]: WildEncounter[];
-  };
+  wild_encounters: WildEncounter[];
+  variants: string[];
   wild_encounter_area_levels: {
     [key: string]: string;
   };
@@ -45,6 +44,7 @@ export type WildEncounter = {
   encounter_rate: number;
   encounter_area: string;
   route: string;
+  route_variant: string;
   special_note: string;
 };
 

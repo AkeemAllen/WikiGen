@@ -27,7 +27,8 @@ pub struct RouteProperties {
     pub render: bool,
     pub position: i32,
     pub trainers: IndexMap<String, TrainerInfo>,
-    pub wild_encounters: IndexMap<String, Vec<WildEncounter>>,
+    pub wild_encounters: Vec<WildEncounter>,
+    pub variants: Vec<String>,
     pub wild_encounter_area_levels: IndexMap<String, String>,
 }
 
@@ -60,6 +61,7 @@ pub struct WildEncounter {
     pub encounter_rate: f32,
     pub encounter_area: String,
     pub route: String,
+    pub route_variant: String,
     pub special_note: String,
 }
 
@@ -194,6 +196,7 @@ pub fn generate_route_pages(
 
     for route_name in route_names {
         let route_properties = routes.routes.get(*route_name).unwrap();
+        let encounter_areas = routes.encounter_areas.clone();
 
         let mut page_entry_exists = false;
         let mut page_position = 0;
@@ -243,6 +246,7 @@ pub fn generate_route_pages(
             wiki_name,
             route_name,
             route_properties,
+            &encounter_areas,
             &template,
             &docs_path,
         );
@@ -304,20 +308,41 @@ fn generate_route_page_from_template(
     wiki_name: &str,
     route_name: &str,
     route_properties: &RouteProperties,
+    encounter_areas: &[String],
     template: &str,
     docs_path: &PathBuf,
 ) -> String {
-    let mut wild_encounter_tab = String::new();
     let mut wild_encounters = String::new();
 
+    let active_variants = &route_properties
+        .variants
+        .iter()
+        .filter(|variant| {
+            route_properties
+                .wild_encounters
+                .iter()
+                .any(|encounter| encounter.route_variant == **variant)
+        })
+        .collect::<Vec<_>>();
+
     if !route_properties.wild_encounters.is_empty() {
-        wild_encounter_tab.push_str("=== \"Wild Encounters\"");
-        let wild_encounter_markdown = generate_wild_encounter_markdown(
-            wiki_name,
-            &route_properties.wild_encounters,
-            &route_properties.wild_encounter_area_levels,
-        );
-        wild_encounters.push_str(&wild_encounter_markdown);
+        for variant in active_variants {
+            let mut formatted_variant = capitalize_and_remove_hyphens(variant);
+            if formatted_variant == "Default" {
+                formatted_variant = "Wild Encounters".to_string();
+            }
+            let wild_encounter_markdown = generate_wild_encounter_markdown(
+                wiki_name,
+                &route_properties.wild_encounters,
+                &encounter_areas,
+                &route_properties.wild_encounter_area_levels,
+                variant,
+            );
+            wild_encounters.push_str(&format!(
+                "\n=== \"{}\"{}",
+                formatted_variant, wild_encounter_markdown
+            ));
+        }
     }
 
     let mut trainer_encounter_tab = String::new();
@@ -347,7 +372,7 @@ fn generate_route_page_from_template(
 
     let result = template
         .replace("{{route_image}}", &route_image)
-        .replace("{{wild_encounter_tab}}", &wild_encounter_tab)
+        // .replace("{{wild_encounter_tab}}", &wild_encounter_tab)
         .replace("{{wild_encounters}}", &wild_encounters)
         .replace("{{trainer_encounter_tab}}", &trainer_encounter_tab)
         .replace("{{trainer_encounters}}", &trainer_encounters);
@@ -357,39 +382,51 @@ fn generate_route_page_from_template(
 
 fn generate_wild_encounter_markdown(
     wiki_name: &str,
-    encounters: &IndexMap<String, Vec<WildEncounter>>,
+    encounters: &[WildEncounter],
+    encounter_areas: &[String],
     encounter_areas_levels: &IndexMap<String, String>,
+    variant: &str,
 ) -> String {
     let mut markdown_encounters = String::new();
-    for (encounter_area, pokemon_encounter_list) in encounters {
+    let active_encounter_areas = &encounter_areas
+        .iter()
+        .filter(|area| {
+            encounters
+                .iter()
+                .filter(|encounter| encounter.route_variant == variant)
+                .any(|encounter| encounter.encounter_area == **area)
+        })
+        .collect::<Vec<_>>();
+
+    for area in active_encounter_areas.iter() {
         let mut pokemon_entries = String::new();
-        for pokemon in pokemon_encounter_list.iter() {
+        for encounter in encounters.iter().filter(|encounter| {
+            encounter.route_variant == variant && encounter.encounter_area == **area
+        }) {
+            println!("Encounter: {:?}", encounter);
             let entry = format!(
                 "<div style=\"display: grid; justify-items: center\">
                     {}
                 </div>",
-                get_markdown_entry_for_pokemon(wiki_name, &pokemon)
+                get_markdown_entry_for_pokemon(wiki_name, &encounter)
             );
             pokemon_entries.push_str(&entry);
         }
 
-        let encounter_area_entry = match encounter_areas_levels.get(&encounter_area.clone()) {
+        let encounter_area_entry = match encounter_areas_levels.get(*area) {
             Some(area_level) => {
                 if area_level.is_empty() {
-                    capitalize_and_remove_hyphens(encounter_area)
+                    capitalize_and_remove_hyphens(&area)
                 } else {
-                    format!(
-                        "{} Lv. {area_level}",
-                        capitalize_and_remove_hyphens(&encounter_area),
-                    )
+                    format!("{} Lv. {area_level}", capitalize_and_remove_hyphens(&area),)
                 }
             }
-            None => capitalize_and_remove_hyphens(encounter_area),
+            None => capitalize_and_remove_hyphens(&area),
         };
-        let encounter_area = &encounter_area_entry;
         let encounters =
             format!("<div class=\"wild-encounters-container\">{pokemon_entries}</div>",);
-        let encounter_entry = format!("\n\n\t???+ note \"{encounter_area}\"\n\t\t{encounters}");
+        let encounter_entry =
+            format!("\n\n\t???+ note \"{encounter_area_entry}\"\n\t\t{encounters}");
         markdown_encounters.push_str(&encounter_entry);
     }
 
