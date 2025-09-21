@@ -155,7 +155,7 @@
   </a>
   {data.title}</strong
 >
-<Tabs.Root value="wild-encounters" class="w-full">
+<Tabs.Root value="wild-encounters" class="w-full mb-10">
   <div class="w-full bg-white border-b">
     <Tabs.List class="w-[30rem] rounded-sm ml-5 my-3">
       {#each ["wild-encounters", "trainer-encounters", "properties"] as tab}

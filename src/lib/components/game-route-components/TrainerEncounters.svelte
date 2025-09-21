@@ -262,6 +262,7 @@
         id="versions"
         bind:selected={routeTrainers[trainerToUpdate].versions}
         allowUserOptions={true}
+        createOptionMsg={"Create New Trainer Versions"}
         options={routeTrainers[trainerToUpdate].versions ?? []}
         style="height: 36px; border-color: rgb(209 213 219); border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem;"
       />
@@ -315,7 +316,7 @@
   {savePokemonChanges}
 />
 
-<Card.Root>
+<Card.Root class="sticky top-0">
   <Card.Content class="flex flex-row gap-3">
     <section class="flex flex-row gap-5 justify-between">
       <Autocomplete
@@ -329,6 +330,7 @@
         onSelect={(option) => {
           trainerName = option.label;
         }}
+        capitalize={false}
         class="w-[10rem]"
       />
       <Autocomplete
@@ -372,9 +374,7 @@
     <Card.Root>
       <Card.Header>
         <div class="flex flex-row justify-between">
-          <Card.Title class="text-slate-900 text-lg"
-            >{capitalizeWords(name)}</Card.Title
-          >
+          <Card.Title class="text-slate-900 text-lg">{name}</Card.Title>
           <div class="flex flex-row gap-3">
             <button
               class="rounded-md p-1 mr-2 hover:cursor-pointer hover:bg-slate-200"
@@ -416,7 +416,7 @@
         </Card.Description>
       </Card.Header>
       <Card.Content>
-        <div class="space-y-2 max-h-80 overflow-y-auto">
+        <div class="space-y-2 max-h-120 overflow-y-auto">
           {#each trainerInfo.pokemon_team as pokemon}
             <div
               class="flex items-center gap-3 p-2 bg-slate-100 dark:bg-slate-800/60 rounded-lg group hover:bg-slate-200 dark:hover:bg-slate-700/80 transition-colors"

@@ -180,7 +180,7 @@
       `${$selectedWiki.name}/dist/docs/img/pokemon/${spriteName}.png`,
       { baseDir: BaseDirectory.AppData },
     )
-      .then((res) => {
+      .then((res: any) => {
         const blob = new Blob([res], { type: "image/png" });
         sprite = URL.createObjectURL(blob);
       })
@@ -311,7 +311,7 @@
   </Dialog.Content>
 </Dialog.Root>
 
-<Card.Root>
+<Card.Root class="sticky top-0">
   <Card.Content class="flex flex-row gap-3">
     <section class="flex flex-row gap-5 justify-between">
       <div>
@@ -405,9 +405,7 @@
     {#if routeVariants.length > 0}
       <Tabs.List class="min-w-[10rem] rounded-sm  border-slate-300 border">
         {#each routeVariants as variant}
-          <Tabs.Trigger
-            value={variant}
-            class="rounded-sm w-[5rem] cursor-pointer"
+          <Tabs.Trigger value={variant} class="rounded-sm cursor-pointer"
             >{capitalizeWords(variant)}</Tabs.Trigger
           >
         {/each}

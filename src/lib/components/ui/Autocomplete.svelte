@@ -17,6 +17,7 @@
     label?: string;
     class?: string;
     creationEnabled?: boolean;
+    capitalize?: boolean;
   };
 
   let {
@@ -29,6 +30,7 @@
     onSelect,
     options,
     creationEnabled = false,
+    capitalize = true,
   }: Props = $props();
 
   let triggerRef = $state<HTMLButtonElement>(null!);
@@ -69,7 +71,9 @@
           role="combobox"
           aria-expanded={open}
         >
-          {capitalizeWords(value) || placeholder}
+          {capitalize
+            ? capitalizeWords(value) || placeholder
+            : value || placeholder}
           <ChevronsUpDownIcon class="opacity-50" />
         </Button>
       </div>
