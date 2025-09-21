@@ -1,6 +1,10 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button/index";
-  import { routes, type Routes } from "../../../store/gameRoutes";
+  import {
+    routes,
+    type Routes,
+    type WildEncounter,
+  } from "../../../store/gameRoutes";
   import { selectedWiki } from "../../../store";
   import { cloneDeep } from "$lib/utils/cloneDeep";
   import { generateRoutePages, updateRoutes } from "$lib/utils/generators";
@@ -31,18 +35,24 @@
   async function copyToRoute() {
     let updatedRoutes: Routes = cloneDeep($routes);
 
-    if (
-      Object.keys(updatedRoutes.routes[routeToCopyTo].wild_encounters).includes(
-        encounterArea,
-      )
-    ) {
-      toast.error("This encounter area already exists in the selected route");
-      return;
-    }
+    for (const [_, encounter] of updatedRoutes.routes[
+      routeName
+    ].wild_encounters.entries()) {
+      if (encounterArea !== encounter.encounter_area) continue;
 
-    updatedRoutes.routes[routeToCopyTo].wild_encounters = cloneDeep(
-      updatedRoutes.routes[routeName].wild_encounters,
-    );
+      let sameEncounterExists = updatedRoutes.routes[
+        routeToCopyTo
+      ].wild_encounters.find(
+        (e) =>
+          e.route_variant === encounter.route_variant &&
+          e.encounter_area === encounter.encounter_area &&
+          e.name === encounter.name,
+      );
+
+      if (sameEncounterExists) continue;
+      encounter.route = routeToCopyTo;
+      updatedRoutes.routes[routeToCopyTo].wild_encounters.push(encounter);
+    }
 
     $routes = cloneDeep(updatedRoutes);
 
