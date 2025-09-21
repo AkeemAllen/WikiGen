@@ -318,10 +318,9 @@ fn generate_route_page_from_template(
         .variants
         .iter()
         .filter(|variant| {
-            route_properties
-                .wild_encounters
-                .iter()
-                .any(|encounter| encounter.route_variant == **variant)
+            return route_properties.wild_encounters.iter().any(|encounter| {
+                return encounter.route_variant == **variant;
+            });
         })
         .collect::<Vec<_>>();
 
