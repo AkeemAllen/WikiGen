@@ -1,4 +1,4 @@
-<div class="trainer-pokemon-card">
+<div class="trainer-pokemon-card" style="background-color: {{type_one_color_light}}; border: 3px solid {{type_two_color_dark}};">
   <div class="trainer-pokemon-image-name-container">
     <img src="../../img/pokemon/{{pokemon_name}}.png" alt={{pokemon_name}} style="border-radius: 10px; background-color: #fff; justify-self: center;"/>
     <div class="trainer-pokemon-name-level-container">
