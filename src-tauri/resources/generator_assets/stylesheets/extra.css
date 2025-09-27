@@ -63,10 +63,10 @@
   display: grid;
   grid-template-rows: 2fr 1fr;
   grid-template-columns: 1fr 1fr;
-  border: 1px solid #eef4ff;
   border-radius: 10px;
   padding: 0.5rem;
-  background-color: #eef4ff;
+  background-color: var(--trainer-card-bg-color);
+  color: var(--trainer-card-text-color);
   min-width: 250px;
   row-gap: 0.5rem;
 }
@@ -119,6 +119,7 @@
   background-color: #fff;
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 10px;
+  color: #000000;
 }
 
 .wild-encounters-container {
