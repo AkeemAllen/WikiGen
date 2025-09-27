@@ -1,3 +1,13 @@
+[data-md-color-scheme="default"] {
+  --trainer-card-bg-color: #eef4ff;
+  --trainer-card-text-color: #000000;
+}
+
+[data-md-color-scheme="slate"] {
+  --trainer-card-bg-color: #1a1a1a;
+  --trainer-card-text-color: #ffffff;
+}
+
 .md-grid {
   max-width: 1440px;
 }
@@ -76,6 +86,12 @@
   border-radius: 10px;
   padding: 2px;
   align-items: center;
+  color: #000000;
+}
+
+.trainer-pokemon-name-level-container a {
+  font-size: 14px;
+  font-weight: bold;
 }
 
 .trainer-pokemon-attributes {
@@ -129,13 +145,13 @@
   display: grid;
   grid-template-columns: auto auto;
   column-gap: 3rem;
-  alignt-items: center;
+  align-items: center;
 }
 
 .hidden-pokemon-attribute {
   grid-template-columns: auto auto;
   column-gap: 3rem;
-  alignt-items: center;
+  align-items: center;
 }
 
 .attribute-value {

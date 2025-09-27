@@ -371,7 +371,6 @@ fn generate_route_page_from_template(
 
     let result = template
         .replace("{{route_image}}", &route_image)
-        // .replace("{{wild_encounter_tab}}", &wild_encounter_tab)
         .replace("{{wild_encounters}}", &wild_encounters)
         .replace("{{trainer_encounter_tab}}", &trainer_encounter_tab)
         .replace("{{trainer_encounters}}", &trainer_encounters);
@@ -515,27 +514,6 @@ fn evaluate_attribute(attribute: &str) -> String {
     }
 }
 
-const POKEMON_TYPE_COLORS: &[(&str, [&str; 2])] = &[
-    ("fire", ["#FCA5A5", "#EF4444"]),
-    ("water", ["#93C5FD", "#3B82F6"]),
-    ("grass", ["#86EFAC", "#15803D"]),
-    ("electric", ["#FEF08A", "#FACC15"]),
-    ("ice", ["#CFFAFE", "#A5F3FC"]),
-    ("fighting", ["#dd4c4c", "#6b1414"]),
-    ("poison", ["#C084FC", "#9333EA"]),
-    ("ground", ["#EAB308", "#A16207"]),
-    ("flying", ["#BAE6FD", "#38BDF8"]),
-    ("psychic", ["#F9A8D4", "#EC4899"]),
-    ("bug", ["#BEF264", "#84CC16"]),
-    ("rock", ["#D6D3D1", "#78716C"]),
-    ("ghost", ["#7C3AED", "#5B21B6"]),
-    ("dragon", ["#6366F1", "#4338CA"]),
-    ("dark", ["#4B5563", "#1F2937"]),
-    ("steel", ["#D4D4D8", "#71717A"]),
-    ("fairy", ["#FBCFE8", "#F9A8D4"]),
-    ("normal", ["#E5E7EB", "#9CA3AF"]),
-];
-
 #[allow(static_mut_refs)]
 fn generate_trainer_entry(trainer_info: &TrainerInfo, version: &str) -> String {
     let mut pokemon_team = String::new();
@@ -562,17 +540,11 @@ fn generate_trainer_entry(trainer_info: &TrainerInfo, version: &str) -> String {
         }
 
         let type_one = pokemon.types.get(0).unwrap().as_str();
-        let type_one_color = POKEMON_TYPE_COLORS
-            .iter()
-            .find(|(color, _)| *color == type_one)
-            .map(|(_, color)| color[0])
-            .unwrap();
         let formatted_type_one = format!(
             "<img src=\"../../img/types/{}.png\" alt={} style=\"width: 50px;\"/>",
             type_one, type_one
         );
 
-        let mut type_two_color: &str = "";
         let mut formatted_type_two = "<div></div>".to_string();
         if pokemon.types.len() > 1 {
             formatted_type_two = format!(
@@ -580,17 +552,6 @@ fn generate_trainer_entry(trainer_info: &TrainerInfo, version: &str) -> String {
                 pokemon.types.get(1).unwrap(),
                 pokemon.types.get(1).unwrap()
             );
-            type_two_color = POKEMON_TYPE_COLORS
-                .iter()
-                .find(|(color, _)| *color == pokemon.types.get(1).unwrap())
-                .map(|(_, color)| color[1])
-                .unwrap();
-        } else {
-            type_two_color = POKEMON_TYPE_COLORS
-                .iter()
-                .find(|(color, _)| *color == type_one)
-                .map(|(_, color)| color[1])
-                .unwrap();
         }
 
         let pokemon_entry: String;
@@ -611,8 +572,6 @@ fn generate_trainer_entry(trainer_info: &TrainerInfo, version: &str) -> String {
                     ),
                 )
                 .replace("{{level}}", pokemon.level.to_string().as_str())
-                .replace("{{type_one_color_light}}", &type_one_color)
-                .replace("{{type_two_color_dark}}", &type_two_color)
                 .replace("{{ability}}", &ability)
                 .replace("{{nature}}", &nature)
                 .replace("{{item_image}}", &item_image)

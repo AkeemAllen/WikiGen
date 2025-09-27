@@ -11,7 +11,7 @@ import { BaseDirectory, readTextFile } from "@tauri-apps/plugin-fs";
 import { routes } from "../../store/gameRoutes";
 import { sortRoutesByPosition } from "$lib/utils";
 import { types } from "../../store/types";
-import { appDataDir } from '@tauri-apps/api/path';
+import { appDataDir } from "@tauri-apps/api/path";
 
 async function loadRoutes(wikiName: string) {
   const routesFromFile = await readTextFile(`${wikiName}/data/routes.json`, {
@@ -29,79 +29,79 @@ async function loadTypes(wikiName: string) {
 }
 
 export async function loadWikiData(wiki: Wiki, toast: any) {
-    const appDataDirPath = await appDataDir();
-    const sqlite_file = `sqlite:${appDataDirPath}/${wiki.name}/${wiki.name}.db`;
+  const appDataDirPath = await appDataDir();
+  const sqlite_file = `sqlite:${appDataDirPath}/${wiki.name}/${wiki.name}.db`;
 
-    await Database.load(sqlite_file)
+  await Database.load(sqlite_file)
     .then((database) => {
-	db.set(database);
-	// Load Pokemon
-	get(db)
-	    .select(
-		"SELECT id, dex_number, name, types FROM pokemon ORDER BY dex_number",
-	    )
-	    .then((pokemon: any) => {
-		pokemonList.set(
-		    pokemon.map((p: SearchPokemon) => [
-			p.id,
-			p.dex_number,
-			p.name,
-			p.types,
-		    ]),
-		);
-	    });
+      db.set(database);
+      // Load Pokemon
+      get(db)
+        .select(
+          "SELECT id, dex_number, name, types FROM pokemon ORDER BY dex_number",
+        )
+        .then((pokemon: any) => {
+          pokemonList.set(
+            pokemon.map((p: SearchPokemon) => [
+              p.id,
+              p.dex_number,
+              p.name,
+              p.types,
+            ]),
+          );
+        });
 
-	// Load Items
-	get(db)
-	    .select("SELECT id, name FROM items")
-	    .then((items: any) => {
-		itemsList.set(items.map((item: SearchItem) => [item.id, item.name]));
-	    });
+      // Load Items
+      get(db)
+        .select("SELECT id, name FROM items")
+        .then((items: any) => {
+          itemsList.set(items.map((item: SearchItem) => [item.id, item.name]));
+        });
 
-	// Load Abilities
-	get(db)
-	    .select("SELECT id, name FROM abilities")
-	    .then((abilities: any) => {
-		abilitiesList.set(
-		    abilities.map((ability: SearchAbility) => [
-			ability.id,
-			ability.name,
-		    ]),
-		);
-		// Add an empty ability for the search
-		abilitiesList.update((abilities) => {
-		    abilities.unshift([0, "None"]);
-		    return abilities;
-		});
-	    });
+      // Load Abilities
+      get(db)
+        .select("SELECT id, name FROM abilities")
+        .then((abilities: any) => {
+          abilitiesList.set(
+            abilities.map((ability: SearchAbility) => [
+              ability.id,
+              ability.name,
+            ]),
+          );
+          // Add an empty ability for the search
+          abilitiesList.update((abilities) => {
+            abilities.unshift([0, "None"]);
+            return abilities;
+          });
+        });
 
-	// Load Natures
-	get(db)
-	    .select("SELECT id, name FROM natures")
-	    .then((natures: any) => {
-		naturesList.set(
-		    natures.map((nature: SearchNature) => [nature.id, nature.name]),
-		);
-	    });
+      // Load Natures
+      get(db)
+        .select("SELECT id, name FROM natures")
+        .then((natures: any) => {
+          naturesList.set(
+            natures.map((nature: SearchNature) => [nature.id, nature.name]),
+          );
+        });
 
-	// Load Moves
-	get(db)
-	    .select("SELECT id, name FROM moves")
-	    .then((moves: any) => {
-		moveList.set(moves.map((move: SearchMove) => [move.id, move.name]));
-	    });
+      // Load Moves
+      get(db)
+        .select("SELECT id, name FROM moves")
+        .then((moves: any) => {
+          moveList.set(moves.map((move: SearchMove) => [move.id, move.name]));
+        });
 
-	// Load Types
-	loadTypes(wiki.name).catch((err) => {
-	    toast.error(`Error loading types: ${err}`);
-	});
+      // Load Types
+      loadTypes(wiki.name).catch((err) => {
+        toast.error(`Error loading types: ${err}`);
+      });
 
-	// Load Routes
-	loadRoutes(wiki.name).catch((err) => {
-	    toast.error(`Error loading routes: ${err}`);
-	});
+      // Load Routes
+      loadRoutes(wiki.name).catch((err) => {
+        toast.error(`Error loading routes: ${err}`);
+      });
     })
     .catch((err) => {
-	toast.error(`Error loading values from database: ${err}`);
+      toast.error(`Error loading values from database: ${err}`);
     });
 }
