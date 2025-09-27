@@ -74,7 +74,8 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Introducing Route Variants to improve overall route organization.
+            \n- Better dark mode support for trainer encounters
+            \n- Slight bug fixes
             "
           releaseDraft: false
           prerelease: false
