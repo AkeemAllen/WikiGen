@@ -159,7 +159,6 @@
   function setModified(e: any) {
     ability.is_modified = e.target?.checked ? TRUE : FALSE;
   }
-  $inspect(newAbility);
 </script>
 
 <Dialog.Root bind:open={newAbilityModalOpen}>
