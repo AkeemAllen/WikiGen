@@ -71,7 +71,7 @@
 
   let mkdocsFilePath: Promise<string> = $derived.by(async () => {
     const appData = await appDataDir();
-    let mkdocsFilePath = `${appData}${$selectedWiki.name}/dist`;
+    let mkdocsFilePath = `${appData}/${$selectedWiki.name}/dist`;
     osType = type();
     if (osType === "windows") {
       mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
@@ -277,11 +277,17 @@
         return res;
       })
       .then(async (res) => {
-        if ($selectedWiki.settings.deployment_url === "") {
+        if (
+          $selectedWiki.settings.deployment_url === "" ||
+          $selectedWiki.settings.deployment_url === undefined
+        ) {
           $wikis[$selectedWiki.name].settings.deployment_url = res.ssh_url;
           await writeTextFile("wikis.json", JSON.stringify($wikis), {
             baseDir: BaseDirectory.AppData,
+          }).catch((err) => {
+            toast.error("Error writing wikis.json:", err);
           });
+          $selectedWiki.settings.deployment_url = res.ssh_url;
         }
         deployingWiki = true;
         return res;
@@ -290,14 +296,19 @@
         invoke("deploy_wiki", {
           wikiName: $selectedWiki.name,
           sshUrl: $selectedWiki.settings.deployment_url,
-        }).then(() => {
-          toast.success("Wiki Preparation Complete!");
-          deployingWiki = false;
-          deployWikiFinalStepsModal = true;
-        });
+        })
+          .then(() => {
+            toast.success("Wiki Preparation Complete!");
+            deployingWiki = false;
+            deployWikiFinalStepsModal = true;
+          })
+          .catch((err) => {
+            toast.error(`Error while deploying wiki!: ${err}`);
+            deployingWiki = false;
+          });
       })
       .catch((err) => {
-        toast.error(`Error while preparing wiki for deployment!: ${err}`, {});
+        toast.error(`Error while preparing wiki for deployment!: ${err}`);
         deployingWiki = false;
       });
   }
