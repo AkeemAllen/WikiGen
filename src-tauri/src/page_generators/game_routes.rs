@@ -422,14 +422,12 @@ impl RouteGenerator {
                 let first = a.as_mapping().unwrap().keys().next().unwrap();
                 let second = b.as_mapping().unwrap().keys().next().unwrap();
 
-                let first_route = match self.routes.routes.get(first.as_str().unwrap()) {
-                    Some(route) => route,
-                    None => return Ordering::Equal,
+                let Some(first_route) = self.routes.routes.get(first.as_str().unwrap()) else {
+                    return Ordering::Equal;
                 };
 
-                let second_route = match self.routes.routes.get(second.as_str().unwrap()) {
-                    Some(route) => route,
-                    None => return Ordering::Equal,
+                let Some(second_route) = self.routes.routes.get(second.as_str().unwrap()) else {
+                    return Ordering::Equal;
                 };
 
                 first_route.position.cmp(&second_route.position)
@@ -491,16 +489,13 @@ impl RouteGenerator {
         }
 
         let mut route_image = String::new();
-        let route_image_exists = match self
+        let route_image_exists = self
             .docs_path
             .join("img")
             .join("routes")
             .join(format!("{route_name}.png"))
             .try_exists()
-        {
-            Ok(exists) => exists,
-            Err(_) => false,
-        };
+            .unwrap_or(false);
 
         if route_image_exists {
             route_image =
