@@ -22,6 +22,9 @@
       "allow": [
         {
           "path": "$APPDATA/**/*"
+        },
+        {
+          "path": "$APPDATA/.venv"
         }
       ]
     },
@@ -78,8 +81,28 @@
       "allow": [
         {
           "args": true,
-          "name": "binaries/mkdocs",
+          "name": "binaries/uv",
           "sidecar": true
+        },
+        {
+          "args": true,
+          "name": "python-check",
+          "cmd": "python3"
+        },
+        {
+          "args": true,
+          "name": "start-virtual-env",
+          "cmd": "source"
+        },
+        {
+          "args": true,
+          "name": "kill-mkdocs",
+          "cmd": "pkill"
+        },
+        {
+          "args": true,
+          "name": "kill-mkdocs-win",
+          "cmd": "taskkill"
         }
       ]
     },
@@ -88,8 +111,18 @@
       "allow": [
         {
           "args": true,
-          "name": "binaries/mkdocs",
+          "name": "binaries/uv",
           "sidecar": true
+        },
+        {
+          "args": true,
+          "name": "python-check",
+          "cmd": "python3"
+        },
+        {
+          "args": true,
+          "name": "start-virtual-env",
+          "cmd": "source"
         }
       ]
     },
@@ -98,8 +131,18 @@
       "allow": [
         {
           "args": true,
-          "name": "binaries/mkdocs",
+          "name": "binaries/uv",
           "sidecar": true
+        },
+        {
+          "args": true,
+          "name": "python-check",
+          "cmd": "python3"
+        },
+        {
+          "args": true,
+          "name": "start-virtual-env",
+          "cmd": "source"
         }
       ]
     },
@@ -108,8 +151,13 @@
       "allow": [
         {
           "args": true,
-          "name": "binaries/mkdocs",
+          "name": "binaries/uv",
           "sidecar": true
+        },
+        {
+          "args": true,
+          "name": "python-check",
+          "cmd": "python3"
         }
       ]
     }
