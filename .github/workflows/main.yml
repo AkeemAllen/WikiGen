@@ -74,7 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Fixed bugs around deployment and ability creation
+            \n- All users are now able to start the wiki from within the app.
             "
           releaseDraft: false
           prerelease: false
