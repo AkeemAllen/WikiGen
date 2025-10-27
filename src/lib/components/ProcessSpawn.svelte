@@ -1,27 +1,28 @@
 <script lang="ts">
   import { appDataDir } from "@tauri-apps/api/path";
+  import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
   import { type } from "@tauri-apps/plugin-os";
   import { selectedWiki, spawnedProcessID } from "../../store";
   import { Button } from "$lib/components/ui/button/index.js";
-  import { Command } from "@tauri-apps/plugin-shell";
+  import { Command, type ChildProcess } from "@tauri-apps/plugin-shell";
   import * as Dialog from "$lib/components/ui/dialog";
   import { toast } from "svelte-sonner";
   import { exists, BaseDirectory } from "@tauri-apps/plugin-fs";
 
   let openPythonInstallationModal = false;
+  let installingPython = false;
 
   async function checkForPython(): Promise<boolean> {
-    const checkForPython = await Command.create("python-check", ["--version"])
-      .execute()
-      .then((results) => {
-        return results;
-      })
-      .catch((error) => {
-        toast.error(`Failed Python check: ${error}`);
-        return { stdout: "" };
-      });
+    let command: ChildProcess<string>;
 
-    if (!checkForPython.stdout.includes("Python")) {
+    if (type() === "windows") {
+      command = await Command.create("python-check-win", [
+        "--version",
+      ]).execute();
+    } else {
+      command = await Command.create("python-check", ["--version"]).execute();
+    }
+    if (!command.stdout.includes("Python")) {
       openPythonInstallationModal = true;
       return false;
     }
@@ -30,10 +31,13 @@
   }
 
   async function installPython() {
+    installingPython = true;
     const installPython = await Command.sidecar("binaries/uv", [
       "python",
       "install",
     ]).execute();
+
+    installingPython = false;
 
     if (installPython.code === 0) {
       openPythonInstallationModal = false;
@@ -46,12 +50,9 @@
   async function spawnProcess() {
     const appData = await appDataDir();
     let mkdocsFilePath = `${appData}/${$selectedWiki.name}/dist/mkdocs.yml`;
-    let venvDir = `${appData}/.venv`;
 
-    const osType = type();
-    if (osType === "windows") {
+    if (type() === "windows") {
       mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
-      venvDir = venvDir.replace(/\//g, "\\");
     }
 
     const isPythonInstalled = await checkForPython();
@@ -59,51 +60,44 @@
       return;
     }
 
-    // Check for virtual environment
-    const isVirtualEnvInstalled = await exists(".venv", {
-      baseDir: BaseDirectory.AppData,
-    });
+    const checkMkdocs = await Command.create("python-check-win", [
+      "-m",
+      "pip",
+      "show",
+      "mkdocs",
+      mkdocsFilePath,
+    ]).execute();
 
-    if (!isVirtualEnvInstalled) {
-      const virtualEnv = await Command.sidecar("binaries/uv", [
-        "venv",
-        venvDir,
+    if (checkMkdocs.code !== 0) {
+      toast.info(`Mkdocs not installed. Installing`);
+      const installMkdocs = await Command.create("python-check-win", [
+        "-m",
+        "pip",
+        "install",
+        "mkdocs",
+        "mkdocs-material",
       ]).execute();
-
-      if (virtualEnv.code !== 0) {
+      if (installMkdocs.code !== 0) {
         toast.error(
-          `Failed to create virtual environment: ${virtualEnv.stderr}`,
+          `Failed to install Mkdocs: ${installMkdocs.stderr}\nUnable to launch server`,
         );
         return;
       }
     }
 
-    const command = Command.sidecar("binaries/uv", [
-      "run",
-      "--python",
-      `${venvDir}`,
+    $spawnedProcessID = await Command.create("python-check-win", [
+      "-m",
       "mkdocs",
       "serve",
       "-f",
       mkdocsFilePath,
-    ]);
+    ]).spawn();
 
-    $spawnedProcessID = await command.spawn();
+    toast.success("Wiki server started");
   }
 
   async function killProcess() {
     await $spawnedProcessID.kill();
-
-    const osType = type();
-    if (osType === "windows") {
-      await Command.create("kill-mkdocs-win", [
-        "/F",
-        "/FI",
-        "COMMANDLINE eq *mkdocs*",
-      ]).execute();
-    } else {
-      await Command.create("kill-mkdocs", ["-f", "mkdocs"]).execute();
-    }
 
     $spawnedProcessID = null;
     toast.success("Wiki server stopped");
@@ -120,7 +114,12 @@
       </p>
       <p>Do you want WikiGen to install Python for you?</p>
     </div>
-    <Button onclick={installPython}>Install Python</Button>
+    <Button onclick={installPython} disabled={installingPython}>
+      {#if installingPython}
+        <LoaderCircleIcon class="animate-spin" />
+      {/if}
+      Install Python</Button
+    >
   </Dialog.Content>
 </Dialog.Root>
 

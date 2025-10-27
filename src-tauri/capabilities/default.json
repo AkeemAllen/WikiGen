@@ -91,6 +91,11 @@
         },
         {
           "args": true,
+          "name": "python-check-win",
+          "cmd": "python"
+        },
+        {
+          "args": true,
           "name": "start-virtual-env",
           "cmd": "source"
         },
@@ -109,6 +114,11 @@
     {
       "identifier": "shell:allow-spawn",
       "allow": [
+        {
+          "args": true,
+          "name": "python-check-win",
+          "cmd": "python"
+        },
         {
           "args": true,
           "name": "binaries/uv",
