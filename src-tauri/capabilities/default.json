@@ -22,6 +22,9 @@
       "allow": [
         {
           "path": "$APPDATA/**/*"
+        },
+        {
+          "path": "$APPDATA/.venv"
         }
       ]
     },
@@ -78,8 +81,18 @@
       "allow": [
         {
           "args": true,
-          "name": "binaries/mkdocs",
+          "name": "binaries/uv",
           "sidecar": true
+        },
+        {
+          "args": true,
+          "name": "python-unix",
+          "cmd": "python3"
+        },
+        {
+          "args": true,
+          "name": "python-win",
+          "cmd": "python"
         }
       ]
     },
@@ -88,18 +101,13 @@
       "allow": [
         {
           "args": true,
-          "name": "binaries/mkdocs",
-          "sidecar": true
-        }
-      ]
-    },
-    {
-      "identifier": "shell:allow-open",
-      "allow": [
+          "name": "python-unix",
+          "cmd": "python3"
+        },
         {
           "args": true,
-          "name": "binaries/mkdocs",
-          "sidecar": true
+          "name": "python-win",
+          "cmd": "python"
         }
       ]
     },
@@ -108,8 +116,13 @@
       "allow": [
         {
           "args": true,
-          "name": "binaries/mkdocs",
-          "sidecar": true
+          "name": "python-unix",
+          "cmd": "python3"
+        },
+        {
+          "args": true,
+          "name": "python-win",
+          "cmd": "python"
         }
       ]
     }
