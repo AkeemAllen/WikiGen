@@ -16,11 +16,9 @@
     let command: ChildProcess<string>;
 
     if (type() === "windows") {
-      command = await Command.create("python-check-win", [
-        "--version",
-      ]).execute();
+      command = await Command.create("python-win", ["--version"]).execute();
     } else {
-      command = await Command.create("python-check", ["--version"]).execute();
+      command = await Command.create("python-unix", ["--version"]).execute();
     }
     if (!command.stdout.includes("Python")) {
       openPythonInstallationModal = true;
@@ -50,9 +48,11 @@
   async function spawnProcess() {
     const appData = await appDataDir();
     let mkdocsFilePath = `${appData}/${$selectedWiki.name}/dist/mkdocs.yml`;
+    let pythonCommand = "python-unix";
 
     if (type() === "windows") {
       mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
+      pythonCommand = "python-win";
     }
 
     const isPythonInstalled = await checkForPython();
@@ -60,7 +60,7 @@
       return;
     }
 
-    const checkMkdocs = await Command.create("python-check-win", [
+    const checkMkdocs = await Command.create(pythonCommand, [
       "-m",
       "pip",
       "show",
@@ -69,8 +69,8 @@
     ]).execute();
 
     if (checkMkdocs.code !== 0) {
-      toast.info(`Mkdocs not installed. Installing`);
-      const installMkdocs = await Command.create("python-check-win", [
+      toast.info(`Mkdocs not installed. Installing. Please wait a few seconds`);
+      const installMkdocs = await Command.create(pythonCommand, [
         "-m",
         "pip",
         "install",
@@ -85,7 +85,7 @@
       }
     }
 
-    $spawnedProcessID = await Command.create("python-check-win", [
+    $spawnedProcessID = await Command.create(pythonCommand, [
       "-m",
       "mkdocs",
       "serve",

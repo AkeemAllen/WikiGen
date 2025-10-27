@@ -86,28 +86,13 @@
         },
         {
           "args": true,
-          "name": "python-check",
+          "name": "python-unix",
           "cmd": "python3"
         },
         {
           "args": true,
-          "name": "python-check-win",
+          "name": "python-win",
           "cmd": "python"
-        },
-        {
-          "args": true,
-          "name": "start-virtual-env",
-          "cmd": "source"
-        },
-        {
-          "args": true,
-          "name": "kill-mkdocs",
-          "cmd": "pkill"
-        },
-        {
-          "args": true,
-          "name": "kill-mkdocs-win",
-          "cmd": "taskkill"
         }
       ]
     },
@@ -116,43 +101,13 @@
       "allow": [
         {
           "args": true,
-          "name": "python-check-win",
+          "name": "python-unix",
+          "cmd": "python3"
+        },
+        {
+          "args": true,
+          "name": "python-win",
           "cmd": "python"
-        },
-        {
-          "args": true,
-          "name": "binaries/uv",
-          "sidecar": true
-        },
-        {
-          "args": true,
-          "name": "python-check",
-          "cmd": "python3"
-        },
-        {
-          "args": true,
-          "name": "start-virtual-env",
-          "cmd": "source"
-        }
-      ]
-    },
-    {
-      "identifier": "shell:allow-open",
-      "allow": [
-        {
-          "args": true,
-          "name": "binaries/uv",
-          "sidecar": true
-        },
-        {
-          "args": true,
-          "name": "python-check",
-          "cmd": "python3"
-        },
-        {
-          "args": true,
-          "name": "start-virtual-env",
-          "cmd": "source"
         }
       ]
     },
@@ -161,13 +116,13 @@
       "allow": [
         {
           "args": true,
-          "name": "binaries/uv",
-          "sidecar": true
+          "name": "python-unix",
+          "cmd": "python3"
         },
         {
           "args": true,
-          "name": "python-check",
-          "cmd": "python3"
+          "name": "python-win",
+          "cmd": "python"
         }
       ]
     }
