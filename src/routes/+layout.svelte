@@ -37,8 +37,7 @@
     readTextFile,
     writeTextFile,
   } from "@tauri-apps/plugin-fs";
-  import { appDataDir } from "@tauri-apps/api/path";
-  import { type } from "@tauri-apps/plugin-os";
+
   import LoadingModal from "$lib/components/modals/LoadingModal.svelte";
   import { load } from "@tauri-apps/plugin-store";
   import IconTestPipe from "@tabler/icons-svelte/icons/test-pipe";
@@ -46,12 +45,12 @@
   import { Toaster } from "$lib/components/ui/sonner/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import Github from "@lucide/svelte/icons/github";
-  import * as Dialog from "$lib/components/ui/dialog";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import { toast } from "svelte-sonner";
   import * as Select from "$lib/components/ui/select";
   import capitalizeWords from "$lib/utils/capitalizeWords";
   import ProcessSpawn from "$lib/components/ProcessSpawn.svelte";
+  import { IconBrandGithub } from "@tabler/icons-svelte";
 
   type Props = {
     children?: import("svelte").Snippet;
@@ -64,22 +63,9 @@
   let runningMigrations = $state(false);
   let createWikiModalOpen = $state(false);
   let deleteWikiModalOpen = $state(false);
-  let deployingWiki = $state(false);
-  let deployWikiFinalStepsModal = $state(false);
-  let signingIntoGithub = $state(false);
-  let osType = $state("");
 
-  let mkdocsFilePath: Promise<string> = $derived.by(async () => {
-    const appData = await appDataDir();
-    let mkdocsFilePath = `${appData}/${$selectedWiki.name}/dist`;
-    osType = type();
-    if (osType === "windows") {
-      mkdocsFilePath = mkdocsFilePath.replace(/\//g, "\\");
-    } else if (osType === "macos") {
-      mkdocsFilePath = mkdocsFilePath.replace(/\s/g, "\\ ");
-    }
-    return mkdocsFilePath;
-  });
+  let signingIntoGithub = $state(false);
+  let loadedWiki = $derived($selectedWiki.name);
 
   $effect(() => {
     if ($selectedWiki.name) {
@@ -249,70 +235,6 @@
     return loggedInUser;
   }
 
-  async function deployWiki() {
-    if ($selectedWiki.name === "") {
-      toast.error("Wiki needs to be selected before deploying");
-      return;
-    }
-    deployingWiki = true;
-    const store = await load("store.json");
-    const token = await store.get<string>("token");
-
-    await fetch("https://wikigen-auth.fly.dev/create-repo", {
-      method: "POST",
-      body: JSON.stringify({
-        token: token,
-        wikiName: $selectedWiki.name,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.status === 401) {
-          toast.error("Token has expired. Relogin to deploy wiki");
-          signOut();
-        }
-        return res;
-      })
-      .then(async (res) => {
-        if (
-          $selectedWiki.settings.deployment_url === "" ||
-          $selectedWiki.settings.deployment_url === undefined
-        ) {
-          $wikis[$selectedWiki.name].settings.deployment_url = res.ssh_url;
-          await writeTextFile("wikis.json", JSON.stringify($wikis), {
-            baseDir: BaseDirectory.AppData,
-          }).catch((err) => {
-            toast.error("Error writing wikis.json:", err);
-          });
-          $selectedWiki.settings.deployment_url = res.ssh_url;
-        }
-        deployingWiki = true;
-        return res;
-      })
-      .then(async (deploy_result) => {
-        invoke("deploy_wiki", {
-          wikiName: $selectedWiki.name,
-          sshUrl: $selectedWiki.settings.deployment_url,
-        })
-          .then(() => {
-            toast.success("Wiki Preparation Complete!");
-            deployingWiki = false;
-            deployWikiFinalStepsModal = true;
-          })
-          .catch((err) => {
-            toast.error(`Error while deploying wiki!: ${err}`);
-            deployingWiki = false;
-          });
-      })
-      .catch((err) => {
-        toast.error(`Error while preparing wiki for deployment!: ${err}`);
-        deployingWiki = false;
-      });
-  }
-
   function navigateToSelectWikisPage() {
     $selectedWiki = { name: "" } as Wiki;
     goto("/");
@@ -328,66 +250,12 @@
   message="Upating Database...This might take a while"
   bind:loading={runningMigrations}
 />
-<LoadingModal
-  message="Preparing Wiki For Deployment"
-  bind:loading={deployingWiki}
-/>
+
 <LoadingModal message={updateStatus} bind:loading={updaterModalOpen} />
 <LoadingModal
   message="Signing Into Github. Webview may take a moment to load."
   bind:loading={signingIntoGithub}
 />
-<Dialog.Root bind:open={deployWikiFinalStepsModal}>
-  <Dialog.Content class="min-w-[40rem]">
-    <Dialog.Header>Final Deploy Stesp</Dialog.Header>
-    <div class="grid gap-3">
-      <p>
-        1.
-        {#if osType === "windows"}
-          Press Windows Start Key, type Terminal, and open it
-        {:else if osType === "macos"}
-          Open spotlight search, type Terminal, and open it
-        {/if}
-      </p>
-      <h2 class="text-md font-semibold leading-3 text-gray-900">
-        Copy and paste the below commands
-      </h2>
-      <p>
-        2. Navigate to the Wiki
-        <br />
-        <span class="code font-semibold">
-          cd {#await mkdocsFilePath then filepath}
-            {filepath}
-          {/await}</span
-        >
-      </p>
-      <p>
-        3. Update the main branch
-        <br />
-        <span class="code font-semibold"> git push -u origin main</span>
-      </p>
-      <p>
-        4. Deploy the Wiki
-        <br />
-        <span class="code font-semibold"> mkdocs gh-deploy</span>
-      </p>
-      <p>
-        4. Once done, your docs should be available at the below URL. Note that
-        it may take a few minutes to load.
-        <br />
-        <a
-          href={`https://${$user.userName.toLowerCase()}.github.io/${$selectedWiki.name}/`}
-          target="_blank"
-        >
-          <span class="code font-semibold"
-            >https://{$user.userName.toLowerCase()}.github.io/{$selectedWiki.name}/</span
-          >
-        </a>
-      </p>
-    </div>
-  </Dialog.Content>
-</Dialog.Root>
-
 <CreateWikiModal bind:open={createWikiModalOpen} />
 <DeleteWikiModal bind:open={deleteWikiModalOpen} />
 
@@ -442,9 +310,6 @@
             </div>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content class="flex flex-col gap-2">
-            <DropdownMenu.Item onclick={deployWiki}
-              >Deploy Wiki</DropdownMenu.Item
-            >
             <DropdownMenu.Item onclick={signOut}>Sign Out</DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Root>
@@ -529,6 +394,18 @@
               />
             {/snippet}
           </NavButton>
+          <NavButton
+            name="Deployment"
+            route="/deployment"
+            active={page.url.pathname.includes("deployment")}
+          >
+            {#snippet icon()}
+              <IconBrandGithub
+                size={20}
+                class={`${page.url.pathname.includes("deployment") && "text-indigo-500"}`}
+              />
+            {/snippet}
+          </NavButton>
         </div>
       </aside>
       <main class="overflow-auto">
@@ -569,8 +446,10 @@
         </button>
         <Select.Root
           type="single"
-          bind:value={$selectedWiki.name}
+          bind:value={loadedWiki}
           onValueChange={() => {
+            $selectedWiki = $wikis[loadedWiki];
+            loadWikiData($selectedWiki, toast);
             // Kill the spawned process if it is running
             if ($spawnedProcessID !== null) {
               $spawnedProcessID.kill();
@@ -579,7 +458,7 @@
           }}
         >
           <Select.Trigger id="pokemon-type" class="w-[17rem]">
-            {capitalizeWords($selectedWiki.name)}
+            {capitalizeWords(loadedWiki)}
           </Select.Trigger>
           <Select.Content>
             {#each Object.entries($wikis).map( ([name, props]) => ({ label: props.site_name, value: name }), ) as wiki}
