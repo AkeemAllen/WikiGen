@@ -108,8 +108,11 @@
       <Button
         class="cursor-pointer"
         disabled={!$user.isConnected || creatingRepo}
-        onclick={createRepo}>Create Repository</Button
+        onclick={createRepo}>Create/Associate Repository</Button
       >
+      {#if !$user.isConnected}
+        <p class="mt-2">Sign in to github first to create a repository.</p>
+      {/if}
     {:else}
       <p class="mb-4">Associated Repository: {$selectedWiki.repo_url}</p>
       <Button
@@ -117,9 +120,6 @@
         disabled={!$user.isConnected || creatingRepo}
         onclick={deployWiki}>Deploy Wiki</Button
       >
-    {/if}
-    {#if !$user.isConnected}
-      <p class="mt-2">Sign in to github first to create a repository.</p>
     {/if}
   </Card.Content>
 </Card.Root>
