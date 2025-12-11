@@ -74,7 +74,8 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- All users are now able to start the wiki from within the app.
+            \n- Separated Repo Creation Process from deployment.
+            \n- Fixed bug with switching wikis via the footer's dropdown menu.
             "
           releaseDraft: false
           prerelease: false
