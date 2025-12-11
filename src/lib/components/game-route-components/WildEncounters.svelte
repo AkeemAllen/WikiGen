@@ -216,8 +216,6 @@
         encounter.encounter_area === e.encounter_area &&
         encounter.route_variant === e.route_variant,
     );
-    console.log(routeWildEncounters[index]);
-    console.log(routeWildEncounters[index]);
     return index;
   }
 </script>
