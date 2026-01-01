@@ -72,19 +72,19 @@
       });
   }
 
-  async function deployWiki() {
+  async function commitWikiChangesAndDeploy() {
     if ($selectedWiki.name === "") {
       toast.error("Wiki needs to be selected before deploying");
       return;
     }
     deployingWiki = true;
 
-    invoke("deploy_wiki", {
+    invoke("commit_wiki_changes", {
       wikiName: $selectedWiki.name,
       sshUrl: $selectedWiki.settings.deployment_url,
     })
-      .then(() => {
-        toast.success("Wiki Preparation Complete!");
+      .then(async () => {
+        await deployWiki();
         deployingWiki = false;
         deployWikiFinalStepsModal = true;
       })
@@ -93,6 +93,8 @@
         deployingWiki = false;
       });
   }
+
+  async function deployWiki() {}
 </script>
 
 <LoadingModal
@@ -118,7 +120,7 @@
       <Button
         class="cursor-pointer"
         disabled={!$user.isConnected || creatingRepo}
-        onclick={deployWiki}>Deploy Wiki</Button
+        onclick={commitWikiChangesAndDeploy}>Deploy Wiki</Button
       >
     {/if}
   </Card.Content>

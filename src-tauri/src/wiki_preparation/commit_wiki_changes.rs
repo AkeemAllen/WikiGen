@@ -5,7 +5,7 @@ use tauri::{AppHandle, Manager};
 use crate::logger::{self, LogLevel};
 
 #[tauri::command]
-pub async fn deploy_wiki(
+pub async fn commit_wiki_changes(
     wiki_name: &str,
     ssh_url: &str,
     app_handle: AppHandle,
@@ -21,7 +21,18 @@ pub async fn deploy_wiki(
         return Err(error);
     }
 
-    if !dist_directory.join(".git").try_exists().unwrap_or(false) {
+    match Command::new("mkdocs").arg("build").output() {
+        Ok(_) => {}
+        Err(err) => {
+            let error = format!("Error while building wiki: {}", err);
+            logger::write_log(&base_path, LogLevel::Error, &error);
+            return Err(error);
+        }
+    };
+
+    let site_directory = dist_directory.join("site");
+
+    if !site_directory.join(".git").try_exists().unwrap_or(false) {
         match Command::new("git").arg("init").output() {
             Ok(_) => {}
             Err(err) => {
@@ -90,23 +101,5 @@ pub async fn deploy_wiki(
         };
     }
 
-    // TODO: Implement git push automation. Git ssh doesn't allow piping ssh key password into stdin
-    // Will need to use ssh-agent to accomplish this in the future.
-
-    // let mut git_command = Command::new("git");
-    // git_command.arg("push");
-    // git_command.arg("-u");
-    // git_command.arg("origin");
-    // git_command.arg("main");
-    // git_command.stdin(Stdio::piped());
-
-    // let mut proc_handle = git_command.spawn().unwrap();
-
-    // let mut proc_handle_stdin = proc_handle.stdin.take().unwrap();
-
-    // _ = proc_handle_stdin
-    //     .write_all("Akstar4321".as_bytes())
-    //     .expect("Failed to write to stdin");
-
-    Ok("Wiki Deployed".to_string())
+    Ok("Wiki Changes Commited and Ready for Deployment".to_string())
 }
