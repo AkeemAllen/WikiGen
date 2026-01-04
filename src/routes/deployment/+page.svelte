@@ -83,8 +83,8 @@
       wikiName: $selectedWiki.name,
       sshUrl: $selectedWiki.settings.deployment_url,
     })
-      .then(async () => {
-        await deployWiki();
+      .then(async (res) => {
+        toast.success(res as string);
         deployingWiki = false;
         deployWikiFinalStepsModal = true;
       })
@@ -93,8 +93,6 @@
         deployingWiki = false;
       });
   }
-
-  async function deployWiki() {}
 </script>
 
 <LoadingModal

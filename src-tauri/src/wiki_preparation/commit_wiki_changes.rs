@@ -21,18 +21,7 @@ pub async fn commit_wiki_changes(
         return Err(error);
     }
 
-    match Command::new("mkdocs").arg("build").output() {
-        Ok(_) => {}
-        Err(err) => {
-            let error = format!("Error while building wiki: {}", err);
-            logger::write_log(&base_path, LogLevel::Error, &error);
-            return Err(error);
-        }
-    };
-
-    let site_directory = dist_directory.join("site");
-
-    if !site_directory.join(".git").try_exists().unwrap_or(false) {
+    if !dist_directory.join(".git").try_exists().unwrap_or(false) {
         match Command::new("git").arg("init").output() {
             Ok(_) => {}
             Err(err) => {

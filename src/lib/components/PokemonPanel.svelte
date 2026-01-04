@@ -205,6 +205,9 @@
         ],
       )
       .then(() => generatePage())
+      .then(() => {
+        originalPokemonDetails = cloneDeep(pokemon);
+      })
       .catch((err) => {
         toast.error(err as string);
       });
