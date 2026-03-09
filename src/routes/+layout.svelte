@@ -164,7 +164,7 @@
     signingIntoGithub = true;
     const url = new URL("https://github.com/login/oauth/authorize");
     const params = new URLSearchParams();
-    params.append("client_id", "Ov23li9oWejO62cA6Kee");
+    params.append("client_id", "Ov23li8e5gBcRuF3bR3b");
     params.append("scope", "read:user public_repo");
 
     url.search = params.toString();

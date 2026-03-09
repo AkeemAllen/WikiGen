@@ -34,7 +34,7 @@
     creatingRepo = true;
     toast.info("Creating repository...");
     //
-    await fetch("https://wikigen-auth.fly.dev/create-repo", {
+    await fetch("https://wikigen-auth-c.fly.dev/create-repo", {
       method: "POST",
       body: JSON.stringify({
         token: token,
