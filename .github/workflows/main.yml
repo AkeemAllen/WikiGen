@@ -74,8 +74,7 @@ jobs:
           releaseName: "WikiGen v__VERSION__"
           releaseBody: "
             Changelog:
-            \n- Separated Repo Creation Process from deployment.
-            \n- Fixed bug with switching wikis via the footer's dropdown menu.
+            \n- Switch to new C backend
             "
           releaseDraft: false
           prerelease: false
